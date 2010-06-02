@@ -1,0 +1,13 @@
+#*****************************************************************
+# Copyright (c) 2009  Larence Livermore National Security (LLNS)
+# Produced at the Lawrence Livermore National Laboratory
+# All rights reserved.
+#*****************************************************************
+#
+#   Description: Installation instructions for software products
+#   		(See the documentaton in the "docs" directory for
+#		more detailed information)
+#
+#*****************************************************************
+
+INSTALL:

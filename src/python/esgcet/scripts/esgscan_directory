@@ -1,0 +1,180 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import getopt
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from esgcet.publish import multiDirectoryIterator, directoryIterator, processIterator, readDatasetMap, processNodeMatchIterator, checksum
+from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, getOfflineLister, splitLine
+from esgcet.exceptions import *
+
+usage = """Usage:
+    esgscan_directory [options] directory [directory ...]
+
+    Scan a set of directories recursively for a specific project, producing a dataset map of the form:
+
+	dataset_id | absolute_file_path | size
+
+    for each directory that has at least one file matching the file filter (see --filter).    
+
+Arguments:
+    directory: A directory to scan.
+
+Options:
+
+    -a dataset_map:
+        Append the output to the existing dataset_map. If dataset_map does not exist, create it.
+        Compare with -o.
+
+    --dataset dataset_name:
+        String name of the dataset. If specified, all files will belong to the specified dataset,
+        regardless of path. If omitted, paths are matched to the directory_format, as specified in the
+        configuration file, to determine the dataset name.
+
+    --filter regular_expression:
+        Filter files matching the regular expression. Default is '.*\.nc$'
+        Regular expression syntax is defined by the Python re module.
+
+    -h, --help: Print a help message.
+
+    -i init_file: Initialization file. If not specified, the default installed init file is read.
+
+    -o, --output dataset_map:
+        Name of the output dataset map file. If the file exists, replace it. Compare with -a.
+        Defaults to standard output.
+
+    --offline
+        The directory is offline. The dataset name must also be specified with --dataset.
+
+    --project project_id:
+        Project identifier. If not specified, the project is determined from the first file found that
+        matches the file filter.
+
+    --service service
+        Specify a THREDDS service name to associate with an offline dataset. If omitted, the name of the
+        first offline service in the configuration ''thredds_offline_services'' is used. This determines
+        which offline lister to use.
+
+"""
+
+def main(argv):
+    try:
+        args, lastargs = getopt.getopt(argv, "a:hi:o:", ['dataset=', 'filter=', 'help', 'offline', 'output=', 'project=', 'service='])
+    except getopt.error:
+        print sys.exc_value
+        print usage
+        sys.exit(0)
+
+    if len(lastargs)==0:
+        print 'No directory specified'
+        print usage
+        sys.exit(0)
+
+    appendMap = None
+    datasetName = None
+    filefilt = '.*\.nc$'
+    init_file = None
+    offline = False
+    output = sys.stdout
+    projectName = None
+    service = None
+    for flag, arg in args:
+        if flag=='-a':
+            if os.path.exists(arg):
+                appendMap = readDatasetMap(arg)
+            else:
+                appendMap = {}
+            output = open(arg, 'a')
+        if flag=='--dataset':
+            datasetName = arg
+        elif flag=='--filter':
+            filefilt = arg
+        elif flag in ['-h', '--help']:
+            print usage
+            sys.exit(0)
+        elif flag=='-i':
+            init_file = arg
+        elif flag in ['-o', '--output']:
+            output = open(arg, 'w')
+        elif flag=='--offline':
+            offline = True
+        elif flag=='--project':
+            projectName = arg
+        elif flag=='--service':
+            service = arg
+
+    # Load the configuration and set up a database connection
+    config = loadConfig(init_file)
+    engine = create_engine(config.get('extract', 'dburl'), echo=False, pool_recycle=3600)
+    initLogging('extract', override_sa=engine)
+    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+
+    # Register project handlers
+    registerHandlers()
+
+    if not offline:
+
+        # Determine if checksumming is enabled
+        line = config.get('DEFAULT', 'checksum', default=None)
+        if line is not None:
+            checksumClient, checksumType = splitLine(line)
+        else:
+            checksumClient = None
+
+        if projectName is not None:
+            handler = getHandlerByName(projectName, None, Session)
+        else:
+            multiIter = multiDirectoryIterator(lastargs, filefilt=filefilt)
+            firstFile, size = multiIter.next()
+            handler = getHandler(firstFile, Session, validate=True)
+            if handler is None:
+                raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
+            projectName = handler.name
+
+        datasetMap = handler.generateDirectoryMap(lastargs, filefilt, datasetName=datasetName)
+
+        # Output the map
+        keys = datasetMap.keys()
+        keys.sort()
+        for datasetId in keys:
+            direcTuple = datasetMap[datasetId]
+            direcTuple.sort()
+            for nodepath, filepath in direcTuple:
+                for filepath, sizet in directoryIterator(nodepath, filefilt=filefilt, followSubdirectories=False):
+                    size, mtime = sizet
+                    extraStuff = "mod_time=%f"%float(mtime)
+
+                    if checksumClient is not None:
+                        csum = checksum(filepath, checksumClient)
+                        extraStuff += " | checksum=%s | checksum_type=%s"%(csum, checksumType)
+
+                    # Print the map entry if:
+                    # - The map is being created, not appended, or
+                    # - The existing map does not have the dataset, or
+                    # - The existing map has the dataset, but not the file.
+                    if (appendMap is None) or (not appendMap.has_key(datasetId)) or ((filepath, "%d"%size) not in appendMap[datasetId]):
+                        print >>output, "%s | %s | %d | %s"%(datasetId, filepath, size, extraStuff)
+    else:                               # offline
+        if projectName is not None:
+            handler = getHandlerByName(projectName, None, Session, offline=True)
+        else:
+            raise ESGPublishError("Must specify --project for offline datasets.")
+        listerSection = getOfflineLister(config, "project:%s"%projectName, service)
+        offlineLister = config.get(listerSection, 'offline_lister_executable')
+        commandArgs = "--config-section %s "%listerSection
+        commandArgs += " ".join(lastargs)
+        for dsetName, filepath, sizet in processNodeMatchIterator(offlineLister, commandArgs, handler, filefilt=filefilt, datasetName=datasetName, offline=True):
+            size, mtime = sizet
+            extrastuff = ""
+            if mtime is not None:
+                extrastuff = "| mod_time=%f"%float(mtime)
+            if (appendMap is None) or (not appendMap.has_key(dsetName)) or ((filepath, "%d"%size) not in appendMap[dsetName]):
+                print >>output, "%s | %s | %d %s"%(dsetName, filepath, size, extrastuff)
+
+    if output is not sys.stdout:
+        output.close()
+
+if __name__=='__main__':
+    main(sys.argv[1:])

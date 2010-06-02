@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+
+import sys
+import getopt
+import logging
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from esgcet.model import *
+from esgcet.config import loadConfig, splitLine, splitRecord, loadStandardNameTable, textTableIter, initLogging, loadModelsTable, initializeExperiments
+from esgcet.messaging import debug, info, warning, error, critical, exception
+
+usage = """Usage:
+    esginitialize [Options]
+
+    Initialize the ESG node database.
+
+Options:
+
+    -c: Create ESG tables. By default the database tables are not created.
+
+    --echo-sql: Echo SQL commands.
+
+    -h: Help.
+
+    -i init_file: Initialization file. If not specified, the default installed init file is read.
+"""
+
+def main(argv):
+
+    try:
+        args, lastargs = getopt.getopt(argv, "chi:", ['echo-sql'])
+    except getopt.error:
+        print sys.exc_value
+        print usage
+        sys.exit(0)
+
+    createTables = False    
+    echoSql = None
+    init_file = None
+    for flag, arg in args:
+        if flag=='-c':
+            createTables = True 
+        elif flag=='--echo-sql':
+            echoSql = True
+        elif flag=='-h':
+            print usage
+            sys.exit(0)
+        elif flag=='-i':
+            init_file = arg
+
+    config = loadConfig(init_file)
+    configOptions = config.options('initialize')
+    
+    engine = create_engine(config.get('initialize', 'dburl'), echo=echoSql, pool_recycle=3600)
+    initLogging('initialize', override_sa=engine)
+
+    if createTables:
+        metadata.create_all(engine)
+
+    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+    session = Session()
+
+    # Initialize standard name table
+    path = config.get('initialize', 'initial_standard_name_table', default=None)
+    for standardName in loadStandardNameTable(path):
+        sname = session.query(StandardName).filter_by(name=standardName.name).first()
+        if sname is None:
+            session.add(standardName)
+
+    # Initialize projects
+    if 'project_options' in configOptions:
+        projectOption = config.get('initialize', 'project_options')
+        projectSpecs = splitRecord(projectOption)
+        for projectName, projectDesc, search_order in projectSpecs:
+
+            # First see if the project exists
+            project = session.query(Project).filter_by(name=projectName).first()
+            if project is None:
+                project = Project(projectName, projectDesc)
+                session.add(project)
+
+            projectSection = 'project:'+projectName
+            projectConfigOptions = config.options(projectSection)
+
+            # Initialize models
+            modelTable = config.get('initialize', 'initial_models_table', default=None)
+            for projectId, modelName, modelUrl, modelDesc in loadModelsTable(modelTable):
+                if projectId!=projectName:
+                    continue
+
+                # Check if the model exists
+                model = session.query(Model).filter_by(name=modelName, project=projectName).first()
+                if model is None:
+                    model = Model(modelName, projectName, modelUrl, modelDesc)
+                    project.models.append(model)
+                    session.add(model)
+
+            # Initialize experiments
+            if 'experiment_options' in projectConfigOptions:
+                initializeExperiments(config, projectName, session)
+
+    session.commit()
+    session.close()
+
+if __name__=='__main__':
+    main(sys.argv[1:])

@@ -1,0 +1,713 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import getopt
+import textwrap
+import re
+import getpass
+from ConfigParser import RawConfigParser, SafeConfigParser, DEFAULTSECT, NoOptionError
+import subprocess
+import urlparse
+import socket
+from esgcet.exceptions import *
+
+usage = """Usage:
+    esgsetup [Options]
+
+    Setup the ESG node software.
+
+Options:
+
+    -h, --help: Help.
+
+    --config: Create an initial ESG configuration file (esg.ini).
+        Also see --rootid.
+
+    --db: Initialize the database.
+
+    --thredds: Initialize the THREDDS server.
+
+    --publish: Initialize publication-related configuration options.
+
+    --rootid root_identifier:
+        Initialize the ESG root identifier during the --config phase.
+
+"""
+    
+PUBLISH_SERVICE = "remote/secure/client-cert/hessian/publishingService"
+METADATA_SERVICE = "remote/hessian/guest/remoteMetadataService"
+REPOS = "http://www-pcmdi.llnl.gov/svn/repository/externals"
+urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
+
+def askyn(question, default='y'):
+    answer = raw_input("%s [%s]: "%(question, default))
+    if answer=='':
+        result = default
+    else:
+        result = answer[0].lower()
+    return (result=='y')
+
+def askfor(question, default=None, env=None, silent=False):
+    """
+    question: String prompt
+    default: String to return if a blank string is returned
+    env: Get the default from the environment.
+    silent: Don't echo (for passwords)
+    """
+    if default is None and env is not None:
+        default = os.environ.get(env)
+    if not silent:
+        asker = raw_input
+    else:
+        asker = getpass.getpass
+    if default is None:
+        answer = asker("%s: "%(question,))
+        return answer
+    else:
+        answer = asker("%s [%s]: "%(question, default))
+        if answer=='':
+            answer = default
+        return answer
+
+def askForMultiple(prompt, displayCurrent=None):
+    print "%s:"%prompt
+    if displayCurrent is not None:
+        print "Current value is: \n%s\n"%displayCurrent
+        result = displayCurrent+'\n'
+    else:
+        result = ''
+    option = askfor("Replace (r) or Add lines (a)?", default='a')
+    if option.lower()[0]=='r':
+        result = ''
+    print "Enter lines, or <RETURN> to end"
+    while True:
+        answer = raw_input("Add new line: ")
+        if answer!='':
+            result += answer+'\n'
+        else:
+            break
+    return result
+
+def tell(info):
+    info = re.sub(r'\n[\t\r\f\v ]+', '\n   ', info)
+    print info
+
+def getconfignames():
+    home = os.environ['HOME']
+    configdir = os.path.join(home, '.esgcet')
+    configname = os.path.join(configdir, 'esg.ini')
+    return configdir, configname
+
+def updateconfig(updates, currentConfig=None):
+    configdir, configname = getconfignames()
+    if currentConfig is None:
+        tell("Updating configuration file %s"%configname)
+        config = SaneConfigParser(configname)
+        config.read(configname)
+    else:
+        config = currentConfig
+    for update in updates:
+        apply(config.set, update)
+    esgini = open(configname, 'w+')
+    config.write(esgini)
+    esgini.close()
+
+def setupconfig():
+    tell("""
+
+    Create initial configuration file:
+
+    esg.ini is a text file that configures ESG publication
+    software. This file will be created in
+    $HOME/.esgcet/esg.ini, if it does not already exist.
+
+    """)
+
+    # Create .esgcet directory.
+    configdir, configname = getconfignames()
+    if not os.path.exists(configdir):
+        tell("Creating $HOME/.esgcet")
+        os.mkdir(configdir, 0755)
+
+    # Does $HOME/.esgcet/esg.ini exist? If so, ask to proceed.
+    templatename = os.path.join(configdir, 'template.ini')
+    if os.path.exists(configname):
+        if not askyn("Configuration file %s exists, replace?"%configname):
+            raise RuntimeError
+
+    # Copy template.ini.
+    tell("Copying template.ini to $HOME/.esgcet/esg.ini")
+    from pkg_resources import resource_string, cleanup_resources
+    templatestring = resource_string('esgcet.config.etc', 'template.ini')
+    esgini = open(configname, 'w')
+    esgini.write(templatestring)
+    esgini.close()
+    os.chmod(configname, 0600)
+    templateini = open(templatename, 'w')
+    templateini.write(templatestring)
+    templateini.close()
+
+    # Copy model initialization file
+    modelInitName = os.path.join(configdir, 'esgcet_models_table.txt')
+    if not os.path.exists(modelInitName):
+        tell("Copying esgcet_models_table to $HOME/.esgcet")
+        modelinitstring = resource_string('esgcet.config.etc', 'esgcet_models_table.txt')
+        modelini = open(modelInitName, 'w')
+        modelini.write(modelinitstring)
+        modelini.close()
+
+    # Copy standard name table
+    standardNameInitName = os.path.join(configdir, 'cf-standard-name-table.xml')
+    if not os.path.exists(standardNameInitName):
+        tell("Copying cf-standard-name-table.xml to $HOME/.esgcet")
+        standard_nameinitstring = resource_string('esgcet.config.etc', 'cf-standard-name-table.xml')
+        standard_nameini = open(standardNameInitName, 'w')
+        standard_nameini.write(standard_nameinitstring)
+        standard_nameini.close()
+
+    cleanup_resources()
+            
+# Note: this is duplicated from esgcet.config, but we don't know that it can be
+# imported yet.
+class SaneConfigParser(SafeConfigParser):
+
+    def __init__(self, name, defaults=None):
+        SafeConfigParser.__init__(self, defaults=defaults)
+        self.name = name
+
+    def get(self, section, option, raw=False, vars=None, **options):
+        if vars is None:
+            vars = {'here' : os.getcwd()}
+        elif not vars.has_key('here'):
+            vars['here'] = os.getcwd()
+
+        home = os.environ.get('HOME')
+        if home is not None:
+            vars['home'] = home
+
+        pythonbin = os.path.join(sys.prefix, 'bin')
+        vars['pythonbin'] = pythonbin
+
+        try:
+            value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
+        except NoOptionError:
+            if options.has_key('default'):
+                value = options['default']
+            else:
+                raise ESGPublishError("Configuration file option missing: %s in section: %s, file=%s"%(option, section, self.name))
+        return value
+
+    def getboolean(self, section, option, default=None):
+        try:
+            value = SafeConfigParser.getboolean(self, section, option)
+        except AttributeError:
+            value = default
+        return value
+
+    def getint(self, section, option, default=None):
+        try:
+            value = SafeConfigParser.getint(self, section, option)
+        except AttributeError:
+            value = default
+        return value
+
+    def write(self, fp):
+        """Write an .ini-format representation of the configuration state.
+        with sorting added.
+        """
+        if self._defaults:
+            fp.write("[%s]\n" % DEFAULTSECT)
+            defaultItems = self._defaults.items()
+            defaultItems.sort()
+            for (key, value) in defaultItems:
+                fp.write("%s = %s\n" % (key, str(value).replace('\n', '\n\t')))
+            fp.write("\n")
+        for section in self._sections:
+            fp.write("[%s]\n" % section)
+            sectionItems = self._sections[section].items()
+            sectionItems.sort()
+            for (key, value) in sectionItems:
+                if key != "__name__":
+                    fp.write("%s = %s\n" %
+                             (key, str(value).replace('\n', '\n\t')))
+            fp.write("\n")
+
+def main(argv):
+
+    try:
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'help', 'publish', 'rootid=', 'thredds'])
+    except getopt.error:
+        print sys.exc_value
+        print usage
+        sys.exit(0)
+
+    initconfig = False
+    initdb = False
+    initthredds = False
+    initpublish = False
+    initroot = False
+    for flag, arg in args:
+        if flag in ['-h', '--help']:
+            print usage
+            sys.exit(0)
+        elif flag=='--config':
+            initconfig = True
+        elif flag=='--db':
+            initdb = True
+        elif flag=='--publish':
+            initpublish = True
+        elif flag=='--thredds':
+            initthredds = True
+        elif flag=='--rootid':
+            initroot = True
+            rootid = arg
+
+    if not (initconfig or initdb or initthredds or initpublish):
+        print 'No option specified.'
+        print usage
+        sys.exit(0)
+
+    # Config file initialization
+    if initconfig:
+        try:
+            setupconfig()
+        except RuntimeError:
+            tell("Script aborted.")
+
+        if initroot:
+            updateconfig([('DEFAULT', 'root_id', rootid)])
+
+    # Database initialization
+    if initdb:
+
+        # Preconditions:
+        # - database server is running
+        # - user has database admin access
+        # - config file is initialized
+        
+        tell("""
+
+        Create and initialize ESG node database:
+
+        The node database is a relational database that contains
+        information scanned by ESG software. This section will:
+
+        - Create a non-administrative ESG user.
+        - Create the database.
+        - Create and initialize the database tables.
+        - Update the configuration file.
+        
+        Before proceeding, make sure that:
+        
+        - The database server is running, and you know the host and
+          port on which it is listening;
+
+        - You have an administrative database account with privilege
+          to create new databases.
+
+        """)
+
+        if not askyn("Proceed?"):
+            raise RuntimeError
+
+        try:
+            # Is the database running?
+            tell("Testing the database connection:")
+            try:
+                import psycopg2
+                from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+            except ImportError, e:
+                tell("""
+
+                The following error occurred:
+
+                - %s
+                
+                The module psycopg2 is needed for connection to the
+                database, and was not correctly installed or
+                configured. It should have been installed
+                automatically when esgcet was installed.
+
+                If the error is 'Cannot open shared object':
+                - Check that the environment variable LD_LIBRARY_PATH contains the postgres library directory.
+
+                otherwise:
+                - Rerun 'easy_install -f %s esgcet' and check that psycopg2 builds correctly.
+
+                """%(`e`,REPOS))
+                sys.exit(1)
+                
+            dbadmin = askfor("Database administrator name", env='PGUSER')
+            dbpass = askfor("Administrator password", silent=True)
+            host = askfor("Host name", default="localhost", env='PGHOST')
+            port = askfor("Database port", default="5432", env='PGPORT')
+            connectString = "dbname='postgres' user='%s' password='%s' host='%s' port='%s'"%(dbadmin, dbpass, host, port)
+            echoConnectString = "dbname='postgres' user='%s' password='...' host='%s' port='%s'"%(dbadmin, host, port)
+
+            tell("Connecting to database with %s"%echoConnectString)
+            try:
+                conn = psycopg2.connect(connectString)
+                cur = conn.cursor()
+                tell("Connection succeeded")
+            except:
+                tell("Cannot connect to the database")
+                sys.exit(1)
+
+            # Update the configuration
+            configdir, configname = getconfignames()
+            if not os.path.exists(configname):
+                setupconfig()
+            
+            config = SafeConfigParser()
+            config.read(configname)
+
+            # Create owner of esgcet database
+            tell("""
+            The next step is to create the esgcet database, and an ESG user:
+            """)
+            initdburl = config.get('DEFAULT', 'dburl')
+            scheme = "postgres"
+            userdef = "esgcet"
+            passdef = ""
+            hostdef = host
+            portdef = port
+            dbdef = "esgcet"
+            if initdburl is not None:
+                m = re.match(urlpat, initdburl)
+                if m is not None:
+                    scheme, userdef, passdef, hostdef, portdef, dbdef = m.groups()
+                    if portdef is not None:
+                        portdef = portdef[1:]
+                
+            esguser = askfor("esgcet database user", default=userdef)
+
+            # Does this user exist?
+            cur.execute("select usename, usesuper, usecreatedb from pg_user where usename='%s'"%esguser)
+            rows = cur.fetchall()
+            if len(rows)==0:
+                createuser = True
+            else:
+                dum, usesuper, usecreatedb = rows[0]
+                if usesuper or usecreatedb:
+                    tell("This is an administrative user, cannot be the esgcet user.")
+                    conn.close()
+                    raise RuntimeError
+                createuser = False
+
+            # Create the user if necessary
+            esgusepass = askfor("esgcet user password", silent=True)
+            esgusepassagain = askfor("Confirm esgcet user password", silent=True)
+            if esgusepass!=esgusepassagain:
+                tell("Passwords do not match")
+                raise RuntimeError
+            if createuser:
+                tell("Creating new database user %s"%esguser)
+                cur.execute("create user %s with encrypted password '%s'"%(esguser, esgusepass))
+                conn.commit()
+
+            # Check the user can connect
+            connectString2 = "dbname='postgres' user='%s' password='%s' host='%s' port='%s'"%(esguser, esgusepass, host, port)
+            echoConnectString2 = "dbname='postgres' user='%s' password='...' host='%s' port='%s'"%(esguser, host, port)
+            tell("Testing database connection with %s"%echoConnectString2)
+            try:
+                conn2 = psycopg2.connect(connectString2)
+            except:
+                tell("Cannot connect with this ESG username and password: %s"%echoConnectString2)
+                raise RuntimeError
+            tell("Connection succeeded.")
+            conn2.close()
+
+            # Create esgcet database
+            dbname = askfor("Name of esgcet database to create", default=dbdef)
+            cur.execute("select datname from pg_database")
+            rows = cur.fetchall()
+            if dbname in [item[0] for item in rows]:
+                if not askyn("Database %s already exists, should it be reused? (This will NOT delete existing data.)"%dbname):
+                    conn.close()
+                    raise RuntimeError
+                createdb = False
+            else:
+                createdb = True
+
+            if createdb:
+                tell("Creating database %s with owner=%s"%(dbname, esguser))
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cur.execute("create database %s with owner %s"%(dbname, esguser))
+
+            conn.close()
+
+            dburl = "postgres://%s:%s@%s:%s/%s"%(esguser, esgusepass, host, port, dbname)
+            updateconfig([('DEFAULT', 'dburl', dburl)])
+
+            # Initialize database tables
+            try:
+                import sqlalchemy
+            except ImportError, e:
+                tell("""
+
+                The following error occurred:
+
+                - %s
+
+                Module sqlalchemy has not been installed or configured
+                correctly. SQLAlchemy is the object relational
+                interface to the database. It should have been
+                installed automatically when esgcet was installed.
+
+                Rerun 'easy_install -f %s esgcet' and check that sqlalchemy builds correctly.
+                
+                """%(`e`,REPOS))
+                raise RuntimeError
+
+            tell("""
+            Initializing database %s. This will create or update database tables if they do not already exist.
+            """%dbname)
+            try:
+                subprocess.call(["esginitialize", "-c"])
+            except OSError, e:
+                raise OSError("Cannot run esginitialize: %s. Is $CDAT_HOME/bin in the path?"%`e`)
+                
+        except RuntimeError:
+            tell("Script aborted.")
+
+    # THREDDS initialization
+    if initthredds:
+
+        # Preconditions
+        # - TDS is running
+        # - user has r/w access to TDS content and conf directory
+        # - TDS is setup for digest authentication, https
+        # - user has entry and tdsConf role in tomcat-users.xml
+        # - thredds.xml file exists for Tomcat V6
+        
+        tell("""
+
+        Setup the interface to the THREDDS Data Server:
+
+        TDS is the data server that is used for ESG publication. This
+        section will:
+
+        - Create a content directory where TDS catalogs will be
+          written by the publisher.
+        - Create a top-level ESG catalog, and add a link to the top TDS catalog.
+        - Test TDS reinitialization. This makes the data visible
+          through TDS without restarting the server.
+        - Save TDS configuration options to esg.ini
+
+        One of the TDS configuration options is thredds_dataset_roots. This is a list
+        of top-level directories for which TDS will serve data. The rules for dataset root
+        directories are:
+
+        - A file not contained in any dataset root or subdirectory is not accessible (cannot be downloaded).
+        - All published files under a dataset root or subdirectory are accessible and visible
+          through THREDDS and the gateway portal.
+        - All unpublished files contained in a dataset root or its subdirectories are potentially accessible,
+          but not visible in THREDDS or the gateway portal.
+        - The dataset root should not have any symbolic links to directories outside the dataset root.
+
+        Before proceeding, ensure that:
+
+        - Tomcat and TDS are installed and running
+
+        - You have read/write access to the Tomcat content directory.
+
+        - Tomcat and TDS are configured for https and digest
+          authentication. For Tomcat V6, the file
+          conf/Catalina/localhost/thredds.xml should exist.
+
+        - You have a TDS username/password in tomcat-users.xml.  
+        """)
+
+        if not askyn("Proceed?"):
+            raise RuntimeError
+
+        try:
+
+            maj, min, dum, dum, dum = sys.version_info
+            if (maj, min) < (2,6):
+                import socket
+                if not socket._have_ssl:
+                    tell("""
+
+                    The Python SSL module was not found. SSL is need to
+                    communicate securely with TDS and the gateway:
+                    - Install OpenSSL on your system and rebuild Python.
+                    - Rerun 'easy_install -f %s esgcet'.
+
+                    """%REPOS)
+                    sys.exit(1)
+
+            try:
+                import lxml.etree
+            except ImportError:
+                tell("""
+                
+                The module lxml is needed for connection to the database, and was not correctly installed.
+                It should have been installed automatically when esgcet was installed.
+
+                Rerun 'easy_install -f %s esgcet' and check that lxml builds correctly.
+
+                """%REPOS)
+                sys.exit(1)
+
+            # Get the current configuration for defaults:
+            configdir, configname = getconfignames()
+            config = SaneConfigParser(configname)
+            config.read(configname)
+
+            # Create ESG content directory
+            defaultRoot = config.get('DEFAULT', 'thredds_root')
+            dn = os.path.dirname
+            defaultTop = dn(dn(defaultRoot))
+            threddsTop = askfor("TDS content directory", default=defaultTop)
+            if not os.path.exists(threddsTop):
+                tell("Directory %s does not exists"%threddsTop)
+                raise RuntimeError
+            threddsContent = os.path.join(threddsTop, "thredds")
+            if not os.path.exists(threddsContent):
+                tell("No content directory in %s"%threddsTop)
+            threddsRoot = os.path.join(threddsTop, "thredds/esgcet")
+            defaultThreddsTopURL = dn(config.get('DEFAULT', 'thredds_url'))
+            urlfields = list(urlparse.urlparse(defaultThreddsTopURL))
+            host = urlfields[1]
+            hostfields = host.split()
+            if len(hostfields)<3:
+                hostname = socket.getfqdn()
+                urlfields[1] = hostname
+            defaultThreddsTopURL = urlparse.urlunparse(urlfields)
+            threddsTopURL = askfor("URL of TDS root directory (this should include the full hostname or IP address, NOT localhost)", default=defaultThreddsTopURL)
+            threddsURL = os.path.join(threddsTopURL, "esgcet")
+            threddsMasterCatalog = askfor("Title of ESG master catalog (thredds_master_catalog_name)", default=config.get('DEFAULT', 'thredds_master_catalog_name'))
+            threddsRootCatalog = askfor("Title of ESG root catalog (thredds_root_catalog_name)", default=config.get('DEFAULT', 'thredds_root_catalog_name', default="PCMDI Earth System Root catalog"))
+
+            # Create ESG catalog directory
+            if os.path.exists(threddsRoot):
+                tell("Directory %s already exists"%threddsRoot)
+            else:
+                tell("Creating directory %s"%threddsRoot)
+                os.makedirs(threddsRoot)
+
+            # Set ESG configuration options
+            updateconfig([('DEFAULT', 'thredds_root', threddsRoot),
+                          ('DEFAULT', 'thredds_url', threddsURL),
+                          ('DEFAULT', 'thredds_master_catalog_name', threddsMasterCatalog),
+                          ('DEFAULT', 'thredds_root_catalog_name', threddsRootCatalog),
+                          ], currentConfig=config)
+
+            # Create initial ESG catalog
+            from sqlalchemy import create_engine
+            from sqlalchemy.orm import sessionmaker
+            from esgcet.config import loadConfig, initLogging
+            from esgcet.publish import updateThreddsMasterCatalog, updateThreddsRootCatalog, reinitializeThredds
+            from esgcet.exceptions import ESGPublishError
+
+            config = loadConfig(None)
+            engine = create_engine(config.get('extract', 'dburl'), echo=False, pool_recycle=3600)
+            initLogging('extract', override_sa=engine)
+            Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+
+            updateThreddsMasterCatalog(Session)
+
+            # Add a link in the TDS catalog to the ESG catalog
+            updateThreddsRootCatalog()
+
+            # Test THREDDS reinit url
+            threddsReinitURL = askfor("URL for TDS reinitialization (thredds_reinit_url)", default=config.get('DEFAULT', 'thredds_reinit_url'))
+            threddsErrorURL = askfor("URL of TDS error log (thredds_reinit_error_url)", default=config.get('DEFAULT', 'thredds_reinit_error_url'))
+            threddsUser = askfor("TDS username (thredds_username)", default=config.get('DEFAULT', 'thredds_username'))
+            threddsPassword = askfor("TDS password", silent=True)
+            threddsPassword2 = askfor("Confirm TDS password", silent=True)
+            if threddsPassword!=threddsPassword2:
+                tell("Passwords do not match")
+                raise RuntimeError
+
+            # Get the document roots
+            currentRoots =  config.get('DEFAULT', 'thredds_dataset_roots')
+            threddsDatasetRoots = askForMultiple("THREDDS dataset root directories (option=thredds_dataset_roots)\nEach entry has the form 'path_identifier | absolute_directory_path'", displayCurrent=currentRoots)
+            
+            # Set ESG configuration options
+            updateconfig([('DEFAULT', 'thredds_reinit_url', threddsReinitURL),
+                          ('DEFAULT', 'thredds_reinit_error_url', threddsErrorURL),
+                          ('DEFAULT', 'thredds_username', threddsUser),
+                          ('DEFAULT', 'thredds_password', threddsPassword),
+                          ('DEFAULT', 'thredds_dataset_roots', threddsDatasetRoots),
+                          ], currentConfig=config)
+            
+            try:
+                reinitializeThredds()
+            except ESGPublishError, e:
+                tell("Got the error: %s\nCheck that the username/password and reinitialization URLs are correct."%`e`)
+                raise RuntimeError
+
+        except RuntimeError:
+            tell("Script aborted.")
+
+    # remote publication initialization
+    if initpublish:
+
+        tell("""
+
+        Setup the publication interface to the gateway:
+
+        The publisher makes remote service calls to the gateway. In this section you will set:
+        
+        - Service endpoints on the gateway,
+        - SSL port,
+        - X509 certificate location.
+
+        """)
+
+        if not askyn("Proceed?"):
+            raise RuntimeError
+
+        try:
+
+            # Get the current configuration for defaults:
+            configdir, configname = getconfignames()
+            config = SaneConfigParser(configname)
+            config.read(configname)
+
+            # Get defaults
+            defaultGatewaySSLPort = config.get('DEFAULT', 'hessian_service_port', default="443")
+            currentDebug = config.get('DEFAULT', 'hessian_service_debug', default="false")
+            if currentDebug=="true":
+                defaultHessianDebug = 'y'
+            else:
+                defaultHessianDebug = 'n'
+            defaultProxyCertificate = config.get('DEFAULT', 'hessian_service_certfile', raw=True, default="%(home)s/.globus/certificate-file")
+
+            # Get the default gateway URL from the remote metadata service URL
+            defaultGatewayURL = "http://pcmdi3.llnl.gov/esgcet"
+            defaultHessianServiceURL = config.get('DEFAULT', 'hessian_service_remote_metadata_url', default=None)
+            if defaultHessianServiceURL is not None:
+                ind = defaultHessianServiceURL.find(METADATA_SERVICE)
+                if ind!=-1:
+                    defaultGatewayURL = defaultHessianServiceURL[:ind]
+
+            gatewayURL = askfor("Gateway home URL", default=defaultGatewayURL)
+            URLtuple = urlparse.urlparse(gatewayURL)
+            hessianServiceURL = urlparse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], PUBLISH_SERVICE), '', '', ''))
+            hessianRemoteMetadataURL = urlparse.urlunparse(("http", URLtuple[1], os.path.join(URLtuple[2], METADATA_SERVICE), '', '', ''))
+            gatewaySSLPort = askfor("Gateway https port number", default=defaultGatewaySSLPort)
+            proxyCertificate = askfor("Proxy certificate path (Hint: the '-o' argument to myproxy-logon)", default=defaultProxyCertificate)
+            hessianDebug = askyn("Should protocol debugging be turned on? (This generates a lot of output)", default=defaultHessianDebug)
+            if hessianDebug:
+                hessianServiceDebug = "true"
+            else:
+                hessianServiceDebug = "false"
+
+            # Set ESG configuration options
+            updateconfig([('DEFAULT', 'hessian_service_url', hessianServiceURL),
+                          ('DEFAULT', 'hessian_service_remote_metadata_url', hessianRemoteMetadataURL),
+                          ('DEFAULT', 'hessian_service_port', gatewaySSLPort),
+                          ('DEFAULT', 'hessian_service_debug', hessianServiceDebug),
+                          ('DEFAULT', 'hessian_service_certfile', proxyCertificate),
+                          ('DEFAULT', 'hessian_service_keyfile', proxyCertificate),
+                          ], currentConfig=config)
+            
+        except RuntimeError:
+            tell("Script aborted.")
+
+if __name__=='__main__':
+    main(sys.argv[1:])

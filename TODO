@@ -1,0 +1,19 @@
+#*****************************************************************
+# Copyright (c) 2009  Larence Livermore National Security (LLNS)
+# Produced at the Lawrence Livermore National Laboratory
+# All rights reserved.
+#*****************************************************************
+#
+#   Description: 
+    List of tasks to do.
+#
+#*****************************************************************
+
+TODO:
+-Move over lib jars needed for logging
+-Create manifest for Jar with main
+-modify build.xml for this project
+ ->Generate project jars. fe,common
+-Write fetch script for esg core jars
+-bring over up-to-date publisher python code
+-setup GIT repo

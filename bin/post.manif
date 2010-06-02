@@ -1,0 +1,13 @@
+#*****************************************************************#
+# Copyright (c) 2009  Larence Livermore National Security (LLNS)  #
+# All rights reserved.						  #
+#*****************************************************************#
+
+# This is a manifest, listing all the files to be posted to the
+# distribution server.
+
+#List the files reletive to this directory.
+#The files listed will be posted under the [heading] directory on the
+#server
+
+[esg-publisher]

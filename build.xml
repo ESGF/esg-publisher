@@ -1,0 +1,604 @@
+<!--
+/***************************************************************************
+*                                                                          *
+*  Organization: Lawrence Livermore National Lab (LLNL)                    *
+*   Directorate: Computation                                               *
+*    Department: Computing Applications and Research                       *
+*      Division: S&T Global Security                                       *
+*        Matrix: Atmospheric, Earth and Energy Division                    *
+*       Program: PCMDI                                                     *
+*       Project: Earth Systems Grid (ESG) Data Node Software Stack         *
+*  First Author: Gavin M. Bell (gavin@llnl.gov)                            *
+*                                                                          *
+****************************************************************************
+*                                                                          *
+*   Copyright (c) 2009, Lawrence Livermore National Security, LLC.         *
+*   Produced at the Lawrence Livermore National Laboratory                 *
+*   Written by: Gavin M. Bell (gavin@llnl.gov)                             *
+*   LLNL-CODE-420962                                                       *
+*                                                                          *
+*   All rights reserved. This file is part of the:                         *
+*   Earth System Grid (ESG) Data Node Software Stack, Version 1.0          *
+*                                                                          *
+*   For details, see http://esg-repo.llnl.gov/esg-node/                    *
+*   Please also read this link                                             *
+*    http://esg-repo.llnl.gov/LICENSE                                      *
+*                                                                          *
+*   * Redistribution and use in source and binary forms, with or           *
+*   without modification, are permitted provided that the following        *
+*   conditions are met:                                                    *
+*                                                                          *
+*   * Redistributions of source code must retain the above copyright       *
+*   notice, this list of conditions and the disclaimer below.              *
+*                                                                          *
+*   * Redistributions in binary form must reproduce the above copyright    *
+*   notice, this list of conditions and the disclaimer (as noted below)    *
+*   in the documentation and/or other materials provided with the          *
+*   distribution.                                                          *
+*                                                                          *
+*   Neither the name of the LLNS/LLNL nor the names of its contributors    *
+*   may be used to endorse or promote products derived from this           *
+*   software without specific prior written permission.                    *
+*                                                                          *
+*   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    *
+*   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      *
+*   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS      *
+*   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE    *
+*   LIVERMORE NATIONAL SECURITY, LLC, THE U.S. DEPARTMENT OF ENERGY OR     *
+*   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,           *
+*   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT       *
+*   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF       *
+*   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND    *
+*   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,     *
+*   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT     *
+*   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF     *
+*   SUCH DAMAGE.                                                           *
+*                                                                          *
+***************************************************************************/
+
+/**
+   Description:
+
+   This is the ant build file for the esg-publisher project.  This
+   file should not be modified.  A user may set the values of the
+   properties used in this file by defining the property file
+   $HOME/.esg-publisher.ant.properties which will override the values set
+   here.  An example of such a file is located in this etc directory.
+
+   NOTE:
+   If you get this error:
+
+   BUILD FAILED
+   java.lang.NoSuchMethodError: org.apache.tools.ant.util.FileUtils.getFileUtils()L
+   org/apache/tools/ant/util/FileUtils;
+    
+   It means somewhere in your system and/or classpath is an old ANT clobbering
+   the one you want to run. Use the "-noclasspath" flag in the ant command.
+ 
+**/
+-->
+
+<!--
+Description:
+Builds the project via ant (obviously).
+-->
+
+<project name="esg-publisher" default="make" basedir=".">
+  
+  <property file="${user.home}/.esg-publisher.ant.properties"/>
+  <echo message="user property file ${user.home}/.esg-publisher.ant.properties"/>
+  <property file="./etc/esg-publisher.ant.properties"/> 
+  <echo message="user property file ./etc/esg-publisher.ant.properties"/>
+
+  <property name="filter" value="false"/>
+
+  <!-- **static defines** -->
+  <property name="version_num" value="0.0.0"/>
+  <filter token="version_num"  value="${version_num}"/>
+  <property name="release_name" value="no_name"/>
+  <filter token="release_name" value="${release_name}"/>
+
+  <!-- mail property values -->
+  <property name="mail.smtp.host" value="no_name"/>
+  <filter token="mail.smtp.host" value="${mail.smtp.host}"/>
+  <property name="mail.admin.address" value="no_name"/>
+  <filter token="mail.admin.address" value="${mail.admin.address}"/>
+  <property name="mail.notification.messageTemplateFile" value="no_name"/>
+  <filter token="mail.notification.messageTemplateFile" value="${mail.notification.messageTemplateFile}"/>
+  <property name="mail.notification.initialDelay" value="no_name"/>
+  <filter token="mail.notification.initialDelay" value="${mail.notification.initialDelay}"/>
+  <property name="mail.notification.period" value="no_name"/>
+  <filter token="mail.notification.period" value="${mail.notification.period}"/>
+
+  <!-- database property values -->
+  <property name="db.driver" value="no_name"/>
+  <filter token="db.driver" value="${db.driver}"/>
+  <property name="db.protocol" value="no_name"/>
+  <filter token="db.protocol" value="${db.protocol}"/>
+  <property name="db.host" value="no_name"/>
+  <filter token="db.host" value="${db.host}"/>
+  <property name="db.port" value="no_name"/>
+  <filter token="db.port" value="${db.port}"/>
+  <property name="db.database" value="no_name"/>
+  <filter token="db.database" value="${db.database}"/>
+  <property name="db.user" value="no_name"/>
+  <filter token="db.user" value="${db.user}"/>
+  <property name="db.password" value="no_name"/>
+  <filter token="db.password" value="${db.password}"/>
+
+  <property name="log_dir" value="/esg/logs"/>
+  <mkdir dir="${log_dir}" />
+  <filter token="log_dir"  value="${log_dir}"/>
+
+  <property environment="env"/>
+  <!-- ****************** -->
+  
+	
+  <!--
+      ************************************************************
+      Initialization and Preparation....
+      ************************************************************
+    -->
+  
+  <target name="pre-init" unless="build.master">
+    <property name="build.compiler" value="javac1.5" /> 
+    <property name="build.compiler.emacs" value="true" /> 
+    <echo message="set build.compiler to ${build.compiler}"/>
+  </target>
+  
+  <!-- ********************************************************* -->
+  
+  <target name="init" depends="pre-init" unless="build.master" 
+	  description="(View the properties defined in this file)">
+    <echo message="Initializing build environment..."/>
+        
+    <!-- defaults to use if local .esg-publisher.ant.properties file does not exist --> 
+    <property name="module"	          value="esg-publisher"/>
+    <property name="src_dir"   	          value="./src/java/main"/>
+    <property name="lib_dir"   	          value="./lib"/>
+    <property name="build_dir"   	  value="./build"/>
+    <property name="dist_dir"   	  value="./dist"/>
+    <property name="test_src_dir"  	  value="./src/java/test"/>
+    <property name="test_build_dir"       value="./build/test"/>
+    <property name="test_results_dir"     value="./test-results"/>
+    <property name="etc_dir"   	          value="./etc"/>
+    <property name="conf_dir"   	  value="${etc_dir}/conf"/>
+    <property name="web_dir"   	          value="./web"/>
+    <property name="doc_dir"   	          value="./docs"/>
+    <property name="jdoc_dir"   	  value="${dist_dir}/javadocs"/>
+    <property name="depcache_dir"     	  value="${java.io.tmpdir}/${module}/depcache"/>
+    <property name="log_config"       	  value="${conf_dir}/log4j.properties"/>
+    <property name="log_file"         	  value="${log_dir}/esg-publisher_v${version_num}.log"/>
+    <property name="javadoc_link_src" 	  value="true"/>
+    <property name="main_class"           value="esg.node.core.DataNodeMain"/>
+
+    <property name="jaxb_xsd_dir"         value="${etc_dir}/xsd/"/>
+    <property name="jaxb_gen_src_dir" value="${src_dir}/esg/common/generated"/>
+    <property name="jaxb_gen_package" value="esg.common.generated"/>
+
+    
+    <path id="main_classpath">
+      <fileset dir="${lib_dir}">
+	<include name="**/*.jar"/>
+	<exclude name="**/junit*.jar"/>
+      </fileset>
+      <pathelement path="${build_dir}"/>
+    </path>
+  
+    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+      <classpath refid="main_classpath"/>
+    </taskdef>
+ 
+    <echo message="--------------------------------"/> 
+    <echo message="version_num       = ${version_num} "/> 
+    <echo message="release_name      = ${release_name} "/> 
+    <echo message="--------------------------------"/> 
+    <echo message="module            = ${module} "/> 
+    <echo message="src_dir           = ${src_dir}"/>
+    <echo message="lib_dir           = ${lib_dir}"/>
+    <echo message="build_dir         = ${build_dir}"/>
+    <echo message="dist_dir          = ${dist_dir}"/>
+    <echo message="test_src_dir      = ${test_src_dir}"/>
+    <echo message="test_build_dir    = ${test_build_dir}"/>
+    <echo message="test_results_dir  = ${test_results_dir}"/>
+    <echo message="etc_dir           = ${etc_dir}"/>
+    <echo message="conf_dir          = ${conf_dir}"/>
+    <echo message="web_dir           = ${web_dir}"/>
+    <echo message="doc_dir           = ${doc_dir}"/>
+    <echo message="jdoc_dir          = ${jdoc_dir}"/>
+    <echo message="depcache_dir      = ${depcache_dir}"/>
+    <echo message="log_config        = ${log_config}"/>
+    <echo message="log_file          = ${log_file}"/>
+    <echo message="javadoc_link_src  = ${javadoc_link_src}"/>
+    
+    <echo message=""/>
+    <echo message="MAIN CLASSPATH:"/>
+    <pathconvert property="_cp" refid="main_classpath" pathsep="${line.separator}"/>
+    <echo>${_cp}</echo>
+    
+    <echo message="--------------------------------"/> 
+    <echo message=""/>
+    <tstamp/>
+  </target> 
+  
+  <!--
+      ************************************************************
+      Generation  and Compilation....
+      ************************************************************
+    -->
+
+  <target name="gen_jaxb" depends="init" 
+	  description="(Generates Java Objects from XML schema)">
+    <mkdir dir="${jaxb_gen_src_dir}"/>
+    <xjc package="${jaxb_gen_package}"
+	 destdir="${src_dir}"
+	 removeOldOutput="yes"
+	 readonly="yes">
+      <classpath refid="main_classpath"/>
+      <schema dir="${jaxb_xsd_dir}" includes="*.xsd"/>
+      <produces dir="${jaxb_gen_src_dir}" includes="*.java" />
+    </xjc>
+  </target>
+
+  <target name="make" depends="init" 
+	  description="(Java compiles all the source code)">
+    <echo message="Java Compiling Esg-Publisher..."/> 
+    
+    <mkdir dir="${build_dir}" />
+    <mkdir dir="${depcache_dir}" />
+        
+    <depend srcdir="${src_dir}"
+	    destdir="${build_dir}"
+	    cache="${depcache_dir}"
+	    closure="yes"/>
+    
+    <javac srcdir="${src_dir}"
+	   destdir="${build_dir}" 
+	   includes="**/*.java" 
+	   excludes="**/no_comp/**,**/ignore/**,**/*_,**/*_*/**"
+	   classpathref="main_classpath"
+	   debug="on"
+	   verbose="off"
+	   nowarn="on">
+      <compilerarg value="-Xlint"/>
+    </javac>
+
+    <copy todir="${build_dir}" filtering="${filter}">
+      <fileset dir="${conf_dir}" includes="**/*.properties,**/*.template,**/*filter-web.xml"/>
+    </copy> 
+
+    <tstamp/>
+  </target>
+  
+
+
+  <!--
+      ************************************************************
+      PREPARATION & PACKAGING....
+      ************************************************************
+    -->
+  <target name="make_jar" depends="make"
+	  description="(Creates the jar file distribution of this project)">
+    <echo message="JAR -  ${build_dir} ->> ${dist_dir}/${module}.${version_num}.jar"/> 
+    <delete> 
+      <fileset dir="." includes="${dist_dir}/${module}.${version_num}.jar"/>
+    </delete>
+    <mkdir dir="${dist_dir}" />
+    <jar destfile="${dist_dir}/${module}.${version_num}.jar">
+      <fileset dir="${build_dir}" 
+	       includes="esg/**,**/*.properties,**/*filter-web.xml"
+	       excludes="**/test/**"/>
+      <manifest>
+	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Author"       value="Gavin M. Bell"/>
+	<attribute name="Project"      value="Esg-Publisher"/>
+	<attribute name="Version"      value="${version_num}"/>
+	<attribute name="Release-Name" value="${release_name}"/>
+	<attribute name="Main-Class"   value="${main_class}"/>
+	<section name="org/"/>
+      </manifest>
+    </jar>
+  </target>
+  
+  <target name="make_test_jar" depends="make_test" description="(Creates test jar file)">
+    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-test.${version_num}.jar"/> 
+    <delete> 
+      <fileset dir="." includes="${dist_dir}/${module}-test.${version_num}.jar"/>
+    </delete>
+    <mkdir dir="${dist_dir}" />
+    <jar destfile="${dist_dir}/${module}-test.${version_num}.jar">
+      <fileset dir="${test_build_dir}"/>
+      <manifest>
+	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Author"       value="Gavin M. Bell"/>
+	<attribute name="Project"      value="Esg-Publisher Tests"/>
+	<attribute name="Version"      value="${version_num}"/>
+	<attribute name="Release-Name" value="${release_name}"/>
+	<section name="test/"/>
+      </manifest>
+    </jar>
+  </target>
+  
+  <target name="make_filter_jar" depends="make"
+	  description="(Creates the jar file distribution for service filters)">
+    <echo message="JAR -  ${build_dir} ->> ${dist_dir}/${module}-filters.${version_num}.jar"/> 
+    <delete> 
+      <fileset dir="." includes="${dist_dir}/${module}-filters.${version_num}.jar"/>
+    </delete>
+    <mkdir dir="${dist_dir}" />
+    <jar destfile="${dist_dir}/${module}-filters.${version_num}.jar">
+      <fileset dir="${build_dir}" 
+	       includes="esg/node/filters/**,esg/common/db/**,**/*.properties,**/*filter-web.xml"
+	       excludes="**/test/**,**/node.properties/**"/>
+      <manifest>
+	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Author"       value="Gavin M. Bell"/>
+	<attribute name="Project"      value="Esg-Publisher"/>
+	<attribute name="Version"      value="${version_num}"/>
+	<attribute name="Release-Name" value="${release_name}"/>
+	<section name="org/"/>
+      </manifest>
+    </jar>
+  </target>
+  
+
+  <target name="make_common_jar" depends="make" description="(Creates common jar file)">
+    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-common.${version_num}.jar"/> 
+    <delete> 
+      <fileset dir="." includes="${dist_dir}/${module}-common*.jar"/>
+    </delete>
+    <mkdir dir="${dist_dir}" />
+    <jar destfile="${dist_dir}/${module}-common.${version_num}.jar">
+      <fileset dir="${build_dir}"
+	       includes="esg/common/**"/>
+      <manifest>
+	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Author"       value="Gavin M. Bell"/>
+	<attribute name="Project"      value="Esg-Publisher Common"/>
+	<attribute name="Version"      value="${version_num}"/>
+	<attribute name="Release-Name" value="${release_name}"/>
+	<section name="common/"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="make_all_jars" depends="make_jar,make_test_jar,make_filter_jar,make_common_jar"/>
+
+  <target name="make_war" depends="make,init"
+	  description="(Creates war file of this project)">
+    <mkdir dir="${dist_dir}" />
+    <mkdir dir="${dist_dir}/tmplib"/>
+    
+    <copy todir="${dist_dir}/tmplib" overwrite="true" flatten="yes">
+      <fileset dir="${lib_dir}" includes="**/*.jar" excludes="**/junit*.jar"/>
+    </copy>
+    
+    <delete file="${dist_dir}/${module}.war"/> 
+    <war destfile="${dist_dir}/${module}.war" webxml="${conf_dir}/node-web.xml">
+      <fileset dir="${web_dir}" excludes="WEB-INF/**/web.xml/**,**semantic.cache**"/>
+      <lib dir="${dist_dir}/tmplib">
+	<include name="**/*.jar"/>
+	<exclude name="**/*-test*.jar,**/*-common*.jar"/>
+      </lib>
+      <classes dir="${build_dir}"/>
+    </war>
+    <delete dir="${dist_dir}/tmplib"/>
+  </target>
+
+
+  <target name="make_dist" depends="make_war,make_all_jars"
+	  description="(Creates full software distribution)">
+    <delete file="${dist_dir}/${module}.${version_num}.tar.gz"/> 
+    <tar destfile="${dist_dir}/${module}.${version_num}.tar">
+      <tarfileset dir="${dist_dir}" includes="**/*.jar,**/*.war" prefix="esg-publisher.${version_num}"/>
+      <tarfileset dir="${etc_dir}/db" prefix="esg-publisher.${version_num}/db"/>
+      <tarfileset dir="${basedir}" prefix="esg-publisher.${version_num}">
+	<include name="LICENSE"/>
+	<include name="INSTALL"/>
+	<include name="README"/>
+      </tarfileset>
+    </tar>
+    <gzip destfile="${dist_dir}/${module}.${version_num}.tar.gz" src="${dist_dir}/${module}.${version_num}.tar"/>
+    <delete file="${dist_dir}/${module}.${version_num}.tar"/> 
+
+  </target>
+
+  <target name="make_dist_in_place" depends="make_war"
+	  description="(Creates full software distribution deployed directly to local web app server)">
+    <!-- TODO: integrate the tomcat ant tasks to do this properly -->
+  </target>
+  
+  
+
+  <!--
+      ************************************************************
+      CLEANING....
+      ************************************************************
+    -->
+  
+  <target name="clean" depends="init" 
+	  description="(Cleans out classfiles from build dir)">
+    <echo message="Removing build directory"/> 
+    <delete dir="${build_dir}"/>
+    <delete dir="${test_results_dir}"/>
+    <tstamp/>
+  </target>
+
+  
+  <target name="clean_dist" depends="init" 
+	  description="(Cleans out the distribution directory)">
+    <echo message="Cleaning out distribution directory"/> 
+    <delete dir="${dist_dir}"/>
+    <tstamp/>
+  </target>
+
+  <target name="clean_test" depends="init" 
+	  description="(Cleans out the test build directory)">
+    <echo message="Cleaning out test build directory"/> 
+    <delete dir="${test_build_dir}"/>
+    <tstamp/>
+  </target>
+
+  <target name="clean_test_jar" depends="init" 
+	  description="(Cleans out the test jar file)">
+    <echo message="Cleaning out test jar file"/> 
+    <delete file="${dist_dir}/${module}-test.${version_num}.jar"/>
+    <tstamp/>
+  </target>
+
+  <target name="clean_jaxb" depends="init"
+	  description="(Cleans out the JAXB generated Java source files!)">
+    <echo message="Removing JAXB generated Java source files"/>
+    <delete dir="${jaxb_gen_src_dir}"/>
+  </target>
+
+  
+  <target name="clean_all"
+	  depends="clean,clean_dist,clean_jaxb"
+	  description="(Cleans out generatable artifacts)"/>
+  
+  <!--
+      ************************************************************
+      JUnit Tests....
+      ************************************************************
+    -->
+  
+  <target name="make_test" depends="make" 
+	  description="(Java compile all the test source code)">
+    <echo message="Java Compiling Esg-Publisher TESTs..."/> 
+    
+    <path id="test_classpath">
+      <fileset dir="${lib_dir}" includes="**/junit*.jar"/>
+      <path refid="main_classpath"/>
+      <pathelement location="${test_build_dir}" />
+    </path>
+    
+    <pathconvert property="test_cp" refid="test_classpath" pathsep="${line.separator}"/>
+    <echo>${test_cp}</echo>
+
+    
+    <mkdir dir="${test_build_dir}" />
+    <mkdir dir="${depcache_dir}" />
+    
+    <depend srcdir="${test_src_dir}"
+	    destdir="${test_build_dir}"
+	    cache="${depcache_dir}"
+	    closure="yes"/>
+
+    <javac srcdir="${test_src_dir}"
+	   destdir="${test_build_dir}" 
+	   excludes="**/no_comp/**,**/ignore/**,**/*_,**/*_*/**"
+	   classpathref="test_classpath"
+	   deprecation="true"
+	   failonerror="true"
+	   target="1.5"
+	   debug="on"
+	   verbose="off"
+	   nowarn="on"/>
+    <tstamp/>
+    
+  </target>
+  
+  <target name="test" depends="make_test"
+	  description="[RUNS JUNIT TEST CODE]">
+    <delete dir="${test_results_dir}" />
+    <mkdir dir="${test_results_dir}"/>
+    <junit errorproperty="failed" 
+	   failureproperty="failed" 
+	   printsummary="on" 
+	   fork="yes" 
+	   maxmemory="1024M">
+      <classpath refid="test_classpath" />
+      <formatter type="brief" usefile="false"/>
+      <formatter type="xml" />
+      <batchtest todir="${test_results_dir}" >
+	<fileset dir="${test_build_dir}" includes="**/*Test*.class"/>
+      </batchtest>
+    </junit>
+    <fail if="failed" message="Test cases failed"/>
+  </target>
+  
+  <!--
+      ************************************************************
+      DOCUMENTATION....
+      ************************************************************
+    -->
+  
+  <target name="docs" depends="init"
+	  description="(Generates the javadoc for this project)">
+    <delete dir="${javadoc_dir}"/>
+    <mkdir dir="${jdoc_dir}" />
+    <javadoc
+       destdir="${jdoc_dir}"
+       author="true"
+       version="true"
+       use="true"
+       linksource="${javadoc_link_src}"	  
+       windowtitle="ESG-PUBLISHER API">
+
+      <packageset dir="${src_dir}" defaultexcludes="yes">
+	<exclude name="**/test/**"/>
+      </packageset>
+
+      <doctitle><![CDATA[<h1>ESG-PUBLISHER</h1>]]></doctitle>
+      <bottom><![CDATA[<i>ESG / BSD OpenSource License</i>]]></bottom>
+      <tag name="todo" scope="all" description="To do:"/>
+      <group title="Core Packages" packages="esg.node.core*"/>
+      <group title="Component Packages" packages="esg.node.components*"/>
+      <group title="Connection Packages" packages="esg.node.connection*"/>
+      <group title="Server Packages" packages="esg.node.service*"/>
+      <group title="Common Packages" packages="esg.common*"/>
+      <group title="Database Packages" packages="esg.node.db*"/>
+      <group title="Utility Packages" packages="esg.node.util*"/>
+      <link offline="true" href="http://java.sun.com/javase/6/docs/api/" packagelistLoc="${java.io.tmpdir}"/>
+      <link href="http://java.sun.com/javase/6/docs/api/"/>
+    </javadoc>
+  </target>
+  
+  <!--
+      ************************************************************
+      Run....
+      ************************************************************
+    -->
+  
+  <target name="run" depends="make_jar">
+    
+    <path id="jar_cp">
+      <fileset dir="${lib_dir}">
+	<include name="**/*.jar"/>
+	<exclude name="**/junit*.jar"/>
+      </fileset>
+      <pathelement path="${dist_dir}/esg-publisher.${version_num}.jar"/>
+    </path>
+    
+    <pathconvert property="__cp" refid="jar_cp" pathsep="${line.separator}"/>
+    <echo>${__cp}</echo>
+
+    <java classname="${main_class}">
+      <classpath refid="jar_cp"/>
+      <!-- <classpath refid="main_classpath"/> -->
+    </java>
+    
+  </target>
+
+  
+  <target name="everything" depends="make_jar,make_test_jar,docs,test,make_python"
+	  description="Does Everything..."/>
+
+
+
+
+  <!--
+      ************************************************************
+      Python Targets....(calls targets defined in ./src/python/build.xml
+      ************************************************************
+    -->
+  <target name="make_python">
+    <ant dir="./src/python" antfile="build.xml" target="gen"/>
+  </target>
+                
+  <target name="clean_python">
+    <ant dir="./src/python" antfile="build.xml" target="clean"/>
+  </target>
+ 
+</project>

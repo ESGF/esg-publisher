@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+
+import sys
+import getopt
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from esgcet.config import loadConfig, initLogging
+from esgcet.model import Dataset
+from esgcet.query import printResult
+from esgcet.messaging import warning
+
+usage = """Usage:
+    esglist_files [options] dataset_id [dataset_id ...]
+
+    List the files in a dataset.
+
+Arguments:
+    dataset_id: Dataset identifier, or '-' to read dataset ids from standard input
+
+Options:
+
+    --all:
+        List superseded and deleted versions of file also.
+
+    --echo-sql:
+        Echo SQL commands.
+
+    --full:
+        Print a full listing.
+
+    -h, --help:
+        Print a help message.
+
+    -i init_file:
+        Initialization file. If not specified, the default installed init file is read.
+
+Example:
+
+    List file paths and sizes for model ukmo_hadgem1, experiment 1pctto2x:
+
+        % esglist_datasets --model ukmo_hadgem1 --experiment 1pctto2x --no-header --select name ipcc4 | esglist_files --full -
+
+"""
+
+def main(argv):
+
+    try:
+        args, lastargs = getopt.getopt(argv, "hi:", ['all', 'echo-sql', 'full'])
+    except getopt.error:
+        print sys.exc_value
+        print usage
+        sys.exit(0)
+
+    if len(lastargs)>0:
+        if lastargs[0]=='-':
+            datasetIds = [line.strip() for line in sys.stdin.readlines()]
+        else:
+            datasetIds = lastargs
+    else:
+        print "No dataset specified."
+        print usage
+        sys.exit(0)
+
+    listall = False
+    echoSql = False
+    fullList = False
+    init_file = None
+    for flag, arg in args:
+        if flag=='--all':
+            listall = True
+        if flag=='--echo-sql':
+            echoSql = True
+        elif flag=='--full':
+            fullList = True
+        elif flag in ['-h', '--help']:
+            print usage
+            sys.exit(0)
+        elif flag=='-i':
+            init_file = arg
+
+    # Load the configuration and set up a database connection
+    config = loadConfig(init_file)
+    engine = create_engine(config.get('extract', 'dburl'), echo=echoSql, pool_recycle=3600)
+    initLogging('extract', override_sa=engine)
+    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+    session = Session()
+
+    # Lookup the datasets
+    filetuples = []
+    for datasetId in datasetIds:
+        dset = session.query(Dataset).filter_by(name=datasetId).first()
+        if dset is None:
+            warning("Dataset not found: %s"%datasetId)
+            continue
+
+        if not listall:
+            if fullList:
+                filetuples.extend([(file.getLocation(), str(file.getVersion()), str(file.getSize()), str(file.versions[-1].publication_time), file.getModificationFtime(), file.getTrackingID(), file.getChecksum(), file.getChecksumType()) for file in dset.getFiles()])
+            else:
+                for file in dset.getFiles():
+                    print file.getLocation()
+        else:
+            for file in dset.files:
+                if fullList:
+                    filetuples.extend([(version.location, str(version.version), str(version.size), str(version.publication_time), version.getModificationFtime(), version.tracking_id, version.checksum, version.checksum_type) for version in file.versions])
+                else:
+                    for version in file.versions:
+                        print version.location
+
+    if fullList:
+        filetuples.sort()
+        printResult(['path', 'version', 'size', 'publication_time', 'modification_time', 'tracking_id', 'checksum', 'checksum_type'], filetuples)
+
+    session.close()
+
+if __name__=='__main__':
+    main(sys.argv[1:])
+    

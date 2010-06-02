@@ -1,0 +1,15 @@
+#
+# project | model_id | URL | description
+#
+  cfmip | bmrc1 | http://www.bom.gov.au/bmrc/ | Bureau of Meteorology Research Centre, Australia, Model BMRC1
+  cfmip | cccma_agcm4_0 | http://www.cccma.bc.ec.gc.ca/eng_index.shtml | Canadian Centre for Climate Modelling and Analysis, AGCM4.0 Model, T47
+  cfmip | gfdl_cm2_0 | http://www.gfdl.noaa.gov/ | NOAA Geophysical Fluid Dynamics Laboratory, USA, CM2.0 Model
+  cfmip | ipsl_cm4 | http://www.ipsl.jussieu.fr/poles/Modelisation/NotesSciences.htm | Institut Pierre Simon Laplace, France, Model CM4_v1
+  cfmip | miroc_hisens | http://www.cfmip.net/ | CCSR/NIES/FRCGC, Japan, MIROC high sensitivity Model
+  cfmip | miroc_losens | http://www.cfmip.net/ | CCSR/NIES/FRCGC, Japan, MIROC low sensitivy Model
+  cfmip | mpi_echam5 | http://www.mpimet.mpg.de/en/extra/models/echam/echam5.php | Max Planck Institute for Meteorology, Germany, ECHAM5
+  cfmip | ncar_ccsm3_0| http://www.ccsm.ucar.edu| NCAR Community Climate System Model, CCSM 3.0
+  cfmip | uiuc | http://crga.atmos.uiuc.edu/ | University of Illinois at Urbana-Champaign, USA
+  cfmip | ukmo_hadgsm1 | http://www.met-office.gov.uk/research/hadleycentre/ | Met Office, UK, Model HadGSM1
+  cfmip | ukmo_hadsm3 | http://www.met-office.gov.uk/research/hadleycentre/ | Met Office, UK, Model HadSM3
+  cfmip | ukmo_hadsm4 | http://www.met-office.gov.uk/research/hadleycentre/ | Met Office, UK, Model HadSM4

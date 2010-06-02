@@ -1,0 +1,2 @@
+#! Configuration data
+pass

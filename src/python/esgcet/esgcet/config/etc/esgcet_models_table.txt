@@ -1,0 +1,52 @@
+# Sample model initialization file. Each line has the form:
+# 
+# project | model_id | URL | description
+#
+# To configure the publisher database with this information:
+#
+# - In esg.ini, in the [initialize] section, uncomment the line:
+#     initial_models_table = %(home)s/.esgcet/esgcet_models_table.txt
+# 
+# - Run:
+#     % esginitialize -c
+#
+  ipcc4 |  bcc_cm1 | http://bcc.cma.gov.cn | Beijing Climate Center, China, BCC-CM1 Model
+  ipcc4 |  bccr_bcm2_0 | http://www-pcmdi.llnl.gov/ipcc/model_documentation/BCCR_BCM2.0.htm | Bjerknes Centre for Climate Research, Norway, BCM2.0 Model
+  ipcc4 |  cccma_cgcm3_1 | http://www.cccma.bc.ec.gc.ca/eng_index.shtml | Canadian Centre for Climate Modelling and Analysis, CGCM3.1 Model, T47
+  ipcc4 |  cccma_cgcm3_1_t63 | http://www.cccma.bc.ec.gc.ca/eng_index.shtml | Canadian Centre for Climate Modelling and Analysis, CGCM3.1 Model, T63
+  ipcc4 |  cnrm_cm3 | http://www.cnrm.meteo.fr/scenario2004/indexenglish.html | Meteo-France, Centre National de Recherches Meteorologiques, CM3 Model
+  ipcc4 |  csiro_mk3_0 | http://www.dar.csiro.au/publications/gordon_2002a.pdf | CSIRO Atmospheric Research, Australia, Mk3.0 Model
+  ipcc4 |  csiro_mk3_5 | http://www.dar.csiro.au/publications/gordon_2002a.pdf | CSIRO Atmospheric Research, Australia, Mk3.5 Model
+  ipcc4 |  gfdl_cm2_0 | http://data1.gfdl.noaa.gov/nomads/forms/deccen/CM2.X/| NOAA Geophysical Fluid Dynamics Laboratory, CM2.0 Model
+  ipcc4 |  gfdl_cm2_1 | http://data1.gfdl.noaa.gov/nomads/forms/deccen/CM2.X/| NOAA Geophysical Fluid Dynamics Laboratory, CM2.1 Model
+  ipcc4 |  giss_aom | http://aom.giss.nasa.gov| NASA Goddard Institute for Space Studies, C4x3
+  ipcc4 |  giss_model_e_h | http://www.giss.nasa.gov/tools/modelE | NASA Goddard Institute for Space Studies, ModelE20/HYCOM
+  ipcc4 |  giss_model_e_r | http://www.giss.nasa.gov/tools/modelE | NASA Goddard Institute for Space Studies, ModelE20/Russell
+  ipcc4 |  iap_fgoals1_0_g | http://www.iap.ac.cn/english/iap/index.htm | LASG, Institute of Atmospheric Physics, China, FGOALS1.0_g Model
+  ipcc4 |  inmcm3_0 | http://www.inm.ras.ru/en/index.htm | Institute for Numerical Mathematics, Russia, INMCM3.0 Model
+  ipcc4 |  ingv_echam4 | http://www.bo.ingv.it | INGV, National Institute of Geophysics and Volcanology, Italy, ECHAM 4.6 Model
+  ipcc4 |  ipsl_cm4 | http://mc2.ipsl.jussieu.fr/simules.html | IPSL/LMD/LSCE, France, CM4 V1 Model
+  ipcc4 |  miroc3_2_hires | http://www.ccsr.u-tokyo.ac.jp/kyosei/hasumi/MIROC/tech-repo.pdf| CCSR/NIES/FRCGC, MIROC Model V3.2, high resolution
+  ipcc4 |  miroc3_2_medres | http://www.ccsr.u-tokyo.ac.jp/kyosei/hasumi/MIROC/tech-repo.pdf| CCSR/NIES/FRCGC, MIROC Model V3.2, medium resolution
+  ipcc4 |  miub_echo_g | http://www-pcmdi.llnl.gov/projects/modeldoc/cmip/echo-g_tbls.html | Meteorological Institute of the University of Bonn, ECHO-G Model
+  ipcc4 |  mpi_echam5 | http://www.mpimet.mpg.de/en/extra/models/echam/echam5.php | Max Planck Institute for Meteorology, Germany, ECHAM5 / MPI OM
+  ipcc4 |  mri_cgcm2_3_2a | http://www.mri-jma.go.jp/Welcome.html| Meteorological Research Institute, Japan, CGCM2.3.2a
+  ipcc4 |  ncar_ccsm3_0| http://www.ccsm.ucar.edu| NCAR Community Climate System Model, CCSM 3.0
+  ipcc4 |  ncar_pcm1 | http://www.cgd.ucar.edu/pcm| Parallel Climate Model (Version 1)
+  ipcc4 |  ukmo_hadcm3 | http://www.metoffice.com/research/hadleycentre/models/HadCM3.html | Hadley Centre for Climate Prediction, Met Office, UK, HadCM3 Model
+  ipcc4 |  ukmo_hadgem1 | http://www.metoffice.gov.uk/research/hadleycentre/pubs/HCTN/HCTN_54.pdf| Hadley Centre for Climate Prediction, Met Office, UK, HadGEM1 Model
+  cfmip | bmrc1 | http://www.bom.gov.au/bmrc/ | Bureau of Meteorology Research Centre, Australia, Model BMRC1
+  cfmip | cccma_agcm4_0 | http://www.cccma.bc.ec.gc.ca/eng_index.shtml | Canadian Centre for Climate Modelling and Analysis, AGCM4.0 Model, T47
+  cfmip | gfdl_cm2_0 | http://www.gfdl.noaa.gov/ | NOAA Geophysical Fluid Dynamics Laboratory, USA, CM2.0 Model
+  cfmip | ipsl_cm4 | http://www.ipsl.jussieu.fr/poles/Modelisation/NotesSciences.htm | Institut Pierre Simon Laplace, France, Model CM4_v1
+  cfmip | miroc_hisens | http://www.cfmip.net/ | CCSR/NIES/FRCGC, Japan, MIROC high sensitivity Model
+  cfmip | miroc_losens | http://www.cfmip.net/ | CCSR/NIES/FRCGC, Japan, MIROC low sensitivy Model
+  cfmip | mpi_echam5 | http://www.mpimet.mpg.de/en/extra/models/echam/echam5.php | Max Planck Institute for Meteorology, Germany, ECHAM5
+  cfmip | ncar_ccsm3_0| http://www.ccsm.ucar.edu| NCAR Community Climate System Model, CCSM 3.0
+  cfmip | uiuc | http://crga.atmos.uiuc.edu/ | University of Illinois at Urbana-Champaign, USA
+  cfmip | ukmo_hadgsm1 | http://www.met-office.gov.uk/research/hadleycentre/ | Met Office, UK, Model HadGSM1
+  cfmip | ukmo_hadsm3 | http://www.met-office.gov.uk/research/hadleycentre/ | Met Office, UK, Model HadSM3
+  cfmip | ukmo_hadsm4 | http://www.met-office.gov.uk/research/hadleycentre/ | Met Office, UK, Model HadSM4
+  dycore | finite_volume | http://www.esmf.ucar.edu/download/dycore_data/ | CAM Finite Volume Dycore
+  ccsm3 | CCSM3 | http://www.ccsm.ucar.edu| NCAR Community Climate System Model, CCSM 3.0
+  test | test | http://www-pcmdi.llnl.gov | Test
