@@ -55,26 +55,29 @@
 *                                                                          *
 ***************************************************************************/
 
-/**
-   Description:
-
-   This is the integration object into the Core framework.  This
-   object is the "component" that plugs into the architecture.  It
-   receives and decodes and delegates calls to the co-located
-   publisher, written in python, on the server side.
-
-**/
 package esg.node.publisher.connector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.*;
 
-//TODO... this is a place holder skel... must extend AbstractDataNodeComponent etc...
 
+/**
+   Description:
+   This is the integration object into the Core framework.  This
+   object is the "component" that plugs into the architecture.  It
+   receives and decodes and delegates calls to the co-located
+   publisher, written in python, on the server side.
+
+   @todo... Must extend AbstractDataNodeComponent etc...
+ */
 public class ESGPublisher {
     private static final Log log = LogFactory.getLog(ESGPublisher.class);
 
+    /**
+       Constructor 
+       @param name The name of this instance of this class
+     */
     public ESGPublisher(String name) {
 	log.info("Instantiating ESGPublisher (connector) ["+name+"]...");
     }

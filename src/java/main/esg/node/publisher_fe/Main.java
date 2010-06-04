@@ -55,20 +55,22 @@
 *                                                                          *
 ***************************************************************************/
 
-/**
-   Description:
-   The main program to bootstrap the Publisher GUI
-**/
-
 package esg.node.publisher_fe;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.*;
 
+/**
+   Description:
+   The main program to bootstrap the Publisher GUI
+*/
 public class Main {
     private static final Log log = LogFactory.getLog(Main.class);
     
+    /**
+       Constructor
+     */
     public Main() {
 	System.out.println("Starting ESG Publisher Graphical User Interface...");
 	log.info("Starting ESG Publisher Graphical User Interface...");	
@@ -77,6 +79,9 @@ public class Main {
 	//Bootstrap the application,
     }
 
+    /**
+       Launches the ESG Publisher FE (front end)
+     */
     public static void main(String[] args) {
 	new Main();
 	System.out.println("done");
