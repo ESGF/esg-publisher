@@ -484,7 +484,7 @@ Builds the project via ant (obviously).
       </packageset>
 
       <doctitle><![CDATA[<h1>ESG-PUBLISHER</h1>]]></doctitle>
-      <bottom><![CDATA[<i>ESG / BSD OpenSource License</i>]]></bottom>
+      <bottom><![CDATA[<i><a href="http://esg-repo.llnl.gov/">ESG / BSD OpenSource License</a></i>]]></bottom>
       <tag name="todo" scope="all" description="To do:"/>
       <group title="ESG Publisher Client Front End Packages" packages="esg.node.publisher_fe*"/>
       <group title="ESG Node Integration Packages" packages="esg.node.publisher*"/>
