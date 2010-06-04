@@ -62,13 +62,23 @@
 
 package esg.node.publisher_fe;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.impl.*;
+
 public class Main {
-    public static void main(String[] args) {
+    private static final Log log = LogFactory.getLog(Main.class);
+    
+    public Main() {
 	System.out.println("Starting ESG Publisher Graphical User Interface...");
-	
-	//TODO: ...
-	//Carla ... this is for you... and you deserve it :-) another test...
-	
+	log.info("Starting ESG Publisher Graphical User Interface...");	
+
+	//TODO: Create Publiser Front End UI and Instantiate it here,
+	//Bootstrap the application,
+    }
+
+    public static void main(String[] args) {
+	new Main();
 	System.out.println("done");
     }
 }

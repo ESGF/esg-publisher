@@ -76,6 +76,6 @@ public class ESGPublisher {
     private static final Log log = LogFactory.getLog(ESGPublisher.class);
 
     public ESGPublisher(String name) {
-	log.info("Instantiating ESGPublisher (connector)...");
+	log.info("Instantiating ESGPublisher (connector) ["+name+"]...");
     }
 }
