@@ -98,18 +98,6 @@ Builds the project via ant (obviously).
   <property name="release_name" value="no_name"/>
   <filter token="release_name" value="${release_name}"/>
 
-  <!-- mail property values -->
-  <property name="mail.smtp.host" value="no_name"/>
-  <filter token="mail.smtp.host" value="${mail.smtp.host}"/>
-  <property name="mail.admin.address" value="no_name"/>
-  <filter token="mail.admin.address" value="${mail.admin.address}"/>
-  <property name="mail.notification.messageTemplateFile" value="no_name"/>
-  <filter token="mail.notification.messageTemplateFile" value="${mail.notification.messageTemplateFile}"/>
-  <property name="mail.notification.initialDelay" value="no_name"/>
-  <filter token="mail.notification.initialDelay" value="${mail.notification.initialDelay}"/>
-  <property name="mail.notification.period" value="no_name"/>
-  <filter token="mail.notification.period" value="${mail.notification.period}"/>
-
   <!-- database property values -->
   <property name="db.driver" value="no_name"/>
   <filter token="db.driver" value="${db.driver}"/>
@@ -170,7 +158,7 @@ Builds the project via ant (obviously).
     <property name="log_config"       	  value="${conf_dir}/log4j.properties"/>
     <property name="log_file"         	  value="${log_dir}/esg-publisher_v${version_num}.log"/>
     <property name="javadoc_link_src" 	  value="true"/>
-    <property name="main_class"           value="esg.node.core.DataNodeMain"/>
+    <property name="main_class"           value="esg.node.publisher_fe.Main"/>
 
     <property name="jaxb_xsd_dir"         value="${etc_dir}/xsd/"/>
     <property name="jaxb_gen_src_dir" value="${src_dir}/esg/common/generated"/>
@@ -255,7 +243,7 @@ Builds the project via ant (obviously).
     <javac srcdir="${src_dir}"
 	   destdir="${build_dir}" 
 	   includes="**/*.java" 
-	   excludes="**/no_comp/**,**/ignore/**,**/*_,**/*_*/**"
+	   excludes="**/no_comp/**,**/ignore/**,**/*_"
 	   classpathref="main_classpath"
 	   debug="on"
 	   verbose="off"
@@ -364,29 +352,7 @@ Builds the project via ant (obviously).
 
   <target name="make_all_jars" depends="make_jar,make_test_jar,make_filter_jar,make_common_jar"/>
 
-  <target name="make_war" depends="make,init"
-	  description="(Creates war file of this project)">
-    <mkdir dir="${dist_dir}" />
-    <mkdir dir="${dist_dir}/tmplib"/>
-    
-    <copy todir="${dist_dir}/tmplib" overwrite="true" flatten="yes">
-      <fileset dir="${lib_dir}" includes="**/*.jar" excludes="**/junit*.jar"/>
-    </copy>
-    
-    <delete file="${dist_dir}/${module}.war"/> 
-    <war destfile="${dist_dir}/${module}.war" webxml="${conf_dir}/node-web.xml">
-      <fileset dir="${web_dir}" excludes="WEB-INF/**/web.xml/**,**semantic.cache**"/>
-      <lib dir="${dist_dir}/tmplib">
-	<include name="**/*.jar"/>
-	<exclude name="**/*-test*.jar,**/*-common*.jar"/>
-      </lib>
-      <classes dir="${build_dir}"/>
-    </war>
-    <delete dir="${dist_dir}/tmplib"/>
-  </target>
-
-
-  <target name="make_dist" depends="make_war,make_all_jars"
+  <target name="make_dist" depends="make_all_jars"
 	  description="(Creates full software distribution)">
     <delete file="${dist_dir}/${module}.${version_num}.tar.gz"/> 
     <tar destfile="${dist_dir}/${module}.${version_num}.tar">
@@ -403,12 +369,6 @@ Builds the project via ant (obviously).
 
   </target>
 
-  <target name="make_dist_in_place" depends="make_war"
-	  description="(Creates full software distribution deployed directly to local web app server)">
-    <!-- TODO: integrate the tomcat ant tasks to do this properly -->
-  </target>
-  
-  
 
   <!--
       ************************************************************
@@ -543,13 +503,11 @@ Builds the project via ant (obviously).
       <doctitle><![CDATA[<h1>ESG-PUBLISHER</h1>]]></doctitle>
       <bottom><![CDATA[<i>ESG / BSD OpenSource License</i>]]></bottom>
       <tag name="todo" scope="all" description="To do:"/>
-      <group title="Core Packages" packages="esg.node.core*"/>
-      <group title="Component Packages" packages="esg.node.components*"/>
-      <group title="Connection Packages" packages="esg.node.connection*"/>
-      <group title="Server Packages" packages="esg.node.service*"/>
-      <group title="Common Packages" packages="esg.common*"/>
-      <group title="Database Packages" packages="esg.node.db*"/>
-      <group title="Utility Packages" packages="esg.node.util*"/>
+      <group title="ESG Publisher Client Front End Packages" packages="esg.node.publisher_fe*"/>
+      <group title="ESG Node Integration Packages" packages="esg.node.publisher*"/>
+      <group title="Connection Packages" packages="esg.node.publisher.connection*"/>
+      <group title="Common Packages" packages="esg.node.publisher.common*"/>
+      <group title="Utility Packages" packages="esg.node.publisher.util*"/>
       <link offline="true" href="http://java.sun.com/javase/6/docs/api/" packagelistLoc="${java.io.tmpdir}"/>
       <link href="http://java.sun.com/javase/6/docs/api/"/>
     </javadoc>

@@ -71,7 +71,7 @@ import org.apache.commons.logging.impl.*;
 //Intended for bootstrapping basic JUnit testing...
 
 public class ESGPublisherTest {
-    private static final Log log = LogFactory.getLog(ESGNotifier.class);
+    private static final Log log = LogFactory.getLog(ESGPublisherTest.class);
 
     public ESGPublisherTest() {
 	log.info("Instantiating ESGPublisherTest...");

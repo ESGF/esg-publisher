@@ -60,12 +60,15 @@
    The main program to bootstrap the Publisher GUI
 **/
 
-package esg.node.publisher-fe;
+package esg.node.publisher_fe;
 
-public static void main(String[] args) {
-    System.out.println("Starting ESG Publisher Graphical User Interface...");
-
-    //TODO: ...
-    //Carla ... this is for you... and you deserve it :-) another test...
-
+public class Main {
+    public static void main(String[] args) {
+	System.out.println("Starting ESG Publisher Graphical User Interface...");
+	
+	//TODO: ...
+	//Carla ... this is for you... and you deserve it :-) another test...
+	
+	System.out.println("done");
+    }
 }

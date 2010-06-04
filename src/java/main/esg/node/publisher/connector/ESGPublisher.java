@@ -73,7 +73,7 @@ import org.apache.commons.logging.impl.*;
 //TODO... this is a place holder skel... must extend AbstractDataNodeComponent etc...
 
 public class ESGPublisher {
-    private static final Log log = LogFactory.getLog(ESGNotifier.class);
+    private static final Log log = LogFactory.getLog(ESGPublisher.class);
 
     public ESGPublisher(String name) {
 	log.info("Instantiating ESGPublisher (connector)...");
