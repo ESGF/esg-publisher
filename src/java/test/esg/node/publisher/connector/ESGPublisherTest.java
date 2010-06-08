@@ -63,6 +63,10 @@
 **/
 package esg.node.publisher.connector;
 
+import org.junit.*;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.*;
@@ -73,7 +77,75 @@ import org.apache.commons.logging.impl.*;
 public class ESGPublisherTest {
     private static final Log log = LogFactory.getLog(ESGPublisherTest.class);
 
+    private static ESGPublisher pub = null;
+
     public ESGPublisherTest() {
 	log.info("Instantiating ESGPublisherTest...");
+    }
+    
+    /**
+       This is performed once before even this test class is instantiated!
+       Note: It must be static
+     */
+    @BeforeClass
+    public static void initialSetup() {
+	log.trace("Performing initial setup");
+	pub = new ESGPublisher("mytest");	
+    }
+
+    /**
+       This will be called before each test method is run
+     */
+    @Before
+    public void setup() {
+	log.trace("Setting up test");
+    }
+
+    /**
+       Test method (notice assertions)
+     */
+    @Test
+    public void testSum() {
+	log.trace("test...");
+	assertTrue(pub.sum(3,5) == 8);
+	assertTrue(pub.sum(3,2) == 5);
+    }
+
+    @Test
+    public void testSum2() {
+	log.trace("test2...");
+	assumeNotNull(pub);
+	assertTrue(pub.sum(3,5) == 8);
+	assertTrue(pub.sum(3,2) == 5);
+	assumeTrue(pub.sum(2,2) > 4);
+    }
+
+    /**
+       Simply illustrating the use of the @Ignore annotation
+     */
+    @Ignore
+    @Test
+    public void testSum3() {
+	log.trace("test3...");
+	assertTrue(pub.sum(3,5) == 8);
+	assertTrue(pub.sum(3,2) == 5);
+    }
+
+    /**
+       This will be called after each test method is run
+     */
+    @After
+    public void tearDown() {
+	log.trace("Tearing down test");
+    }
+    
+    /**
+       This is performed once when all the tests in this class have been run.
+       Note: It must be static
+     */
+    @AfterClass
+    public static void finalTearDown() {
+	log.trace("Performing final tear down");
+	pub = null;
     }
 }
