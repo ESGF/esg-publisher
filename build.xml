@@ -267,7 +267,9 @@ Builds the project via ant (obviously).
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<attribute name="Main-Class"   value="${main_class}"/>
-	<section name="esg/"/>
+	<section name="esg/">
+	  <attribute name="Sealed" value="false"/>
+	</section>
       </manifest>
     </jar>
   </target>
@@ -286,7 +288,9 @@ Builds the project via ant (obviously).
 	<attribute name="Project"      value="Esg-Publisher Tests"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
-	<section name="esg/"/>
+	<section name="esg/">
+	  <attribute name="Sealed" value="false"/>
+	</section>
       </manifest>
     </jar>
   </target>
@@ -309,7 +313,9 @@ Builds the project via ant (obviously).
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<attribute name="Main-Class"   value="${main_class}"/>
-	<section name="esg/node/publisher_fe/"/>
+	<section name="esg/node/publisher_fe/">
+	  <attribute name="Sealed" value="false"/>
+	</section>
       </manifest>
     </jar>
   </target>
@@ -331,7 +337,9 @@ Builds the project via ant (obviously).
 	<attribute name="Project"      value="Esg-Publisher Connector"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
-	<section name="esg/node/publisher/connector/"/>
+	<section name="esg/node/publisher/connector/">
+	  <attribute name="Sealed" value="false"/>
+	</section>
       </manifest>
     </jar>
   </target>  
@@ -351,7 +359,9 @@ Builds the project via ant (obviously).
 	<attribute name="Project"      value="Esg-Publisher Common"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
-	<section name="esg/publisher/common/"/>
+	<section name="esg/publisher/common/">
+	  <attribute name="Sealed" value="false"/>
+	</section>
       </manifest>
     </jar>
   </target>
