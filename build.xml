@@ -523,7 +523,7 @@ Builds the project via ant (obviously).
   </target>
 
   
-  <target name="everything" depends="make_all_jars,test,docs,make_python"
+  <target name="everything" depends="make_dist,test,docs,make_python"
 	  description="Does Everything..."/>
 
 
