@@ -515,7 +515,7 @@ Builds the project via ant (obviously).
     <pathconvert property="__cp" refid="jar_cp" pathsep="${line.separator}"/>
     <echo>${__cp}</echo>
 
-    <java classname="${main_class}">
+    <java classname="${main_class}" fork="true">
       <classpath refid="jar_cp"/>
       <!-- <classpath refid="main_classpath"/> -->
     </java>
