@@ -11,3 +11,4 @@
 #server
 
 [esg-publisher]
+../dist/esg-publisher.0.0.1.tar.gz

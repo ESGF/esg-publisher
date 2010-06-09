@@ -81,4 +81,6 @@ public class ESGPublisher {
     public ESGPublisher(String name) {
 	log.info("Instantiating ESGPublisher (connector) ["+name+"]...");
     }
+
+    public int sum(int a, int b) { return a+b; }
 }
