@@ -100,6 +100,20 @@ public class ESGPublisherTest {
     public void setup() {
 	log.trace("Setting up test");
     }
+    
+    /**
+       This is here just to illustrate that you may have multiple
+       "Before" methods (or After) methods but that they get fired in
+       no guaranteed order, only that they both happen before your
+       tests. Basically you should probably just have one
+       (BeforeClass,Before,After,AfterClass) set of methods per test
+       suite (test class).  Using that as a guildline for how to break
+       up unit testing code.
+     */
+    @Before
+    public void setup2() {
+	log.trace("Setting up test too");
+    }
 
     /**
        Test method (notice assertions)
