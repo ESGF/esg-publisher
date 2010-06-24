@@ -493,6 +493,9 @@ Builds the project via ant (obviously).
       <batchtest todir="${test_results_dir}" >
 	<fileset dir="${test_build_dir}" includes="**/*Test*.class"/>
       </batchtest>
+      <assertions enableSystemAssertions="true">
+	<enable/>
+      </assertions>
     </junit>
     <junitreport todir="${test_results_dir}"> 
       <fileset dir="${test_results_dir}"> 
@@ -560,6 +563,9 @@ Builds the project via ant (obviously).
     <java classname="${main_class}" fork="true">
       <classpath refid="jar_cp"/>
       <!-- <classpath refid="main_classpath"/> -->
+      <assertions enableSystemAssertions="true">
+	<enable/>
+      </assertions>
     </java>
     
   </target>

@@ -80,6 +80,7 @@ public class ESGPublisher {
      */
     public ESGPublisher(String name) {
 	log.info("Instantiating ESGPublisher (connector) ["+name+"]...");
+	assert (log != null) : "Logger for this class is NULL!!! ["+log+"]";
     }
 
     public int sum(int a, int b) { return a+b; }
