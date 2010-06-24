@@ -133,6 +133,7 @@ Builds the project via ant (obviously).
     <property name="test_src_dir"  	  value="./src/java/test"/>
     <property name="test_build_dir"       value="./build/test"/>
     <property name="test_results_dir"     value="./test-results"/>
+    <property name="test_reports_dir"     value="./test-reports"/>
     <property name="etc_dir"   	          value="./etc"/>
     <property name="conf_dir"   	  value="${etc_dir}/conf"/>
     <property name="web_dir"   	          value="./web"/>
@@ -396,6 +397,7 @@ Builds the project via ant (obviously).
     <echo message="Removing build directory"/> 
     <delete dir="${build_dir}"/>
     <delete dir="${test_results_dir}"/>
+    <delete dir="${test_reports_dir}"/>
     <tstamp/>
   </target>
 
@@ -478,6 +480,8 @@ Builds the project via ant (obviously).
 	  description="[RUNS JUNIT TEST CODE]">
     <delete dir="${test_results_dir}" />
     <mkdir dir="${test_results_dir}"/>
+    <delete dir="${test_reports_dir}" />
+    <mkdir dir="${test_reports_dir}"/>
     <junit errorproperty="failed" 
 	   failureproperty="failed" 
 	   printsummary="on" 
@@ -490,6 +494,12 @@ Builds the project via ant (obviously).
 	<fileset dir="${test_build_dir}" includes="**/*Test*.class"/>
       </batchtest>
     </junit>
+    <junitreport todir="${test_results_dir}"> 
+      <fileset dir="${test_results_dir}"> 
+	<include name="TEST-*.xml"/> 
+      </fileset> 
+      <report format="frames" todir="${test_reports_dir}"/> 
+    </junitreport>
     <fail if="failed" message="Test cases failed"/>
   </target>
   

@@ -34,3 +34,4 @@ generated/
 /build
 /dist
 /test-results
+/test-reports
