@@ -236,7 +236,7 @@ Builds the project via ant (obviously).
       <compilerarg value="-Xlint"/>
     </javac>
 
-    <copy todir="${build_dir}" filtering="${filter}">
+    <copy todir="${build_dir}" filtering="${filter}" overwrite="true">
       <fileset dir="${conf_dir}" includes="**/*.properties,**/*.template,**/*filter-web.xml"/>
     </copy> 
 
