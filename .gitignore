@@ -35,3 +35,4 @@ generated/
 /dist
 /test-results
 /test-reports
+/dep-reports
