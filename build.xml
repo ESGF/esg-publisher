@@ -87,8 +87,8 @@ Builds the project via ant (obviously).
   
   <property file="${user.home}/.esg-publisher.ant.properties"/>
   <echo message="user property file ${user.home}/.esg-publisher.ant.properties"/>
-  <property file="./etc/esg-publisher.ant.properties"/> 
-  <echo message="user property file ./etc/esg-publisher.ant.properties"/>
+  <property file="${basedir}/etc/esg-publisher.ant.properties"/> 
+  <echo message="user property file ${basedir}/etc/esg-publisher.ant.properties"/>
 
   <property name="filter" value="false"/>
 
@@ -101,11 +101,11 @@ Builds the project via ant (obviously).
   <property name="log_dir" value="/esg/logs"/>
   <mkdir dir="${log_dir}" />
   <filter token="log_dir"  value="${log_dir}"/>
-
+  
   <property environment="env"/>
   <!-- ****************** -->
   
-	
+
   <!--
       ************************************************************
       Initialization and Preparation....
@@ -126,18 +126,19 @@ Builds the project via ant (obviously).
         
     <!-- defaults to use if local .esg-publisher.ant.properties file does not exist --> 
     <property name="module"	          value="esg-publisher"/>
-    <property name="src_dir"   	          value="./src/java/main"/>
-    <property name="lib_dir"   	          value="./lib"/>
-    <property name="build_dir"   	  value="./build"/>
-    <property name="dist_dir"   	  value="./dist"/>
-    <property name="test_src_dir"  	  value="./src/java/test"/>
-    <property name="test_build_dir"       value="./build/test"/>
-    <property name="test_results_dir"     value="./test-results"/>
-    <property name="test_reports_dir"     value="./test-reports"/>
-    <property name="etc_dir"   	          value="./etc"/>
+    <property name="src_dir"   	          value="${basedir}/src/java/main"/>
+    <property name="lib_dir"   	          value="${basedir}/lib"/>
+    <property name="build_dir"   	  value="${basedir}/build"/>
+    <property name="dist_dir"   	  value="${basedir}/dist"/>
+    <property name="test_src_dir"  	  value="${basedir}/src/java/test"/>
+    <property name="test_build_dir"       value="${basedir}/build/test"/>
+    <property name="test_results_dir"     value="${basedir}/test-results"/>
+    <property name="test_reports_dir"     value="${basedir}/test-reports"/>
+    <property name="test_last_failed_file" location="${build_dir}/.lasttestsfailed"/>
+    <property name="etc_dir"   	          value="${basedir}/etc"/>
     <property name="conf_dir"   	  value="${etc_dir}/conf"/>
-    <property name="web_dir"   	          value="./web"/>
-    <property name="doc_dir"   	          value="./docs"/>
+    <property name="web_dir"   	          value="${basedir}/web"/>
+    <property name="doc_dir"   	          value="${basedir}/docs"/>
     <property name="jdoc_dir"   	  value="${dist_dir}/javadocs"/>
     <property name="depcache_dir"     	  value="${java.io.tmpdir}/${module}/depcache"/>
     <property name="log_config"       	  value="${conf_dir}/log4j.properties"/>
@@ -252,13 +253,13 @@ Builds the project via ant (obviously).
     -->
   <target name="make_jar" depends="make"
 	  description="(Creates the jar file distribution of this project)">
-    <echo message="JAR -  ${build_dir} ->> ${dist_dir}/${module}.${version_num}.jar"/> 
-    <delete> 
+    <echo message="JAR -  ${build_dir} ->> ${dist_dir}/${module}.${version_num}.jar"/>
+    <delete>
       <fileset dir="." includes="${dist_dir}/${module}.${version_num}.jar"/>
     </delete>
     <mkdir dir="${dist_dir}" />
     <jar destfile="${dist_dir}/${module}.${version_num}.jar">
-      <fileset dir="${build_dir}" 
+      <fileset dir="${build_dir}"
 	       includes="esg/**,**/*.properties"
 	       excludes="**/test/**"/>
       <manifest>
@@ -274,10 +275,10 @@ Builds the project via ant (obviously).
       </manifest>
     </jar>
   </target>
-  
+
   <target name="make_test_jar" depends="make_test" description="(Creates test jar file)">
-    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-test.${version_num}.jar"/> 
-    <delete> 
+    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-test.${version_num}.jar"/>
+    <delete>
       <fileset dir="." includes="${dist_dir}/${module}-test.${version_num}.jar"/>
     </delete>
     <mkdir dir="${dist_dir}" />
@@ -439,21 +440,21 @@ Builds the project via ant (obviously).
       JUnit Tests....
       ************************************************************
     -->
-  
-  <target name="make_test" depends="make" 
+
+  <target name="make_test" depends="make"
 	  description="(Java compile all the test source code)">
-    <echo message="Java Compiling Esg-Publisher TESTs..."/> 
-    
+    <echo message="Java Compiling Esg-Publisher TESTs..."/>
+
     <path id="test_classpath">
       <fileset dir="${lib_dir}" includes="**/junit*.jar"/>
       <path refid="main_classpath"/>
       <pathelement location="${test_build_dir}" />
     </path>
-    
+
     <pathconvert property="test_cp" refid="test_classpath" pathsep="${line.separator}"/>
     <echo>${test_cp}</echo>
 
-    
+
     <mkdir dir="${test_build_dir}" />
     <mkdir dir="${depcache_dir}" />
     
@@ -473,45 +474,53 @@ Builds the project via ant (obviously).
 	   verbose="off"
 	   nowarn="on"/>
     <tstamp/>
-    
+
   </target>
   
+  <!--
+      To run a single test case...
+      ant test -Dtestcase=esg.node.publisher.connector.ESGPublisherTest
+    -->
   <target name="test" depends="make_test"
 	  description="[RUNS JUNIT TEST CODE]">
+    <echo message="tests_uptodate = ${tests_uptodate}"/>
     <delete dir="${test_results_dir}" />
     <mkdir dir="${test_results_dir}"/>
     <delete dir="${test_reports_dir}" />
     <mkdir dir="${test_reports_dir}"/>
-    <junit errorproperty="failed" 
-	   failureproperty="failed" 
-	   printsummary="on" 
-	   fork="yes" 
+    <junit errorproperty="failed"
+	   failureproperty="failed"
+	   printsummary="on"
+	   fork="yes"
 	   maxmemory="1024M">
       <classpath refid="test_classpath" />
-      <formatter type="brief" usefile="false"/>
+      <formatter type="plain" usefile="false"/>
       <formatter type="xml" />
-      <batchtest todir="${test_results_dir}" >
+      <test name="${testcase}" todir="${test_results_dir}" if="testcase"/>
+      <batchtest todir="${test_results_dir}" unless="testcase">
 	<fileset dir="${test_build_dir}" includes="**/*Test*.class"/>
       </batchtest>
       <assertions enableSystemAssertions="true">
 	<enable/>
       </assertions>
     </junit>
-    <junitreport todir="${test_results_dir}"> 
-      <fileset dir="${test_results_dir}"> 
-	<include name="TEST-*.xml"/> 
-      </fileset> 
-      <report format="frames" todir="${test_reports_dir}"/> 
+    <junitreport todir="${test_results_dir}">
+      <fileset dir="${test_results_dir}">
+	<include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="${test_reports_dir}"/>
     </junitreport>
-    <fail if="failed" message="Test cases failed"/>
+    <echo message="last build failed tests" file="${test_last_failed_file}"/>
+    <fail if="failed" message="Unit tests failed.  Check log or reports for details"/>
+    <delete file="${test_last_failed_file}"/> 
   </target>
-  
+
   <!--
       ************************************************************
       DOCUMENTATION....
       ************************************************************
     -->
-  
+
   <target name="docs" depends="init"
 	  description="(Generates the javadoc for this project)">
     <delete dir="${javadoc_dir}"/>
@@ -521,7 +530,7 @@ Builds the project via ant (obviously).
        author="true"
        version="true"
        use="true"
-       linksource="${javadoc_link_src}"	  
+       linksource="${javadoc_link_src}"
        windowtitle="ESG-PUBLISHER API">
 
       <packageset dir="${src_dir}" defaultexcludes="yes">
@@ -579,15 +588,15 @@ Builds the project via ant (obviously).
 
   <!--
       ************************************************************
-      Python Targets....(calls targets defined in ./src/python/build.xml
+      Python Targets....(calls targets defined in ${basedir}/src/python/build.xml
       ************************************************************
     -->
   <target name="make_python">
-    <ant dir="./src/python" antfile="build.xml" target="gen"/>
+    <ant dir="${basedir}/src/python" antfile="build.xml" target="gen"/>
   </target>
                 
   <target name="clean_python">
-    <ant dir="./src/python" antfile="build.xml" target="clean"/>
+    <ant dir="${basedir}/src/python" antfile="build.xml" target="clean"/>
   </target>
  
 </project>
