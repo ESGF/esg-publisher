@@ -184,28 +184,16 @@ Builds the project via ant (obviously).
       ************************************************************
     -->
   
-  <target name="fetch-ivy" unless="offline">
-    <property name="ivy_install_version" value="2.1.0" />
-    <condition property="ivy_home" value="${env.IVY_HOME}">
-      <isset property="env.IVY_HOME" />
-    </condition>
-    <property name="ivy_home" value="${basedir}" />
-    <property name="ivy_jar_file" value="${lib_dir}/ivy.jar" />
-
-    <mkdir dir="${lib_dir}"/>
-    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy_install_version}/ivy-${ivy_install_version}.jar" 
-         dest="${ivy_jar_file}" usetimestamp="true"/>
-  </target>
   
-  <target name="init-ivy" depends="fetch-ivy">
-    <path id="ivy_lib_path">
-      <fileset dir="${lib_dir}" includes="*.jar"/>
-    </path>
+  <target name="init-ivy" depends="init">
+    <property name="ivy_version" value="2.1.0" />
+    <!-- <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy_version}/ivy-${ivy_version}.jar" 
+	      dest="ivy-${ivy_version}.jar" usetimestamp="true"/> -->
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
-             uri="antlib:org.apache.ivy.ant" classpathref="ivy_lib_path"/>
+             uri="antlib:org.apache.ivy.ant" classpath="${lib_dir}/ivy-${ivy_version}.jar"/>
   </target>
   
-  <target name="deps" depends="init,init-ivy" description="Sets up library dependencies">
+  <target name="deps" depends="init-ivy" description="Sets up library dependencies">
     <ivy:retrieve/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
