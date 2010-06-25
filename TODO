@@ -19,4 +19,7 @@ TODO:
  tests. (don't have to use ant it should just work right out of the
  box)
 
+-JUnit - get it to conditionally do tests for only the code that has
+ failed or is not uptodate
+
 -bring over up-to-date publisher python code
