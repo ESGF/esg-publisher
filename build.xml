@@ -83,7 +83,7 @@ Description:
 Builds the project via ant (obviously).
 -->
 
-<project name="esg-publisher" default="make" basedir=".">
+<project name="esg-publisher" default="make" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
   
   <property file="${user.home}/.esg-publisher.ant.properties"/>
   <echo message="user property file ${user.home}/.esg-publisher.ant.properties"/>
@@ -150,19 +150,8 @@ Builds the project via ant (obviously).
     <property name="jaxb_gen_src_dir" value="${src_dir}/esg/common/generated"/>
     <property name="jaxb_gen_package" value="esg.common.generated"/>
 
-    
-    <path id="main_classpath">
-      <fileset dir="${lib_dir}">
-	<include name="**/*.jar"/>
-	<exclude name="**/junit*.jar"/>
-      </fileset>
-      <pathelement path="${build_dir}"/>
-    </path>
-  
-    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
-      <classpath refid="main_classpath"/>
-    </taskdef>
- 
+    <property name="lib_deps_reports_dir" value="${basedir}/dep-reports"/>
+     
     <echo message="--------------------------------"/> 
     <echo message="version_num       = ${version_num} "/> 
     <echo message="release_name      = ${release_name} "/> 
@@ -185,24 +174,80 @@ Builds the project via ant (obviously).
     <echo message="log_config        = ${log_config}"/>
     <echo message="log_file          = ${log_file}"/>
     <echo message="javadoc_link_src  = ${javadoc_link_src}"/>
+    <echo message="--------------------------------"/> 
+    <tstamp/>
+  </target> 
+
+  <!--
+      ************************************************************
+      Library and Resource Dependencies...
+      ************************************************************
+    -->
+  
+  <target name="fetch-ivy" unless="offline">
+    <property name="ivy_install_version" value="2.1.0" />
+    <condition property="ivy_home" value="${env.IVY_HOME}">
+      <isset property="env.IVY_HOME" />
+    </condition>
+    <property name="ivy_home" value="${basedir}" />
+    <property name="ivy_jar_file" value="${lib_dir}/ivy.jar" />
+
+    <mkdir dir="${lib_dir}"/>
+    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy_install_version}/ivy-${ivy_install_version}.jar" 
+         dest="${ivy_jar_file}" usetimestamp="true"/>
+  </target>
+  
+  <target name="init-ivy" depends="fetch-ivy">
+    <!-- try to load ivy here from ivy home, in case the user has not already dropped
+         it into ant's lib dir (note that the latter copy will always take precedence).
+         We will not fail as long as local lib dir exists (it may be empty) and
+         ivy is in at least one of ant's lib dir or the local lib dir. -->
+    <path id="ivy_lib_path">
+      <fileset dir="${lib_dir}" includes="*.jar"/>
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant" classpathref="ivy_lib_path"/>
+  </target>
+  
+  <target name="deps" depends="init,init-ivy" description="Sets up library dependencies">
+    <path id="main_classpath">
+      <fileset dir="${lib_dir}">
+	<include name="**/*.jar"/>
+	<exclude name="**/junit*.jar"/>
+      </fileset>
+      <pathelement path="${build_dir}"/>
+    </path>
     
-    <echo message=""/>
+    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+      <classpath refid="main_classpath"/>
+    </taskdef>
+
     <echo message="MAIN CLASSPATH:"/>
     <pathconvert property="_cp" refid="main_classpath" pathsep="${line.separator}"/>
     <echo>${_cp}</echo>
-    
     <echo message="--------------------------------"/> 
-    <echo message=""/>
-    <tstamp/>
-  </target> 
+  </target>
+
+  <target name="dep_resolve" depends="deps" description="Retreive dependencies with ivy">
+    <ivy:retrieve/>
+  </target>  
   
+  <target name="dep_report" depends="dep_resolve" description="Generates a report of library dependencies">
+    <mkdir dir="${lib_deps_reports_dir}"/>
+    <ivy:report todir="${lib_deps_reports_dir}"/>
+  </target>
+  
+  <target name="dep_clean_cache" depends="init,init-ivy" description="Clean the ivy cache">
+    <ivy:cleancache />
+  </target>
+
   <!--
       ************************************************************
       Generation  and Compilation....
       ************************************************************
     -->
 
-  <target name="gen_jaxb" depends="init" 
+  <target name="gen_jaxb" depends="dep_resolve" 
 	  description="(Generates Java Objects from XML schema)">
     <mkdir dir="${jaxb_gen_src_dir}"/>
     <xjc package="${jaxb_gen_package}"
@@ -215,7 +260,7 @@ Builds the project via ant (obviously).
     </xjc>
   </target>
 
-  <target name="make" depends="init" 
+  <target name="make" depends="dep_resolve" 
 	  description="(Java compiles all the source code)">
     <echo message="Java Compiling Esg-Publisher..."/> 
     
@@ -400,6 +445,7 @@ Builds the project via ant (obviously).
     <delete dir="${build_dir}"/>
     <delete dir="${test_results_dir}"/>
     <delete dir="${test_reports_dir}"/>
+    <delete dir="${lib_deps_reports_dir}"/>
     <tstamp/>
   </target>
 
@@ -452,8 +498,10 @@ Builds the project via ant (obviously).
       <pathelement location="${test_build_dir}" />
     </path>
 
+    <echo message="TEST CLASSPATH:"/>
     <pathconvert property="test_cp" refid="test_classpath" pathsep="${line.separator}"/>
     <echo>${test_cp}</echo>
+    <echo message="--------------------------------"/> 
 
 
     <mkdir dir="${test_build_dir}" />
@@ -581,8 +629,13 @@ Builds the project via ant (obviously).
   </target>
 
   
-  <target name="everything" depends="make_dist,test,docs,make_python"
-	  description="Does Everything..."/>
+  <target name="everything" depends="make_dist,test,docs,dep_report"
+	  description="Does Everything...">
+    <echo message="JavaDocs -> file://${basedir}/dist/javadocs/index.html"/>
+    <echo message="Unit Test Report -> file://${basedir}/file:///Users/cue/projects/esg-publisher/"/>
+    <echo message="Dependency Report -> file://${basedir}/dep-reports/esgf-esg-publisher-default.html"/>
+    <echo message="Web Site -> http://esg-repo.llnl.gov/dist"/>
+  </target>
 
 
 
