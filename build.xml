@@ -175,6 +175,7 @@ Builds the project via ant (obviously).
     <echo message="test_src_dir      = ${test_src_dir}"/>
     <echo message="test_build_dir    = ${test_build_dir}"/>
     <echo message="test_results_dir  = ${test_results_dir}"/>
+    <echo message="test_reports_dir  = ${test_reports_dir}"/>
     <echo message="etc_dir           = ${etc_dir}"/>
     <echo message="conf_dir          = ${conf_dir}"/>
     <echo message="web_dir           = ${web_dir}"/>
