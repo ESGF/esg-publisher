@@ -10,10 +10,13 @@
 #*****************************************************************
 
 TODO:
--Move over lib jars needed for logging
--Create manifest for Jar with main
--modify build.xml for this project
- ->Generate project jars. fe,common
 -Write fetch script for esg core jars
+  ->(Instead) Integrate in Ivy for dependency fetching
+  ->Create own Ivy repositories one for "dev" another for "prod".
+
+-Write a MainTest.java file to be the MainClass: in test jar so that
+ end users can download the test jar and just run it and thus run the
+ tests. (don't have to use ant it should just work right out of the
+ box)
+
 -bring over up-to-date publisher python code
--setup GIT repo
