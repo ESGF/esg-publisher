@@ -198,10 +198,6 @@ Builds the project via ant (obviously).
   </target>
   
   <target name="init-ivy" depends="fetch-ivy">
-    <!-- try to load ivy here from ivy home, in case the user has not already dropped
-         it into ant's lib dir (note that the latter copy will always take precedence).
-         We will not fail as long as local lib dir exists (it may be empty) and
-         ivy is in at least one of ant's lib dir or the local lib dir. -->
     <path id="ivy_lib_path">
       <fileset dir="${lib_dir}" includes="*.jar"/>
     </path>
@@ -210,6 +206,7 @@ Builds the project via ant (obviously).
   </target>
   
   <target name="deps" depends="init,init-ivy" description="Sets up library dependencies">
+    <ivy:retrieve/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
 	<include name="**/*.jar"/>
@@ -228,11 +225,7 @@ Builds the project via ant (obviously).
     <echo message="--------------------------------"/> 
   </target>
 
-  <target name="dep_resolve" depends="deps" description="Retreive dependencies with ivy">
-    <ivy:retrieve/>
-  </target>  
-  
-  <target name="dep_report" depends="dep_resolve" description="Generates a report of library dependencies">
+  <target name="dep_report" depends="deps" description="Generates a report of library dependencies">
     <mkdir dir="${lib_deps_reports_dir}"/>
     <ivy:report todir="${lib_deps_reports_dir}"/>
   </target>
@@ -247,7 +240,7 @@ Builds the project via ant (obviously).
       ************************************************************
     -->
 
-  <target name="gen_jaxb" depends="dep_resolve" 
+  <target name="gen_jaxb" depends="deps" 
 	  description="(Generates Java Objects from XML schema)">
     <mkdir dir="${jaxb_gen_src_dir}"/>
     <xjc package="${jaxb_gen_package}"
@@ -260,7 +253,7 @@ Builds the project via ant (obviously).
     </xjc>
   </target>
 
-  <target name="make" depends="dep_resolve" 
+  <target name="make" depends="deps" 
 	  description="(Java compiles all the source code)">
     <echo message="Java Compiling Esg-Publisher..."/> 
     
