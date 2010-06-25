@@ -478,12 +478,12 @@ Builds the project via ant (obviously).
       <path refid="main_classpath"/>
       <pathelement location="${test_build_dir}" />
     </path>
-
+    <!--
     <echo message="TEST CLASSPATH:"/>
     <pathconvert property="test_cp" refid="test_classpath" pathsep="${line.separator}"/>
     <echo>${test_cp}</echo>
+    -->
     <echo message="--------------------------------"/> 
-
 
     <mkdir dir="${test_build_dir}" />
     <mkdir dir="${depcache_dir}" />
@@ -506,14 +506,43 @@ Builds the project via ant (obviously).
     <tstamp/>
 
   </target>
-  
+
+  <target name="test_check">
+    <condition property="tests_uptodate">
+      <and>
+        <uptodate>
+          <srcfiles dir="${src_dir}" includes="**/*.java"/>
+          <mapper type="glob"
+                  from="*.java"
+                  to="${build_dir}/*.class" />
+        </uptodate>
+
+        <uptodate>
+          <srcfiles dir="${test_src_dir}" includes="**/*.java"/>
+          <mapper type="glob"
+                  from="*.java"
+                  to="${test_build_dir}/*.class" />
+        </uptodate>
+
+        <not>
+          <available file="${test_last_failed_file}"/>
+        </not>
+
+        <not>
+          <isset property="testcase"/>
+        </not>
+      </and>
+    </condition>
+    <echo message="tests_uptodate = ${tests_uptodate}"/>
+  </target>
+
   <!--
       To run a single test case...
       ant test -Dtestcase=esg.node.publisher.connector.ESGPublisherTest
+      (unless="tests_uptodate")
     -->
-  <target name="test" depends="make_test"
+  <target name="test" depends="make_test,test_check"
 	  description="[RUNS JUNIT TEST CODE]">
-    <echo message="tests_uptodate = ${tests_uptodate}"/>
     <delete dir="${test_results_dir}" />
     <mkdir dir="${test_results_dir}"/>
     <delete dir="${test_reports_dir}" />
