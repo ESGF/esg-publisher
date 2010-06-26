@@ -194,11 +194,13 @@ Builds the project via ant (obviously).
   </target>
   
   <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
-    <ivy:retrieve/>
+    <ivy:retrieve sync="false"/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
 	<include name="**/*.jar"/>
 	<exclude name="**/junit*.jar"/>
+	<exclude name="**/*javadoc.jar"/>
+	<exclude name="**/*sources.jar"/>
       </fileset>
       <pathelement path="${build_dir}"/>
     </path>
