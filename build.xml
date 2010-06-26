@@ -640,7 +640,7 @@ Builds the project via ant (obviously).
 
   
   <target name="make_everything" depends="make_dist,test,docs,dep_report"
-	  description="(Builds Everything... Distributions, Tests, Docs & Reports)">
+	  description="(Builds Everything... Distributions, Tests, Docs n Reports)">
     <echo message="JavaDocs -> file://${basedir}/dist/javadocs/index.html"/>
     <echo message="Unit Test Report -> file://${basedir}/file:///Users/cue/projects/esg-publisher/"/>
     <echo message="Dependency Report -> file://${basedir}/dep-reports/esgf-esg-publisher-default.html"/>
