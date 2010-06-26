@@ -193,7 +193,7 @@ Builds the project via ant (obviously).
              uri="antlib:org.apache.ivy.ant" classpath="${lib_dir}/ivy-${ivy_version}.jar"/>
   </target>
   
-  <target name="deps" depends="init-ivy" description="Sets up library dependencies">
+  <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
     <ivy:retrieve/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
@@ -213,12 +213,12 @@ Builds the project via ant (obviously).
     <echo message="--------------------------------"/> 
   </target>
 
-  <target name="dep_report" depends="deps" description="Generates a report of library dependencies">
+  <target name="dep_report" depends="deps" description="(Generates a report of library dependencies)">
     <mkdir dir="${lib_deps_reports_dir}"/>
     <ivy:report todir="${lib_deps_reports_dir}"/>
   </target>
   
-  <target name="dep_clean_cache" depends="init,init-ivy" description="Clean the ivy cache">
+  <target name="dep_clean_cache" depends="init,init-ivy" description="(Clean the ivy cache)">
     <ivy:cleancache />
   </target>
 
@@ -242,7 +242,7 @@ Builds the project via ant (obviously).
   </target>
 
   <target name="make" depends="deps" 
-	  description="(Java compiles all the source code)">
+	  description="(Java compiles all the main source code)">
     <echo message="Java Compiling Esg-Publisher..."/> 
     
     <mkdir dir="${build_dir}" />
@@ -470,7 +470,7 @@ Builds the project via ant (obviously).
     -->
 
   <target name="make_test" depends="make"
-	  description="(Java compile all the test source code)">
+	  description="(Java compiles all the test source code)">
     <echo message="Java Compiling Esg-Publisher TESTs..."/>
 
     <path id="test_classpath">
@@ -542,7 +542,7 @@ Builds the project via ant (obviously).
       (unless="tests_uptodate")
     -->
   <target name="test" depends="make_test,test_check"
-	  description="[RUNS JUNIT TEST CODE]">
+	  description="(Runs unit tests: JUnit)">
     <delete dir="${test_results_dir}" />
     <mkdir dir="${test_results_dir}"/>
     <delete dir="${test_reports_dir}" />
@@ -639,8 +639,8 @@ Builds the project via ant (obviously).
   </target>
 
   
-  <target name="everything" depends="make_dist,test,docs,dep_report"
-	  description="Does Everything...">
+  <target name="make_everything" depends="make_dist,test,docs,dep_report"
+	  description="(Builds Everything... Distributions, Tests, Docs & Reports)">
     <echo message="JavaDocs -> file://${basedir}/dist/javadocs/index.html"/>
     <echo message="Unit Test Report -> file://${basedir}/file:///Users/cue/projects/esg-publisher/"/>
     <echo message="Dependency Report -> file://${basedir}/dep-reports/esgf-esg-publisher-default.html"/>
