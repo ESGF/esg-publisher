@@ -128,6 +128,7 @@ Builds the project via ant (obviously).
     <property name="module"	          value="esg-publisher"/>
     <property name="src_dir"   	          value="${basedir}/src/java/main"/>
     <property name="lib_dir"   	          value="${basedir}/lib"/>
+    <property name="lib_fetched_dir"      value="${basedir}/lib/fetched"/>
     <property name="build_dir"   	  value="${basedir}/build"/>
     <property name="dist_dir"   	  value="${basedir}/dist"/>
     <property name="test_src_dir"  	  value="${basedir}/src/java/test"/>
@@ -159,6 +160,7 @@ Builds the project via ant (obviously).
     <echo message="module            = ${module} "/> 
     <echo message="src_dir           = ${src_dir}"/>
     <echo message="lib_dir           = ${lib_dir}"/>
+    <echo message="lib_fetched_dir   = ${lib_fetched_dir}"/>
     <echo message="build_dir         = ${build_dir}"/>
     <echo message="dist_dir          = ${dist_dir}"/>
     <echo message="test_src_dir      = ${test_src_dir}"/>
@@ -194,6 +196,7 @@ Builds the project via ant (obviously).
   </target>
   
   <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
+    <mkdir dir="${lib_fetched_dir}"/>
     <ivy:retrieve sync="false"/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
@@ -222,6 +225,12 @@ Builds the project via ant (obviously).
   
   <target name="dep_clean_cache" depends="init,init-ivy" description="(Clean the ivy cache)">
     <ivy:cleancache />
+  </target>
+
+  <target name="dep_clean_libs" depends="init"
+	  description="(Cleans out [removes] jars fetched by Ivy)">
+    <echo message="Removing jars fetched by Ivy"/>
+    <delete dir="${lib_fetched_dir}"/>
   </target>
 
   <!--

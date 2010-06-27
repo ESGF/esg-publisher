@@ -36,3 +36,4 @@ generated/
 /test-results
 /test-reports
 /dep-reports
+/lib/fetched
