@@ -471,7 +471,7 @@ Builds the project via ant (obviously).
 
   
   <target name="clean_all"
-	  depends="clean,clean_dist,clean_jaxb"
+	  depends="clean,clean_dist,clean_jaxb,dep_clean_libs"
 	  description="(Cleans out generatable artifacts)"/>
   
   <!--
