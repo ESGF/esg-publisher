@@ -223,13 +223,13 @@ Builds the project via ant (obviously).
     <ivy:report todir="${lib_deps_reports_dir}"/>
   </target>
   
-  <target name="dep_clean_cache" depends="init,init-ivy" description="(Clean the ivy cache)">
+  <target name="dep_clean_cache" depends="init,init-ivy" description="(Cleans the Ivy cache)">
     <ivy:cleancache />
   </target>
 
   <target name="dep_clean_libs" depends="init"
-	  description="(Cleans out [removes] jars fetched by Ivy)">
-    <echo message="Removing jars fetched by Ivy"/>
+	  description="(Cleans out [removes] local workspace jars fetched by Ivy)">
+    <echo message="Removing local jars fetched by Ivy"/>
     <delete dir="${lib_fetched_dir}"/>
   </target>
 
