@@ -133,25 +133,27 @@ Builds the project via ant (obviously).
     <property name="dist_dir"   	  value="${basedir}/dist"/>
     <property name="test_src_dir"  	  value="${basedir}/src/java/test"/>
     <property name="test_build_dir"       value="${basedir}/build/test"/>
-    <property name="test_results_dir"     value="${basedir}/test-results"/>
-    <property name="test_reports_dir"     value="${basedir}/test-reports"/>
-    <property name="test_last_failed_file" location="${build_dir}/.lasttestsfailed"/>
     <property name="etc_dir"   	          value="${basedir}/etc"/>
     <property name="conf_dir"   	  value="${etc_dir}/conf"/>
     <property name="web_dir"   	          value="${basedir}/web"/>
     <property name="doc_dir"   	          value="${basedir}/docs"/>
-    <property name="jdoc_dir"   	  value="${dist_dir}/javadocs"/>
     <property name="depcache_dir"     	  value="${java.io.tmpdir}/${module}/depcache"/>
     <property name="log_config"       	  value="${conf_dir}/log4j.properties"/>
     <property name="log_file"         	  value="${log_dir}/esg-publisher_v${version_num}.log"/>
     <property name="javadoc_link_src" 	  value="true"/>
     <property name="main_class"           value="esg.node.publisher_fe.Main"/>
 
+    <property name="doc_dir_generated"    value="${basedir}/docs-generated"/>
+    <property name="jdoc_dir"   	  value="${doc_dir_generated}/javadocs"/>
+    <property name="test_results_dir"     value="${doc_dir_generated}/test-results"/>
+    <property name="test_reports_dir"     value="${doc_dir_generated}/test-reports"/>
+    <property name="lib_deps_reports_dir" value="${doc_dir_generated}/dep-reports"/>
+
     <property name="jaxb_xsd_dir"         value="${etc_dir}/xsd/"/>
     <property name="jaxb_gen_src_dir" value="${src_dir}/esg/common/generated"/>
     <property name="jaxb_gen_package" value="esg.common.generated"/>
 
-    <property name="lib_deps_reports_dir" value="${basedir}/dep-reports"/>
+    <property name="test_last_failed_file" location="${build_dir}/.lasttestsfailed"/>
      
     <echo message="--------------------------------"/> 
     <echo message="version_num       = ${version_num} "/> 
@@ -165,17 +167,20 @@ Builds the project via ant (obviously).
     <echo message="dist_dir          = ${dist_dir}"/>
     <echo message="test_src_dir      = ${test_src_dir}"/>
     <echo message="test_build_dir    = ${test_build_dir}"/>
-    <echo message="test_results_dir  = ${test_results_dir}"/>
-    <echo message="test_reports_dir  = ${test_reports_dir}"/>
     <echo message="etc_dir           = ${etc_dir}"/>
     <echo message="conf_dir          = ${conf_dir}"/>
     <echo message="web_dir           = ${web_dir}"/>
     <echo message="doc_dir           = ${doc_dir}"/>
-    <echo message="jdoc_dir          = ${jdoc_dir}"/>
     <echo message="depcache_dir      = ${depcache_dir}"/>
     <echo message="log_config        = ${log_config}"/>
     <echo message="log_file          = ${log_file}"/>
     <echo message="javadoc_link_src  = ${javadoc_link_src}"/>
+    <echo message="--------------------------------"/> 
+    <echo message="doc_dir_generated    = ${basedir}/docs-generated"/>
+    <echo message="jdoc_dir             = ${jdoc_dir}"/>
+    <echo message="test_results_dir     = ${test_results_dir}"/>
+    <echo message="test_reports_dir     = ${test_reports_dir}"/>
+    <echo message="lib_deps_reports_dir = ${doc_dir_generated}/dep-reports"/>
     <echo message="--------------------------------"/> 
     <tstamp/>
   </target> 
@@ -435,9 +440,7 @@ Builds the project via ant (obviously).
 	  description="(Cleans out classfiles from build dir)">
     <echo message="Removing build directory"/> 
     <delete dir="${build_dir}"/>
-    <delete dir="${test_results_dir}"/>
-    <delete dir="${test_reports_dir}"/>
-    <delete dir="${lib_deps_reports_dir}"/>
+    <delete dir="${doc_dir_generated}"/>
     <tstamp/>
   </target>
 
