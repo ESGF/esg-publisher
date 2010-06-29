@@ -84,11 +84,20 @@ Builds the project via ant (obviously).
 -->
 
 <project name="esg-publisher" default="make" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+
+  <property name="module" value="esg-publisher"/>
+  <property name="author" value="Gavin M. Bell"/>
   
-  <property file="${user.home}/.esg-publisher.ant.properties"/>
-  <echo message="user property file ${user.home}/.esg-publisher.ant.properties"/>
-  <property file="${basedir}/etc/esg-publisher.ant.properties"/> 
-  <echo message="user property file ${basedir}/etc/esg-publisher.ant.properties"/>
+  <!--
+      ************************************************************
+      Global Initialization and Preparation....
+      ************************************************************
+    -->
+
+  <property file="${user.home}/.${module}.ant.properties"/>
+  <echo message="user property file ${user.home}/.${module}.ant.properties"/>
+  <property file="${basedir}/etc/${module}.ant.properties"/> 
+  <echo message="user property file ${basedir}/etc/${module}.ant.properties"/>
 
   <property name="filter" value="false"/>
 
@@ -124,8 +133,7 @@ Builds the project via ant (obviously).
 	  description="(View the properties defined in this file)">
     <echo message="Initializing build environment..."/>
         
-    <!-- defaults to use if local .esg-publisher.ant.properties file does not exist --> 
-    <property name="module"	          value="esg-publisher"/>
+    <!-- defaults to use if local .${module}.ant.properties file does not exist --> 
     <property name="src_dir"   	          value="${basedir}/src/java/main"/>
     <property name="lib_dir"   	          value="${basedir}/lib"/>
     <property name="lib_fetched_dir"      value="${basedir}/lib/fetched"/>
@@ -139,7 +147,7 @@ Builds the project via ant (obviously).
     <property name="doc_dir"   	          value="${basedir}/docs"/>
     <property name="depcache_dir"     	  value="${java.io.tmpdir}/${module}/depcache"/>
     <property name="log_config"       	  value="${conf_dir}/log4j.properties"/>
-    <property name="log_file"         	  value="${log_dir}/esg-publisher_v${version_num}.log"/>
+    <property name="log_file"         	  value="${log_dir}/${module}_v${version_num}.log"/>
     <property name="javadoc_link_src" 	  value="true"/>
     <property name="main_class"           value="esg.node.publisher_fe.Main"/>
 
@@ -260,7 +268,7 @@ Builds the project via ant (obviously).
 
   <target name="make" depends="deps" 
 	  description="(Java compiles all the main source code)">
-    <echo message="Java Compiling Esg-Publisher..."/> 
+    <echo message="Java compiling ${module}..."/> 
     
     <mkdir dir="${build_dir}" />
     <mkdir dir="${depcache_dir}" />
@@ -308,8 +316,9 @@ Builds the project via ant (obviously).
 	       excludes="**/test/**"/>
       <manifest>
 	<attribute name="Organization" value="Earth Systems Grid"/>
-	<attribute name="Author"       value="Gavin M. Bell"/>
-	<attribute name="Project"      value="Esg-Publisher"/>
+	<attribute name="Author"       value="${author}"/>
+	<attribute name="Project"      value="ESGF"/>
+	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<attribute name="Main-Class"   value="${main_class}"/>
@@ -330,8 +339,9 @@ Builds the project via ant (obviously).
       <fileset dir="${test_build_dir}"/>
       <manifest>
 	<attribute name="Organization" value="Earth Systems Grid"/>
-	<attribute name="Author"       value="Gavin M. Bell"/>
-	<attribute name="Project"      value="Esg-Publisher Tests"/>
+	<attribute name="Author"       value="${author}"/>
+	<attribute name="Project"      value="ESGF (Tests)"/>
+	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<section name="esg/">
@@ -354,8 +364,9 @@ Builds the project via ant (obviously).
 	       excludes="**/test/**,**/node.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="Earth Systems Grid"/>
-	<attribute name="Author"       value="Gavin M. Bell"/>
-	<attribute name="Project"      value="Esg-Publisher FE"/>
+	<attribute name="Author"       value="${author}"/>
+	<attribute name="Project"      value="ESGF"/>
+	<attribute name="Module"       value="${module} fe"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<attribute name="Main-Class"   value="${main_class}"/>
@@ -379,8 +390,9 @@ Builds the project via ant (obviously).
 	       excludes="**/test/**,**/node.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="Earth Systems Grid"/>
-	<attribute name="Author"       value="Gavin M. Bell"/>
-	<attribute name="Project"      value="Esg-Publisher Connector"/>
+	<attribute name="Author"       value="${author}"/>
+	<attribute name="Project"      value="${module} connector"/>
+	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<section name="esg/node/publisher/connector/">
@@ -401,8 +413,9 @@ Builds the project via ant (obviously).
 	       includes="esg/publisher/common/**"/>
       <manifest>
 	<attribute name="Organization" value="Earth Systems Grid"/>
-	<attribute name="Author"       value="Gavin M. Bell"/>
-	<attribute name="Project"      value="Esg-Publisher Common"/>
+	<attribute name="Author"       value="${author}"/>
+	<attribute name="Project"      value="${module} common"/>
+	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
 	<section name="esg/publisher/common/">
@@ -418,8 +431,8 @@ Builds the project via ant (obviously).
 	  description="(Creates full software distribution)">
     <delete file="${dist_dir}/${module}.${version_num}.tar.gz"/> 
     <tar destfile="${dist_dir}/${module}.${version_num}.tar">
-      <tarfileset dir="${dist_dir}" includes="**/*.jar,**/*.war" prefix="esg-publisher.${version_num}"/>
-      <tarfileset dir="${basedir}" prefix="esg-publisher.${version_num}">
+      <tarfileset dir="${dist_dir}" includes="**/*.jar,**/*.war" prefix="${module}.${version_num}"/>
+      <tarfileset dir="${basedir}" prefix="${module}.${version_num}">
 	<include name="LICENSE"/>
 	<include name="INSTALL"/>
 	<include name="README"/>
@@ -486,7 +499,7 @@ Builds the project via ant (obviously).
 
   <target name="make_test" depends="make"
 	  description="(Java compiles all the test source code)">
-    <echo message="Java Compiling Esg-Publisher TESTs..."/>
+    <echo message="Java compiling ${module} TESTs..."/>
 
     <path id="test_classpath">
       <fileset dir="${lib_dir}" includes="**/junit*.jar"/>
@@ -605,14 +618,14 @@ Builds the project via ant (obviously).
        version="true"
        use="true"
        linksource="${javadoc_link_src}"
-       windowtitle="ESG-PUBLISHER API"
+       windowtitle="${module} api"
        classpathref="main_classpath">
 
       <packageset dir="${src_dir}" defaultexcludes="yes">
 	<exclude name="**/test/**"/>
       </packageset>
 
-      <doctitle><![CDATA[<h1>ESG-PUBLISHER</h1>]]></doctitle>
+      <doctitle><![CDATA[<h1>${module}</h1>]]></doctitle>
       <bottom><![CDATA[<i><a href="http://esg-repo.llnl.gov/">ESG / BSD OpenSource License</a></i>]]></bottom>
       <tag name="todo" scope="all" description="To do:"/>
       <group title="ESG Publisher Client Front End Packages" packages="esg.node.publisher_fe*"/>
@@ -638,7 +651,7 @@ Builds the project via ant (obviously).
 	<include name="**/*.jar"/>
 	<exclude name="**/junit*.jar"/>
       </fileset>
-      <pathelement path="${dist_dir}/esg-publisher.${version_num}.jar"/>
+      <pathelement path="${dist_dir}/${module}.${version_num}.jar"/>
     </path>
     
     <pathconvert property="__cp" refid="jar_cp" pathsep="${line.separator}"/>
