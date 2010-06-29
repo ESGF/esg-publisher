@@ -86,8 +86,10 @@ Builds the project via ant (obviously).
 <project name="esg-publisher" default="make" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
 
   <property name="module" value="esg-publisher"/>
+  <property name="organization" value="Earth Systems Grid Federation"/>
+  <property name="project_name" value="ESG-Node"/>
   <property name="author" value="Gavin M. Bell"/>
-  
+
   <!--
       ************************************************************
       Global Initialization and Preparation....
@@ -165,10 +167,10 @@ Builds the project via ant (obviously).
     <property name="ivy.lib.dir" value="${lib_fetched_dir}"/>
      
     <echo message="--------------------------------"/> 
+    <echo message="module            = ${module} "/> 
     <echo message="version_num       = ${version_num} "/> 
     <echo message="release_name      = ${release_name} "/> 
     <echo message="--------------------------------"/> 
-    <echo message="module            = ${module} "/> 
     <echo message="src_dir           = ${src_dir}"/>
     <echo message="lib_dir           = ${lib_dir}"/>
     <echo message="lib_fetched_dir   = ${lib_fetched_dir}"/>
@@ -315,9 +317,9 @@ Builds the project via ant (obviously).
 	       includes="esg/**,**/*.properties"
 	       excludes="**/test/**"/>
       <manifest>
-	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="ESGF"/>
+	<attribute name="Project"      value="${project_name}"/>
 	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
@@ -338,9 +340,9 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}-test.${version_num}.jar">
       <fileset dir="${test_build_dir}"/>
       <manifest>
-	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="ESGF (Tests)"/>
+	<attribute name="Project"      value="${project_name} (Tests)"/>
 	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
@@ -351,6 +353,29 @@ Builds the project via ant (obviously).
     </jar>
   </target>
   
+  <target name="make_common_jar" depends="make" description="(Creates common jar file)">
+    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-common.${version_num}.jar"/> 
+    <delete> 
+      <fileset dir="." includes="${dist_dir}/${module}-common*.jar"/>
+    </delete>
+    <mkdir dir="${dist_dir}" />
+    <jar destfile="${dist_dir}/${module}-common.${version_num}.jar">
+      <fileset dir="${build_dir}"
+	       includes="esg/publisher/common/**"/>
+      <manifest>
+	<attribute name="Organization" value="${organization}"/>
+	<attribute name="Author"       value="${author}"/>
+	<attribute name="Project"      value="${project_name} ${module} common"/>
+	<attribute name="Module"       value="${module}"/>
+	<attribute name="Version"      value="${version_num}"/>
+	<attribute name="Release-Name" value="${release_name}"/>
+	<section name="esg/publisher/common/">
+	  <attribute name="Sealed" value="false"/>
+	</section>
+      </manifest>
+    </jar>
+  </target>
+
   <target name="make_fe_jar" depends="make"
 	  description="(Creates the jar file distribution for client Front End GUI)">
     <echo message="JAR -  ${build_dir} ->> ${dist_dir}/${module}-fe.${version_num}.jar"/> 
@@ -363,9 +388,9 @@ Builds the project via ant (obviously).
 	       includes="esg/node/publisher_fe/**,esg/publisher/common/**,**/*.properties"
 	       excludes="**/test/**,**/node.properties/**"/>
       <manifest>
-	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="ESGF"/>
+	<attribute name="Project"      value="${project_name}"/>
 	<attribute name="Module"       value="${module} fe"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
@@ -389,9 +414,9 @@ Builds the project via ant (obviously).
 	       includes="esg/node/publisher/connector/**,esg/publisher/common/**,**/*.properties"
 	       excludes="**/test/**,**/node.properties/**"/>
       <manifest>
-	<attribute name="Organization" value="Earth Systems Grid"/>
+	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="${module} connector"/>
+	<attribute name="Project"      value="${project_name} ${module} connector"/>
 	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
@@ -402,30 +427,7 @@ Builds the project via ant (obviously).
     </jar>
   </target>  
 
-  <target name="make_common_jar" depends="make" description="(Creates common jar file)">
-    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-common.${version_num}.jar"/> 
-    <delete> 
-      <fileset dir="." includes="${dist_dir}/${module}-common*.jar"/>
-    </delete>
-    <mkdir dir="${dist_dir}" />
-    <jar destfile="${dist_dir}/${module}-common.${version_num}.jar">
-      <fileset dir="${build_dir}"
-	       includes="esg/publisher/common/**"/>
-      <manifest>
-	<attribute name="Organization" value="Earth Systems Grid"/>
-	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="${module} common"/>
-	<attribute name="Module"       value="${module}"/>
-	<attribute name="Version"      value="${version_num}"/>
-	<attribute name="Release-Name" value="${release_name}"/>
-	<section name="esg/publisher/common/">
-	  <attribute name="Sealed" value="false"/>
-	</section>
-      </manifest>
-    </jar>
-  </target>
-
-  <target name="make_all_jars" depends="make_jar,make_test_jar,make_fe_jar,make_connector_jar,make_common_jar"/>
+  <target name="make_all_jars" depends="make_jar,make_test_jar,make_common_jar,make_fe_jar,make_connector_jar"/>
 
   <target name="make_dist" depends="make_all_jars"
 	  description="(Creates full software distribution)">
