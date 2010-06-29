@@ -154,6 +154,7 @@ Builds the project via ant (obviously).
     <property name="jaxb_gen_package" value="esg.common.generated"/>
 
     <property name="test_last_failed_file" location="${build_dir}/.lasttestsfailed"/>
+    <property name="ivy.lib.dir" value="${lib_fetched_dir}"/>
      
     <echo message="--------------------------------"/> 
     <echo message="version_num       = ${version_num} "/> 
