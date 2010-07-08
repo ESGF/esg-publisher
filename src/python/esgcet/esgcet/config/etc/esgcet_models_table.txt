@@ -50,3 +50,4 @@
   dycore | finite_volume | http://www.esmf.ucar.edu/download/dycore_data/ | CAM Finite Volume Dycore
   ccsm3 | CCSM3 | http://www.ccsm.ucar.edu| NCAR Community Climate System Model, CCSM 3.0
   test | test | http://www-pcmdi.llnl.gov | Test
+  test | ncar_ccsm3_0 | http://www.ccsm.ucar.edu| NCAR Community Climate System Model, CCSM 3.0

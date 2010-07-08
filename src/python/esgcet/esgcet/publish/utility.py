@@ -9,8 +9,8 @@ import glob
 import re
 import logging
 import subprocess
-from cdms2 import Cdunif
-from esgcet.config import getHandler, getHandlerByName, CFHandler, splitLine
+import filecmp
+from esgcet.config import getHandler, getHandlerByName, splitLine
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
@@ -396,12 +396,40 @@ def issueCallback(callbackTuple, i, n, subi, subj, stopEvent=None):
     if stopEvent is not None and stopEvent.stop_extract:
         raise ESGStopPublication("Publication stopped")
     
+def parseDatasetVersionId(datasetVersionId):
+    fields = datasetVersionId.split('#')
+    if len(fields)==1:
+        result = (datasetVersionId, -1)
+    elif len(fields)==2:
+        result = (fields[0], string.atoi(fields[1]))
+    else:
+        raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
+    return result
+
+def generateDatasetVersionId(versionTuple):
+    result = "%s#%d"%versionTuple
+    return result
+
+def extraFieldsGet(extraDict, gettuple, versionobj):
+    dsetname, path, attname = gettuple
+    if versionobj.isLatest():
+        tup1 = (dsetname, -1, path, attname)
+        attval = extraDict.get(tup1, None)
+        if attval is None:
+            tup2 = (dsetname, versionobj.version, path, attname)
+            attval = extraDict.get(tup2, None)
+    else:
+        attval = extraDict.get(gettuple, None)
+    return attval
+
 def readDatasetMap(mappath, parse_extra_fields=False):
     """Read a dataset map.
 
     A dataset map is a text file, each line having the form:
 
     dataset_id | absolute_file_path | size [ | ``from_file``=<path> [ | extra_field=extra_value ...]]
+
+    where dataset_id has the form dataset_name[#version]
 
     Returns (if parse_extra_fields=False) a dataset map - a dictionary: dataset_id => [(path, size), (path, size), ...]
     If parse_extra_fields=True, returns a tuple (dataset_map, extra_dictionary). See parse_extra_fields.
@@ -414,7 +442,7 @@ def readDatasetMap(mappath, parse_extra_fields=False):
       Boolean; if True then parse any extra fields of the form *extra_field=extra_value*, and return
       a dictionary with items of the form:
 
-      extrafields[(dataset_id, absolute_file_path, *field_name*)] => field_value
+      extrafields[(dataset_name, version_number, absolute_file_path, *field_name*)] => field_value
 
       where *field_name* is one of:
 
@@ -431,21 +459,23 @@ def readDatasetMap(mappath, parse_extra_fields=False):
 
         if parse_extra_fields:
             fields = splitLine(line)
-            datasetId, path, size = fields[0:3]
+            versionName, path, size = fields[0:3]
+            datasetName,versionno = parseDatasetVersionId(versionName)
             if len(fields)>3:
                 for field in fields[3:]:
                     efield, evalue = field.split('=')
-                    extraFieldMap[(datasetId, path, efield.strip())] = evalue.strip()
-            if datasetMap.has_key(datasetId):
-                datasetMap[datasetId].append((path, size))
+                    extraFieldMap[(datasetName, versionno, path, efield.strip())] = evalue.strip()
+            if datasetMap.has_key((datasetName, versionno)):
+                datasetMap[(datasetName, versionno)].append((path, size))
             else:
-                datasetMap[datasetId] = [(path, size)]
+                datasetMap[(datasetName, versionno)] = [(path, size)]
         else:
             datasetId, path, size = splitLine(line)[0:3]
-            if datasetMap.has_key(datasetId):
-                datasetMap[datasetId].append((path, size))
+            versionId = parseDatasetVersionId(datasetId)
+            if datasetMap.has_key(versionId):
+                datasetMap[versionId].append((path, size))
             else:
-                datasetMap[datasetId] = [(path, size)]
+                datasetMap[versionId] = [(path, size)]
 
     mapfile.close()
 
@@ -457,7 +487,7 @@ def readDatasetMap(mappath, parse_extra_fields=False):
     else:
         return datasetMap
 
-def datasetMapIterator(datasetMap, datasetId, extraFields=None, offline=False):
+def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, offline=False):
     """Create an iterator from a dataset map entry.
 
     Returns an iterator that returns (path, size) at each iteration. If sizes are omitted from the file, the sizes are inserted, provided the files are online.
@@ -468,6 +498,9 @@ def datasetMapIterator(datasetMap, datasetId, extraFields=None, offline=False):
     datasetId
       Dataset string identifier.
       
+    versionNumber
+      String version number.
+
     extraFields
       Extra dataset map fields, as from **readDatasetMap**.
 
@@ -476,7 +509,7 @@ def datasetMapIterator(datasetMap, datasetId, extraFields=None, offline=False):
 
     """
 
-    for path, csize in datasetMap[datasetId]:
+    for path, csize in datasetMap[(datasetId, versionNumber)]:
         csize = csize.strip()
         if csize=="":
             size = os.stat(path)[stat.ST_SIZE]
@@ -484,7 +517,7 @@ def datasetMapIterator(datasetMap, datasetId, extraFields=None, offline=False):
             size = string.atol(csize)
         mtime = None
         if extraFields is not None:
-            mtime = extraFields.get((datasetId, path, 'mod_time'))
+            mtime = extraFields.get((datasetId, versionNumber, path, 'mod_time'))
         if mtime is None:
             if not offline:
                 mtime = os.stat(path)[stat.ST_MTIME]
@@ -494,7 +527,7 @@ def datasetMapIterator(datasetMap, datasetId, extraFields=None, offline=False):
             mtime = float(mtime)
         yield (path, (size, mtime))
 
-def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None):
+def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -571,8 +604,11 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
       Otherwise the TDS catalog is written with a 'master_gateway' property, flagging the dataset(s)
       as replicated.
 
-    comment=None:
+    comment=None
       String comment to associate with new datasets created.
+
+    forceAggregate=False
+      if True, run the aggregation step regardless.
 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
@@ -581,7 +617,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
     datasets = []
     ct = len(datasetNames)
     for iloop in range(ct): 
-        datasetName = datasetNames[iloop]
+        datasetName,versionno = datasetNames[iloop]
         context = initcontext.copy()
 
         # Get offline flag
@@ -590,13 +626,17 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         else:
             offline = offlineArg
 
+        # Don't try to aggregate offline datasets
+        if offline:
+            forceAggregate=False
+
         # Get a file iterator and sample file
         if dmap is not None:
-            if len(dmap[datasetName])==0:
-                warning("No files specified for dataset %s"%datasetName)
+            if len(dmap[(datasetName,versionno)])==0:
+                warning("No files specified for dataset %s, version %d."%(datasetName,versionno))
                 continue
-            firstFile = dmap[datasetName][0][0]
-            fileiter = datasetMapIterator(dmap, datasetName, extraFields=extraFields, offline=offlineArg)
+            firstFile = dmap[(datasetName,versionno)][0][0]
+            fileiter = datasetMapIterator(dmap, datasetName, versionno, extraFields=extraFields, offline=offlineArg)
         else:
             direcTuples = directoryMap[datasetName]
             firstDirec, sampleFile = direcTuples[0]
@@ -643,7 +683,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
             raise
 
         # Create a CFHandler for validation of standard names, checking time axes, etc.
-        cfHandler = CFHandler(Session)
+        cfHandler = handler.getMetadataHandler(sessionMaker=Session)
 
         dataset=None
         if testProgress1 is not None:
@@ -652,14 +692,23 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
               testProgress1[2] = (100./ct)*iloop + (50./ct)
            else:
               testProgress1[2] = (100./ct)*iloop + (100./ct)
-        dataset = extractFromDataset(datasetName, fileiter, Session, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, **context)
+        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, useVersion=versionno, forceRescan=forceAggregate, **context)
 
-        if not offline:
-            if testProgress2 is not None:
-               testProgress2[1] = (100./ct)*iloop + 50./ct
-               testProgress2[2] = (100./ct)*(iloop + 1)
+        # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
+        runAggregate = (not offline)
+        if hasattr(dataset, 'reaggregate'):
+            runAggregate = (runAggregate and dataset.reaggregate)
+        runAggregate = runAggregate or forceAggregate
+
+        if testProgress2 is not None:
+           testProgress2[1] = (100./ct)*iloop + 50./ct
+           testProgress2[2] = (100./ct)*(iloop + 1)
+        if runAggregate:
             aggregateVariables(datasetName, Session, aggregateDimensionName=aggregateDimension, cfHandler=cfHandler, progressCallback=testProgress2, datasetInstance=dataset)
-
+        elif testProgress2 is not None:
+            # Just finish the progress GUI
+            issueCallback(testProgress2, 1, 1, 0.0, 1.0)
+            
         # Save the context with the dataset, so that it can be searched later
         handler.saveContext(datasetName, Session)
         datasets.append(dataset)
@@ -685,13 +734,16 @@ def whereIrregular(ar, atol=1.e-8, rtol=1.e-5):
     cond = abs(diff-step)>=(atol + abs(step)*rtol)
     return inds[cond]
 
-def compareFiles(fileobj, path, size, offline, checksum=None):
+def compareFiles(fileVersion, handler, path, size, offline, checksum=None):
     """Compare a database file object and physical file.
 
     Returns True iff the files are the same.
     
-    fileobj
-      File object
+    fileVersion
+      File version object
+
+    handler
+      Project handler.
 
     path
       String path of file to compare.
@@ -708,7 +760,6 @@ def compareFiles(fileobj, path, size, offline, checksum=None):
 
     # If checksums are defined for both files, it is definitive
     # to compare them.
-    fileVersion = fileobj.versions[-1]
     if checksum is not None and fileVersion.checksum is not None:
         return fileVersion.checksum==checksum
 
@@ -720,11 +771,8 @@ def compareFiles(fileobj, path, size, offline, checksum=None):
     if offline:
         return True
 
-    f = Cdunif.CdunifFile(path)
-    if hasattr(f, 'tracking_id'):
-        trackingId = f.tracking_id
-    else:
-        trackingId = None
+    f = handler.openPath(path)
+    trackingId = f.getAttribute('tracking_id', None, None)
     f.close()
 
     # If at least one file has a tracking ID, and they differ,
@@ -743,6 +791,57 @@ def compareFiles(fileobj, path, size, offline, checksum=None):
 
     # Cannot decide definitively - assume they compare.
     return True
+
+def compareFilesByPath(path1, path2, handler, size1=None, compare=False):
+    """Compare two files.
+
+    Returns True iff the files are the same.
+    
+    path1
+      String path of first file to compare.
+    
+    path2
+      String path of second file to compare.
+    
+    handler
+      Project handler.
+
+    size1
+      Size of first file, as returned by the stat module.
+
+    compare
+      Boolean, if True compare the contents.
+    """
+
+    # If file sizes differ, files are not equal
+    if size1 is None:
+        stats = os.stat(path1)
+        size1 = stats[stat.ST_SIZE]
+        
+    stats = os.stat(path2)
+    if size1 != stats[stat.ST_SIZE]:
+        return False
+
+    # If at least one file has a tracking ID, and they differ, the files are not equal
+    f = handler.openPath(path1)
+    trackingId1 = f.getAttribute('tracking_id', None, None)
+    f.close()
+    f = handler.openPath(path2)
+    trackingId2 = f.getAttribute('tracking_id', None, None)
+    f.close()
+    if ((trackingId1 is not None) or (trackingId2 is not None)) and trackingId1!=trackingId2:
+        return False
+
+    # Optionally, just compare the files
+    if compare:
+        return filecmp.cmp(path1, path2, shallow=False)
+
+    # If both files have tracking ID and they agree, the files are equal
+    if (trackingId1 is not None) and (trackingId2 is not None) and trackingId1==trackingId2:
+        return True
+
+    # Cannot decide definitively - assume they don't compare.
+    return False
 
 def checksum(path, client):
     """

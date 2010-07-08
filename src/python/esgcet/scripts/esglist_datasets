@@ -23,6 +23,9 @@ Arguments:
 
 Options:
 
+    --all:
+        List all dataset versions.
+
     --echo-sql:
         Echo SQL commands
 
@@ -51,7 +54,7 @@ Options:
         Property/value pair. value may use '%' as a wildcard character.
 
     --select property,property,...,property
-        Select the specific properties to be printed. The list is comma-separated with no blanks.
+        Select the specific properties to be printed. The list is comma-separated.
 
 Notes:
     - To force a property to be listed, specify -p name=%
@@ -61,7 +64,7 @@ Notes:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:p:", ['echo-sql', 'experiment=', 'help', 'list-projects', 'list-properties', 'model=',  'no-header', 'project=', 'property=', 'select='])
+        args, lastargs = getopt.getopt(argv, "hi:p:", ['all', 'echo-sql', 'experiment=', 'help', 'list-projects', 'list-properties', 'model=',  'no-header', 'project=', 'property=', 'select='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -69,13 +72,16 @@ def main(argv):
 
     echoSql = False
     init_file = None
-    properties = {}
+    listAll = False
     listProjects = False
     listProperties = False
     printHeaders = True
+    properties = {}
     selectList = None
     for flag, arg in args:
-        if flag=='--echo-sql':
+        if flag=='--all':
+            listAll = True
+        elif flag=='--echo-sql':
             echoSql = True
         elif flag=='--experiment':
             name, op, value = parseQuery('experiment=%s'%arg)
@@ -128,7 +134,7 @@ def main(argv):
         for projectName, projectDesc, search_order in projectSpecs:
             print '%s:\t%s'%(projectName, projectDesc)
     else:
-        result, headers = queryDatasets(projectName, handler, Session, properties, select=selectList)
+        result, headers = queryDatasets(projectName, handler, Session, properties, select=selectList, listall=listAll)
         printResult(headers, result, printHeaders=printHeaders)
 
 if __name__=='__main__':

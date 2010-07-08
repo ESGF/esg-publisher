@@ -7,69 +7,82 @@ from hessianlib import Hessian, RemoteCallException
 from publish import PublicationState, PublicationStatus
 from time import sleep
 from thredds import updateThreddsMasterCatalog, reinitializeThredds
-from las import updateLASMasterCatalog, reinitializeLAS
+from las import reinitializeLAS
 from utility import issueCallback
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
-def retractDataset(datasetName, service, session):
+# When the gateway catches up to versioned catalogs, set this to False so that individual versions
+# with the same dataset name can be deleted.
+DELETE_AT_DATASET_LEVEL = True
 
+def datasetOrVersionName(name, version, session, deleteAll=False):
     """
-    Retract a dataset. This leaves certain metadata on the gateway database, but reduces the visibility
-    of the dataset at the gateway portal.
+    Determine if the name refers to a dataset or dataset version.
 
-    Returns (*event_name*, *state_name*) where *dset* is the Dataset
-    instance, *statusId* is the web service ID to poll for status, 
-    *state* is the initial publication state, *event_name* is the
-    associated event, such as ``esgcet.model.UNPUBLISH_GATEWAY_DATASET_EVENT``,
-    and *status* is the associated PublicationStatus instance.
+    Returns (deleteAll, datasetObj, [versionObjs], isLatestVersion) where:
 
-    datasetName
-      String dataset identifier.
+    datasetObj is the related dataset object, or None if neither the dataset or version is found;
+    [versionObj] is a list of version objects to be deleted. isLatestVersion is True iff this
+    version is the latest one for the dataset. It is not considered an error if the version
+    does not exist in the local database, since it may still exist in THREDDS and/or the gateway.
 
-    service
-      Hessian proxy web service
+    name
+      String name to look up.
 
     session
       A database Session **instance**.
 
+    version
+      Version to delete. If version is -1, all version objects for the dataset are returned.
+
+    deleteAll
+      Boolean, if True delete all versions of the dataset(s).
+
     """
-    
+
     # Lookup the dataset
-    dset = session.query(Dataset).filter_by(name=datasetName).first()
+    dset = session.query(Dataset).filter_by(name=name).first()
+
+    deleteAll = (deleteAll or version==-1)
+    isLatest = False
     if dset is None:
-        raise ESGPublishError("Dataset not found: %s"%datasetName)
+        dsetVersionObjs = []
+    else:                               # It's a dataset
 
-    # Clear publication errors from dataset_status
-    dset.clear_warnings(session, PUBLISH_MODULE)
+        # Check if this is the latest version
+        versionObj = dset.getVersionObj(version=version)
+        if versionObj is None:
+            warning("Version %d of dataset %s not found"%(version, dset.name))
+            isLatest = False
+        else:
+            isLatest = versionObj.isLatest()
+            
+        # If this is the only version, delete the entire dataset
+        deleteAll = deleteAll or (versionObj is not None and len(dset.versions)==1)
 
-    # Delete
-    try:
-        service.retractDataset(datasetName, 'Retracting dataset')
-    except socket.error, e:
-        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
-    except RemoteCallException, e:
-        fields = `e`.split('\n')
-        dset.warning("Retraction failed for dataset %s with message: %s"%(datasetName, string.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
-        event = Event(dset.name, dset.getVersion(), UNPUBLISH_DATASET_FAILED_EVENT)
-        stateName = 'UNSUCCESSFUL'
-    else:
-        event = Event(dset.name, dset.getVersion(), UNPUBLISH_GATEWAY_DATASET_EVENT)
-        stateName = 'SUCCESSFUL'
+        if deleteAll:
+            dsetVersionObjs = dset.versions
+        else:
+            if versionObj is None:
+                dsetVersionObjs = []
+            else:
+                dsetVersionObjs = [versionObj]
 
-    dset.events.append(event)
+    return (deleteAll, dset, dsetVersionObjs, isLatest)
 
-    return event.event, stateName
-
-def deleteDataset(datasetName, service, session):
+def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session, dset=None):
     """
-    Delete a dataset from the gateway.
+    Delete a dataset version from the gateway.
 
     Returns (*event_name*, *state_name*) where *event_name* is the
     associated event, such as ``esgcet.model.DELETE_GATEWAY_DATASET_EVENT``,
     and *state_name* is 'SUCCESSFUL' or 'UNSUCCESSFUL'
 
-    datasetName
-      String dataset identifier.
+    versionName
+      String dataset identifier (foo.bar.vN).
+
+    gatewayOperation
+      DELETE or UNPUBLISH
 
     service
       Hessian proxy web service
@@ -77,54 +90,54 @@ def deleteDataset(datasetName, service, session):
     session
       A database Session **instance**.
 
-    """
-    
-    # Lookup the dataset
-    dset = session.query(Dataset).filter_by(name=datasetName).first()
-    if dset is not None:
+    dset
+      Parent dataset of the version. If None, don't record the deletion event.
 
-        # Clear publication errors from dataset_status
+    """
+
+    # Clear publication errors from dataset_status
+    if dset is not None:
         dset.clear_warnings(session, PUBLISH_MODULE)
 
-        # Delete
-        try:
-            service.deleteDataset(datasetName, True, 'Deleting dataset')
-        except socket.error, e:
-            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
-        except RemoteCallException, e:
-            fields = `e`.split('\n')
-            dset.warning("Deletion failed for dataset %s with message: %s"%(datasetName, string.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
-            event = Event(dset.name, dset.getVersion(), DELETE_DATASET_FAILED_EVENT)
-            stateName = 'UNSUCCESSFUL'
-        else:
-            event = Event(dset.name, dset.getVersion(), DELETE_GATEWAY_DATASET_EVENT)
-            stateName = 'SUCCESSFUL'
+    if gatewayOperation==DELETE:
+        successEvent = DELETE_GATEWAY_DATASET_EVENT
+        failureEvent = DELETE_DATASET_FAILED_EVENT
+    else:
+        successEvent = UNPUBLISH_GATEWAY_DATASET_EVENT
+        failureEvent = UNPUBLISH_DATASET_FAILED_EVENT
 
+    # Delete
+    try:
+        if gatewayOperation==DELETE:
+            info("Deleting %s"%versionName)
+            service.deleteDataset(versionName, True, 'Deleting dataset')
+        else:
+            info("Retracting %s"%versionName)
+            service.retractDataset(versionName, 'Retracting dataset')
+    except socket.error, e:
+        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
+    except RemoteCallException, e:
+        fields = `e`.split('\n')
+        if dset is not None:
+            dset.warning("Deletion/retraction failed for dataset %s with message: %s"%(versionName, string.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
+            event = Event(dset.name, dset.getVersion(), failureEvent)
+        eventName = failureEvent
+        stateName = 'UNSUCCESSFUL'
+    else:
+        if dset is not None:
+            event = Event(dset.name, dset.getVersion(), successEvent)
+        eventName = successEvent
+        stateName = 'SUCCESSFUL'
+
+    if dset is not None:
         dset.events.append(event)
 
-        return event.event, stateName
-
-    else:                               # Try to delete on the gateway only
-        warning("Dataset not found in data node database: %s"%datasetName)
-        
-        # Delete
-        try:
-            service.deleteDataset(datasetName, True, 'Deleting dataset')
-        except socket.error, e:
-            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
-        except RemoteCallException, e:
-            fields = `e`.split('\n')
-            warning("Deletion failed for dataset %s with message: %s"%(datasetName, string.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
-            stateName = 'UNSUCCESSFUL'
-        else:
-            stateName = 'SUCCESSFUL'
-
-        return DELETE_GATEWAY_DATASET_EVENT, stateName
+    return eventName, stateName
 
 DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
-def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None):
+def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False):
     """
     Delete or retract a list of datasets:
 
@@ -133,10 +146,13 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     - Reinitialize the LAS server and THREDDS server.
     - Delete the database entry (optional).
 
-    Returns a dictionary: datasetName => status
+    if republish is False:
+      Returns a status dictionary: datasetName => status
+    else
+      Returns a tuple (status_dictionary, republishList), where republishList is a list of (dataset_name, version) tuples to be republished.
 
     datasetNames
-      A list of string dataset names.
+      A list of )dataset_name, version) tuples.
 
     Session
       A database Session.
@@ -159,6 +175,12 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     progressCallback
       Tuple (callback, initial, final) where ``callback`` is a function of the form ``callback(progress)``, ``initial`` is the initial value reported, ``final`` is the final value reported.
 
+    deleteAll
+      Boolean, if True delete all versions of the dataset(s).
+
+    republish
+      Boolean, if True return (statusDictionary, republishList), where republishList is a list of datasets to be republished.
+
     """
 
     if gatewayOperation not in (DELETE, UNPUBLISH, NO_OPERATION):
@@ -170,6 +192,14 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     resultDict = {}
     config = getConfig()
 
+    # Check the dataset names and cache the results for the gateway, thredds, and database phases
+    nameDict = {}
+    for datasetName,version in datasetNames:
+        isDataset, dset, versionObjs, isLatest = datasetOrVersionName(datasetName, version, session, deleteAll=deleteAll)
+        if dset is None:
+            warning("Dataset not found in node database: %s"%datasetName)
+        nameDict[datasetName] = (isDataset, dset, versionObjs, isLatest)
+
     # Delete the dataset from the gateway.
     if operation:
 
@@ -179,29 +209,40 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        servicePollingDelay = config.getint('DEFAULT','hessian_service_polling_delay')
-        spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
         threddsRootURL = config.get('DEFAULT', 'thredds_url')
         service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
 
-        for datasetName in datasetNames:
-            try:
-                if deleteOnGateway:
-                    info("Deleting: %s"%datasetName)
-                    eventName, stateName = deleteDataset(datasetName, service, session)
-                else:
-                    info("Retracting: %s"%datasetName)
-                    eventName, stateName = retractDataset(datasetName, service, session)
-            except RemoteCallException, e:
-                fields = `e`.split('\n')
-                error("Deletion/retraction failed for dataset %s with message: %s"%(datasetName, string.join(fields[0:2], '\n')))
-                continue
-            except ESGPublishError, e:
-                fields = `e`.split('\n')
-                error("Deletion/retraction failed for dataset %s with message: %s"%(datasetName, string.join(fields[-2:], '\n')))
-                continue
-            info("  Result: %s"%stateName)
-            resultDict[datasetName] = eventName
+        for datasetName,version in datasetNames:
+            isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
+            if (not DELETE_AT_DATASET_LEVEL) and (dset is not None):
+                for versionObj in versionObjs:
+                    try:
+                        eventName, stateName = deleteGatewayDatasetVersion(versionObj.name, gatewayOperation, service, session, dset=dset)
+                    except RemoteCallException, e:
+                        fields = `e`.split('\n')
+                        error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[0:2], '\n')))
+                        continue
+                    except ESGPublishError, e:
+                        fields = `e`.split('\n')
+                        error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[-2:], '\n')))
+                        continue
+                    info("  Result: %s"%stateName)
+                    resultDict[datasetName] = eventName
+            else:                       # Nothing in the node database, but still try to delete on the gateway
+                if DELETE_AT_DATASET_LEVEL and (dset is not None):
+                    datasetName = dset.name
+                try:
+                    eventName, stateName = deleteGatewayDatasetVersion(datasetName, gatewayOperation, service, session, dset=dset)
+                except RemoteCallException, e:
+                    fields = `e`.split('\n')
+                    error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[0:2], '\n')))
+                    continue
+                except ESGPublishError, e:
+                    fields = `e`.split('\n')
+                    error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[-2:], '\n')))
+                    continue
+                info("  Result: %s"%stateName)
+                resultDict[datasetName] = eventName
 
     # Reinitialize the LAS server.
     if las:
@@ -211,33 +252,58 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     # and reinitialize the THREDDS server.
     if thredds:
         threddsRoot = config.get('DEFAULT', 'thredds_root')
-        for datasetName in datasetNames:
-            catalog = session.query(Catalog).filter_by(dataset_name=datasetName).first()
-            if catalog is not None:
-                path = os.path.join(threddsRoot, catalog.location)
-                if os.path.exists(path):
-                    info("Deleting THREDDS catalog: %s"%path)
-                    os.unlink(path)
-                session.delete(catalog)
+        for datasetName,version in datasetNames:
+            isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
+            if dset is None:
+                continue
+            for versionObj in versionObjs:
+                catalog = session.query(Catalog).filter_by(dataset_name=dset.name, version=versionObj.version).first()
+                if catalog is not None:
+                    path = os.path.join(threddsRoot, catalog.location)
+                    if os.path.exists(path):
+                        info("Deleting THREDDS catalog: %s"%path)
+                        os.unlink(path)
+                        event = Event(dset.name, versionObj.version, DELETE_THREDDS_CATALOG_EVENT)
+                        dset.events.append(event)
+                    session.delete(catalog)
 
         session.commit()
         updateThreddsMasterCatalog(Session)
         result = reinitializeThredds()
 
     # Delete the database entry (optional).
+    if republish:
+        republishList = []
     if deleteInDatabase:
-        for datasetName in datasetNames:
-            dset = session.query(Dataset).filter_by(name=datasetName).first()
-            if dset is not None:
+        for datasetName,version in datasetNames:
+            isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
+            if dset is None:
+                continue
+            if isDataset:
                 info("Deleting existing dataset: %s"%datasetName)
                 event = Event(dset.name, dset.getVersion(), DELETE_DATASET_EVENT)
                 dset.events.append(event)
                 dset.deleteChildren(session)            # For efficiency
                 session.delete(dset)
             else:
-                info("Database entry not found for: %s"%datasetName)
+                if len(versionObjs)>0:
+                    versionObj = versionObjs[0]
+
+                    # If necessary, republish the most recent version after this one.
+                    if isLatest and republish:
+                        nextVersion = dset.versions[-2].version
+                        republishList.append((datasetName, nextVersion))
+                    info("Deleting existing dataset version: %s (version %d)"%(datasetName, versionObjs[0].version))
+                    event = Event(dset.name, versionObj.version, DELETE_DATASET_EVENT)
+                    dset.events.append(event)
+                    session.delete(versionObj)
+                    if isLatest:
+                        dset.deleteVariables(session)
         
     session.commit()
     session.close()
 
-    return resultDict
+    if republish:
+        return (resultDict, republishList)
+    else:
+        return resultDict

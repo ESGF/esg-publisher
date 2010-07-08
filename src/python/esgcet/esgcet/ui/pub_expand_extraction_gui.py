@@ -25,7 +25,7 @@ from pub_controls import MyButton
 from pub_controls import font_weight
 from esgcet.query import getQueryFields
 from esgcet.messaging import warning
-from esgcet.publish import pollDatasetPublicationStatus, readDatasetMap, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP
+from esgcet.publish import pollDatasetPublicationStatus, readDatasetMap, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, parseDatasetVersionId, generateDatasetVersionId
 from esgcet.ui import extraction_controls
 from esgcet.model import Dataset, ERROR_LEVEL
 from esgcet.config import getOfflineLister
@@ -180,16 +180,19 @@ class dataset_widgets:
            extraFields = None 
            if (self.parent.parent.hold_offline[selected_page] == False) or (isinstance(self.parent.parent.hold_offline[selected_page], types.DictType)):
               for x in self.parent.parent.main_frame.top_page_id[selected_page]:
-                dset_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                dset_name, dsetVersion = parseDatasetVersionId(dsetVersionName)
 
                 # Retrieve all the datasets in the collection for display
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
                 status_text = pub_controls.return_status_text( status )
                 if status_text != 'Error':
-                   datasetNames2.append( self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text') )
+                   dsetTuple = parseDatasetVersionId(self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text'))
+                   datasetNames2.append(dsetTuple)
                 # Retrieve only the datasets that have been selected
                 if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon':
-                   datasetNames.append( self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text') )
+                   dsetTuple =  parseDatasetVersionId(self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text'))
+                   datasetNames.append(dsetTuple)
 
               dmap = self.parent.parent.main_frame.dmap[selected_page]
               extraFields = self.parent.parent.main_frame.extraFields[selected_page]
@@ -199,17 +202,29 @@ class dataset_widgets:
 
               if dmap is not None:
                  for x in datasetNames:
+                    dsetId = x[0] 
                     datasetName = datasetNames[0]
-                    firstFile = dmap[datasetName][0][0]
-	            self.parent.parent.handlerDictionary[ x ] = getHandlerByName(projectName, firstFile, self.Session)
-                    handler = self.parent.parent.handlerDictionary[ x ]
+                    try:
+                        dmapentry = dmap[datasetName]
+                    except:
+
+                        # Check if the dataset map key was changed from (dsetname,-1) to (dsetname,version).
+                        # If so, replace the entry with the new key.
+                        trykey = (datasetName[0], -1)
+                        dmapentry = dmap[trykey]
+                        del dmap[trykey]
+                        dmap[datasetName] = dmapentry
+                    firstFile = dmapentry[0][0]
+	            self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, firstFile, self.Session)
+                    handler = self.parent.parent.handlerDictionary[dsetId]
                  # Copy the defaultGlobalValues into initcontext
                  initcontext = self.parent.parent.main_frame.defaultGlobalValues[selected_page]
               else:
                  for x in datasetNames:
+                    dsetId = x[0] 
                     firstFile = self.parent.parent.main_frame.dirp_firstfile[selected_page]
-                    self.parent.parent.handlerDictionary[ x ] = getHandlerByName(projectName, firstFile, self.Session)
-                    handler = self.parent.parent.handlerDictionary[ x ]
+                    self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, firstFile, self.Session)
+                    handler = self.parent.parent.handlerDictionary[dsetId]
            else:      # working off-line
               projectName = self.parent.parent.main_frame.projectName[selected_page]
               if self.parent.parent.offline_file_directory[selected_page] == "directory":
@@ -229,7 +244,8 @@ class dataset_widgets:
 
                  # get the handler
                  for x in datasetNames:
-                    self.parent.parent.handlerDictionary[ x ] = getHandlerByName(projectName, None, self.Session, offline=True)
+                    dsetId = x[0] 
+                    self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, None, self.Session, offline=True)
 
               elif self.parent.parent.offline_file_directory[selected_page] == "file":
                  dmap = self.parent.parent.main_frame.dmap[selected_page]
@@ -243,7 +259,8 @@ class dataset_widgets:
 
                  # get the handlers
                  for x in datasetNames:
-                    self.parent.parent.handlerDictionary[ x ] = getHandlerByName(projectName, None, self.Session, offline=True)
+                    dsetId = x[0] 
+                    self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, None, self.Session, offline=True)
 
 
            # Iterate over datasets
@@ -257,10 +274,12 @@ class dataset_widgets:
            # the complete list of datasets
            if not self.parent.parent.hold_offline[selected_page]:
               datasets = []
-              for x in datasetNames2:
-                  entry = Dataset.lookup(x, self.Session)
+              versionObjs = []
+              for dsetName, version in datasetNames2:
+                  entry, versionObj = Dataset.lookup(dsetName, self.Session, version=version)
                   if entry is not None:
                       datasets.append(entry)
+                      versionObjs.append(versionObj)
 
            # Get the summary of errors after doing a data extraction
            dset_error = []
@@ -284,7 +303,7 @@ class dataset_widgets:
 
            # Show the extracted datasets
            self.set_column_labels( len(datasets), list_fields )
-           self.show_extracted_info(datasets, dset_error, list_fields)
+           self.show_extracted_info(datasets, dset_error, list_fields, versionObjs)
 
         # Enable the "Data Publication" button
         self.parent.ControlButton3.configure( state = 'normal' )
@@ -407,7 +426,7 @@ class dataset_widgets:
     #----------------------------------------------------------------------------------------
     # Show the extraction information for the "Collection" tab
     #----------------------------------------------------------------------------------------
-    def show_extracted_info( self, datasets, dset_error, list_fields ):
+    def show_extracted_info( self, datasets, dset_error, list_fields, versionObjs ):
       # set the color for each item in the row
       dcolor1 = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.8 )
       dcolor2 = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.7 )
@@ -419,13 +438,18 @@ class dataset_widgets:
 
       selected_page = self.parent.parent.main_frame.selected_top_page
       dobj = {}
-      for dset in datasets:
-          dobj[dset.name] = dset
+      for dset,versobj in zip(datasets,versionObjs):
+          dobj[(dset.name,versobj.version)] = (dset,versobj)
+          if dset.getVersion()==versobj.version:
+              dobj[(dset.name,-1)] = (dset,versobj)
       for x in self.parent.parent.main_frame.top_page_id[selected_page]:
          dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
          dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-         if dset_text in dobj.keys():
-            dset = dobj[ dset_text ]
+         dsetName,dsetVers = parseDatasetVersionId(dset_text)
+         dsetId = (dsetName,dsetVers)
+         if dsetId in dobj.keys():
+            dset, versobj = dobj[dsetId]
+            dsetVersionName = generateDatasetVersionId((dset.name, versobj.version))
             if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
                frame = self.parent.parent.main_frame.add_row_frame[selected_page][x]
                if not dset.has_warnings(self.Session):
@@ -453,10 +477,10 @@ class dataset_widgets:
                self.parent.parent.main_frame.status_label[selected_page][x].grid(row = dset_row, column = 2, sticky = 'nsew')
    
                if 'id' in list_fields:
-                  id = Tkinter.Label( frame, text = dset.get_id(self.Session), bg = dcolor2, width = 6, relief = 'sunken')
+                  id = Tkinter.Label( frame, text = `dset.id`, bg = dcolor2, width = 6, relief = 'sunken')
                   id.grid(row = dset_row, column = 3, sticky = 'nsew')
    
-               self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7)
+               self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7, text=dsetVersionName)
                self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 4, columnspan=2, sticky = 'nsew')
    
                if 'project' in list_fields:

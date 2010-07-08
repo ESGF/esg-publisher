@@ -7,6 +7,7 @@ import re
 
 from esgcet.exceptions import *
 from esgcet.config import getConfig, splitLine, splitRecord, genMap, splitMap, initializeExperiments
+from registry import getHandlerByEntryPointGroup, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 ENUM = 1
@@ -69,9 +70,7 @@ class ProjectHandler(object):
 
     These methods should be overridden by concrete handler classes:
 
-    - closePath
     - getResolution
-    - openPath
     - readContext
     - validateFile
 
@@ -79,12 +78,37 @@ class ProjectHandler(object):
     need to override them:
 
     - getContext
+    - openPath
     - validateContext
 
     """
 
     def __init__(self, name, path, Session, validate=True, offline=False):
+        """
+        Create a project handler.
+
+        name
+          String project name.
+
+        path
+          String pathname of a file. If not None, the file is validated to check that it is associated
+          with the project.
+
+        Session
+          SQLAlchemy Session.
+
+        validate
+          If True, create a validating handler which will raise an error if an invalid field value is read or input.
+
+        offline
+          If True, files are not scanned.
+          
+        """
         self.name = name
+        self.formatHandlerClass = getHandlerByEntryPointGroup(ESGCET_FORMAT_HANDLER_GROUP, name)
+        self.metadataHandlerClass = getHandlerByEntryPointGroup(ESGCET_METADATA_HANDLER_GROUP, name)
+        self.metadataHandler = None     # Metadata handler instance associated with this project
+        self.threddsCatalogHook = getHandlerByEntryPointGroup(ESGCET_THREDDS_CATALOG_HOOK_GROUP, name, errorIfMissing=False)
 
         # Try to open the sample file in a project-specific way
         self.path = path
@@ -94,7 +118,7 @@ class ProjectHandler(object):
             except:
                 raise ESGPublishError('Error opening %s. Is the data offline?'%path)
             self.validateFile(fileobj)
-            self.closePath(fileobj)
+            fileobj.close()
 
         self.validate = (validate in [None, True])
         self.offline = offline
@@ -111,11 +135,19 @@ class ProjectHandler(object):
     def openPath(self, path):
         """Open a sample path, returning a project-specific file object,
         (e.g., a netCDF file object or vanilla file object)."""
-        raise ESGMethodNotImplemented
+        fileobj = self.formatHandlerClass.open(path, mode='r')
+        return fileobj
 
-    def closePath(self, fileobj):
-        """Close a file opened by openPath."""
-        raise ESGMethodNotImplemented
+    def getMetadataHandler(self, sessionMaker=None):
+        """Get the metadata handler associated with this project. The metadata handler
+        is created and cached if necessary.
+        """
+        if self.metadataHandler is None:
+            self.metadataHandler = self.metadataHandlerClass(Session=sessionMaker)
+        return self.metadataHandler
+
+    def getThreddsCatalogHook(self):
+        return self.threddsCatalogHook
 
     def validateFile(self, fileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
@@ -338,7 +370,7 @@ class ProjectHandler(object):
 
     def getContext(self, **context):
         """
-        Read all metadata fields from the file associated with the handler.
+        Read all metadata fields from the file associated with the handler. Calls ``readContext`` to read the file.
 
         Returns a context dictionary of fields discovered in the file.
 
@@ -351,7 +383,7 @@ class ProjectHandler(object):
         if not self.offline:
             f = self.openPath(self.path)
             fileContext = self.readContext(f)
-            self.closePath(f)
+            f.close()
         else:
             fileContext = {}
 
@@ -575,7 +607,7 @@ class ProjectHandler(object):
                 foundValue = True
 
         if not foundValue:
-            raise ESGPublishError("Cannot generate a value for option %s"%option)
+            raise ESGPublishError("Cannot generate a value for option %s, please specify the dataset id explicitly."%option)
 
         return result
 
@@ -765,3 +797,12 @@ class ProjectHandler(object):
         idfields = re.findall(_patpat, parent_id_format)
         parentId = self.generateDatasetId('parent_id', idfields, context)
         return parentId
+
+    def readContext(self, sdfile, **kw):
+        """Get a dictionary of key/value pairs from an open file.
+
+        sdfile
+          instance of FormatHandler
+
+        """
+        raise ESGMethodNotImplemented

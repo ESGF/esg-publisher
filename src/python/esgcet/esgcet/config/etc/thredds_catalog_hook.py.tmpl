@@ -1,0 +1,57 @@
+""" -*- Python -*-
+THREDDS catalog hook template.
+
+To create the hook:
+
+    - Implement the function
+
+    - Install the package:
+
+        python setup.py --verbose install
+        
+    - In esg.ini, specify the hook, e.g.:
+
+        [project:my_project]
+        ...
+        thredds_catalog_hook = <hook_name>
+        
+"""
+def threddsCatalogHook(document, dataset, dataset_version, catalog_location, configuration, config_section, perVariable):
+    """
+    THREDDS catalog hook. This function is called:
+
+    - after the catalog has been built internally, and
+    - immediately before the catalog is written to a file.
+
+    The function may alter the document structure using the lxml.etree package.
+
+    The function does not return a value, but may raise an exception if an error occurs.
+
+    document
+      The THREDDS XML catalog, an instance of lxml.etree.ElementTree. See
+
+      http://codespeak.net/lxml/tutorial.html
+
+      for a description of the ElementTree class.
+
+    dataset
+      The dataset associated with the catalog, an instance of esgcet.model.Dataset.
+
+    dataset_version
+      The dataset_version associated with the catalog, an instance of esgcet.model.DatasetVersion.
+
+    catalog_location
+      The location of the catalog, an instance of esgcet.model.Catalog. Not to be confused with
+      the actual document.
+
+    configuration
+      The publisher configuration file, an instance of esgcet.config.SaneConfigParser.
+
+    config_section
+      The configuration section associated with the current project, a String.
+
+    perVariable
+      Boolean flag, True iff the catalog is structured as a 'per-variable' catalog. If False,
+      the catalog is structured as 'per-time'.
+    """
+    pass

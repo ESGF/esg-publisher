@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 
 import sys
+import os.path
 import getopt
 import logging
+import string
 
-from sqlalchemy import create_engine
+import sqlalchemy
+
+from pkg_resources import resource_filename
+from sqlalchemy import create_engine, Table, MetaData
 from sqlalchemy.orm import sessionmaker
+from esgcet import __version__
 from esgcet.model import *
-from esgcet.config import loadConfig, splitLine, splitRecord, loadStandardNameTable, textTableIter, initLogging, loadModelsTable, initializeExperiments
+from esgcet.config import loadConfig, splitLine, splitRecord, loadStandardNameTable, textTableIter, initLogging, loadModelsTable, initializeExperiments, SaneConfigParser
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from migrate.versioning.api import version_control, upgrade, db_version, downgrade
+from migrate.versioning.exceptions import *
 
 usage = """Usage:
     esginitialize [Options]
@@ -17,30 +25,46 @@ usage = """Usage:
 
 Options:
 
-    -c: Create ESG tables. By default the database tables are not created.
+    -c: Upgrade the database schema to the latest version, and initialize projects, models, experiments,
+        and standard names from configuration files. If the database is not under schema version control,
+        version control will be initialized.
+
+    -d version: Downgrade the database schema to an older version. To remove all tables, use version=0.
+        Use this option with caution, as node database information may be lost.
+
+    --db-version: Echo the current version of the database schema.
 
     --echo-sql: Echo SQL commands.
 
     -h: Help.
 
     -i init_file: Initialization file. If not specified, the default installed init file is read.
+
+    --version: Print the Esgcet package version.
 """
 
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "chi:", ['echo-sql'])
+        args, lastargs = getopt.getopt(argv, "cd:hi:", ['db-version', 'echo-sql', 'version'])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
-    createTables = False    
+    createTables = False
+    dbVersion = False
+    dgrade = False
     echoSql = None
     init_file = None
     for flag, arg in args:
         if flag=='-c':
-            createTables = True 
+            createTables = True
+        elif flag=='-d':
+            dgrade = True
+            newVersion = string.atoi(arg)
+        elif flag=='--db-version':
+            dbVersion = True
         elif flag=='--echo-sql':
             echoSql = True
         elif flag=='-h':
@@ -48,20 +72,76 @@ def main(argv):
             sys.exit(0)
         elif flag=='-i':
             init_file = arg
+        elif flag=='--version':
+            print __version__
+            sys.exit(0)
 
     config = loadConfig(init_file)
     configOptions = config.options('initialize')
     
-    engine = create_engine(config.get('initialize', 'dburl'), echo=echoSql, pool_recycle=3600)
+    dburl = config.get('initialize', 'dburl')
+    engine = create_engine(dburl, echo=echoSql, pool_recycle=3600)
     initLogging('initialize', override_sa=engine)
 
+    if createTables or dbVersion or dgrade:
+        repo_cfg_path = resource_filename('esgcet.schema_migration', 'migrate.cfg')
+        repo_path = os.path.dirname(repo_cfg_path)
+
+        # Verify that schema versioning is enabled
+        try:
+            version = db_version(dburl, repo_path, engine_dict={"echo": echoSql})
+        except sqlalchemy.exc.NoSuchTableError:
+            print 'Schema versioning not enabled. Run esgdrop_tables first.'
+            sys.exit(0)
+
+        # Ensure that the repository path is correctly recorded for the current version of Esgcet ...
+        # ... Parse migrate.cfg for version_table and repository_id
+        migrateConfig = SaneConfigParser(repo_cfg_path)
+        migrateConfig.read(repo_cfg_path)
+        versionTable = migrateConfig.get('db_settings', 'version_table')
+        repositoryId = migrateConfig.get('db_settings', 'repository_id')
+
+        # ... Reflect the verstion_table
+        meta = MetaData(engine)
+        migrationTable = Table(versionTable, meta, autoload=True)
+        
+        # ... Query the repository_path
+        result = engine.execute(migrationTable.select(migrationTable.c.repository_id==repositoryId))
+        resultTuple = list(result)[0]
+        storedRepoPath = resultTuple['repository_path']
+
+        # ... and correct it if necessary
+        if storedRepoPath!=repo_path:
+            info("Updating schema version directory to %s"%repo_path)
+            updatestmt = migrationTable.update(
+                whereclause="repository_id='%s'"%repositoryId,
+                values={'repository_path':repo_path})
+            updatestmt.execute()
+
+    # Echo db version
+    if dbVersion:
+        version = db_version(dburl, repo_path, engine_dict={"echo": echoSql})
+        print version
+        sys.exit(0)
+
+    # Downgrade to older version
+    if dgrade:
+        ans = raw_input("Downgrade the database schema to version %d? (enter 'y' to continue): "%newVersion)
+        if ans.lower()=='y':
+            info("Downgrading schema to version %d"%newVersion)
+            downgrade(dburl, repo_path, newVersion, engine_dict={"echo": echoSql})
+        sys.exit()
+
+    # Upgrade to current version
     if createTables:
-        metadata.create_all(engine)
+        info("Upgrading schema to latest version.")
+        upgrade(dburl, repo_path, engine_dict={"echo": echoSql})
 
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
     session = Session()
 
     # Initialize standard name table
+    info("Initializing standard names ...")
     path = config.get('initialize', 'initial_standard_name_table', default=None)
     for standardName in loadStandardNameTable(path):
         sname = session.query(StandardName).filter_by(name=standardName.name).first()
@@ -70,6 +150,7 @@ def main(argv):
 
     # Initialize projects
     if 'project_options' in configOptions:
+        info("Initializing projects, models, and experiments ...")
         projectOption = config.get('initialize', 'project_options')
         projectSpecs = splitRecord(projectOption)
         for projectName, projectDesc, search_order in projectSpecs:
@@ -85,7 +166,11 @@ def main(argv):
 
             # Initialize models
             modelTable = config.get('initialize', 'initial_models_table', default=None)
-            for projectId, modelName, modelUrl, modelDesc in loadModelsTable(modelTable):
+            for lineno, modelTuple in loadModelsTable(modelTable):
+                try:
+                    projectId, modelName, modelUrl, modelDesc = modelTuple
+                except:
+                    raise ESGPublishError("Invalid line %d in %s: %s"%(lineno, modelTable, modelTuple))
                 if projectId!=projectName:
                     continue
 
@@ -94,6 +179,7 @@ def main(argv):
                 if model is None:
                     model = Model(modelName, projectName, modelUrl, modelDesc)
                     project.models.append(model)
+                    info("Adding model %s for project %s"%(modelName, projectName))
                     session.add(model)
 
             # Initialize experiments

@@ -28,6 +28,7 @@ import traceback
 
 from pub_controls import font_weight
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from esgcet.publish import parseDatasetVersionId, generateDatasetVersionId
 from pkg_resources import resource_filename
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
@@ -157,7 +158,8 @@ class quality_control_widgets:
 
             if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
                 dset_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-                datasetNames.append( dset_name )
+                dsetTuple = parseDatasetVersionId(dset_name)
+                datasetNames.append(dsetTuple)
                 GUI_line[ dset_name ] = x
             else:
                 if self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') == 'salmon':
@@ -170,9 +172,12 @@ class quality_control_widgets:
         # Show the published status
         for x in status_dict.keys():
              status = status_dict[ x ]
+             dsetName, versionNo = x
+             dsetVersionName = generateDatasetVersionId(x)
+             guiLine = GUI_line[dsetVersionName]
             
-             self.parent.parent.main_frame.status_label[selected_page][GUI_line[x]].configure(text=pub_controls.return_status_text( status) )
-             dset = Dataset.lookup(x, self.Session)
+             self.parent.parent.main_frame.status_label[selected_page][guiLine].configure(text=pub_controls.return_status_text( status) )
+             dset = Dataset.lookup(dsetName, self.Session)
              if dset.has_warnings(self.Session):
                  warningLevel = dset.get_max_warning_level(self.Session)
                  if warningLevel>=ERROR_LEVEL:
@@ -181,13 +186,13 @@ class quality_control_widgets:
                  else:
                      buttonColor = "yellow"
                      buttonText = "Warning"
-                 self.parent.parent.main_frame.ok_err[selected_page][GUI_line[x]].configure(
+                 self.parent.parent.main_frame.ok_err[selected_page][guiLine].configure(
                      text = buttonText,
                      bg = buttonColor,
                      relief = 'raised',
                      command = pub_controls.Command( self.parent.parent.pub_buttonexpansion.extraction_widgets.error_extraction_button, dset ) )
              else:
-                 self.parent.parent.main_frame.ok_err[selected_page][GUI_line[x]].configure(
+                 self.parent.parent.main_frame.ok_err[selected_page][guiLine].configure(
                      text = 'Ok',
                      bg = dcolor1,
                      highlightcolor = dcolor1,

@@ -1,0 +1,212 @@
+""" -*- Python -*-
+Metadata handler template.
+
+To create a metadata handler:
+
+    - Modify the methods in CustomMetadataHandler as needed. See the documentation
+      for MetadataHandler class.
+      
+      Note: The handler class name is arbitrary, provided it matches
+      the setup.py 'handler' entry point of the esgcet.metadata_handlers group.
+
+      Note: This template extends the default netCDF/Cdunif handler. To start
+      from scratch, inherit from MetadataHandler instead, and implement
+      the methods.
+      
+    - Install the handler package:
+
+        python setup.py --verbose install
+        
+    - In esg.ini, associate the metadata and handler name, e.g.:
+
+        [project:my_project]
+        ...
+        metadata_handler = <metadata_handler_name>
+"""
+from esgcet.config import MetadataHandler, CFHandler
+from cdtime import DefaultCalendar
+
+class CustomMetadataHandler(CFHandler):
+
+    @staticmethod
+    def axisIsTime(variable):
+        """
+        Check if a variable is a time coordinate axis.
+
+        Returns True iff the variable is a time coordinate axis.
+
+        variable
+          Instance of esgcet.model.Variable
+        """
+        return CFHandler.axisIsTime(variable)
+
+    @staticmethod
+    def axisIsLongitude(variable):
+        """
+        Check if a variable is a longitude coordinate axis.
+
+        Returns True iff the variable is a longitude coordinate axis.
+
+        variable
+          Instance of esgcet.model.Variable
+        """
+        return CFHandler.axisIsLongitude(variable)
+
+    @staticmethod
+    def axisIsLatitude(variable):
+        """
+        Check if a variable is a latitude coordinate axis.
+
+        Returns True iff the variable is a latitude coordinate axis.
+
+        variable
+          Instance of esgcet.model.Variable
+        """
+        return CFHandler.axisIsLatitude(variable)
+
+    @staticmethod
+    def axisIsLevel(variable):
+        """
+        Check if a variable is a vertical level coordinate axis.
+
+        Returns True iff the variable is a vertical level coordinate axis.
+
+        variable
+          Instance of esgcet.model.Variable
+        """
+        return CFHandler.axisIsLevel(variable)
+
+    @staticmethod
+    def levelDirection(variable):
+        """
+        Get the direction of a vertical level coordinate axis
+
+        Returns the string "up" or "down".
+
+        variable
+          Instance of esgcet.model.Variable
+        """
+        return CFHandler.levelDirection(variable)
+
+    @staticmethod
+    def getCalendarTag(variable):
+        """
+        Get the CF calendar tag from a time coordinate variable.
+
+        Returns string calendar tag, one of: 'gregorian', 'standard', 'noleap',
+        'julian', 'proleptic_gregorian', '360_day', '360', '365_day'
+
+        variable
+          Instance of esgcet.model.Variable
+        """
+        return CFHandler.getCalendarTag(variable)
+
+    @staticmethod
+    def tagToCalendar(calendarTag):
+        """
+        Translate from a CF calendar tag to the equivalent cdtime calendar type.
+
+        Returns a cdtime calendar.
+
+        calendarTag
+          String CF calendar tag, one of:
+          'gregorian', 'standard', 'noleap', 'julian', 'proleptic_gregorian', '360_day', '360', '365_day'
+          
+        """
+        return CFHandler.tagToCalendar(calendarTag)
+
+    @staticmethod
+    def checkTimes(firstValue, lastValue, units, calendar, deltaValue, deltaUnits, npoints):
+        """
+        Check that a time range in the form (firstValue, lastValue) is equivalent to
+        a time range of the form (firstValue, deltaValue, npoints). The representations
+        are considered equivalent if:
+
+          lastValue = firstValue + (npoints-1)*deltaValue
+
+        Return (equivalent, firstTime, lastTime, lastEstimated) where:
+          - equivalent is a Boolean, True iff the two representations are equivalent
+          - firstTime is a cdtime ``comptime'' value representing the first timepoint
+          - lastTime is a cdtime ``comptime'' value representing the last timepoint
+          - lastEstimated is a cdtime ``comptime'' value representing the last timepoint, based on
+            the (firstValue, deltaValue, npoints) representation. If the representations
+            are not equivalent, it will differ from lastValue.
+
+        The first timepoint in the range is a relative time (firstValue, units, calendar);
+        similarly the last timepoint is (lastValue, units, calendar):
+
+        firstValue
+          Float value of first timepoint.
+
+        lastValue
+          Float value last timepoint.
+
+        units
+          String time units.
+
+        calendar
+          cdtime calendar type
+
+        deltaValue
+          Float value of time delta representation.
+
+        deltaUnits
+          cdtime interval, for example, cdtime.Month
+
+        npoints
+          Integer number of points in time delta representation.
+
+        """
+        return CFHandler.checkTimes(firstValue, lastValue, units, calendar, deltaValue, deltaUnits, npoints)
+
+    @staticmethod
+    def genTime(value, units, calendarTag):
+        """
+        Generate a string representation of a relative time value.
+
+        Returns a string representation of the relative time (value, units)
+
+        value
+          Float time value
+
+        units
+          String time units
+
+        calendarTag
+          String cdtime calendar tag.
+        """
+        return CFHandler.genTime(value, units, calendarTag)
+
+    @staticmethod
+    def normalizeTime(fromDimensionValue, fromUnits, toUnits, calendar=DefaultCalendar):
+        """
+        Normalize a relative time value (fromDimensionValue, fromUnits) to different units.
+
+        Returns the float value of the normalized time. In other words, the normalized
+        time is (return_value, toUnits).
+
+        fromDimensionValue
+          Float value of input relative time.
+
+        fromUnits
+          String units of input relative time.
+
+        toUnits
+          String time units of result time.
+
+        calendar
+          cdtime calendar type.
+        """
+        return CFHandler.normalizeTime(fromDimensionValue, fromUnits, toUnits, calendar=DefaultCalendar)
+
+    @staticmethod
+    def LAS2CDUnits(lasUnits):
+        """
+        Translate from LAS style units to cdtime units. For example, "month" is translated to cdtime.Month.
+
+        Returns the equivalent cdtime units representation.
+
+        lasUnits:
+          String LAS units.
+        """
+        return CFHandler.LAS2CDUnits(lasUnits)

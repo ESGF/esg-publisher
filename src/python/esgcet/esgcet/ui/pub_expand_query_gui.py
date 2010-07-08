@@ -24,6 +24,7 @@ import pub_controls
 import pub_busy
 import thread
 import gui_support
+import string
 
 from pub_controls import font_weight
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -34,7 +35,7 @@ from esgcet.config import getHandlerByName, getHandlerFromDataset
 from esgcet.model import Dataset, ERROR_LEVEL
 from esgcet.query import queryDatasets, queryDatasetMap
 from esgcet.query import getQueryFields
-from esgcet.publish import pollDatasetPublicationStatus
+from esgcet.publish import pollDatasetPublicationStatus, generateDatasetVersionId, parseDatasetVersionId
 from pkg_resources import resource_filename
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
@@ -495,7 +496,8 @@ class generate_notebook:
         if self.parent.parent.refreshButton[selected_page].cget('relief') == 'raised':
            for x in self.parent.parent.main_frame.top_page_id[selected_page]:
                if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
-                  query_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                  dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                  query_name, versionNum = parseDatasetVersionId(dsetVersionName)
                   status = pollDatasetPublicationStatus(query_name, self.Session)
             
                   self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
@@ -622,8 +624,17 @@ class generate_notebook:
          id = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[0], bg = dcolor2, width = 6, relief = 'sunken')
          id.grid(row = self.row, column = 3, sticky = 'nsew')
 
+      dsetName = query_result[1]
+      versionNum = -1
+      try:
+          versionIndex = list_fields.index('version')
+          versionNum = string.atoi(query_result[versionIndex])
+      except:
+          pass
+      dsetTuple = (dsetName, versionNum)
+      dsetName = generateDatasetVersionId(dsetTuple)
       self.select_label[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
-                text = query_result[1],
+                text = dsetName,
                 font = labelFont,
                 bg = self.keycolor2,
                 relief = 'raised',
@@ -631,9 +642,9 @@ class generate_notebook:
                 anchor='w',
                 justify='left',
                 width = 71,
-                command = pub_controls.Command( self.evt_selected_dataset_text, query_result[1], num_tag, 0 ),
+                command = pub_controls.Command( self.evt_selected_dataset_text, dsetTuple, num_tag, 0 ),
         )
-      self.select_label[ num_tag ].grid(row = self.row, column = 4, row=self.row, columnspan=2, sticky = 'nsew')
+      self.select_label[ num_tag ].grid(row = self.row, column = 4, columnspan=2, sticky = 'nsew')
 
       if 'project' in list_fields:
          project = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[2], bg = dcolor3, width = 20, relief = 'sunken', borderwidth = 2)
@@ -660,7 +671,7 @@ class generate_notebook:
       self.row = self.row + 1 # increment to the next dataset row
 
     #---------------------------------------------------------------------
-    # Add one dataset information row to the "Collection page
+    # Add one dataset information row to the "Collection" page
     #---------------------------------------------------------------------
     def addPageRow( self, num_tag, dataset, page_type = "collection" ):
         frame_ct = self.parent.parent.top_ct
@@ -680,7 +691,7 @@ class generate_notebook:
 	self.select_button[ num_tag ].grid(row = self.row, column = 0, sticky = 'nsew')
 
 	self.select_label[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ], 
-                text = dataset,
+                text = generateDatasetVersionId(dataset),
                 font = labelFont,
                 bg = self.keycolor2, 
                 disabledforeground = 'black',
@@ -717,9 +728,11 @@ class generate_notebook:
     # Display the dataset and its attributes when the dataset text button 
     # is selected on the "Query" or "Collection" or "Offline" page 
     #---------------------------------------------------------------------
-    def evt_selected_dataset_text( self, dataset, num_tag, genFrom ):
+    def evt_selected_dataset_text( self, datasetTuple, num_tag, genFrom ):
+       dataset,vers = datasetTuple
+       datasetVersId = generateDatasetVersionId(datasetTuple) 
        list_of_dataset_tabs = self.parent.parent.top_notebook.pagenames()
-       tab_name = dataset.replace('_', '-' )
+       tab_name = datasetVersId.replace('_', '-' )
        dset = None
        if self.parent.parent.main_frame.top_page_id2[self.parent.parent.main_frame.selected_top_page][num_tag].cget('relief') == 'raised':
           if tab_name in list_of_dataset_tabs:

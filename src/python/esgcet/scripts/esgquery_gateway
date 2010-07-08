@@ -4,7 +4,7 @@ import sys
 import getopt
 
 from esgcet.config import loadConfig, initLogging
-from esgcet.query import printResult, getGatewayDatasetMetadata, getGatewayDatasetChildren, getGatewayExperiments, getGatewayDatasetFields
+from esgcet.query import printResult, getGatewayDatasetMetadata, getGatewayDatasetChildren, getGatewayExperiments, getGatewayDatasetFields, getGatewayDatasetFiles, getGatewayDatasetAccessPoints
 
 usage = """Usage:
     esgquery_gateway [options]
@@ -21,14 +21,21 @@ Options:
     -i init_file:
         Initialization file. If not specified, the default installed init file is read.
 
+    --files parent_dataset:
+        List the data files in the parent dataset.
+
     --list parent_dataset:
         List children of a parent dataset. Use --verbose to list all metadata for each child dataset.
 
-    --list-experiments:
+    --experiments:
         Generate a list of experiments.
 
     --metadata dataset:
         List the metadata associated with a dataset.
+
+    --urls parent_dataset:
+        List file access point URLs. This is similar to --files, but will list each access point
+        of a file.
 
     --verbose:
         With --list, print full metadata for each child dataset.
@@ -38,29 +45,43 @@ Options:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['help', 'list=', 'list-experiments', 'metadata=', 'verbose'])
+        args, lastargs = getopt.getopt(argv, "hi:", ['files=', 'help', 'experiments', 'list=', 'list-experiments', 'metadata=', 'urls=', 'verbose'])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    filesParent = None
     init_file = None
+    listDatasetChildren = False
     listExperiments = False
+    listFiles = False
+    listMetadata = False
+    listUrls = False
     parentDataset = None
     datasetName = None
+    urlParent = None
     verbose = False
     for flag, arg in args:
-        if flag in ['-h', '--help']:
+        if flag=='--files':
+            listFiles = True
+            filesParent = arg
+        elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
         elif flag=='-i':
             init_file = arg
         elif flag=='--list':
+            listDatasetChildren = True
             parentDataset = arg
-        elif flag=='--list-experiments':
+        elif flag in ['--experiments', '--list-experiments']:
             listExperiments = True
         elif flag=='--metadata':
+            listMetadata = True
             datasetName = arg
+        elif flag=='--urls':
+            listUrls = True
+            urlParent = arg
         elif flag=='--verbose':
             verbose = True
 
@@ -68,7 +89,7 @@ def main(argv):
     config = loadConfig(init_file)
     initLogging('DEFAULT')
 
-    if parentDataset is not None:
+    if listDatasetChildren:
         result = getGatewayDatasetChildren(parentDataset)
         if not verbose:
             for childid in result:
@@ -77,13 +98,21 @@ def main(argv):
             fullresult = [getGatewayDatasetMetadata(item) for item in result]
             printResult(getGatewayDatasetFields(), fullresult)
 
-    if datasetName is not None:
+    if listMetadata:
         header = getGatewayDatasetFields()
         result = getGatewayDatasetMetadata(datasetName)
         printResult(header, [result])
 
     if listExperiments:
         header, result = getGatewayExperiments()
+        printResult(header, result)
+
+    if listFiles:
+        header, result = getGatewayDatasetFiles(filesParent)
+        printResult(header, result)
+        
+    if listUrls:
+        header, result = getGatewayDatasetAccessPoints(urlParent)
         printResult(header, result)
 
 if __name__=='__main__':

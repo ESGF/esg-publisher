@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import getopt
+import shutil
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from esgcet.publish import multiDirectoryIterator, compareFilesByPath
+from esgcet.config import getHandlerByName, registerHandlers, loadConfig, initLogging
+
+usage = """Usage:
+    esgcopy_files [options] project directory [directory ...]
+
+    Copy files from scratch space to the ESG archive.
+
+    *Important:* This script is not an officially supported part of the ESGCET module. It supports
+    construction of a disk-based archive based on the directory_format_for_copy pattern defined in esg.ini.
+    
+Arguments:
+    project: Project identifier
+
+    directory: A directory containing files to be copied to the archive.
+
+Options:
+
+    --compare, -c:
+        Compare file contents to determine if they are equal. By default, the file size
+        and tracking_id attributes are used. Using --compare is slower but more accurate.
+
+    --dir-format:
+        esg.ini option that has the directory template. Defaults to 'directory_format_for_copy'.
+
+    --dry-run, -n:
+        Dry run. Just echo the command would do.
+
+    --filter regular_expression:
+        Filter files matching the regular expression. Default is '.*\.nc$'
+        Regular expression syntax is defined by the Python re module.
+
+    --help, -h:
+        Help message.
+
+    --move, -m:
+        Move the file(s). Default is to copy.
+
+    --output, -o mapfile:
+        Output a mapfile that can be input to esgpublish. If mapfile is '-', write to standard output.
+
+    --overwrite, -w:
+        Overwrite files that compare as equal. By default, 'equal' files are not copied.
+        Files that are unequal cannot be overwritten.
+
+    --verbose, -v:
+        Verbose.
+
+"""
+
+def getSubDir(path, sink, handler, size, compare=False):
+    """Return (n, exists) where subdirectory 'n' is such that sink/n/path is unique,
+    and 'exists' is True iff the file sink/n/path exists and compares to path.
+    """
+    # Find the 'integer' directories. If none exist, create '1'
+    if not os.path.exists(sink):
+        return '1', False
+    subdirs = os.listdir(sink)
+    intdirs = [int(item) for item in subdirs if item.isdigit()]
+
+    # In descending order, find the first 'n' such that sink/n/path is unique. Create 'n+1' if necessary.
+    for n in range(len(intdirs),0,-1):
+        nstr = str(n)
+        base = os.path.basename(path)
+        path2 = os.path.join(sink, nstr, base)
+        if os.path.exists(path2):
+            if compareFilesByPath(path, path2, handler, size1=size, compare=compare):
+                return nstr, True
+            else:
+                return str(n+1), False
+    else:
+        return '1', False
+
+def main(argv):
+
+    try:
+        args, lastargs = getopt.getopt(argv, "chmno:vw", ['compare', 'dir-format=', 'dry-run', 'filter=', 'help', 'move', 'output=', 'overwrite', 'verbose'])
+    except getopt.error:
+        print sys.exc_value
+        print usage
+        sys.exit(0)
+
+    if len(lastargs)<2:
+        print 'No project or directory specified'
+        print usage
+        sys.exit(0)
+
+    project = lastargs[0]
+    directories = lastargs[1:]
+
+    compare = False
+    dirformat = 'directory_format_for_copy'
+    dryrun = False
+    filefilt = '.*\.nc$'
+    mapfile = None
+    movefiles = False
+    overwrite = False
+    verbose = False
+    for flag, arg in args:
+        if flag in ['-c', '--compare']:
+            compare = True
+        elif flag=='--dir-format':
+            dirformat = arg
+        elif flag=='--filter':
+            filefilt = arg
+        elif flag in ['-h', '--help']:
+            print usage
+            sys.exit(0)
+        elif flag in ['-m', '--move']:
+            movefiles = True
+        elif flag in ['-n', '--dry-run']:
+            dryrun = True
+        elif flag in ['-o', '--output']:
+            mapfile = arg
+        elif flag in ['-v', '--verbose']:
+            verbose = True
+        elif flag in ['-w', '--overwrite']:
+            overwrite = True
+
+    config = loadConfig(None)
+    engine = create_engine(config.get('extract', 'dburl'), echo=False, pool_recycle=3600)
+    initLogging('extract', override_sa=engine)
+    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+    registerHandlers()
+    handler = getHandlerByName(project, None, Session)
+    if mapfile is not None:
+        if mapfile != '-':
+            fmap = open(mapfile, 'w')
+        else:
+            fmap = sys.stdout
+    multiIter = multiDirectoryIterator(directories, filefilt=filefilt)
+
+    # For each file:
+    for path, sizet in multiIter:
+
+        # Determine the categories
+        handler = getHandlerByName(project, path, Session)
+
+        # Determine the category values
+        context = handler.getContext()
+
+        # Build the correct output path
+        sink = handler.generateNameFromContext(dirformat)
+
+        # If writing a mapfile, generate the dataset identifier
+        if mapfile is not None:
+            datasetId = handler.generateNameFromContext('dataset_id')
+
+        # Create the subdirectory if necessary
+        subsink, exists = getSubDir(path, sink, handler, sizet[0], compare=compare)
+        fullsink = os.path.join(sink, subsink)
+
+        # Create the directory if needed
+        if not os.path.exists(fullsink):
+            if verbose:
+                print 'mkdir %s'%fullsink
+            if not dryrun:
+                os.makedirs(fullsink)
+
+        # Copy/move the file
+        if (not exists) or overwrite:
+            if not movefiles:
+                if verbose or dryrun:
+                    print 'cp %s %s'%(path, fullsink)
+                if not dryrun:
+                    shutil.copy(path, fullsink)
+            else:
+                if verbose or dryrun:
+                    print 'mv %s %s'%(path, fullsink)
+                if not dryrun:
+                    shutil.move(path, fullsink)
+            if mapfile is not None:
+                size, modtime = sizet
+                fullpath = os.path.join(fullsink, os.path.basename(path))
+                print >>fmap, "%s | %s | %d | mod_time=%f"%(datasetId, fullpath, size, float(modtime))
+
+    if mapfile is not None and mapfile!='-':
+        fmap.close()
+
+if __name__=='__main__':
+    main(sys.argv[1:])
