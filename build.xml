@@ -753,6 +753,11 @@ Builds the project via ant (obviously).
   </target>
 
 
+  <target name="post"  depends="init">
+    <exec executable="rsync" dir="${basedir}">
+      <arg line="-caOvzl --chmod=g+r,a+r --exclude *~ --exclude semantic* ${doc_dir_generated} ${user}@${server}:${dir}"/>
+    </exec>
+  </target>
 
 
   <!--
