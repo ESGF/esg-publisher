@@ -78,5 +78,6 @@ Note: Check Maven for propery dependency parameter values @
     <dependency org="junit" name="junit" rev="4.8.1"/>
     <dependency org="com.sun.xml.bind" name="jaxb-xjc" rev="2.2"/>
 <!--<dependency org="com.caucho" name="hessian" rev="3.1.5"/> -->
+    <dependency org="com.caucho" name="hessian" rev="3.0.20" />
   </dependencies>
 </ivy-module>
