@@ -90,8 +90,6 @@ Builds the project via ant (obviously).
   <property name="project_name" value="ESG-Node"/>
   <property name="author" value="Gavin M. Bell"/>
 
-  <ivy:settings file="./ivysettings.xml" />
-
   <!--
       ************************************************************
       Global Initialization and Preparation....
@@ -207,10 +205,9 @@ Builds the project via ant (obviously).
   
   <target name="init-ivy" depends="init">
     <property name="ivy_version" value="2.1.0" />
-    <!-- <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy_version}/ivy-${ivy_version}.jar" 
-	      dest="ivy-${ivy_version}.jar" usetimestamp="true"/> -->
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
              uri="antlib:org.apache.ivy.ant" classpath="${lib_dir}/ivy-${ivy_version}.jar"/>
+    <ivy:settings file="./ivysettings.xml" />
   </target>
   
   <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
