@@ -35,6 +35,6 @@ generated/
 /dist
 /docs-generated
 /lib/fetched
-/cobertura.ser
+/.cobertura.ser
 /eclipse
 /backup
