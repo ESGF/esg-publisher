@@ -36,3 +36,5 @@ generated/
 /docs-generated
 /lib/fetched
 /cobertura.ser
+/eclipse
+/backup
