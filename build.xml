@@ -745,11 +745,11 @@ Builds the project via ant (obviously).
   
   <target name="make_everything" depends="make_dist,test,docs,dep_report,coverage_report"
 	  description="(Builds Everything... Distributions, Tests, Docs n Reports)">
-    <echo message="JavaDocs -> file://${jdoc_dir}/index.html"/>
+    <echo message="JavaDocs ----------> file://${jdoc_dir}/index.html"/>
+    <echo message="Dependency Report -> file://${lib_deps_reports_dir}/esgf-${module}-default.html"/>
     <echo message="Unit Test Report  -> file://${test_reports_dir}/index.html"/>
     <echo message="Coverage Report   -> file://${test_coverage_dir}/index.html"/>
-    <echo message="Dependency Report -> file://${lib_deps_reports_dir}/esgf-${module}-default.html"/>
-    <echo message="Web Site -> http://esgf.org/${module}-site/index.html"/>
+    <echo message="Web Site ----------> http://esgf.org/${module}-site/index.html"/>
   </target>
 
 
