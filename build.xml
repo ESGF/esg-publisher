@@ -701,7 +701,7 @@ Builds the project via ant (obviously).
       </packageset>
 
       <doctitle><![CDATA[<h1>${module}</h1>]]></doctitle>
-      <bottom><![CDATA[<i><a href="http://esgf.org/" target="_top">ESGF</a> / <a href="http://esgf.org/" target="_top">BSD OpenSource License</a></i>]]></bottom>
+      <bottom><![CDATA[<i><a href="http://esgf.org/" target="_top">ESGF</a> / <a href="http://esgf.org/LICENSE" target="_top">BSD OpenSource License</a></i>]]></bottom>
       <tag name="todo" scope="all" description="To do:"/>
       <group title="ESG Publisher Client Front End Packages" packages="esg.node.publisher_fe*"/>
       <group title="ESG Node Integration Packages" packages="esg.node.publisher*"/>
@@ -754,8 +754,17 @@ Builds the project via ant (obviously).
 
 
   <target name="post"  depends="init">
+    <property name="orig.dir" value="${doc_dir_generated}"/>
+    <property name="dest.server" value="esgf.org"/>
+    <property name="dest.dir" value="www/${module}-site/"/>
+    
+    <echo message="orig.dir      = ${orig.dir} "/>
+    <echo message="dest.server   = ${dest.server} "/> 
+    <echo message="dest.dir      = ${dest.dir} "/> 
+    <echo message="dest.user     = ${dest.user} "/> 
+
     <exec executable="rsync" dir="${basedir}">
-      <arg line="-caOvzl --chmod=g+r,a+r --exclude *~ --exclude semantic* ${doc_dir_generated} ${dest.user}@${dest.server}:${dest.dir}"/>
+      <arg line="-caOvzl --chmod=g+r,a+r --exclude *~ --exclude semantic* ${orig.dir} ${dest.user}@${dest.server}:${dest.dir}"/>
     </exec>
   </target>
 
