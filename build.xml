@@ -320,7 +320,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}.${version_num}.jar">
       <fileset dir="${build_dir}"
 	       includes="esg/**,**/*.properties"
-	       excludes="**/test/**"/>
+	       excludes="**/test/**,**/test-instrumented/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
@@ -347,7 +347,7 @@ Builds the project via ant (obviously).
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="${project_name} (Tests)"/>
+	<attribute name="Project"      value="${project_name} Tests"/>
 	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
@@ -391,7 +391,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}-fe.${version_num}.jar">
       <fileset dir="${build_dir}" 
 	       includes="esg/node/publisher_fe/**,esg/publisher/common/**,**/*.properties"
-	       excludes="**/test/**,**/node.properties/**"/>
+	       excludes="**/test/**,**test-instrumented/**,**/node.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
@@ -417,7 +417,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}-connector.${version_num}.jar">
       <fileset dir="${build_dir}" 
 	       includes="esg/node/publisher/connector/**,esg/publisher/common/**,**/*.properties"
-	       excludes="**/test/**,**/node.properties/**"/>
+	       excludes="**/test/**,**/test-instrumented/**,**/node.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
@@ -463,6 +463,7 @@ Builds the project via ant (obviously).
     <delete dir="${build_dir}"/>
     <delete dir="${doc_dir_generated}"/>
     <delete file="${test_coverage_file}"/>
+    <delete dir="${test_build_dir_inst}"/>
     <tstamp/>
   </target>
 
@@ -599,6 +600,14 @@ Builds the project via ant (obviously).
       </fileset>
     </cobertura-instrument>
 
+    <!-- set test_classapth to see instrumented test classes -->
+    <path id="test_classpath">
+      <pathelement location="${test_build_dir_inst}" />
+      <fileset dir="${lib_dir}" includes="**/junit*.jar" />
+      <path refid="main_classpath" />
+      <pathelement location="${test_build_dir}" />
+    </path>
+
     <junit errorproperty="failed"
 	   failureproperty="failed"
 	   printsummary="on"
@@ -641,47 +650,6 @@ Builds the project via ant (obviously).
       DOCUMENTATION....
       ************************************************************
     -->
-
-  <!-- - - - - - - - - - - - - - - - - - 
-       target: coverage_report                      
-   - - - - - - - - - - - - - - - - - -->
-  <target name="coverage_report" depends="init,make">
-    <delete dir="${test_results_dir}" />
-    <mkdir dir="${test_results_dir}" />
-    <mkdir dir="${test_build_dir}" />
-    <depend srcdir="${test_src_dir}" destdir="${test_build_dir}" cache="${depcache_dir}" closure="yes" />
-    <javac srcdir="${test_src_dir}" destdir="${test_build_dir}" excludes="**/no_comp/**,**/ignore/**,**/*_,**/*_*/**" classpathref="test_classpath" deprecation="true" failonerror="true" target="1.5" debug="on" verbose="off" nowarn="on" />
-    
-    <!-- instrument test classes -->
-    <cobertura-instrument todir="${test_build_dir_inst}">
-      <fileset dir="${build_dir}/esg">
-	<include name="**/*.class" />
-      </fileset>
-    </cobertura-instrument>
-    
-    <path id="test_classpath">
-      <pathelement location="${test_build_dir_inst}" />
-      <fileset dir="${lib_dir}" includes="**/junit*.jar" />
-      <path refid="main_classpath" />
-      <pathelement location="${test_build_dir}" />
-    </path>
-    
-    <junit errorproperty="failed" failureproperty="failed" printsummary="on" fork="yes" maxmemory="1024M">
-      <classpath refid="test_classpath" />
-      <formatter type="plain" usefile="false" />
-      <formatter type="xml" />
-      <test name="${testcase}" todir="${test_results_dir}" if="testcase" />
-      <batchtest todir="${test_results_dir}" unless="testcase">
-	<fileset dir="${test_build_dir}" includes="**/*Test*.class" />
-      </batchtest>
-      <assertions enableSystemAssertions="true">
-	<enable />
-      </assertions>
-    </junit>
-    
-    <cobertura-report srcdir="${src_dir}" destdir="${test_coverage_dir}" />
-  </target>
-  
   
   <target name="docs" depends="init"
 	  description="(Generates the javadoc for this project)">
@@ -743,7 +711,7 @@ Builds the project via ant (obviously).
   </target>
 
   
-  <target name="make_everything" depends="make_dist,test,docs,dep_report,coverage_report"
+  <target name="make_everything" depends="make_dist,test,docs,dep_report"
 	  description="(Builds Everything... Distributions, Tests, Docs n Reports)">
     <echo message="JavaDocs ----------> file://${jdoc_dir}/index.html"/>
     <echo message="Dependency Report -> file://${lib_deps_reports_dir}/esgf-${module}-default.html"/>
