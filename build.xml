@@ -166,7 +166,7 @@ Builds the project via ant (obviously).
     <property name="jaxb_gen_package" value="esg.common.generated"/>
 
     <property name="test_last_failed_file" location="${build_dir}/.lasttestsfailed"/>
-    <property name="test_coverage_file"   value="${basedir}/cobertura.ser"/>
+    <property name="test_coverage_file"   value="${basedir}/.cobertura.ser"/>
     <property name="ivy.lib.dir"          value="${lib_fetched_dir}"/>
 
     <echo message="--------------------------------"/> 
@@ -593,14 +593,14 @@ Builds the project via ant (obviously).
     </path>
     <taskdef resource="tasks.properties" classpathref="coverage.classpath" />
     
-    <!-- instrument test classes -->
-    <cobertura-instrument todir="${test_build_dir_inst}">
+    <!-- instrument classes -->
+    <cobertura-instrument todir="${test_build_dir_inst}" datafile="${test_coverage_file}">
       <fileset dir="${build_dir}/esg">
 	<include name="**/*.class" />
       </fileset>
     </cobertura-instrument>
 
-    <!-- set test_classapth to see instrumented test classes -->
+    <!-- set test_classapth to see instrumented classes -->
     <path id="test_classpath">
       <pathelement location="${test_build_dir_inst}" />
       <fileset dir="${lib_dir}" includes="**/junit*.jar" />
@@ -637,8 +637,8 @@ Builds the project via ant (obviously).
     </junitreport>
 
     <!-- coverage report -->
-    <cobertura-report srcdir="${src_dir}" destdir="${test_coverage_dir}" />
-    <cobertura-report format="xml" srcdir="${src_dir}" destdir="${test_coverage_dir}/xml" />
+    <cobertura-report format="html" srcdir="${src_dir}" destdir="${test_coverage_dir}"     datafile="${test_coverage_file}"/>
+    <cobertura-report format="xml"  srcdir="${src_dir}" destdir="${test_coverage_dir}/xml" datafile="${test_coverage_file}"/>
 
     <echo message="last build failed tests" file="${test_last_failed_file}"/>
     <fail if="failed" message="Unit tests failed.  Check log or reports for details"/>
