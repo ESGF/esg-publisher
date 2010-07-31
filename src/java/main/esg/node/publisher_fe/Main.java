@@ -19,9 +19,9 @@
 *   All rights reserved. This file is part of the:                         *
 *   Earth System Grid (ESG) Data Node Software Stack, Version 1.0          *
 *                                                                          *
-*   For details, see http://esg-repo.llnl.gov/esg-node/                    *
+*   For details, see http://esgf.org/esg-node/                    *
 *   Please also read this link                                             *
-*    http://esg-repo.llnl.gov/LICENSE                                      *
+*    http://esgf.org/LICENSE                                      *
 *                                                                          *
 *   * Redistribution and use in source and binary forms, with or           *
 *   without modification, are permitted provided that the following        *
