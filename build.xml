@@ -20,7 +20,7 @@
 *   All rights reserved. This file is part of the:                         *
 *   Earth System Grid (ESG) Data Node Software Stack, Version 1.0          *
 *                                                                          *
-*   For details, see http://esgf.org/esg-node/                             *
+*   For details, see http://esgf.org/                                      *
 *   Please also read this link                                             *
 *    http://esgf.org/LICENSE                                               *
 *                                                                          *
@@ -87,7 +87,7 @@ Builds the project via ant (obviously).
 
   <property name="module" value="esg-publisher"/>
   <property name="organization" value="Earth Systems Grid Federation"/>
-  <property name="project_name" value="ESG-Node"/>
+  <property name="project_name" value="ESG-Publisher"/>
   <property name="author" value="Gavin M. Bell"/>
 
   <!--
@@ -417,7 +417,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}-connector.${version_num}.jar">
       <fileset dir="${build_dir}" 
 	       includes="esg/node/publisher/connector/**,esg/publisher/common/**,**/*.properties"
-	       excludes="**/test/**,**/test-instrumented/**,**/node.properties/**"/>
+	       excludes="**/test/**,**/test-instrumented/**,**/${module}.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
