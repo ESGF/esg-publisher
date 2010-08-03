@@ -10,6 +10,12 @@ import org.apache.commons.logging.impl.*;
  The main program to bootstrap the Publisher GUI
  */
 public class Main {
+		private static final Log log = LogFactory.getLog(Main.class);
+
+		public Main() {
+			log.info("Starting ESG Publisher Graphical User Interface...");
+		}
+		
 		public static void main(String[] args) {
 			try {
 	             UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");

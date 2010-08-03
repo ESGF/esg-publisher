@@ -188,7 +188,7 @@
   </entry>
   <entry id="atmosphere_energy_content">
     <canonical_units>J m-2</canonical_units>
-    <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. &quot;Atmosphere energy content&quot; has not yet been precisely defined! Please express your views on this quantity on the CF email list.</description>
+    <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. &quot;Atmosphere energy content&quot; has not yet been precisely defined! Please express your views on this quantity on the CF DATASET list.</description>
   </entry>
   <entry id="atmosphere_enthalpy_content">
     <canonical_units>J m-2</canonical_units>
@@ -416,7 +416,7 @@
   </entry>
   <entry id="change_in_atmosphere_energy_content_due_to_change_in_sigma_coordinate_wrt_surface_pressure">
     <canonical_units>J m-2</canonical_units>
-    <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;wrt&quot; means with respect to. &quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. &quot;Atmosphere energy content&quot; has not yet been precisely defined! Please express your views on this quantity on the CF email list. See Appendix D of the CF convention for information about dimensionless vertical coordinates.</description>
+    <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;wrt&quot; means with respect to. &quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. &quot;Atmosphere energy content&quot; has not yet been precisely defined! Please express your views on this quantity on the CF DATASET list. See Appendix D of the CF convention for information about dimensionless vertical coordinates.</description>
   </entry>
   <entry id="change_in_energy_content_of_atmosphere_layer_due_to_change_in_sigma_coordinate_wrt_surface_pressure">
     <canonical_units>J m-2</canonical_units>

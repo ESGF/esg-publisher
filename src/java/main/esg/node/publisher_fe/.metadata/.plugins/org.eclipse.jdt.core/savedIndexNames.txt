@@ -1,0 +1,24 @@
+INDEX VERSION 1.126+/Users/hardy21/projects/esg-publisher/src/java/main/esg/node/publisher_fe/.metadata/.plugins/org.eclipse.jdt.core
+1819685514.index
+1384487945.index
+2332924295.index
+123269270.index
+1273319153.index
+1647675310.index
+483186922.index
+3302703152.index
+3321539481.index
+1271342938.index
+852499497.index
+1751134252.index
+3712507179.index
+1762658067.index
+1833648217.index
+2286151582.index
+1163619204.index
+3266567714.index
+2545238116.index
+1005028341.index
+156905802.index
+1506127098.index
+4238209716.index
