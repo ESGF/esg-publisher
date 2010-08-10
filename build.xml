@@ -104,7 +104,7 @@ Builds the project via ant (obviously).
   <property name="filter" value="false"/>
 
   <!-- **static defines** -->
-  <property name="version_num" value="0.0.0"/>
+  <property name="version_num" value="0.0.0.0"/>
   <filter token="version_num"  value="${version_num}"/>
   <property name="release_name" value="no_name"/>
   <filter token="release_name" value="${release_name}"/>
@@ -217,7 +217,7 @@ Builds the project via ant (obviously).
   
   <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
     <mkdir dir="${lib_fetched_dir}"/>
-    <ivy:retrieve sync="false"/>
+    <ivy:retrieve sync="true"/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
 	<include name="**/*.jar"/>
@@ -251,6 +251,19 @@ Builds the project via ant (obviously).
 	  description="(Cleans out [removes] local workspace jars fetched by Ivy)">
     <echo message="Removing local jars fetched by Ivy"/>
     <delete dir="${lib_fetched_dir}"/>
+  </target>
+
+  <target name="publish" depends="init-ivy" description="Posts build artifact(s) to repository">
+    <ivy:publish resolver="default-chain" 
+		 organisation="esgf" 
+		 module="${module}" 
+		 pubrevision="${version_num}" 
+		 revision="${version_num}"
+		 update="true"
+		 overwrite="true">
+      <artifacts pattern="${dist_dir}/[artifact].[revision].[ext]"/> 
+      <artifacts pattern="${dist_dir}/[artifact]-[revision].[ext]"/> 
+    </ivy:publish>
   </target>
 
   <!--
