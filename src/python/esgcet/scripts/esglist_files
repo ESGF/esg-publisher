@@ -5,8 +5,9 @@ import getopt
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from esgcet.publish import parseDatasetVersionId
 from esgcet.config import loadConfig, initLogging
-from esgcet.model import Dataset
+from esgcet.model import Dataset, DatasetVersion
 from esgcet.query import printResult
 from esgcet.messaging import warning
 
@@ -16,12 +17,10 @@ usage = """Usage:
     List the files in a dataset.
 
 Arguments:
-    dataset_id: Dataset identifier, or '-' to read dataset ids from standard input
+    dataset_id: Dataset identifier, or '-' to read dataset ids from standard input.
+                Use the syntax foo.bar#n to list version n of dataset foo.bar.
 
 Options:
-
-    --all:
-        List superseded and deleted versions of file also.
 
     --echo-sql:
         Echo SQL commands.
@@ -46,7 +45,7 @@ Example:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['all', 'echo-sql', 'full'])
+        args, lastargs = getopt.getopt(argv, "hi:", ['echo-sql', 'full'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -62,13 +61,10 @@ def main(argv):
         print usage
         sys.exit(0)
 
-    listall = False
     echoSql = False
     fullList = False
     init_file = None
     for flag, arg in args:
-        if flag=='--all':
-            listall = True
         if flag=='--echo-sql':
             echoSql = True
         elif flag=='--full':
@@ -81,32 +77,38 @@ def main(argv):
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_file)
-    engine = create_engine(config.get('extract', 'dburl'), echo=echoSql, pool_recycle=3600)
+    engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
     initLogging('extract', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
     session = Session()
 
-    # Lookup the datasets
+    # Lookup the dataset versions
     filetuples = []
-    for datasetId in datasetIds:
+    for datasetVersionId in datasetIds:
+        datasetId, version = parseDatasetVersionId(datasetVersionId)
+
+        # First find the dataset
         dset = session.query(Dataset).filter_by(name=datasetId).first()
         if dset is None:
-            warning("Dataset not found: %s"%datasetId)
+            warning("Dataset not found: %s"%datasetVersionId)
+            continue
+        elif version==-1:
+            version = dset.getVersion()
+            
+        rowTuple = session.query(Dataset, DatasetVersion).filter(Dataset.id==DatasetVersion.dataset_id).filter(Dataset.name==datasetId).filter(DatasetVersion.version==version).first()
+        if rowTuple is None:
+            warning("Dataset %s, version %d not found"%(datasetId, version))
+            continue
+        dsetVersionObj = rowTuple[1]
+        if dsetVersionObj is None:
+            warning("Dataset not found: %s"%datasetVersionId)
             continue
 
-        if not listall:
-            if fullList:
-                filetuples.extend([(file.getLocation(), str(file.getVersion()), str(file.getSize()), str(file.versions[-1].publication_time), file.getModificationFtime(), file.getTrackingID(), file.getChecksum(), file.getChecksumType()) for file in dset.getFiles()])
-            else:
-                for file in dset.getFiles():
-                    print file.getLocation()
+        if fullList:
+            filetuples.extend([(file.getLocation(), str(file.getVersion()), str(file.getSize()), str(file.getPublicationTime()), file.getModificationFtime(), file.getTrackingID(), file.getChecksum(), file.getChecksumType()) for file in dsetVersionObj.files])
         else:
-            for file in dset.files:
-                if fullList:
-                    filetuples.extend([(version.location, str(version.version), str(version.size), str(version.publication_time), version.getModificationFtime(), version.tracking_id, version.checksum, version.checksum_type) for version in file.versions])
-                else:
-                    for version in file.versions:
-                        print version.location
+            for file in dsetVersionObj.files:
+                print file.getLocation()
 
     if fullList:
         filetuples.sort()

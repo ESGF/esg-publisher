@@ -1,9 +1,8 @@
 "Handle IPCC4 data file metadata"
 
 from esgcet.exceptions import *
-from esgcet.config import NetcdfHandler, getConfig, splitLine, splitRecord, genMap, ENUM, STRING, FIXED, TEXT
+from esgcet.config import BasicHandler, getConfig, splitLine, splitRecord, genMap, ENUM, STRING, FIXED, TEXT
 from esgcet.model import Model, Experiment
-from registry import registry
 
 from ipcc4_table_A1 import dic_A1
 from ipcc4_table_O1 import dic_O1
@@ -231,16 +230,19 @@ _FIELDTYPE = 0
 _MANDATORY = 1
 _SEQ = 2
 
-class IPCC4Handler(NetcdfHandler):
+class IPCC4Handler(BasicHandler):
 
-    def validateFile(self, fileobj):
+    def validateFile(self, cdfileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
+        fileobj = cdfileobj.file
         if not hasattr(fileobj, 'project_id'):
             result = False
+            message = "No global attribute: project_id"
         else:
             result =  (fileobj.project_id[:22]=="IPCC Fourth Assessment")
+            message = "project_id should be 'IPCC Fourth Assessment'"
         if not result:
-            raise ESGInvalidMetadataFormat()
+            raise ESGInvalidMetadataFormat(message)
 
     def getResolution(self):
         resolution = None
@@ -250,14 +252,15 @@ class IPCC4Handler(NetcdfHandler):
         return resolution
 
     def validateContext(self, context):
-        NetcdfHandler.validateContext(self, context)
+        BasicHandler.validateContext(self, context)
         run = context.get('run_name', '')
         if len(run)<3 or run[0:3]!='run' or (' ' in run):
             raise ESGPublishError("Invalid value of run: %s, must have the form 'runN'"%run)
 
-    def readContext(self, f, model=''):
+    def readContext(self, cdfile, model=''):
         "Get a dictionary of keys from an open file. The model cannot be determined in general"
-        result = NetcdfHandler.readContext(self, f)
+        result = BasicHandler.readContext(self, cdfile)
+        f = cdfile.file
         
         fnm = os.path.basename(self.path)
         try:

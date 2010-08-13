@@ -13,7 +13,11 @@ import socket
 from esgcet.exceptions import *
 
 usage = """Usage:
-    esgsetup [Options]
+    esgsetup --config [--rootid root_identifier]
+    esgsetup --db
+    esgsetup --thredds
+    esgsetup --publish [--gateway gateway_host]
+    esgsetup --handler
 
     Setup the ESG node software.
 
@@ -26,9 +30,16 @@ Options:
 
     --db: Initialize the database.
 
-    --thredds: Initialize the THREDDS server.
+    --gateway gateway_host:
+        Gateway host name. Used to set default gateway service endpoints for publishing.
+        If not set, the user is prompted for service endpoints.
+
+    --handler
+        Create customized handlers.
 
     --publish: Initialize publication-related configuration options.
+
+    --thredds: Initialize the THREDDS server.
 
     --rootid root_identifier:
         Initialize the ESG root identifier during the --config phase.
@@ -168,6 +179,40 @@ def setupconfig():
 
     cleanup_resources()
             
+def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoints, optionList, handlerGroup, handlerClass, handler=None, handlerBasename=None, handlerTemplate=None, handlerOption=None, handlerPath=None):
+    from pkg_resources import resource_string
+
+    entryPointTemplate = """
+    [%s]
+    handler_name = %s
+    handler = %s
+    """
+    if handler is None:
+        handler = "%s.%s_handler:%s"%(packageName, option, handlerClass)
+    if handlerBasename is None:
+        handlerBasename = "%s_handler.py"%option
+    if handlerTemplate is None:
+        handlerTemplate = "%s_handler.py.tmpl"%option
+    if handlerOption is None:
+        handlerOption = "%s_handler_name"%option
+    if handlerPath is None:
+        handlerPath = os.path.join(packageDir, handlerBasename)
+    createit = True
+    if os.path.exists(handlerPath):
+        createit = askyn('Replace existing file %s?'%handlerPath)
+    if createit:
+        handlerString = resource_string('esgcet.config.etc', handlerTemplate)
+        f = open(handlerPath, 'w')
+        f.write(handlerString)
+        f.close()
+
+    handlerList += '\n' + handlerPath
+    handlerName = askfor("What value will be used for the esg.ini %s option?"%handlerOption)
+    entryPointSection = entryPointTemplate%(handlerGroup, handlerName, handler)
+    handlerEntryPoints += entryPointSection
+    optionList += "\n%s = %s"%(handlerOption, handlerName)
+    return handlerList, handlerEntryPoints, optionList
+
 # Note: this is duplicated from esgcet.config, but we don't know that it can be
 # imported yet.
 class SaneConfigParser(SafeConfigParser):
@@ -236,12 +281,14 @@ class SaneConfigParser(SafeConfigParser):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'help', 'publish', 'rootid=', 'thredds'])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'thredds'])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    gatewayHost = None
+    generateHandler = False
     initconfig = False
     initdb = False
     initthredds = False
@@ -255,6 +302,10 @@ def main(argv):
             initconfig = True
         elif flag=='--db':
             initdb = True
+        elif flag=='--gateway':
+            gatewayHost = arg
+        elif flag=='--handler':
+            generateHandler = True
         elif flag=='--publish':
             initpublish = True
         elif flag=='--thredds':
@@ -263,7 +314,7 @@ def main(argv):
             initroot = True
             rootid = arg
 
-    if not (initconfig or initdb or initthredds or initpublish):
+    if not (initconfig or initdb or initthredds or initpublish or generateHandler):
         print 'No option specified.'
         print usage
         sys.exit(0)
@@ -277,6 +328,10 @@ def main(argv):
 
         if initroot:
             updateconfig([('DEFAULT', 'root_id', rootid)])
+
+        if askyn("Should checksums be generated for all scanned files? (This will slow processing.)", default='n'):
+            updateconfig([('DEFAULT', 'checksum', "md5sum | MD5")])
+            tell("Ensure that md5sum is in your path.")
 
     # Database initialization
     if initdb:
@@ -366,8 +421,8 @@ def main(argv):
             tell("""
             The next step is to create the esgcet database, and an ESG user:
             """)
-            initdburl = config.get('DEFAULT', 'dburl')
-            scheme = "postgres"
+            initdburl = config.getdburl('DEFAULT')
+            scheme = "postgresql"
             userdef = "esgcet"
             passdef = ""
             hostdef = host
@@ -423,24 +478,30 @@ def main(argv):
             cur.execute("select datname from pg_database")
             rows = cur.fetchall()
             if dbname in [item[0] for item in rows]:
-                if not askyn("Database %s already exists, should it be reused? (This will NOT delete existing data.)"%dbname):
-                    conn.close()
-                    raise RuntimeError
-                createdb = False
+                ans = askyn("Database %s already exists, should it be reused? (This will NOT delete existing data.)"%dbname)
+                createdb = not ans
             else:
                 createdb = True
 
             if createdb:
                 tell("Creating database %s with owner=%s"%(dbname, esguser))
                 conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                cur.execute("create database %s with owner %s"%(dbname, esguser))
+                try:
+                    cur.execute("drop database if exists %s"%dbname)
+                    cur.execute("create database %s with owner %s"%(dbname, esguser))
+                except psycopg2.ProgrammingError, e:
+                    print 'Cannot create database %s: %s'%(dbname, `e`)
+                except psycopg2.OperationalError, e:
+                    print 'Cannot create database %s: %s'%(dbname, `e`)
+                    print 'Try restarting postgres, then rerun esgsetup --db'
+                    sys.exit(0)
 
             conn.close()
 
-            dburl = "postgres://%s:%s@%s:%s/%s"%(esguser, esgusepass, host, port, dbname)
+            dburl = "postgresql://%s:%s@%s:%s/%s"%(esguser, esgusepass, host, port, dbname)
             updateconfig([('DEFAULT', 'dburl', dburl)])
 
-            # Initialize database tables
+            # Test sqlalchemy installation
             try:
                 import sqlalchemy
             except ImportError, e:
@@ -455,13 +516,86 @@ def main(argv):
                 interface to the database. It should have been
                 installed automatically when esgcet was installed.
 
-                Rerun 'easy_install -f %s esgcet' and check that sqlalchemy builds correctly.
+                Rerun 'easy_install -f %s esgcet' and check that sqlalchemy built correctly.
                 
                 """%(`e`,REPOS))
                 raise RuntimeError
 
+            # Setup schema migration if necessary ...
+            from pkg_resources import resource_filename
+            repo_cfg_path = resource_filename('esgcet.schema_migration', 'migrate.cfg')
+            repo_path = os.path.dirname(repo_cfg_path)
+
+            try:
+                from migrate.versioning.api import version_control, db_version, downgrade
+                from migrate.versioning.exceptions import DatabaseAlreadyControlledError
+            except ImportError, e:
+                tell("""
+
+                The following error occurred:
+
+                - %s
+
+                The sqlalchemy_migrate package has not been installed. It should have been built when
+                the esgcet package was installed.
+
+                Run 'easy_install sqlalchemy_migrate' and ensure that the package built correctly.
+                """%`e`)
+                raise RuntimeError
+
+            # ... If the database was just created, then just initialize version control with version=0
+            if createdb:
+                try:
+                    version_control(dburl, repo_path)
+                    print 'Enabled schema version control.'
+                except DatabaseAlreadyControlledError:
+                    tell("""
+
+                    This is unexpected: the database was just created, but appears to be under
+                    version control already. Suggest running 'esgdrop_tables' then 'esginitialize -c'
+                    to ensure that the database version is correct.
+
+                    """)
+                    raise RuntimeError
+
+            # ... Otherwise the database already exists: check if version control is already enabled. If not,
+            #     initialize with version=1 and downgrade to 0 to ensure that the
+            #     database is at the correct version
+            else:
+                try:
+                    version = db_version(dburl, repo_path)
+                except:
+                    # The database already exists, but schema versioning is not enabled.
+                    tell("""
+
+                    This database is not version controlled. Enabling version control ensures that:
+                    - this version of esgcet is consistent with the database, and
+                    - future esgcet package versions can be installed without rebuilding the database.
+
+                    In order to initialize schema version control, all existing tables must be deleted
+                    and rebuilt. THIS WILL DELETE ALL DATA IN THE NODE DATABASE. Once version control
+                    is enabled, future upgrades will not require database deletion.
+
+                    """)
+                    ans = askyn("Do you want to rebuild the existing node database, and enable schema version control? (THIS WILL DELETE EXISTING DATA)")
+                    if ans:
+                        print 'Enabling schema version control ...'
+                        version_control(dburl, repo_path, version=1)
+                        downgrade(dburl, repo_path, 0)
+                        print 'Schema version control enabled.'
+                    else:
+                        tell("""
+
+                        Schema version control was NOT enabled. To ensure that the node database has the correct
+                        schema version, please run 'esgdrop_tables' and 'esginitialize -c'.
+
+                        """)
+                        sys.exit(0)
+
+            # Initialize database tables
             tell("""
-            Initializing database %s. This will create or update database tables if they do not already exist.
+            Checking that database %s is up-to-date:
+            Running 'esginitialize -c':
             """%dbname)
             try:
                 subprocess.call(["esginitialize", "-c"])
@@ -526,7 +660,6 @@ def main(argv):
 
             maj, min, dum, dum, dum = sys.version_info
             if (maj, min) < (2,6):
-                import socket
                 if not socket._have_ssl:
                     tell("""
 
@@ -562,7 +695,7 @@ def main(argv):
             defaultTop = dn(dn(defaultRoot))
             threddsTop = askfor("TDS content directory", default=defaultTop)
             if not os.path.exists(threddsTop):
-                tell("Directory %s does not exists"%threddsTop)
+                tell("Directory %s does not exist. Please create the directory and rerun esgsetup."%threddsTop)
                 raise RuntimeError
             threddsContent = os.path.join(threddsTop, "thredds")
             if not os.path.exists(threddsContent):
@@ -603,7 +736,7 @@ def main(argv):
             from esgcet.exceptions import ESGPublishError
 
             config = loadConfig(None)
-            engine = create_engine(config.get('extract', 'dburl'), echo=False, pool_recycle=3600)
+            engine = create_engine(config.getdburl('extract'), echo=False, pool_recycle=3600)
             initLogging('extract', override_sa=engine)
             Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
@@ -613,8 +746,8 @@ def main(argv):
             updateThreddsRootCatalog()
 
             # Test THREDDS reinit url
-            threddsReinitURL = askfor("URL for TDS reinitialization (thredds_reinit_url)", default=config.get('DEFAULT', 'thredds_reinit_url'))
-            threddsErrorURL = askfor("URL of TDS error log (thredds_reinit_error_url)", default=config.get('DEFAULT', 'thredds_reinit_error_url'))
+            threddsReinitURL = askfor("URL for TDS reinitialization [Note: the correct value differs between THREDDS V3 and V4] (thredds_reinit_url)", default=config.get('DEFAULT', 'thredds_reinit_url'))
+            threddsErrorURL = askfor("URL of TDS error log [Note: the correct value differs between THREDDS V3 and V4] (thredds_reinit_error_url)", default=config.get('DEFAULT', 'thredds_reinit_error_url'))
             threddsUser = askfor("TDS username (thredds_username)", default=config.get('DEFAULT', 'thredds_username'))
             threddsPassword = askfor("TDS password", silent=True)
             threddsPassword2 = askfor("Confirm TDS password", silent=True)
@@ -679,7 +812,11 @@ def main(argv):
 
             # Get the default gateway URL from the remote metadata service URL
             defaultGatewayURL = "http://pcmdi3.llnl.gov/esgcet"
-            defaultHessianServiceURL = config.get('DEFAULT', 'hessian_service_remote_metadata_url', default=None)
+            URLtuple = urlparse.urlparse(defaultGatewayURL)
+            if gatewayHost is not None:
+                defaultHessianServiceURL = urlparse.urlunparse(("http", gatewayHost, os.path.join(URLtuple[2], METADATA_SERVICE), '', '', ''))
+            else:
+                defaultHessianServiceURL = config.get('DEFAULT', 'hessian_service_remote_metadata_url', default=None)
             if defaultHessianServiceURL is not None:
                 ind = defaultHessianServiceURL.find(METADATA_SERVICE)
                 if ind!=-1:
@@ -708,6 +845,112 @@ def main(argv):
             
         except RuntimeError:
             tell("Script aborted.")
+
+    # Customized handler setup
+    if generateHandler:
+
+        tell("""
+
+        Setup a custom handler package.
+
+        There are four types of handlers Any or all types of handler can
+        be included:
+
+        - Project handlers encapsulate the logic about what metadata should be associated
+          with a project, and how it is represented in the data, directory structures, etc.
+        - Format handlers describe the I/O for a specific file format such as netCDF.
+        - Metadata handlers describe the metadata conventions and time value representation
+          associated with a specific metadata convention, such as the CF convention.
+        - A THREDDS catalog hook is a function for customizing the TDS catalog files.
+
+        This section will create a skeleton handler package for one or more handler types.
+        You will have the option to select:
+
+        - The package name and directory;
+        - Which type of handler(s) to create, and the name of each handler
+        - For each handler, the name that will identify it in the esg.ini 'handler_name' option.
+
+        """)
+        if not askyn("Proceed?"):
+            raise RuntimeError
+
+        dirName = os.path.expanduser(askfor("In what directory should the handler package be created?"))
+        packageName = askfor("Package name (no spaces or special characters)")
+        packageDir = os.path.expanduser(os.path.join(dirName, packageName))
+        packageDescription = askfor("Package description")
+        author = askfor("Author")
+        setupProject = askyn("Set up a project handler?", default='n')
+        setupFormat = askyn("Set up a format handler?", default='n')
+        setupMetadata = askyn("Set up a metadata handler?", default='n')
+        setupThredds = askyn("Set up a THREDDS catalog hook?", default='n')
+
+        if not (setupProject or setupFormat or setupMetadata or setupThredds):
+            print 'No handlers initialized.'
+            sys.exit(0)
+
+        # Create the directory if necessary
+        if not os.path.exists(dirName):
+            print 'Creating %s'%dirName
+            os.makedirs(dirName)
+        if not os.path.exists(packageDir):
+            print 'Creating %s'%packageDir
+            os.makedirs(packageDir)
+
+        handlerList = ""
+        handlerEntryPoints = ""
+        optionList = ""
+
+        # Create the handler skeleton files
+        from esgcet.config import ESGCET_PROJECT_HANDLER_GROUP, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
+        if setupProject:
+            handlerList, handlerEntryPoints, optionList = setupHandler(packageDir, packageName, 'project', handlerList, handlerEntryPoints, optionList, ESGCET_PROJECT_HANDLER_GROUP, 'CustomProjectHandler')
+        if setupFormat:
+            handlerList, handlerEntryPoints, optionList = setupHandler(packageDir, packageName, 'format', handlerList, handlerEntryPoints, optionList, ESGCET_FORMAT_HANDLER_GROUP, 'CustomFormatHandler')
+        if setupMetadata:
+            handlerList, handlerEntryPoints, optionList = setupHandler(packageDir, packageName, 'metadata', handlerList, handlerEntryPoints, optionList, ESGCET_METADATA_HANDLER_GROUP, 'CustomMetadataHandler')
+        if setupThredds:
+            handlerClass = 'threddsCatalogHook'
+            handlerList, handlerEntryPoints, optionList = setupHandler(packageDir, packageName, None, handlerList, handlerEntryPoints, optionList, ESGCET_THREDDS_CATALOG_HOOK_GROUP, handlerClass, handler="%s.thredds_catalog_hook:%s"%(packageName, handlerClass), handlerBasename="thredds_catalog_hook.py", handlerTemplate="thredds_catalog_hook.py.tmpl", handlerOption="thredds_catalog_hook")
+
+        # Create setup.py
+        from pkg_resources import resource_string
+        setupPath = os.path.join(dirName, 'setup.py')
+        createit = True
+        if os.path.exists(setupPath):
+            createit = askyn('Replace existing file %s?'%setupPath)
+        if createit:
+            setupString = resource_string('esgcet.config.etc', 'handler_setup.py.tmpl')
+            setupString = setupString%(author, packageName, packageDescription, packageName, handlerEntryPoints)
+            f = open(setupPath, 'w')
+            f.write(setupString)
+            f.close()
+
+        # Create an empty __init__.py
+        initPath = os.path.join(packageDir, '__init__.py')
+        createit = True
+        if os.path.exists(initPath):
+            createit = askyn('Replace existing file %s?'%initPath)
+        if createit:
+            f = open(initPath, 'w')
+            f.close()
+
+        # Next steps
+        tell("""
+        A skeleton handler package has been created in %s.
+        To complete the handler setup:
+        
+        (1) Edit the following handler files:
+        %s
+        
+        (2) Install the handler package with:
+
+        %% cd %s
+        %% python setup.py --verbose install
+
+        (3) Set the following options in esg.ini, in the appropriate project section(s):
+        %s
+        
+        """%(dirName, handlerList, dirName, optionList))
 
 if __name__=='__main__':
     main(sys.argv[1:])

@@ -3,15 +3,11 @@ import logging
 import numpy
 import re
 import datetime
-from cdtime import reltime, DefaultCalendar
 from esgcet.messaging import debug, info, warning, error, critical, exception
-
-# from Scientific.IO import NetCDF
-from cdms2 import Cdunif
 from esgcet.model import *
 from esgcet.exceptions import *
-from esgcet.config import splitLine, getConfig, tagToCalendar
-from utility import getTypeAndLen, issueCallback, compareFiles, checksum
+from esgcet.config import splitLine, getConfig
+from utility import getTypeAndLen, issueCallback, compareFiles, checksum, extraFieldsGet
 
 NAME=0
 LENGTH=1
@@ -23,29 +19,18 @@ RENAME_OP=3
 UPDATE_OP=4
 REPLACE_OP=5
 
-MAX_FILENAME_DUPLICATES = 1000          # Maximum number of duplicate file basenames in a dataset
-def generateFileBase(location, basedict, dsetname):
-    """Generate a basename that is unique wrt to all files in the dataset."""
-    basename = os.path.basename(location)
-    if not basedict.has_key(basename):
-        result = basename
-    else:
-        for i in xrange(MAX_FILENAME_DUPLICATES):
-            cand = "%s_%d"%(basename, i)
-            if not basedict.has_key(cand):
-                result = cand
-                break
-        else:
-            raise ESGPublishError("Too many files with basename: %s in dataset %s, maximum=%d"%(basename, dsetname, MAX_FILENAME_DUPLICATES))
+# When translating numpy arrays (e.g., dimension values) to strings, don't include newlines
+numpy.set_printoptions(threshold=numpy.inf, linewidth=numpy.inf)
 
-    return result
-
-def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, **context):
+def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, useVersion=-1, forceRescan=False, **context):
     """
     Extract metadata from a dataset represented by a list of files, add to a database. Populates the database tables:
 
     - dataset
+    - dataset_version
     - file
+    - file_version
+    - dataset_file_version
     - file_variable (partially)
     - associated attribute tables
 
@@ -59,6 +44,9 @@ def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregat
 
     dbSession
       A database Session.
+
+    handler
+      Project handler
 
     cfHandler  
       A CF handler instance
@@ -95,6 +83,12 @@ def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregat
     comment
       String comment on the dataset version. If the dataset version is not increased, the comment is ignored.
 
+    useVersion=-1:
+      Integer version number of the dataset version to modify. By default the latest version is modified.
+
+    forceRescan
+      Boolean, if True force all files to be rescanned on an update.
+
     context
       A dictionary with keys ``project``, ``model``, ``experiment``, etc. The context consists of all fields needed to uniquely define the dataset.
 
@@ -129,7 +123,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregat
     configOptions['checksumClient'] = checksumClient
     configOptions['checksumType'] = checksumType
 
-    # Check if the dataset is already in the database
+    # Check if the dataset / version is already in the database
     dset = session.query(Dataset).filter_by(name=datasetName).first()
     if dset is not None:
         if operation==CREATE_OP:
@@ -155,6 +149,8 @@ def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregat
             raise ESGPublishError("Dataset %s exists and is a replica. Use --replica or delete the existing dataset."%dset.name)
 
     createTime = datetime.datetime.now() # DatasetVersion creation_time
+    fobjs = None
+    pathlist = [item for item in fileIterator]
     if operation==CREATE_OP:
         # Create a new dataset
         info("Creating dataset: %s"%datasetName)
@@ -164,40 +160,55 @@ def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregat
         # Create an initial dataset version
         existingVersion = 0
         eventFlag = CREATE_DATASET_EVENT
-        addNewVersion = createDataset(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, **context)
+        addNewVersion, fobjs = createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, **context)
         
     elif operation in [UPDATE_OP, REPLACE_OP]:
+        versionObj = dset.getVersionObj(useVersion)
+        if versionObj is None:
+            raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
         existingVersion = dset.getVersion()
         eventFlag = UPDATE_DATASET_EVENT
-        addNewVersion = updateDataset(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, replace=(operation==REPLACE_OP), **context)
+        addNewVersion, fobjs = updateDatasetVersion(dset, versionObj, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, replace=(operation==REPLACE_OP), forceRescan=forceRescan, **context)
          
     elif operation==RENAME_OP:
+        versionObj = dset.getVersionObj(useVersion)
+        if versionObj is None:
+            raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
         existingVersion = dset.getVersion()
         eventFlag = UPDATE_DATASET_EVENT
-        addNewVersion = renameFiles(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, **context)
+        addNewVersion = renameFilesVersion(dset, versionObj, pathlist, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, **context)
          
     elif operation==DELETE_OP:
+        versionObj = dset.getVersionObj(useVersion)
+        if versionObj is None:
+            raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
         existingVersion = dset.getVersion()
         eventFlag = UPDATE_DATASET_EVENT
-        addNewVersion = deleteFiles(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, **context)
+        addNewVersion, fobjs = deleteFilesVersion(dset, versionObj, pathlist, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, **context)
     else:
         raise ESGPublishError("Invalid dataset operation: %s"%`operation`)
 
     # Create a new dataset version if necessary
     if keepVersion:
-        newVersion = existingVersion
+        newVersion = max(existingVersion, 1)
     elif newVersion is None:
         newVersion = existingVersion + 1
         
+    dset.reaggregate = False
     if addNewVersion and newVersion>existingVersion:
-        info("New dataset version = %d"%newVersion)
-        dsetVersion = DatasetVersion(newVersion, creation_time=createTime, comment=comment)
-        dset.versions.append(dsetVersion)
-        event = Event(datasetName, newVersion, eventFlag)
+        newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment)
+        info("New dataset version = %d"%newDsetVersionObj.version)
+        for var in dset.variables:
+            session.delete(var)
+        newDsetVersionObj.files.extend(fobjs)
+        event = Event(datasetName, newDsetVersionObj.version, eventFlag)
         dset.events.append(event)
+        dset.reaggregate = True
     elif masterGateway is not None:     # Force version set on replication
         info("Dataset version = %d"%newVersion)
         dset.setVersion(newVersion)
+        event = Event(datasetName, newVersion, eventFlag)
+        dset.events.append(event)
 
     info("Adding file info to database")
     session.commit()
@@ -205,24 +216,24 @@ def extractFromDataset(datasetName, fileIterator, dbSession, cfHandler, aggregat
 
     return dset
 
-def createDataset(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, masterGateway=None, **context):
+def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, masterGateway=None, **context):
 
-    filelist = [item for item in fileIterator]
-    nfiles = len(filelist)
+    fobjlist = []                       # File objects in the dataset
+    nfiles = len(pathlist)
 
     basedict = {}                       # file.base => 1
     varlocate = configOptions['variable_locate']
     checksumClient = configOptions['checksumClient']
     checksumType = configOptions['checksumType']
     seq = 0
-    for path, sizet in filelist:
+    for path, sizet in pathlist:
         size, mtime = sizet
 
         csum = None
         csumtype = checksumType
         if extraFields is not None:
-            csum = extraFields.get((dset.name, path, 'checksum'), None)
-            csumtype = extraFields.get((dset.name, path, 'checksum_type'), None)
+            csum = extraFields.get((dset.name, -1, path, 'checksum'), None)
+            csumtype = extraFields.get((dset.name, -1, path, 'checksum_type'), None)
         if csum is None and not offline and checksumClient is not None:
             csum = checksum(path, checksumClient)
             csumtype = checksumType
@@ -233,6 +244,7 @@ def createDataset(dset, fileIterator, session, cfHandler, configOptions, aggrega
         basedict[base] = 1
         fileVersion = FileVersion(1, path, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
         file.versions.append(fileVersion)
+        fobjlist.append(fileVersion)
         seq += 1
 
         dset.files.append(file)
@@ -240,8 +252,7 @@ def createDataset(dset, fileIterator, session, cfHandler, configOptions, aggrega
         # Extract the dataset contents
         if not offline:
             info("Scanning %s"%path)
-#             f = NetCDF.NetCDFFile(path)
-            f = Cdunif.CdunifFile(path)
+            f = handler.openPath(path)
             extractFromFile(dset, f, file, session, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, **context)
             f.close()
         else:
@@ -255,131 +266,90 @@ def createDataset(dset, fileIterator, session, cfHandler, configOptions, aggrega
             session.close()
             raise
 
-    return True
+    return True, fobjlist
 
-def updateDataset(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, replace=False, **context):
+def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, replace=False, forceRescan=False, **context):
 
-    # Delete existing variables. They will be regenerated from the existing file variables and files.
     if replace:
-        info("Replacing files in dataset: %s, version %d"%(dset.name, dset.getVersion()))
+        info("Replacing files in dataset: %s, version %d"%(dset.name, dsetVersion.version))
     else:
-        info("Updating files in dataset: %s, version %d"%(dset.name, dset.getVersion()))
-        
-    for var in dset.variables:
-        session.delete(var)
+        info("Updating files in dataset: %s, version %d"%(dset.name, dsetVersion.version))
 
-    # Create a file dictionary for the dataset
-    #   filedict[path] = file
-    basedict = {}
+    haveLatestDsetVersion = (dsetVersion.version == dset.getVersion())
+
+    # Get the list of FileVersion objects for this version
     locdict = {}
-    deletedict = {}                     # Files that have been deleted.
-    todelete = {}                       # Track which files will be deleted from a replace operation.
-    for file in dset.files:
-        location = file.getLocation()
-        basedict[file.base] = 1         # Note: basedict has to include deleted files also.
-        if file.deletion_time is not None:
-            deletedict[location] = file
-        else:
-            locdict[location] = file
-            todelete[location] = True
-
-    filelist = [item for item in fileIterator]
-    nfiles = len(filelist)
+    todelete = {}
+    for fobj in dsetVersion.getFileVersions():
+        loc = fobj.location
+        locdict[loc] = todelete[loc] = fobj
 
     varlocate = configOptions['variable_locate']
     checksumClient = configOptions['checksumClient']
     checksumType = configOptions['checksumType']
+
+    # Get the base dictionary for the entire dataset
+    basedict = dset.getBaseDictionary()
+
+    # For each item in the pathlist:
     seq = 0
-    addNewDatasetVersion = False        # Add a new dataset version if any file has been modified
-                                        # or deleted. Note: don't increment the dataset version
-                                        # just because a new file was added, since the publisher
-                                        # may be creating the dataset incrementally.
-    for path, sizet in filelist:
+    fileModified = False                # Any file has been modified (added, replaced, or deleted)
+    newFileVersionObjs = []
+    nfiles = len(pathlist)
+    for path, sizet in pathlist:
+
+        # Rescan this file if it has been added, or replaced
+        rescanFile = haveLatestDsetVersion
+
         size, mtime=sizet
         csum = None
         csumtype = checksumType
         if extraFields is not None:
-            csum = extraFields.get((dset.name, path, 'checksum'), None)
-            csumtype = extraFields.get((dset.name, path, 'checksum_type'), None)
+            csum = extraFieldsGet(extraFields, (dset.name, path, 'checksum'), dsetVersion)
+            csumtype = extraFieldsGet(extraFields, (dset.name, path, 'checksum_type'), dsetVersion)
         if csum is None and not offline and checksumClient is not None:
             csum = checksum(path, checksumClient)
             csumtype = checksumType
 
-        # oldpath is the value of 'from_file' if present
-        if extraFields is not None:
-            oldpath = extraFields.get((dset.name, path, 'from_file'), None)
-        else:
-            oldpath = None
+        # If the item is in the current dataset version, get the file version obj and add to the list
+        if locdict.has_key(path):
+            del todelete[path]
+            fileVersionObj = locdict[path]
+            fileObj = fileVersionObj.parent
+            
+            # If the file matches the existing file version, no-op, ...
+            if compareFiles(fileVersionObj, handler, path, size, offline, checksum=csum):
+                if not forceRescan:
+                    info("File %s exists, skipping"%path)
+                newFileVersionObjs.append(fileVersionObj)
+                rescanFile = False
 
-        # If oldpath != path and exists in the dataset, delete it
-        if oldpath is not None and oldpath!=path and locdict.has_key(oldpath):
-            file = locdict[oldpath]
-            file.delete(session)
-            del locdict[oldpath]
-            deletedict[oldpath] = file
-            todelete[oldpath] = False   # Already been deleted
-            addNewDatasetVersion = True
-
-        # If the file was deleted, undelete it.
-        if deletedict.has_key(path):
-            info("Adding file %s"%path)
-            file = deletedict[path]
-            file.undelete()
-            del deletedict[path]
-            locdict[path] = file
-            base = generateFileBase(path, basedict, dset.name)
-            file.base = base
-            basedict[base] = 1
-            todelete[path] = False
-            fileVersionNo = file.getVersion()+1
-            addNewDatasetVersion = True
-
-        # If the file is in the dataset ...
-        elif locdict.has_key(path):
-            file = locdict[path]
-            todelete[path] = False
-
-            # ... If the file matches the existing file version, no-op
-            if compareFiles(file, path, size, offline, checksum=csum):
-                info("File %s exists, skipping"%path)
-                continue
-
-            # ... Else bump the version number and add a new version
+            # ... else create a new version of the file
             else:
-                fileVersionNo = file.getVersion() + 1
-                file.deleteChildren(session) # The file is in the dataset but differs from
-                                             # the file entry, so will be rescanned
-                info("File %s version %d added"%(path, fileVersionNo))
-                addNewDatasetVersion = True
+                newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
+                newFileVersionObjs.append(newFileVersionObj)
+                fileObj.deleteChildren(session)
+                fileModified = True
 
-        # Else add a new file, version 1
+        # Else create a new file / file version object and add to the list ...
         else:
-            if oldpath is None:
-                info("Adding new file %s"%path)
+            fileObj = FileFactory(dset, path, basedict, session)
+            newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
+            newFileVersionObjs.append(newFileVersionObj)
+            fileModified = True
+
+        # ... and rescan if necessary
+        if rescanFile or forceRescan:
+            if not offline:
+                info("Scanning %s"%path)
+                f = handler.openPath(path)
+                extractFromFile(dset, f, fileObj, session, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, **context)
+                f.close()
             else:
-                info("Replacing %s with %s"%(oldpath, path))
-            base = generateFileBase(path, basedict, dset.name)
-            file, fileVersionNo = FileFactory(base, path, session, deletedFileDictionary=deletedict)
-            basedict[base] = 1
-            dset.files.append(file)
-            locdict[path] = file
-
-        # Create a new file version
-        fileVersion = FileVersion(fileVersionNo, path, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
-        file.versions.append(fileVersion)
-
-        seq += 1
-
-        # Extract the dataset contents
-        if not offline:
-            info("Scanning %s"%path)
-            f = Cdunif.CdunifFile(path)
-            extractFromFile(dset, f, file, session, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, **context)
-            f.close()
-        else:
-            info("File %s is offline"%path)
+                info("File %s is offline"%path)
 
         # Callback progress
+        seq += 1
         try:
             issueCallback(progressCallback, seq, nfiles, 0, 1, stopEvent=stopEvent)
         except:
@@ -387,60 +357,66 @@ def updateDataset(dset, fileIterator, session, cfHandler, configOptions, aggrega
             session.close()
             raise
 
-    # For a replace operation, remove old files not in the new dataset
-    if replace:
-        for path, value in todelete.items():
-            if value:
-                info("Deleting entry for file %s"%path)
-                file = locdict[path]
-                file.delete(session)
-                addNewDatasetVersion = True
+    # If updating, add the file version objects ...
+    if not replace:
+        for fileVersionObj in todelete.values():
+            newFileVersionObjs.append(fileVersionObj)
 
-    return addNewDatasetVersion
+    # ... else if rescanning delete the file object children
+    elif haveLatestDsetVersion:
+        for fileVersionObj in todelete.values():
+            fileObj = fileVersionObj.parent
+            fileObj.deleteChildren(session)
+            fileModified = True
 
-def renameFiles(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, **context):
+    # Create a new dataset version if:
+    # - a file has been added, replaced, or deleted, and
+    # - the current version is the latest
+    createNewDatasetVersion = haveLatestDsetVersion and fileModified
+    
+    return createNewDatasetVersion, newFileVersionObjs
 
-    info("Renaming files in dataset: %s, version %d"%(dset.name, dset.getVersion()))
-    for var in dset.variables:
-        session.delete(var)
+def renameFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, **context):
 
-    # Create a file dictionary for the dataset
-    basedict = {}
+    info("Renaming files in dataset: %s, version %d"%(dset.name, dsetVersion.version))
+
+    # Get the list of FileVersion objects for this version
     locdict = {}
-    for file in dset.files:
-        basedict[file.base] = 1
-        if not file.isDeleted():
-            locdict[file.getLocation()] = file
+    todelete = {}
+    for fobj in dsetVersion.getFileVersions():
+        loc = fobj.location
+        locdict[loc] = todelete[loc] = fobj
 
-    filelist = [item for item in fileIterator]
-    nfiles = len(filelist)
+    basedict = dset.getBaseDictionary()
+
+    nfiles = len(pathlist)
 
     varlocate = configOptions['variable_locate']
     seq = 0
-    for path, size in filelist:
+    for path, size in pathlist:
 
         # If the file exists, rename it
         oldpath = None
         if extraFields is not None:
-            oldpath = extraFields.get((dset.name, path, 'from_file'), None)
+            oldpath = extraFieldsGet(extraFields, (dset.name, path, 'from_file'), dsetVersion)
         if oldpath is None:
             info("No from_file field for file %s, skipping"%path)
             continue
 
         if locdict.has_key(oldpath):
-            file = locdict[oldpath]
-            fileVersion = file.versions[-1]
+            fileVersionObj = locdict[oldpath]
+            fileObj = fileVersionObj.parent
             if not os.path.exists(path):
                 info("File not found: %s, skipping"%path)
                 continue
             info("Renaming %s to %s"%(oldpath, path))
-            del basedict[file.base]
+            del basedict[fileObj.base]
             base = generateFileBase(path, basedict, dset.name)
-            file.base = base
+            fileObj.base = base
             basedict[base] = 1
-            fileVersion.location = path
+            fileVersionObj.location = path
             del locdict[oldpath]
-            locdict[path] = file
+            locdict[path] = fileVersionObj
         else:
             info("File entry %s not found, skipping"%oldpath)
             continue
@@ -457,32 +433,39 @@ def renameFiles(dset, fileIterator, session, cfHandler, configOptions, aggregate
 
     return False
 
-def deleteFiles(dset, fileIterator, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, **context):
+def deleteFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, **context):
 
-    # Delete existing variables. They will be regenerated from the existing file variables and files.
-    info("Deleting file entries for dataset: %s, version %d"%(dset.name, dset.getVersion()))
-    for var in dset.variables:
-        session.delete(var)
+    info("Deleting file entries for dataset: %s, version %d"%(dset.name, dsetVersion.version))
+
+    haveLatestDsetVersion = (dsetVersion.version == dset.getVersion())
 
     # Create a file dictionary for the dataset
-    locdict = {}
-    for file in dset.getFiles():
-        locdict[file.getLocation()] = file
+    fobjdict = {}                       # file version objects for the new dataset version
+    for fobj in dsetVersion.getFileVersions():
+        fobjdict[fobj.location] = fobj
 
-    filelist = [item for item in fileIterator]
-    nfiles = len(filelist)
+    nfiles = len(pathlist)
 
     varlocate = configOptions['variable_locate']
     seq = 0
     addNewDatasetVersion = False
-    for path, size in filelist:
+    for path, size in pathlist:
 
         # If the file exists in the dataset, delete the file children (with cascade), and the file
-        if locdict.has_key(path):
-            file = locdict[path]
+        if fobjdict.has_key(path):
+            fileVersionObj = fobjdict[path]
             info("Deleting entry for file %s"%path)
-            file.delete(session)
-            addNewDatasetVersion = True
+
+            # If this is the latest dataset version, remove the file variables and reaggregate ...
+            if haveLatestDsetVersion:
+                fileVersionObj.parent.deleteChildren(session)
+                addNewDatasetVersion = True
+
+            # ... otherwise just delete the membership of the file version in the dataset version
+            else:
+                fileVersionObj.deleteChildren(session)
+                session.commit()
+            del fobjdict[path]
         else:
             info("File entry not found: %s, skipping"%path)
 
@@ -496,7 +479,7 @@ def deleteFiles(dset, fileIterator, session, cfHandler, configOptions, aggregate
             session.close()
             raise
 
-    return addNewDatasetVersion
+    return addNewDatasetVersion, fobjdict.values()
 
 def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=None, varlocate=None, **context):
     """
@@ -532,18 +515,16 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
     fileVersion = fileobj.versions[-1]
 
     # Get the aggregate dimension range
-    aggvar = None
-    if aggdimName is not None and openfile.variables.has_key(aggdimName):
-        aggvar = openfile.variables[aggdimName]
-        aggvarFirst = aggvar[0]
-        aggvarLast = aggvar[-1]
-        aggvarLen = len(aggvar)
-        aggvarunits = map_to_charset(aggvar.units)
-        if aggdimName.lower()=="time" or (hasattr(aggvar, "axis") and aggvar.axis=="T"):
+    if aggdimName is not None and openfile.hasVariable(aggdimName):
+        aggvarFirst = openfile.getVariable(aggdimName, index=0)
+        aggvarLast = openfile.getVariable(aggdimName, index=-1)
+        aggvarLen = openfile.inquireVariableShape(aggdimName)[0]
+        aggvarunits = map_to_charset(openfile.getAttribute("units", aggdimName))
+        if aggdimName.lower()=="time" or (openfile.hasAttribute("axis", aggdimName) and openfile.getAttribute("axis", aggdimName)=="T"):
             if abs(aggvarFirst)>1.e12 or abs(aggvarLast)>1.e12:
                 dataset.warning("File: %s has time range: [%f, %f], looks bogus."%(fileVersion.location, aggvarFirst, aggvarLast), WARNING_LEVEL, AGGREGATE_MODULE)
 
-    if aggdimName is not None and aggvar is None:
+    if aggdimName is not None and not openfile.hasVariable(aggdimName):
         info("Aggregate dimension not found: %s"%aggdimName)
 
     varlocatedict = {}
@@ -552,8 +533,9 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
             varlocatedict[varname] = pattern
 
     # For each variable in the file:
-    for varname, var in openfile.variables.items():
-        debug("%s%s"%(varname, `var.shape`))
+    for varname in openfile.inquireVariableList():
+        varshape = openfile.inquireVariableShape(varname)
+        debug("%s%s"%(varname, `varshape`))
 
         # Check varlocate
         if varlocatedict.has_key(varname) and not re.match(varlocatedict[varname], os.path.basename(fileVersion.location)):
@@ -561,52 +543,54 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
             continue
 
         # Create a file variable
-        filevar = FileVariable(varname, getattr(var, 'long_name', None))
+        filevar = FileVariable(varname, openfile.getAttribute('long_name', varname, None))
         fileobj.file_variables.append(filevar)
 
         # Create attributes:
-        for attname in dir(var):
-            if attname not in ['_FillValue', 'assignValue', 'getValue', 'getitem', 'getslice', 'setitem', 'setslice', 'typecode']:
-                attvalue = getattr(var, attname)
-                atttype, attlen = getTypeAndLen(attvalue)
-                attribute = FileVariableAttribute(attname, map_to_charset(attvalue), atttype, attlen)
-                filevar.attributes.append(attribute)
-                debug('  %s.%s = %s'%(varname, attname, `attvalue`))
+        for attname in openfile.inquireAttributeList(varname):
+            attvalue = openfile.getAttribute(attname, varname)
+            atttype, attlen = getTypeAndLen(attvalue)
+            attribute = FileVariableAttribute(attname, map_to_charset(attvalue), atttype, attlen)
+            filevar.attributes.append(attribute)
+            debug('  %s.%s = %s'%(varname, attname, `attvalue`))
 
         # Create dimensions
         seq = 0
-        for dimname, dimlen in zip(var.dimensions, var.shape):
+        dimensionList = openfile.inquireVariableDimensions(varname)
+        for dimname, dimlen in zip(dimensionList, varshape):
             dimension = FileVariableDimension(dimname, dimlen, seq)
             filevar.dimensions.append(dimension)
             if dimname==aggdimName:
-                filevar.aggdim_first = aggvarFirst
-                filevar.aggdim_last = aggvarLast
+                filevar.aggdim_first = float(aggvarFirst)
+                filevar.aggdim_last = float(aggvarLast)
                 filevar.aggdim_units = aggvarunits
             seq += 1
 
         # Set coordinate axis range and type if applicable
-        if len(var.shape)==1:
+        if len(varshape)==1:
+            var0 = openfile.getVariable(varname, index=0)
+            varn = openfile.getVariable(varname, index=-1)
             if cfHandler.axisIsLatitude(filevar):
-                filevar.coord_range = '%f:%f'%(var[0], var[-1])
+                filevar.coord_range = '%f:%f'%(var0, varn)
                 filevar.coord_type = 'Y'
             elif cfHandler.axisIsLongitude(filevar):
-                filevar.coord_range = '%f:%f'%(var[0], var[-1])
+                filevar.coord_range = '%f:%f'%(var0, varn)
                 filevar.coord_type = 'X'
             elif cfHandler.axisIsLevel(filevar):
-                filevar.coord_range = '%f:%f'%(var[0], var[-1])
+                vararray = openfile.getVariable(varname)
+                filevar.coord_range = '%f:%f'%(var0, varn)
                 filevar.coord_type = 'Z'
+                filevar.coord_values = str(vararray)[1:-1] # See set_printoptions call above
 
     # Create global attribute
-    for attname in dir(openfile):
-        if attname not in ['close', 'createDimension', 'createVariable', 'flush', 'readDimension', 'sync']:
-            attvalue = getattr(openfile, attname)
-            atttype, attlen = getTypeAndLen(attvalue)
-            attribute = FileAttribute(attname, map_to_charset(attvalue), atttype, attlen)
-            fileobj.attributes.append(attribute)
-            if attname=='tracking_id':
-                fileVersion.tracking_id = attvalue
-            debug('.%s = %s'%(attname, getattr(openfile, attname)))
-        
+    for attname in openfile.inquireAttributeList():
+        attvalue = openfile.getAttribute(attname, None)
+        atttype, attlen = getTypeAndLen(attvalue)
+        attribute = FileAttribute(attname, map_to_charset(attvalue), atttype, attlen)
+        fileobj.attributes.append(attribute)
+        if attname=='tracking_id':
+            fileVersion.tracking_id = attvalue
+        debug('.%s = %s'%(attname, attvalue))
 
 def lookupVar(name, index):
     """Helper function for aggregateVariables:
@@ -755,6 +739,8 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                 # Record coordinate variable range if applicable
                 if filevar.coord_type is not None:
                     var.coord_type = filevar.coord_type
+                    if var.coord_type=='Z':
+                        var.coord_values = filevar.coord_values
                     var.coord_range = filevar.coord_range
                     
                 dsetvars.append(var)
@@ -813,10 +799,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
     dset.calendar = calendar
     dset.aggdim_name = aggregateDimensionName
     dset.aggdim_units = aggUnits
-    try:
-        cdcalendar = tagToCalendar[calendar]
-    except:
-        cdcalendar = DefaultCalendar
+    cdcalendar = cfHandler.tagToCalendar(calendar)
 
     # Add the non-aggregate dimension variables to the dataset
     for var in dsetvars:
@@ -838,6 +821,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                         var.northsouth_range = dvar.coord_range+':'+units
                     elif dvar.coord_type=='Z':
                         var.updown_range = dvar.coord_range+':'+units
+                        var.updown_values = dvar.coord_values
 
     # Attach aggregate dimension filevars to files
     if aggDim is not None:
@@ -897,15 +881,12 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
 
             # Adjust times so they have consistent base units
             try:
-                filevarRanges = map(lambda x: (x.file.getLocation(),
-                                               reltime(x.aggdim_first, x.aggdim_units).torel(aggUnits, cdcalendar).value,
-                                               reltime(x.aggdim_last, x.aggdim_units).torel(aggUnits, cdcalendar).value),
-                                    var.file_variables)
+                filevarRanges = [(x.file.getLocation(), cfHandler.normalizeTime(x.aggdim_first, x.aggdim_units, aggUnits, calendar=cdcalendar), cfHandler.normalizeTime(x.aggdim_last, x.aggdim_units, aggUnits, calendar=cdcalendar)) for x in var.file_variables]
             except:
                 for fv in var.file_variables:
                     try:
-                        firstt = reltime(fv.aggdim_first, fv.aggdim_units).torel(aggUnits, cdcalendar).value
-                        lastt = reltime(fv.aggdim_last, fv.aggdim_units).torel(aggUnits, cdcalendar).value
+                        firstt = cfHandler.normalizeTime(fv.aggdim_first, fv.aggdim_units, aggUnits, calendar=cdcalendar)
+                        lastt = cfHandler.normalizeTime(fv.aggdim_last, fv.aggdim_units, aggUnits, calendar=cdcalendar)
                     except:
                         error("path=%s, Invalid aggregation dimension value or units: first_value=%f, last_value=%f, units=%s"%(fv.file.getLocation(), fv.aggdim_first, fv.aggdim_last, fv.aggdim_units))
                         raise
@@ -945,8 +926,8 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                         dset.warning("File aggregate dimension ranges are not monotonic for variable %s: %s"%(var.short_name, `filevarRanges`), WARNING_LEVEL, AGGREGATE_MODULE)
                         var.has_errors = True
 
-            var.aggdim_first = firstValues[0]
-            var.aggdim_last = lastValues[-1]
+            var.aggdim_first = float(firstValues[0])
+            var.aggdim_last = float(lastValues[-1])
         seq += 1
         try:
             issueCallback(progressCallback, seq, nvars, 0.5, 0.75, stopEvent=stopEvent)

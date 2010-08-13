@@ -288,7 +288,23 @@ class HessianParser:
 
     def parse_object(self):
 	# parse an arbitrary object based on the type in the data
-	return self.parse_object_code(self.read(1))
+        code = self.read(1)
+        if code!='s':
+            return self.parse_object_code(code)
+        else:
+
+            # Parse chunked string: ('s' b16 b8 data)* 'S' b16 b8 data
+            result = self.parse_object_code(code)
+            code = self.read(1)
+            while code=='s':
+                result += self.parse_object_code(code)
+                code = self.read(1)
+
+            if code=='S':
+                result += self.parse_object_code(code)
+                return result
+            else:
+                raise "Hessian protocol error: chunked string terminated with code: %s, should have been 'S'"%`code`
 
     def parse_object_code(self, code):
 	# parse an object when the code is known
@@ -317,7 +333,7 @@ class HessianParser:
 
 	    return Date(int(ms / 1000.0))
 
-	elif code == 'S' or code == 'X':
+	elif code == 'S' or code == 'X' or code == 's':
 	    return self.parse_string()
 
 	elif code == 'B':

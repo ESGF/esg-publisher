@@ -38,7 +38,7 @@ def main(argv):
 
     config = loadConfig(init_file)
     
-    engine = create_engine(config.get('DEFAULT', 'dburl'), echo=verbose, pool_recycle=3600)
+    engine = create_engine(config.getdburl('DEFAULT'), echo=verbose, pool_recycle=3600)
     metadata.create_all(engine)
 
 if __name__=='__main__':

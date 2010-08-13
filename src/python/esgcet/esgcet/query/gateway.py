@@ -10,7 +10,8 @@ def getRemoteMetadataService():
     """
     config = getConfig()
     remoteMetadataServiceUrl = config.get('DEFAULT', 'hessian_service_remote_metadata_url')
-    service = Hessian(remoteMetadataServiceUrl, 80)
+    serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
+    service = Hessian(remoteMetadataServiceUrl, 80, debug=serviceDebug)
     return service
 
 def getGatewayDatasetFields():
@@ -78,8 +79,78 @@ def getGatewayExperiments():
     """
     service = getRemoteMetadataService()
     exps = service.listExperiments()
+
+    """Note: expelem is something like:
+
+    <esg:ESG xmlns:esg="http://www.earthsystemgrid.org/">
+      <esg:experiment name="IPCC AR4 1pct_to2x">
+        <esg:description>One percent/year CO2 increase to doubling</esg:description>
+      </esg:experiment>
+      <esg:experiment name="amip"/>
+    </esg:ESG>
+
+
+    The experiment has an optional child element 'description'.
+    """
+    
     expelem = etree.fromstring(exps)
     header = ['name', 'description']
-    result = [(child.get("name"), child[0].text) for child in expelem]
+    result = []
+    for child in expelem:
+        name = child.get("name")
+        if len(child)>0:
+            description = child[0].text
+        else:
+            description = ""
+        result.append((name, description))
     return header, result
 
+def getGatewayDatasetFiles(datasetName):
+    """Get the files contained in a dataset, from the gateway.
+    
+    Returns headers, file_tuples where:
+      - header is the list of field names
+      - file_tuples is a list of tuples, each tuple with the same length as header
+
+    datasetName
+      The name of the parent dataset.
+
+    """
+    service = getRemoteMetadataService()
+    filesXML = service.getDatasetFiles(datasetName)
+    filesElem = etree.fromstring(filesXML)
+    header = ['name', 'id', 'size']
+    result = []
+    for file in filesElem.iter("{http://www.earthsystemgrid.org/}file"):
+        result.append((file.get("name"), file.get("id"), file.get("size")))
+    return header, result
+
+def getGatewayDatasetAccessPoints(datasetName):
+    """Get the file access points of files contained in a dataset, from the gateway.
+    
+    Returns headers, url_tuples where:
+      - header is the list of field names
+      - url_tuples is a list of tuples, each tuple with the same length as header
+
+    datasetName
+      The name of the parent dataset.
+
+    """
+    service = getRemoteMetadataService()
+    filesXML = service.getDatasetFiles(datasetName)
+    filesElem = etree.fromstring(filesXML)
+
+    capabilityDict = {}
+    for capability in filesElem.iter("{http://www.earthsystemgrid.org/}data_access_capability"):
+        capabilityDict[capability.get("name")] = (capability.get("type"), capability.get("base_uri"))
+
+    header = ['name', 'id', 'size', 'type', 'url']
+    result = []
+    for file in filesElem.iter("{http://www.earthsystemgrid.org/}file"):
+        for fileAccessPoint in file:
+            capabilityName = fileAccessPoint.get("data_access_capability")
+            uri = fileAccessPoint.get("uri")
+            capabilityType, baseUri = capabilityDict[capabilityName]
+            url = baseUri+uri
+            result.append((file.get("name"), file.get("id"), file.get("size"), capabilityType, url))
+    return header, result

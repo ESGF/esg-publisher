@@ -528,7 +528,7 @@ class dataset_widgets:
           props = properties.copy()
           props.update(initcontext)
           holdDirectoryMap = handler.generateDirectoryMap(lastargs, self.parent.parent.filefilt, initContext=props)
-          self.parent.parent.datasetNames = holdDirectoryMap.keys()
+          self.parent.parent.datasetNames = [(item,-1) for item in holdDirectoryMap.keys()]
           self.parent.parent.datasetNames.sort()
           tab_name= "Collection %i" % self.parent.parent.top_ct
           page_type = "collection"

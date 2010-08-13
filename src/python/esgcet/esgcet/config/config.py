@@ -5,11 +5,28 @@ import os
 import string
 import logging
 import re
+import urlparse
 from ConfigParser import SafeConfigParser, NoOptionError, DEFAULTSECT
 from xml.etree.ElementTree import parse
 from esgcet.exceptions import *
-from registry import register
+from registry import register, registerHandlerName, setRegisterSearchOrder, getRegistry, ESGCET_PROJECT_HANDLER_GROUP, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
 from esgcet.messaging import debug, info, warning, error, critical, exception
+
+# SQLAlchemy versions <0.6 have protocol "postgres", >=0.6 use "postgresql"
+from sqlalchemy import __version__ as sqlalchemy_version
+
+# Handler onfiguration options, one for each handler type
+PROJECT_NAME_OPTION = "project_handler_name"
+FORMAT_NAME_OPTION = "format_handler_name"
+METADATA_NAME_OPTION = "metadata_handler_name"
+THREDDS_CATALOG_HOOK_OPTION = "thredds_catalog_hook"
+
+# Default options
+DEFAULT_FORMAT_NAME_OPTION = "netcdf_builtin"
+DEFAULT_METADATA_NAME_OPTION = "cf_builtin"
+
+# Backward compatibility
+HANDLER_OPTION = "handler"
 
 config = None
 
@@ -33,7 +50,10 @@ class SaneConfigParser(SafeConfigParser):
         vars['pythonbin'] = pythonbin
 
         try:
-            value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
+            if option=='dburl':
+                value = self.getdburl(section, raw=raw, vars=vars)
+            else:
+                value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
         except NoOptionError:
             if options.has_key('default'):
                 value = options['default']
@@ -57,6 +77,26 @@ class SaneConfigParser(SafeConfigParser):
             value = default
         except ESGPublishError:
             value = default
+        return value
+
+    def getfloat(self, section, option, default=None):
+        try:
+            value = SafeConfigParser.getfloat(self, section, option)
+        except AttributeError:
+            value = default
+        except ESGPublishError:
+            value = default
+        return value
+
+    def getdburl(self, section, raw=False, vars=None):
+        value = SafeConfigParser.get(self, section, 'dburl', raw=raw, vars=vars)
+        fields = list(urlparse.urlparse(value))
+        if fields[0] in ['postgres', 'postgresql']:
+            if sqlalchemy_version >= '0.6':
+                fields[0] = 'postgresql'
+            else:
+                fields[0] = 'postgres'
+            value = urlparse.urlunparse(fields)
         return value
 
     def write(self, fp):
@@ -235,7 +275,7 @@ def loadConfig(configFile):
         config = loadConfig1(configFile)
     return config
 
-def initLogging(section, override_sa=None):
+def initLogging(section, override_sa=None, log_filename=None):
     """
     Initialize logging based on specs in the config file section. If override_sa is set to an engine, sqlalchemy logging uses the specs as well.
 
@@ -252,13 +292,15 @@ def initLogging(section, override_sa=None):
       SQLAlchemy engine instance. If set:
       
       - Only the root logger handles output. This allows SQLAlchemy output to be redirected with the log_filename parameter.
-      - If the log_level parameter is gteater than logging.INFO, SQLAlchemy output is suppressed.
+    log_filename
+      String value of the output log filename. Overrides configuration log_filename parameter.
     """
     global config
 
     if config is None:
         config = loadConfig(None)
-    log_filename = config.get(section, 'log_filename', default=None)
+    if log_filename is None:
+        log_filename = config.get(section, 'log_filename', default=None)
     log_format = config.get(section, 'log_format', raw=True, default=None)
     log_datefmt = config.get(section, 'log_datefmt', default=None)
     log_level = logging.getLevelName(config.get(section, 'log_level', default=None))
@@ -273,14 +315,12 @@ def initLogging(section, override_sa=None):
         saLogger = logging.getLogger('sqlalchemy')
         if len(saLogger.handlers)>0:
             saLogger.removeHandler(saLogger.handlers[0])
-        if log_level is not None:
-            override_sa.logger.setLevel(log_level)
 
 def loadStandardNameTable(path):
     """Load the CF standard name table at path.
     Returns a list of StandardNames.
     """
-    from esgcet.model import StandardName
+    from esgcet.model import StandardName, MAX_STANDARD_NAME_LENGTH
     if path is None:
         try:
             from pkg_resources import resource_filename
@@ -288,12 +328,15 @@ def loadStandardNameTable(path):
         except:
             raise ESGPublishError("No standard name table specified.")
 
-    tree = parse(path)
+    try:
+        tree = parse(path)
+    except Exception, e:
+        raise ESGPublishError("Error parsing %s: %s"%(path, e))
     root = tree.getroot()
     standardNames = {}
     for node in root:
         if node.tag=='entry':
-            name = node.attrib['id'].strip()
+            name = node.attrib['id'].strip()[:MAX_STANDARD_NAME_LENGTH]
             units = amip = grib = description = ''
             for subnode in node:
                 if subnode.tag=='canonical_units':
@@ -343,9 +386,12 @@ def textTableIter(path, sep='|', splitter=splitLine):
     """Iterator that returns a list of options corresponding to one record."""
     f = open(path)
     line = f.readline()
+    lineno = 0
     while line:
-        if line[0]!='#':
-            yield splitter(line)
+        lineno += 1
+        line = line.strip()
+        if len(line)>0 and line[0]!='#':
+            yield lineno, splitter(line)
         line = f.readline()
     return
 
@@ -354,17 +400,45 @@ def registerHandlers():
     # Get the project names
     projectOption = config.get('initialize', 'project_options')
     projectSpecs = splitRecord(projectOption)
+    projectRegistry = getRegistry(ESGCET_PROJECT_HANDLER_GROUP)
+    formatRegistry = getRegistry(ESGCET_FORMAT_HANDLER_GROUP)
+    metadataRegistry = getRegistry(ESGCET_METADATA_HANDLER_GROUP)
+    threddsRegistry = getRegistry(ESGCET_THREDDS_CATALOG_HOOK_GROUP)
     for projectName, projectDesc, search_order in projectSpecs:
 
         # For each project: get the handler
-        handlerName = config.get('project:'+projectName, 'handler')
+        handler = config.get('project:'+projectName, HANDLER_OPTION, default=None)
+        handlerName = config.get('project:'+projectName, PROJECT_NAME_OPTION, default=None)
         
         # Get the handler class and register it
-        if handlerName is None:
-            info("No handler spec found for project %s"%projectName)
+        if handlerName is not None:
+            registerHandlerName(projectRegistry, projectName, handlerName)
+            setRegisterSearchOrder(projectName, search_order)
+        elif handler is not None:
+            m, cls = handler.split(':')
+            register(projectRegistry, projectName, m, cls)
+            setRegisterSearchOrder(projectName, search_order)
         else:
-            m, cls = handlerName.split(':')
-            register(projectName, m, cls, search_order)
+            info("No project handler spec found for project %s"%projectName)
+
+        # Get the format handler class and register it
+        formatHandlerName = config.get('project:'+projectName, FORMAT_NAME_OPTION, default=None)
+        if formatHandlerName is not None:
+            registerHandlerName(formatRegistry, projectName, formatHandlerName)
+        else:
+            registerHandlerName(formatRegistry, projectName, DEFAULT_FORMAT_NAME_OPTION)
+
+        # Get the metadata handler class and register it
+        metadataHandlerName = config.get('project:'+projectName, METADATA_NAME_OPTION, default=None)
+        if metadataHandlerName is not None:
+            registerHandlerName(metadataRegistry, projectName, metadataHandlerName)
+        else:
+            registerHandlerName(metadataRegistry, projectName, DEFAULT_METADATA_NAME_OPTION)
+
+        # Get the thredds catalog hook if any
+        threddsCatalogHookName = config.get('project:'+projectName, THREDDS_CATALOG_HOOK_OPTION, default=None)
+        if threddsCatalogHookName is not None:
+            registerHandlerName(threddsRegistry, projectName, threddsCatalogHookName)
 
 def initializeExperiments(config, projectName, session):
     from esgcet.model import Experiment, Project

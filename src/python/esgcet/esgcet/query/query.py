@@ -2,7 +2,8 @@ import sys
 import re
 import time, datetime
 
-from esgcet.model import Dataset, Event, eventName, eventNumber
+from esgcet.publish import parseDatasetVersionId
+from esgcet.model import Dataset, DatasetVersion, Event, eventName, eventNumber
 from esgcet.config import getHandlerByName
 from esgcet.exceptions import *
 from esgcet.messaging import warning
@@ -136,30 +137,34 @@ def filterProperties(values, properties, headers):
 
     return match
         
-def getEvents(dset, eventHeaders):
+def getEvents(dset, dsetVersion, eventHeaders, latestEvents):
     result = []
+    latestEvent = latestEvents[dsetVersion.version]
     for attname in eventHeaders:
         if attname=='publish_time':
-            value = dset.events[0].datetime.strftime("%Y-%m-%d %H:%M:%S")
+            
+            value = latestEvent.datetime.strftime("%Y-%m-%d %H:%M:%S")
         elif attname=='publish_status':
-            value = eventName[dset.get_publication_status()]
+            value = eventName[latestEvent.event]
         else:
             raise Exception("Unknown event attribute: %s"%attname)
         result.append(value)
     return result
 
-def getDerived(dset, derivedHeaders, handler):
+def getDerived(dset, dsetVersion, derivedHeaders, handler):
     result = []
     for attname in derivedHeaders:
         if attname=='version':
-            value = str(dset.getVersion())
-        if attname=='parent':
+            value = str(dsetVersion.version)
+        elif attname=='parent':
             dsetname = dset.name
             try:
                 value  = handler.getParentId(dsetname)
             except:
                 warning("Cannot determine parent id for dataset %s"%dsetname)
                 value = ''
+        elif attname=='version_name':
+            value = dsetVersion.name
         result.append(value)
     return result
 
@@ -193,11 +198,14 @@ def getQueryFields(handler, return_list=True):
         * *eventFields* are events associated with the dataset;
         * *categories* are the handler-specific categories.
         * *derivedFields* are fields such as *parent*, derived from other objects.
+
+    listall:
+      Boolean, if True include DatasetVersion headers
     """
     
     basicHeaders = ['id', 'name', 'project', 'model', 'experiment', 'run_name', 'offline', 'master_gateway']
     eventHeaders = ['publish_time', 'publish_status']
-    derivedHeaders = ['parent', 'version']
+    derivedHeaders = ['parent', 'version', 'version_name']
     categories = handler.getFieldNames()
     if return_list:
         allProperties = list(set(basicHeaders+categories+eventHeaders+derivedHeaders))
@@ -206,7 +214,7 @@ def getQueryFields(handler, return_list=True):
     else:
         return (basicHeaders, eventHeaders, categories, derivedHeaders)
 
-def queryDatasets(projectName, handler, Session, properties, select=None):
+def queryDatasets(projectName, handler, Session, properties, select=None, listall=False):
     """Issue a query on datasets.
 
     Returns a tuple (*result*, *headers*), where *result* is a list of tuples and *header* is the list of properties.
@@ -228,7 +236,10 @@ def queryDatasets(projectName, handler, Session, properties, select=None):
       matches the value are returned.
 
     select:
-      String of the form 'field,field,...' containing no blanks. Only return the indicated fields
+      String of the form 'field,field,...'. Only return the indicated fields
+
+    listall:
+      Boolean, if True list all versions of the dataset.
 
     """
 
@@ -242,7 +253,7 @@ def queryDatasets(projectName, handler, Session, properties, select=None):
             attHeaders.append(key)
     headers = basicHeaders+attHeaders+eventHeaders+derivedHeaders
     if select is not None:
-        selectHeaders = select.split(',')
+        selectHeaders = [item.strip() for item in select.split(',')]
         for field in selectHeaders:
             if field not in headers:
                 raise ESGQueryError("Invalid field: %s"%field)
@@ -272,24 +283,36 @@ def queryDatasets(projectName, handler, Session, properties, select=None):
 
     session = Session()
 
-    # Issue query on dataset, filtered by basic properties
-    query = session.query(Dataset).filter_by(project=projectName)
-    query = filterQuery(query, basicProperties)
-    result = query.order_by(Dataset.name).all()
+    # Issue query on dataset / dataet_versions, filtered by basic properties
+    if listall:
+        query = session.query(Dataset, DatasetVersion).filter(Dataset.id==DatasetVersion.dataset_id).filter(Dataset.project==projectName)
+        query = filterQuery(query, basicProperties)
+        result = query.order_by(Dataset.name, DatasetVersion.version).all()
+    else:
+        query = session.query(Dataset).filter_by(project=projectName)
+        query = filterQuery(query, basicProperties)
+        result1 = query.order_by(Dataset.name).all()
+        result = [(item, item.getLatestVersion()) for item in result1]
 
     # Filter results by attribute and event properties
     tupleResult = []
-    for dset in result:
+    prevDset = None
+    for dset, dsetVersion in result:
 
         attResult = getAttributes(dset, attHeaders)
         if not filterProperties(attResult, attProperties, attHeaders):
             continue
 
-        eventResult = getEvents(dset, eventHeaders)
+        if dset is not prevDset:
+            latestEvents = {}           # version_number => latest event
+            for event in dset.events[::-1]:
+                if not latestEvents.has_key(event.object_version):
+                    latestEvents[event.object_version] = event
+        eventResult = getEvents(dset, dsetVersion, eventHeaders, latestEvents)
         if not filterProperties(eventResult, eventProperties, eventHeaders):
             continue
 
-        derivedResult = getDerived(dset, derivedHeaders, handler)
+        derivedResult = getDerived(dset, dsetVersion, derivedHeaders, handler)
         if not filterProperties(derivedResult, derivedProperties, derivedHeaders):
             continue
 
@@ -359,9 +382,11 @@ def updateDatasetFromContext(context, datasetName, Session):
 def queryDatasetMap(datasetNames, Session, extra_fields=False):
     """Query the database for a dataset map.
 
+    datasetNames is a list of (datasetName, version) tuples.
+
     Returns (dataset_map, offline_map) where dataset_map is a dictionary:
 
-       dataset_id => [(path, size), (path, size), ...]
+       (dataset_id, version) => [(path, size), (path, size), ...]
 
     and offline_map is a dictionary:
 
@@ -380,23 +405,32 @@ def queryDatasetMap(datasetNames, Session, extra_fields=False):
     dmap = {}
     offlineMap = {}
     extraFields = {}
-    for name in datasetNames:
+    for versionId in datasetNames:
+        name,useVersion = parseDatasetVersionId(versionId)
         dset = Dataset.lookup(name, Session)
         session = Session()
         if dset is None:
             raise ESGQueryError("Dataset not found: %s"%name)
         session.add(dset)
-        dmap[name] = [(file.getLocation(), `file.getSize()`) for file in dset.getFiles()]
+        if useVersion==-1:
+            useVersion = dset.getVersion()
+
+        versionObj = dset.getVersionObj(useVersion)
+        if versionObj is None:
+            raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
+        filelist = versionObj.getFiles() # file versions
+        dmap[(name,useVersion)] = [(file.getLocation(), `file.getSize()`) for file in filelist]
+
         if extra_fields:
-            for file in dset.getFiles():
+            for file in filelist:
                 modtime = file.getModtime()
                 location = file.getLocation()
                 if modtime is not None:
-                    extraFields[(name, location, 'mod_time')] = modtime
+                    extraFields[(name, useVersion, location, 'mod_time')] = modtime
                 checksum = file.getChecksum()
                 if checksum is not None:
-                    extraFields[(name, location, 'checksum')] = checksum
-                    extraFields[(name, location, 'checksum_type')] = file.getChecksumType()
+                    extraFields[(name, useVersion, location, 'checksum')] = checksum
+                    extraFields[(name, useVersion, location, 'checksum_type')] = file.getChecksumType()
                     
         offlineMap[name] = dset.offline
         session.close()
