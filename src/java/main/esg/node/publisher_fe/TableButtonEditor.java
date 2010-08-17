@@ -61,7 +61,7 @@
  * @author Carla Hardy 
  * @version 06/30/2010
  */
-
+package esg.node.publisher_fe;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;

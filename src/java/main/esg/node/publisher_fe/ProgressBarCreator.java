@@ -62,7 +62,7 @@
  * @author Carla Hardy 
  * @version 07/14/2010
  */
-
+package esg.node.publisher_fe;
 import java.awt.Dimension;
 import java.awt.Insets;
 

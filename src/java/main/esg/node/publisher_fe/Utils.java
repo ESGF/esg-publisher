@@ -62,7 +62,7 @@
  * @author Carla Hardy 
  * @version 07/28/2010
  */
-
+package esg.node.publisher_fe;
 import java.io.File;
 
 public class Utils {

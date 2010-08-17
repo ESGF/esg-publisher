@@ -62,17 +62,18 @@
  * @author Carla Hardy 
  * @version 07/28/2010
  */
-
+package esg.node.publisher_fe;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class DatasetMetadataDisplayer {
+public class DatasetMetadataDisplayer implements ActionListener{
 		GridBagConstraints textFieldConstrain1;
 		JPanel textFieldPanel; 
 	
@@ -109,13 +110,13 @@ public class DatasetMetadataDisplayer {
 		JLabel timefrequencyLabel = new JLabel(timeFrequencyString);
 		JLabel otherLabel = new JLabel(otherString);
 		
-		JTextField name = new JTextField ("name", 30);
-		JTextField project = new JTextField ("project", 30);
-		JTextField model = new JTextField ("model", 30);
-		JTextField experiment = new JTextField ("experiment", 30);
-		JTextField runName = new JTextField ("runname", 30);
-		JTextField timeFrequency = new JTextField ("timefrequency", 30);
-		JTextField other = new JTextField ("other", 30);	
+		final JTextField name = new JTextField (" ", 30);
+		final JTextField project = new JTextField (" ", 30);
+		JTextField model = new JTextField (" ", 30);
+		JTextField experiment = new JTextField (" ", 30);
+		JTextField runName = new JTextField (" ", 30);
+		JTextField timeFrequency = new JTextField (" ", 30);
+		JTextField other = new JTextField (" ", 30);	
 		
 		// Add Labels to Panel and changes color or required labels to blue				
 		textFieldConstrain1 = new GridBagConstraints(0,0,1,1,1.0,0,GridBagConstraints.WEST, 
@@ -155,6 +156,12 @@ public class DatasetMetadataDisplayer {
 		textFieldConstrain1 = new GridBagConstraints(1,0,1,1,0,0,GridBagConstraints.WEST, 
 				GridBagConstraints.HORIZONTAL,new Insets(5,5,5,15),0,0);
 			textFieldPanel.add(name, textFieldConstrain1);
+			name.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					String nameValue = name.getText();	
+					System.out.println("Name " + nameValue);
+				}
+			});
 		
 		textFieldConstrain1 = new GridBagConstraints(1,2,1,1,0,0,GridBagConstraints.WEST, 
 				GridBagConstraints.HORIZONTAL,new Insets(5,5,5,15),0,0);
@@ -179,6 +186,11 @@ public class DatasetMetadataDisplayer {
 		textFieldConstrain1 = new GridBagConstraints(1,12,1,1,0.1,0,GridBagConstraints.WEST, 
 				GridBagConstraints.HORIZONTAL,new Insets(5,5,5,15),0,0);
 			textFieldPanel.add(other, textFieldConstrain1);
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+
+
 	}
 }
 

@@ -62,7 +62,7 @@
  * @author Carla Hardy 
  * @version 07/1/2010
  */
-
+package esg.node.publisher_fe;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -75,7 +75,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JLabel;
@@ -249,5 +248,7 @@ class InnerPaneCreator implements ActionListener {
 		tabName1.setForeground(new Color(34,24,130));
 		panel.add(tabName1);
 	}
+	
+	
 }
 	

@@ -56,23 +56,21 @@
  ***************************************************************************/
 
 /**
- * <code>ESGPublisher3</code> Displays a Java Swing interface for the ESG Publisher tool.
+ * <code>ESGPublisher3</code> Displays a Java Swing interface for the ESG 
+ * Publisher tool. This is an important class because it builds the structure
+ * of the GUI. 
  * 
  * @author Carla Hardy 
  * @version 06/15/2010
  */
 
-import java.util.*;
+package esg.node.publisher_fe;
 import javax.swing.*;
-import javax.swing.table.JTableHeader;	
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.table.TableColumn;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.BorderLayout;
@@ -88,18 +86,15 @@ public class ESGPublisher3 implements ActionListener {
     JFrame frame;    
     ImageIcon esgLogo;
     JTabbedPane tabbedPaneTop, tabbedPaneBottom;    
-    JSplitPane splitPanetop, splitPaneBottom;
-    //MyTableModel model;    
-    //JTable table;
-    JTable tableTab2; //TODO: delete - created this table to use setValueAt	    
+    JSplitPane splitPanetop, splitPaneBottom;   
     JPanel collection1,collection2,collection3,collection4,innerPanel,panelLeft,progressBarPanel,
     		bottomTabPanel,bottomPanel,topPanel,initialTopPanel,borderPanelInitialMessage;
     JTextPane initialMessagePane;      
     JEditorPane outputTextArea,	errorTextArea;   
 	GridBagConstraints menuConstrain, initialTopPanelConstrain, firstTabConstrain;	
-	ProgressBarCreator progressBar;	    
+	ProgressBarCreator progressBar;	 
+	ExpandablePanelCreator expandableLeftMenu;
     String tabLabel;
-    //TableColumnEditor tableColumnEditor;
 	int actionListenerIndex;
  
 	public ESGPublisher3() {
@@ -108,9 +103,6 @@ public class ESGPublisher3 implements ActionListener {
 	    tabbedPaneBottom = new JTabbedPane();
 		splitPanetop = new JSplitPane();
 	    splitPaneBottom = new JSplitPane();
-		//model = new MyTableModel();
-		//table = new JTable (model);
-	    tableTab2 = new JTable (4,4);
 		collection1 = new JPanel(new GridLayout()); //holds table
 		collection2 = new JPanel(new GridLayout(1,0)); //table2
 	    collection3 = new JPanel(new GridLayout(1,0)); //output
@@ -127,58 +119,29 @@ public class ESGPublisher3 implements ActionListener {
 		outputTextArea = new JEditorPane();	 //Editor Panes to display output   
 	    errorTextArea = new JEditorPane(); //Editor Panes to display error
 		progressBar = new ProgressBarCreator();
+		expandableLeftMenu = new ExpandablePanelCreator(splitPanetop, 
+				tabbedPaneTop, collection1);
 		tabLabel = "";
-		//tableColumnEditor = new TableColumnEditor(table);
 		actionListenerIndex = 1;
 	}
 	
 	/**
 	 *****Builds the GUI****
 	 */
-	public void buildapp() {
+	public void buildPublisher() {
 	    buildFrame();
 	    
 	    buildInitialMessagePanel();
-	    		   	       
-	    tableSettings();
-	    
-        // Creates the scroll pane and add the table to it
-        //JScrollPane scrollPane = new JScrollPane(table);
         
-        // Adds the scroll pane to the panel
-//        firstTabConstrain = new GridBagConstraints(0,0,1,1,1.0,0.5,GridBagConstraints.CENTER,
-//				GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0);
-//        collection1.add(scrollPane);//, firstTabConstrain);
-        	  
-        
-        ExpandablePanelCreator expandableLeftMenu = new ExpandablePanelCreator(splitPanetop, 
-				tabbedPaneTop, collection1);
-        
-        // Inserts and edits *Expandable Menu* using GridBagConstraints Layout
+        // Edits *Expandable Menu* using GridBagConstraints Layout
 	    menuConstrain = new GridBagConstraints(0,0,1,1,0.1,1.0,GridBagConstraints.PAGE_START, 
 				GridBagConstraints.BOTH,new Insets(0,0,5,0),0,0);
 	    panelLeft.add(new JScrollPane(expandableLeftMenu.getComponent()), menuConstrain);
-        
-        
-        // Creates buttons in inner table at column 5 (DataSet)
-//	    ButtonRenderer buttonRenderer = new ButtonRenderer();	
-//	    InnerPaneCreator innerPaneCreator = new InnerPaneCreator(tabbedPaneTop, scrollPane, 
-//	    collection1, table, tabLabel);
-//	    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), innerPaneCreator); 
-//    	table.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
-//    	table.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
-
-    	
+   	
         // Builds *Bottom Tabs*
         buildBottomTab();
         buildBottomTab2();
-        
-        
-        // Populates table in tab - NOT USED NOW
-        populateTable();
 
-        tabbedPaneBottom.addTab("Output", collection3);
-        tabbedPaneBottom.addTab("Error", collection4);
         tabbedPaneBottom.setForegroundAt(1, new Color(142, 35, 35));
 
         // Adds *Bottom Tab* and *Progress Bar* to panel
@@ -253,19 +216,6 @@ public class ESGPublisher3 implements ActionListener {
     }
     
     /**
-     * Sets up the scrolling window size, table sorter and row selection for tables
-     */
-    public void tableSettings() {
-//	    table.setRowHeight(20);
-//	    table.setAutoCreateRowSorter(true); //table sorter
-//	    table.setRowSelectionAllowed(false);//selection disabler
-//	    tableColumnEditor.editTable();
-//	    //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//turns off expandability with window
-//        table.setPreferredScrollableViewportSize(new Dimension(530, 280));
-//        table.setFillsViewportHeight(true);
-    }
-    
-    /**
      * Creates a split pane for top panels
      */  
     public void createTopSplitPane(Component leftComponent, Component rightComponent) {
@@ -278,8 +228,7 @@ public class ESGPublisher3 implements ActionListener {
     	Dimension minSplitPaneTopSize = new Dimension(360, 200);
     	leftComponent.setMinimumSize(minSplitPaneTopSize);
     	topPanel.add(splitPanetop);
-    }
-   
+    }  
     
     /**
      * Creates a split pane for bottom panels
@@ -294,18 +243,7 @@ public class ESGPublisher3 implements ActionListener {
         
         Dimension minSplitPaneBottomSize = new Dimension(410, 200);
         bottomComponent.setMinimumSize(minSplitPaneBottomSize);
-    }
-       
-    
-    /**
-     * Adds contents to table in Top Tab 2
-     */
-    public void populateTable() {
-        tableTab2.setValueAt("Test value", 0,0);
-        JTableHeader tableTab2Header = new JTableHeader();
-        tableTab2.setTableHeader(tableTab2Header);
-    }
-    
+    }  
     
     /**
      * Edits Bottom 'Output' tab and Adds it to panel.
@@ -321,7 +259,8 @@ public class ESGPublisher3 implements ActionListener {
         JScrollPane outputTextScrollPane = new JScrollPane(outputTextArea);
         outputTextScrollPane.setPreferredSize(new Dimension(1000, 220));//NOT WORKING
         outputTextArea.setBackground(new Color(185, 211, 238));
-        collection3.add(outputTextScrollPane);        
+        collection3.add(outputTextScrollPane);      
+        tabbedPaneBottom.addTab("Output", collection3);
     }
     
     /**
@@ -335,9 +274,10 @@ public class ESGPublisher3 implements ActionListener {
 	                    	"Error scanning /ipcc/20c3m/atm/da/hfls/gfdl_cm2_0/run1/19656\n" + 
 	                    	"Error publishing /ipcc/20c3m/atm/da/hfls/gfdl_cm2_0/run1/19656\n" + "...";
 	    errorTextArea.setText(errorText);
-        errorTextArea.setForeground(new Color(142, 35, 35));//209, 146, 117));
+        errorTextArea.setForeground(new Color(142, 35, 35));
         errorTextArea.setBackground(Color.WHITE);
         collection4.add(errorTextArea);
+        tabbedPaneBottom.addTab("Error", collection4);
     }
     
     /**

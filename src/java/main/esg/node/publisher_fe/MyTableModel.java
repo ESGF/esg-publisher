@@ -62,7 +62,7 @@
  * @author Carla Hardy 
  * @version 06/15/2010
  */
-
+package esg.node.publisher_fe;
 import javax.swing.table.AbstractTableModel;
 
 class MyTableModel extends AbstractTableModel {

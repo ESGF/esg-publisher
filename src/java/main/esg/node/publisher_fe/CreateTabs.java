@@ -62,7 +62,7 @@
  * @author Carla Hardy 
  * @version 06/15/2010
  */
-
+package esg.node.publisher_fe;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -77,44 +77,39 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.border.Border;
+import javax.swing.table.JTableHeader;
 
 class CreateTabs extends JButton {
+	private static final long serialVersionUID = 1L;
 	JSplitPane spTop;
-	JPanel buttonPanel;
-	JPanel collectionPanel;	
+	JPanel buttonPanel, collectionPanel;	
 	JTabbedPane tpTop;
 	int tabCounter;
-	String tabLabel;
-    JTable table;
+	String tabLabel, label;
+    JTable dataTable;
     TableColumnEditor tableColumnEditor;
     JScrollPane scrollPane;
-    JTable dataTable;
 	MyTableModel model; 
 	ExpandablePanelCreator epc;
 	JButton closeButton;
-	boolean tabCreatorClass;
-	String label;
-	boolean removedTab;
+	boolean tabCreatorClass, removedTab;
 	
 	public CreateTabs(JSplitPane splitPaneTop, JPanel jPanel, JTabbedPane tabbedPaneTop, 
 															int counter) {
 		spTop = splitPaneTop;
 		collectionPanel = jPanel; //collection1
 		tpTop = tabbedPaneTop;		
-		tabCounter = counter;
-		
+		tabCounter = counter;		
 		buttonPanel = new JPanel();
-		tabLabel = "";
-		
-		tableColumnEditor = new TableColumnEditor(table);
-		scrollPane = new JScrollPane(table);
-
+		tabLabel = "";	
+		label = "Collection 1" ;
+		tableColumnEditor = new TableColumnEditor(dataTable);
+		scrollPane = new JScrollPane(dataTable);
 		model = new MyTableModel(); 
 		dataTable = new JTable(model);
 		epc = new ExpandablePanelCreator(spTop, tpTop, collectionPanel);
 		closeButton = new JButton("x");
 		tabCreatorClass = false;
-		label = "Collection 1" ;
 		removedTab = false;
 	}
 	
@@ -123,6 +118,7 @@ class CreateTabs extends JButton {
 	 * Adds tab to a panel and sets it as right component in splitpane
 	 */
 	public void createFirstTab() {		
+		// Creates a close button for the tab
 		Border closeButtonBorder = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
 		buttonPanel.setOpaque(false);//makes the panel transparent
 		buttonPanel.setBorder(closeButtonBorder);
@@ -142,12 +138,8 @@ class CreateTabs extends JButton {
 			}
 		}); 
 		TableColumnEditor tableColumnEditor = new TableColumnEditor(dataTable);
-		tableColumnEditor.editTable();
-		dataTable.setRowHeight(20);
-		dataTable.setAutoCreateRowSorter(true); //table sorter
-		dataTable.setRowSelectionAllowed(false);//selection disabler
-	    dataTable.setPreferredScrollableViewportSize(new Dimension(530, 280));
-	    dataTable.setFillsViewportHeight(true);
+		tableColumnEditor.editTableColumn();
+		tableColumnEditor.tableSettings();
 	    	
 		JScrollPane dataTableScrollpane = new JScrollPane(dataTable);
 		collectionPanel.add(dataTableScrollpane);
@@ -163,7 +155,7 @@ class CreateTabs extends JButton {
 		tpTop.addTab("", collectionPanel);      
 		tpTop.setTabComponentAt(0, buttonPanel);
 		tpTop.setToolTipTextAt(tpTop.getTabCount() - 1, label);
-		spTop.setRightComponent(tpTop); 
+		spTop.setRightComponent(tpTop); //set right component of split pane
 		tpTop.updateUI();
     }
 	
@@ -188,63 +180,12 @@ class CreateTabs extends JButton {
 		return label;
 	}
 	
-
-//	/**
-//	 * Creates subsequent tabs, adds a close button to remove the tab
-//	 * Sets new tabs as active
-//	 */
-//	class TabCreator{
-//		JButton closeButton;
-//		
-//		public ClassCreator() {
-//			closeButton = new JButton("x");
-//		}
-//
-//	public void createRemainingTabs() {
-//
-//			Border closeButtonBorder = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
-//			buttonPanel.setOpaque(false);//makes the panel transparent
-//			buttonPanel.setBorder(closeButtonBorder);
-//			String label = "Collection " + tabCounter;
-//			buttonPanel.add(new JLabel(label));
-//			closeButton.setPreferredSize(new Dimension(20,20));
-//			closeButton.setMargin(new Insets(2,2,2,2));
-//			buttonPanel.add(closeButton);
-//			
-//			closeButton.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e) {				
-//						int i = tpTop.getSelectedIndex();
-//						if (i != -1) {
-//							//collectionPanel.removeAll();
-//							tpTop.remove(i);
-//						}				
-//				}
-//			});
-//			JPanel tablePanel = new JPanel(new GridLayout());
-//			JTable dataTable = new JTable(model);
-//			TableColumnEditor tableColumnEditor = new TableColumnEditor(dataTable);
-//			tableColumnEditor.editTable();
-//			dataTable.setRowHeight(20);
-//			dataTable.setAutoCreateRowSorter(true); //table sorter
-//			dataTable.setRowSelectionAllowed(false);//selection disabler
-//		    dataTable.setPreferredScrollableViewportSize(new Dimension(530, 280));
-//		    dataTable.setFillsViewportHeight(true);
-//		    	
-//			JScrollPane dataTableScrollpane = new JScrollPane(dataTable);
-//			tablePanel.add(dataTableScrollpane);
-//			
-//			// Creates buttons in inner table at column 5 (DataSet)
-//		    ButtonRenderer buttonRenderer = new ButtonRenderer();		
-//		    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), 
-//		    			                          new InnerPaneCreator(tpTop, dataTableScrollpane, tablePanel, dataTable, tabLabel));
-//		    dataTable.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
-//		    dataTable.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
-//			
-//			tpTop.addTab("", tablePanel);
-//			tpTop.setSelectedIndex(tpTop.getTabCount() - 1); //make new tab active
-//			//tpTop.setForeground(new Color(142, 35, 35));
-//			tpTop.setTabComponentAt(tpTop.getTabCount() - 1, buttonPanel); 
-//		}
-//	}
-//	
+    /**
+     * Adds contents to table in Top Tab 2
+     */
+    public void populateTable() {
+       dataTable.setValueAt("Test value", 0,0);
+       JTableHeader tableTab2Header = new JTableHeader();
+       dataTable.setTableHeader(tableTab2Header);
+    }
 }

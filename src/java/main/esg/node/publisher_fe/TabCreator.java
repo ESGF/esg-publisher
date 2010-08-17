@@ -62,7 +62,7 @@
  * @author Carla Hardy 
  * @version 06/15/2010
  */
-
+package esg.node.publisher_fe;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -78,6 +78,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.border.Border;
+import javax.swing.table.JTableHeader;
 
 class TabCreator{
 	JButton closeButton;
@@ -129,12 +130,8 @@ class TabCreator{
 					}				
 			}
 		});
-		tableColumnEditor.editTable();
-		table.setRowHeight(20);
-		table.setAutoCreateRowSorter(true); //table sorter
-		table.setRowSelectionAllowed(false);//selection disabler
-	    table.setPreferredScrollableViewportSize(new Dimension(530, 280));
-	    table.setFillsViewportHeight(true);
+		tableColumnEditor.editTableColumn();
+		tableColumnEditor.tableSettings();
 
 		tablePanel.add(dataTableScrollpane);
 		
@@ -176,4 +173,13 @@ class TabCreator{
 		System.out.println("tab removed" + tabCounter);
 		return tabCounter;
 	}
+	   
+    /**
+     * Adds contents to table in Top Tab 2
+     */
+    public void populateTable() {
+        table.setValueAt("Test value", 0,0);
+        JTableHeader tableTab2Header = new JTableHeader();
+        table.setTableHeader(tableTab2Header);
+    }
 }

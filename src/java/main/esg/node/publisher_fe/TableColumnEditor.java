@@ -1,3 +1,6 @@
+package esg.node.publisher_fe;
+import java.awt.Dimension;
+
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
@@ -11,7 +14,7 @@ public class TableColumnEditor {
 		this.table = table;
 	}
 	
-	public void editTable() {
+	public void editTableColumn() {
     	TableColumn column = null;
 
     	for (int i = 0; i < 7; i++){
@@ -30,4 +33,15 @@ public class TableColumnEditor {
     		}
     	}
     }
+	
+    /**
+     * Sets up the scrolling window size, table sorter and row selection for tables
+     */
+	public void tableSettings() {
+		table.setRowHeight(20);
+		table.setAutoCreateRowSorter(true); //table sorter
+		table.setRowSelectionAllowed(false);//selection disabler
+	    table.setPreferredScrollableViewportSize(new Dimension(530, 280));
+	    table.setFillsViewportHeight(true);
+	}
 }
