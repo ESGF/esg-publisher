@@ -64,8 +64,6 @@
  */
 
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -83,32 +81,51 @@ import javax.swing.border.Border;
 class CreateTabs extends JButton {
 	JSplitPane spTop;
 	JPanel buttonPanel;
-	JPanel collectionPanel;
-	
+	JPanel collectionPanel;	
 	JTabbedPane tpTop;
 	int tabCounter;
 	String tabLabel;
+    JTable table;
+    TableColumnEditor tableColumnEditor;
+    JScrollPane scrollPane;
+    JTable dataTable;
+	MyTableModel model; 
+	ExpandablePanelCreator epc;
+	JButton closeButton;
+	boolean tabCreatorClass;
+	String label;
+	boolean removedTab;
 	
-	public CreateTabs(JSplitPane splitPaneTop, JPanel jPanel, JTabbedPane tabbedPane, 
+	public CreateTabs(JSplitPane splitPaneTop, JPanel jPanel, JTabbedPane tabbedPaneTop, 
 															int counter) {
 		spTop = splitPaneTop;
-		tpTop = tabbedPane;		
 		collectionPanel = jPanel; //collection1
+		tpTop = tabbedPaneTop;		
 		tabCounter = counter;
 		
 		buttonPanel = new JPanel();
 		tabLabel = "";
+		
+		tableColumnEditor = new TableColumnEditor(table);
+		scrollPane = new JScrollPane(table);
+
+		model = new MyTableModel(); 
+		dataTable = new JTable(model);
+		epc = new ExpandablePanelCreator(spTop, tpTop, collectionPanel);
+		closeButton = new JButton("x");
+		tabCreatorClass = false;
+		label = "Collection 1" ;
+		removedTab = false;
 	}
 	
 	/**
 	 * Creates first tab, adds a close button to remove the tab
 	 * Adds tab to a panel and sets it as right component in splitpane
 	 */
-	public void createFirstTab() {	
-		JButton closeButton = new JButton("x");
+	public void createFirstTab() {		
 		Border closeButtonBorder = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
+		buttonPanel.setOpaque(false);//makes the panel transparent
 		buttonPanel.setBorder(closeButtonBorder);
-		String label = "Collection 1" ;
 		buttonPanel.add(new JLabel(label));
 		buttonPanel.add(closeButton);
 		closeButton.setPreferredSize(new Dimension(20,20));
@@ -116,64 +133,118 @@ class CreateTabs extends JButton {
 		
 		closeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {				
-					int i = tpTop.getSelectedIndex();
-					if (i != -1) {
-						tpTop.remove(i);
-					}			
+				int i = tpTop.getSelectedIndex();
+				if (i != -1) {
+					collectionPanel.removeAll();
+					tpTop.remove(i);
+					removedTab = true;
+				}			
 			}
-		});
-		tpTop.addTab("", collectionPanel);      
-		tpTop.setTabComponentAt(0, buttonPanel);
-		spTop.setRightComponent(tpTop); 
-		tpTop.updateUI();
-    }
-
-	/**
-	 * Creates subsequent tabs, adds a close button to remove the tab
-	 * Sets new tabs as active
-	 */
-	public void createRemainingTabs() {
-		JButton closeButton = new JButton("x");
-		Border closeButtonBorder = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
-		buttonPanel.setBorder(closeButtonBorder);
-		String label = "Collection " + tabCounter;
-		buttonPanel.add(new JLabel(label));
-		closeButton.setPreferredSize(new Dimension(20,20));
-		closeButton.setMargin(new Insets(2,2,2,2));
-		buttonPanel.add(closeButton);
-		
-		closeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {				
-					int i = tpTop.getSelectedIndex();
-					if (i != -1) {
-						tpTop.remove(i);
-					}				
-			}
-		});
-		JPanel tablePanel = new JPanel(new GridLayout());
-		JTable dataTable = new JTable(new MyTableModel());
+		}); 
+		TableColumnEditor tableColumnEditor = new TableColumnEditor(dataTable);
+		tableColumnEditor.editTable();
 		dataTable.setRowHeight(20);
 		dataTable.setAutoCreateRowSorter(true); //table sorter
 		dataTable.setRowSelectionAllowed(false);//selection disabler
-	    //customizeColumns(table);
 	    dataTable.setPreferredScrollableViewportSize(new Dimension(530, 280));
 	    dataTable.setFillsViewportHeight(true);
 	    	
 		JScrollPane dataTableScrollpane = new JScrollPane(dataTable);
-		tablePanel.add(dataTableScrollpane);
+		collectionPanel.add(dataTableScrollpane);
 		
 		// Creates buttons in inner table at column 5 (DataSet)
 	    ButtonRenderer buttonRenderer = new ButtonRenderer();		
 	    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), 
-	    			                          new InnerPaneCreator(tpTop, dataTableScrollpane, tablePanel, dataTable, tabLabel));
+	    			                          new InnerPaneCreator(tpTop, dataTableScrollpane, 
+	    			                        		  collectionPanel, dataTable, tabLabel));
 	    dataTable.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
 	    dataTable.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
 		
-		tpTop.addTab("", tablePanel);//new JPanel(new GridLayout(1,0)));
-		tpTop.setSelectedIndex(tpTop.getTabCount() - 1); //make new tab active
-		tpTop.setTabComponentAt(tpTop.getTabCount() - 1, buttonPanel); 
+		tpTop.addTab("", collectionPanel);      
+		tpTop.setTabComponentAt(0, buttonPanel);
+		tpTop.setToolTipTextAt(tpTop.getTabCount() - 1, label);
+		spTop.setRightComponent(tpTop); 
+		tpTop.updateUI();
+    }
+	
+	public void unselectCheckbox() {
+		System.out.println("select/deselect:" + model);
+		for (int i = 0; i < model.getRowCount(); i++) {
+	    	model.setValueAt(false, i, 0);
+	    }
 	}
 	
-	public void tableSettings() {		
-    }
+	public void selectCheckbox() {
+		for (int i = 0; i < model.getRowCount(); i++) {
+	    	model.setValueAt(true, i, 0);
+	    }
+	}
+	
+	public int returnIndex() {
+		return tabCounter;
+	}
+	
+	public String returnLabelName() {
+		return label;
+	}
+	
+
+//	/**
+//	 * Creates subsequent tabs, adds a close button to remove the tab
+//	 * Sets new tabs as active
+//	 */
+//	class TabCreator{
+//		JButton closeButton;
+//		
+//		public ClassCreator() {
+//			closeButton = new JButton("x");
+//		}
+//
+//	public void createRemainingTabs() {
+//
+//			Border closeButtonBorder = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
+//			buttonPanel.setOpaque(false);//makes the panel transparent
+//			buttonPanel.setBorder(closeButtonBorder);
+//			String label = "Collection " + tabCounter;
+//			buttonPanel.add(new JLabel(label));
+//			closeButton.setPreferredSize(new Dimension(20,20));
+//			closeButton.setMargin(new Insets(2,2,2,2));
+//			buttonPanel.add(closeButton);
+//			
+//			closeButton.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {				
+//						int i = tpTop.getSelectedIndex();
+//						if (i != -1) {
+//							//collectionPanel.removeAll();
+//							tpTop.remove(i);
+//						}				
+//				}
+//			});
+//			JPanel tablePanel = new JPanel(new GridLayout());
+//			JTable dataTable = new JTable(model);
+//			TableColumnEditor tableColumnEditor = new TableColumnEditor(dataTable);
+//			tableColumnEditor.editTable();
+//			dataTable.setRowHeight(20);
+//			dataTable.setAutoCreateRowSorter(true); //table sorter
+//			dataTable.setRowSelectionAllowed(false);//selection disabler
+//		    dataTable.setPreferredScrollableViewportSize(new Dimension(530, 280));
+//		    dataTable.setFillsViewportHeight(true);
+//		    	
+//			JScrollPane dataTableScrollpane = new JScrollPane(dataTable);
+//			tablePanel.add(dataTableScrollpane);
+//			
+//			// Creates buttons in inner table at column 5 (DataSet)
+//		    ButtonRenderer buttonRenderer = new ButtonRenderer();		
+//		    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), 
+//		    			                          new InnerPaneCreator(tpTop, dataTableScrollpane, tablePanel, dataTable, tabLabel));
+//		    dataTable.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
+//		    dataTable.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
+//			
+//			tpTop.addTab("", tablePanel);
+//			tpTop.setSelectedIndex(tpTop.getTabCount() - 1); //make new tab active
+//			//tpTop.setForeground(new Color(142, 35, 35));
+//			tpTop.setTabComponentAt(tpTop.getTabCount() - 1, buttonPanel); 
+//		}
+//	}
+//	
 }

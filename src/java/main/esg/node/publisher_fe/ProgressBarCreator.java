@@ -74,12 +74,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 public class ProgressBarCreator extends JPanel {
-  JProgressBar pbar;
-  protected int minValue = 0;
-  protected int maxValue = 100;
-  int counter;
+	private static final long serialVersionUID = 1L;
+	JProgressBar pbar;
+	protected int minValue = 0;
+	protected int maxValue = 100;
+	int counter;
   
-   public ProgressBarCreator() {
+	public ProgressBarCreator() {
 	    pbar = new JProgressBar();
 	    pbar.setMinimum(minValue);
 	    pbar.setMaximum(maxValue);
@@ -87,22 +88,22 @@ public class ProgressBarCreator extends JPanel {
 	    
 	    editProgressBar();
 	    displayProgressBar();
-   }
+	}
 	  
    /**
     * Edits progress bar size
     */
-   public void editProgressBar() {
+	public void editProgressBar() {
 	    Dimension prefSize = pbar.getPreferredSize();
 	    prefSize.width = 720;
 	    prefSize.height = 20;
 	    pbar.setPreferredSize(prefSize);
-   }
+	}
 	    
    /**
     * Displays a progress bar and a button
     */
-   public void displayProgressBar() {    	    	    
+	public void displayProgressBar() {    	    	    
 	    pbar.setStringPainted(true);//Display progress in percentages %	    
 	    JButton start = new JButton("Status");
 	    start.setMargin(new Insets(3,43,3,43));
@@ -133,7 +134,7 @@ public class ProgressBarCreator extends JPanel {
 		    runner.start();
 		  }
 	  });
-   }
+	}
 }
 
 //  public ProgressBarCreator() {

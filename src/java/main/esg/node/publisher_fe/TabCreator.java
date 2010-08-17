@@ -56,71 +56,124 @@
  ***************************************************************************/
 
 /**
- * The class <code>TableButtonEditor</code>edits buttons inside a table.
+ * The class <code>TabCreator</code> 
+ * Begins at tab 2
  * 
  * @author Carla Hardy 
- * @version 06/30/2010
+ * @version 06/15/2010
  */
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class TableButtonEditor extends DefaultCellEditor {
-	private static final long serialVersionUID = 1L;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.border.Border;
+
+class TabCreator{
+	JButton closeButton;
+	JPanel buttonPanel;
+	JTabbedPane tpTop;
+	int tabCounter;
+	String tabLabel, labelName;
+	JTable table;
+    TableColumnEditor tableColumnEditor;
+    JScrollPane dataTableScrollpane;
+	MyTableModel model; 
+	JPanel tablePanel;
+	boolean tabCreatorClass;
+	boolean removedTab;
 	
-	protected JButton button;
-	private String    label;
-	private boolean   isPushed;
-	String labelName;
- 
-	public TableButtonEditor(JCheckBox checkBox, ActionListener tabCreatorActionListener) {
-		super(checkBox);
-		button = new JButton();
-		button.setOpaque(true);
-		button.addActionListener(tabCreatorActionListener);
-		labelName = "";
-
-//		button.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				fireEditingStopped();
-//			}
-//		});
+	public TabCreator(JTabbedPane tabbedPane, int counter) {
+		tpTop = tabbedPane;	
+		tabCounter = counter;
+		model = new MyTableModel(); 		
+		closeButton = new JButton("x");
+		buttonPanel = new JPanel();
+		table = new JTable(model);
+		tablePanel = new JPanel(new GridLayout());
+		dataTableScrollpane = new JScrollPane(table);
+		tableColumnEditor = new TableColumnEditor(table);
+		tabLabel = "";
+		tabCreatorClass = true;
+		removedTab = false;
 	}
 
-	public Component getTableCellEditorComponent(JTable table, Object value,
-			boolean isSelected, int row, int column) {
-		if (isSelected) {
-			button.setForeground(table.getSelectionForeground());
-			button.setBackground(table.getSelectionBackground());
-		} 
-		else {
-			button.setForeground(table.getForeground());
-			button.setBackground(table.getBackground());
-		}
-		label = (value == null) ? "" : value.toString();
-		labelName = label;
-		System.out.println("labelName = " + labelName);
+	public void createRemainingTabs() {
+		Border closeButtonBorder = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
+		buttonPanel.setOpaque(false);//makes the panel transparent
+		buttonPanel.setBorder(closeButtonBorder);
+		labelName = "Collection " + tabCounter;
+		buttonPanel.add(new JLabel(labelName));
+		closeButton.setPreferredSize(new Dimension(20,20));
+		closeButton.setMargin(new Insets(2,2,2,2));
+		buttonPanel.add(closeButton);
+		
+		closeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {				
+					int i = tpTop.getSelectedIndex();
+					if (i != -1) {
+						//collectionPanel.removeAll();
+						tpTop.remove(i);
+						removedTab = true;
+						//returnRemovedTab();
+					}				
+			}
+		});
+		tableColumnEditor.editTable();
+		table.setRowHeight(20);
+		table.setAutoCreateRowSorter(true); //table sorter
+		table.setRowSelectionAllowed(false);//selection disabler
+	    table.setPreferredScrollableViewportSize(new Dimension(530, 280));
+	    table.setFillsViewportHeight(true);
 
-		button.setText( label );
-		isPushed = true;
-		return button;
+		tablePanel.add(dataTableScrollpane);
+		
+		// Creates buttons in inner table at column 5 (DataSet)
+	    ButtonRenderer buttonRenderer = new ButtonRenderer();		
+	    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), 
+	    			                          new InnerPaneCreator(tpTop, dataTableScrollpane, tablePanel, table, tabLabel));
+	    table.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
+	    table.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
+		
+		tpTop.addTab("", tablePanel);
+		tpTop.setSelectedIndex(tpTop.getTabCount() - 1); //make new tab active
+		//tpTop.setForeground(new Color(142, 35, 35));
+		tpTop.setToolTipTextAt(tpTop.getTabCount() - 1, labelName);
+		tpTop.setTabComponentAt(tpTop.getTabCount() - 1, buttonPanel); 
 	}
-
-	public Object getCellEditorValue() {
-		if (isPushed)  {
-
-		}
-		isPushed = false;
-		return new String( label ) ;
+	
+	public void unselectCheckbox() {
+		for (int i = 0; i < model.getRowCount(); i++) {
+	    	model.setValueAt(false, i, 0);
+	    }
 	}
-
-	public boolean stopCellEditing() {
-		isPushed = false;
-		return super.stopCellEditing();
+	
+	public void selectCheckbox() {
+		for (int i = 0; i < model.getRowCount(); i++) {
+	    	model.setValueAt(true, i, 0);
+	    }
 	}
-
-	protected void fireEditingStopped() {
-		super.fireEditingStopped();
+	
+	public String returnLabelName() {
+		return labelName;
+	}
+	
+	public int returnIndex() {
+		return tabCounter;
+	}	
+	
+	public int returnRemovedTab() {
+		System.out.println("tab removed" + tabCounter);
+		return tabCounter;
 	}
 }

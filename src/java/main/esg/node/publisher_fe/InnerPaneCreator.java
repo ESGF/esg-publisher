@@ -75,6 +75,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JLabel;
@@ -89,6 +90,8 @@ class InnerPaneCreator implements ActionListener {
 	int index;	
 	GridBagConstraints saveChangesButtonConstrain;	
 	MyTableModel tableModel;
+	String innerTabLabel;
+	String innerTabLabelName;
 	
 	public InnerPaneCreator(JTabbedPane tabbedPanel, JScrollPane scrollPane, JPanel panel, 
 			          JTable table, String tablabel) {
@@ -102,6 +105,8 @@ class InnerPaneCreator implements ActionListener {
 		tablePanel = new JPanel(new GridLayout());
 		index = 1;
 		tableModel = new MyTableModel();
+		innerTabLabel = "";
+		innerTabLabelName = "";
 	}
 	
 	/**
@@ -112,7 +117,7 @@ class InnerPaneCreator implements ActionListener {
 		if (index == 1) {
 			createFirstInnerTab();					
 			tabPaneTop.updateUI(); //Updates existing top tab to display new components
-			index++;
+			index=2;
 		}
 		else {
 			createRemainingInnerTab();
@@ -129,7 +134,7 @@ class InnerPaneCreator implements ActionListener {
 		scrollPaneTable.setPreferredSize(new Dimension(530, 280));
 		jtable.setFillsViewportHeight(true);
 		
-		//Create a Scroll pane for the metadata field form
+		//Create a Scroll pane for the metadata form
 		DatasetMetadataDisplayer metadataDisplayer = new DatasetMetadataDisplayer();
 		JPanel metada = metadataDisplayer.returnMetadata();
 		JScrollPane scrollPaneDatasetSp = new JScrollPane(metada);
@@ -154,30 +159,28 @@ class InnerPaneCreator implements ActionListener {
 		Border closeButtonBorder1 = BorderFactory.createEmptyBorder(-2, 2, -2, 2);
 		closeButtonPanel.setBorder(closeButtonBorder1);
 
-		//Add label name
-		String dataSetName1 = (String) tableModel.getValueAt(1, 4); // TODO:fix this to display any row		
-		JLabel tabName1= new JLabel(dataSetName1);
-		tabName1.setForeground(new Color(34,24,130));
-		closeButtonPanel.add(tabName1);
+		addLabelName(closeButtonPanel);
 		
 		//Add 'Close x' button
 	    JButton closeButton1 = new JButton("x");
+	    closeButtonPanel.setOpaque(false);//makes the panel transparent
 		closeButtonPanel.add(closeButton1);
 		closeButton1.setPreferredSize(new Dimension(20,20));
 		closeButton1.setMargin(new Insets(2,2,2,2));		
 		closeButton1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {				
 					int i = innerTabPane.getSelectedIndex();
-					if (i != -1) {
+					int ii = tabPaneTop.getSelectedIndex();
+					if (i != -1 || ii != -1) {
 						innerTabPane.remove(i);
-					}			
+					}
 			}
 		});	
 		
 		//Add metadata panel + save button panel to inner tab
 		innerTabPane.addTab("", metadataButtonPanel);
 		innerTabPane.setTabComponentAt(index, closeButtonPanel);
-		innerTabPane.setSelectedIndex(innerTabPane.getTabCount() - 1); // make new tab active
+		innerTabPane.setSelectedIndex(1); //make new tab active
 		
 		/* Add inner tab pane to existing collection panel
 		 * The previous component have to be removed to add the new one*/
@@ -219,6 +222,7 @@ class InnerPaneCreator implements ActionListener {
 		
 		//Add 'Close x' button
 		JButton closeButton = new JButton("x");
+		buttonPanel.setOpaque(false);//makes the panel transparent
 		buttonPanel.add(closeButton);
 		closeButton.setPreferredSize(new Dimension(20,20));
 		closeButton.setMargin(new Insets(2,2,2,2));		
@@ -235,6 +239,15 @@ class InnerPaneCreator implements ActionListener {
 		innerTabPane.addTab("", metadataButtonPanel);
 		innerTabPane.setTabComponentAt(innerTabPane.getTabCount() - 1, buttonPanel);
 		innerTabPane.setSelectedIndex(innerTabPane.getTabCount() - 1); // make new tab active
+	}
+		
+	public void addLabelName(JPanel panel) {
+		//Add label name
+		String dataSetName1 = (String) tableModel.getValueAt(1, 4); //TODO:fix this to display any row		
+		System.out.println("innertablabel" + innerTabLabelName);
+		JLabel tabName1= new JLabel(dataSetName1);
+		tabName1.setForeground(new Color(34,24,130));
+		panel.add(tabName1);
 	}
 }
 	

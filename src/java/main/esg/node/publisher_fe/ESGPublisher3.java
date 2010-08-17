@@ -62,6 +62,7 @@
  * @version 06/15/2010
  */
 
+import java.util.*;
 import javax.swing.*;
 import javax.swing.table.JTableHeader;	
 import javax.swing.JPanel;
@@ -82,14 +83,14 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 
-public class ESGPublisher3 extends JPanel implements ActionListener {  
+public class ESGPublisher3 implements ActionListener {  
 	private static final long serialVersionUID = 1L;
     JFrame frame;    
     ImageIcon esgLogo;
     JTabbedPane tabbedPaneTop, tabbedPaneBottom;    
     JSplitPane splitPanetop, splitPaneBottom;
-    MyTableModel model;    
-    JTable table;
+    //MyTableModel model;    
+    //JTable table;
     JTable tableTab2; //TODO: delete - created this table to use setValueAt	    
     JPanel collection1,collection2,collection3,collection4,innerPanel,panelLeft,progressBarPanel,
     		bottomTabPanel,bottomPanel,topPanel,initialTopPanel,borderPanelInitialMessage;
@@ -98,6 +99,7 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
 	GridBagConstraints menuConstrain, initialTopPanelConstrain, firstTabConstrain;	
 	ProgressBarCreator progressBar;	    
     String tabLabel;
+    //TableColumnEditor tableColumnEditor;
 	int actionListenerIndex;
  
 	public ESGPublisher3() {
@@ -106,8 +108,8 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
 	    tabbedPaneBottom = new JTabbedPane();
 		splitPanetop = new JSplitPane();
 	    splitPaneBottom = new JSplitPane();
-		model = new MyTableModel();
-		table = new JTable (model);
+		//model = new MyTableModel();
+		//table = new JTable (model);
 	    tableTab2 = new JTable (4,4);
 		collection1 = new JPanel(new GridLayout()); //holds table
 		collection2 = new JPanel(new GridLayout(1,0)); //table2
@@ -126,6 +128,7 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
 	    errorTextArea = new JEditorPane(); //Editor Panes to display error
 		progressBar = new ProgressBarCreator();
 		tabLabel = "";
+		//tableColumnEditor = new TableColumnEditor(table);
 		actionListenerIndex = 1;
 	}
 	
@@ -140,29 +143,30 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
 	    tableSettings();
 	    
         // Creates the scroll pane and add the table to it
-        JScrollPane scrollPane = new JScrollPane(table);
+        //JScrollPane scrollPane = new JScrollPane(table);
         
         // Adds the scroll pane to the panel
-        firstTabConstrain = new GridBagConstraints(0,0,1,1,1.0,0.5,GridBagConstraints.CENTER,
-				GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0);
-        collection1.add(scrollPane);//, firstTabConstrain);
+//        firstTabConstrain = new GridBagConstraints(0,0,1,1,1.0,0.5,GridBagConstraints.CENTER,
+//				GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0);
+//        collection1.add(scrollPane);//, firstTabConstrain);
         	  
         
         ExpandablePanelCreator expandableLeftMenu = new ExpandablePanelCreator(splitPanetop, 
-				tabbedPaneTop, collection1, table, model);
+				tabbedPaneTop, collection1);
         
-     // Inserts and edits *Expandable Menu* using GridBagConstraints Layout
+        // Inserts and edits *Expandable Menu* using GridBagConstraints Layout
 	    menuConstrain = new GridBagConstraints(0,0,1,1,0.1,1.0,GridBagConstraints.PAGE_START, 
 				GridBagConstraints.BOTH,new Insets(0,0,5,0),0,0);
 	    panelLeft.add(new JScrollPane(expandableLeftMenu.getComponent()), menuConstrain);
         
         
         // Creates buttons in inner table at column 5 (DataSet)
-	    ButtonRenderer buttonRenderer = new ButtonRenderer();		
-	    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), 
-	    			                          new InnerPaneCreator(tabbedPaneTop, scrollPane, collection1, table, tabLabel));
-    	table.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
-    	table.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
+//	    ButtonRenderer buttonRenderer = new ButtonRenderer();	
+//	    InnerPaneCreator innerPaneCreator = new InnerPaneCreator(tabbedPaneTop, scrollPane, 
+//	    collection1, table, tabLabel);
+//	    TableButtonEditor tableButtonEditor = new TableButtonEditor(new JCheckBox(), innerPaneCreator); 
+//    	table.getColumnModel().getColumn(4).setCellRenderer(buttonRenderer);
+//    	table.getColumnModel().getColumn(4).setCellEditor(tableButtonEditor);
 
     	
         // Builds *Bottom Tabs*
@@ -181,9 +185,6 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
 	    progressBarPanel.add(progressBar); //Use FlowLayout
         bottomTabPanel.add(tabbedPaneBottom); //Use BorderLayout
         bottomTabPanel.add(progressBarPanel, BorderLayout.SOUTH);
-
-        // Adds an Action Listeners to 'Output' and 'Generate Tabs' button
-        //populateWindow.addActionListener(this);
 
         //Creates split panes
         createTopSplitPane(panelLeft, initialTopPanel);
@@ -255,13 +256,13 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
      * Sets up the scrolling window size, table sorter and row selection for tables
      */
     public void tableSettings() {
-	    table.setRowHeight(20);
-	    table.setAutoCreateRowSorter(true); //table sorter
-	    table.setRowSelectionAllowed(false);//selection disabler
-	    customizeColumns(table);
-	    //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//turns off expandability with window
-        table.setPreferredScrollableViewportSize(new Dimension(530, 280));
-        table.setFillsViewportHeight(true);
+//	    table.setRowHeight(20);
+//	    table.setAutoCreateRowSorter(true); //table sorter
+//	    table.setRowSelectionAllowed(false);//selection disabler
+//	    tableColumnEditor.editTable();
+//	    //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);//turns off expandability with window
+//        table.setPreferredScrollableViewportSize(new Dimension(530, 280));
+//        table.setFillsViewportHeight(true);
     }
     
     /**
@@ -345,28 +346,4 @@ public class ESGPublisher3 extends JPanel implements ActionListener {
     public void actionPerformed (ActionEvent e) {
     	        
     }  	    
-    	    
-    /**
-     * Sets customized table column sizes
-     */
-    private void customizeColumns (JTable table) {
-
-    	TableColumn column = null;
-
-    	for (int i = 0; i < 7; i++){
-    		column = table.getColumnModel().getColumn(i);
-    		if ( i == 4 ) {
-    			column.setPreferredWidth(200);
-    		} 
-    		else if ( i == 2 && i == 6) {
-    			column.setPreferredWidth(70);
-    		}
-    		else if ( i == 6) {
-    			column.setPreferredWidth(90);
-    		}
-    		else {
-    			column.setPreferredWidth(65);
-    		}
-    	}
-    }
 }

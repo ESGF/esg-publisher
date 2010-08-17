@@ -68,6 +68,10 @@ import java.awt.event.*;
 import java.awt.font.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.ListIterator;
+
 import javax.swing.*;
  
 public class ExpandablePanelCreator extends MouseAdapter implements ActionListener{
@@ -81,9 +85,12 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
     String[] publisherList = {"-Any-", "--", "--"};
     String[] submodelList = {"-Any-", "--", "--"};
     String[] timeFrequencyList = {"-Any-", "--", "--"};
+    LinkedList<TabCreator> remainingTabsList;
    
     static String workOnlineString;
     static String workOfflineString;
+	final int MAX = 20;
+	int linkListIndex;
     
     JRadioButton workOnlineButton, workOfflineButton;    
     ButtonGroup radioButtonGroup;    
@@ -93,24 +100,24 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
     JButton directory,file,selectAll,selectAll2,selectAll3,unselectAll,
     		unselectAll2,unselectAll3,remove;    
     MyTableModel tableModel;    
-    JPanel collectionPanel;    
-    JTable table;    
+    JPanel collectionPanel;        
     JSplitPane spTop;
     JTabbedPane tpTop;    
     JFileChooser fileChooser;
-    
+    FileExtensionFilter fileExtensionFilter;
+    LinkedList<Object> tabList;
     int counter;
         
     public ExpandablePanelCreator(JSplitPane splitPaneTop, JTabbedPane tabbedPaneTop, 
-    		JPanel collection, JTable table, MyTableModel model) {               
+    		JPanel collection) {               
     	spTop = splitPaneTop;
     	tpTop = tabbedPaneTop;
     	collectionPanel = collection;
-    	this.table = table;
-    	tableModel = model;
     	
     	workOnlineString = "On-line";
         workOfflineString = "Off-line";
+		remainingTabsList =  new LinkedList<TabCreator>();
+
     	workOnlineButton = new JRadioButton(workOnlineString);
         workOfflineButton = new JRadioButton(workOfflineString);
     	radioButtonGroup = new ButtonGroup();         
@@ -133,7 +140,11 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
         unselectAll3 = new JButton("Unselect All");
         remove = new JButton("Remove");
         fileChooser = new JFileChooser();
+        fileExtensionFilter = new FileExtensionFilter();
         counter = 1;
+        linkListIndex = 0;
+        tableModel = new MyTableModel();
+        tabList = new LinkedList<Object>();
         
         assembleActionPanels();
         assemblePanels();
@@ -145,7 +156,7 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
      */
     public void mousePressed(MouseEvent e) {
         ActionPanel ap = (ActionPanel)e.getSource();
-        if(ap.target.contains(e.getPoint()) || ap.contains(e.getPoint())) {
+        if(ap.contains(e.getPoint())) { //ap.target.contains(e.getPoint()) || 
             ap.toggleSelection();
             togglePanelVisibility(ap);
         }
@@ -208,7 +219,7 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
     	}
     	else if (e.getSource() == directory) {
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);//DIRECTORIES_ONLY);
-    		fileChooser.addChoosableFileFilter(new FileExtensionFilter());
+    		fileChooser.addChoosableFileFilter(fileExtensionFilter);
     		int returnVal = fileChooser.showOpenDialog(spTop);
     		if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File fileSelected = fileChooser.getSelectedFile();
@@ -217,37 +228,186 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
     	}
     	else if (e.getSource() == file) {    			
         	if (tpTop.getTabCount() == 0 ) {
-        		new CreateTabs(spTop, collectionPanel, tpTop, counter).createFirstTab(); 
+        		clearAllTabs();
+        		CreateTabs createTabs = new CreateTabs(spTop, collectionPanel, tpTop, counter);
+        		createTabs.createFirstTab(); 
+        		tabList.addFirst(createTabs);
         		counter = 1;
         	}        	
         	else {
-        		new CreateTabs(spTop, collectionPanel, tpTop, counter).createRemainingTabs();         		
+                TabCreator tabCreator = new TabCreator(tpTop, counter);
+                tabCreator.createRemainingTabs();
+                tabList.add(tabCreator);
+                System.out.println("\nlinkedList" + tabList);
         	}
         	counter++;
     	}
-    	else if (e.getSource() == selectAll) {
-    		for (int i = 0; i < tableModel.getRowCount(); i++)
-    			tableModel.setValueAt(true, i, 0);   		
+    	else if (e.getSource() == selectAll) {  
+    		int index = 0;
+    		int selectedIndex = tpTop.getSelectedIndex() + 1;
+    		String tabTitle = tpTop.getToolTipTextAt(selectedIndex-1);
+    		System.out.println(selectedIndex);
+    		ListIterator<Object> iterator = tabList.listIterator();
+    		CreateTabs ct = null;
+    		TabCreator tc = null;
+    		String cls = null;
+    		boolean tabCreatorClass = false;
+    		boolean removedTab = false;
+    		System.out.println("Title: " + tabTitle);
+    		while (iterator.hasNext()) {
+    			Object o = iterator.next();
+    			cls = o.getClass().getName();
+    			if (cls == "CreateTabs") {
+    				ct = (CreateTabs)o;
+    				if (selectedIndex == 1) {
+    					cls = "CreateTabs";    					
+    					index = selectedIndex;
+    					removedTab = ct.removedTab;
+    					System.out.println(cls + " " + index);
+    				}
+    			}
+    			else if (cls.equalsIgnoreCase("TabCreator")) {
+    				System.out.println("*this is a TabCreator*");
+    				tc = (TabCreator)o;
+    				if (tc.removedTab == true){
+    					index = selectedIndex;
+    					removedTab = tc.removedTab;
+    					tabTitle = null;
+    				}
+    				else if (tc.removedTab == false && tabTitle == tc.returnLabelName()) {
+    					//cls = TabCreator.class;
+    					index = selectedIndex;
+        				tabCreatorClass = true;
+    					removedTab = tc.removedTab;
+    					System.out.println("tab title: " + tabTitle + " tab title label: " + tc.returnLabelName());
+    					System.out.println(cls + " Index:" + index + " Removed?" + removedTab);//class CreateTabs			
+    				}				
+    			}
+    		}
+			if (index == 1 && tabTitle == ct.returnLabelName() && ct.removedTab == false) {
+				System.out.println("o equals CT" + ct.returnLabelName());
+				((CreateTabs)tabList.get(0)).selectCheckbox();
+			}
+			else if (index == 1 && tabCreatorClass == true) {
+				System.out.println("o equals TC");
+				((TabCreator)tabList.get(0)).selectCheckbox();
+			}
+			else if (index == 1 && ct.removedTab == true && tpTop.getTabCount() >= 1) {
+				deleteTabs(1);
+				System.out.println("Collection 1 DELETED " + tabList);
+					((TabCreator)tabList.get(0)).selectCheckbox(); //fix this -> if empty
+			}
+			else if (index == 1 && tc.removedTab == true && tpTop.getTabCount() >= 1) {
+				System.out.println("\nlinkedList:" + tabList);
+				deleteTabs(1);
+				System.out.println("Collection DELETED " + tabList);
+					((CreateTabs)tabList.get(0)).selectCheckbox(); //fix this -> if empty
+			}	
+			else if ((cls == "TabCreator" && tc.removedTab == true)) {
+				System.out.println("\nlinkedList:" + tabList);
+				//deleteTabs(index - 1);
+				if (tpTop.getTabCount() >= 2) {
+					((TabCreator)tabList.get(index - 1)).selectCheckbox();
+				}
+				System.out.println("removed tab:" + index + "\nlinkedList:" + tabList);
+			}			
+			else if (cls== "TabCreator" && removedTab == false) {
+				System.out.println("o equals TC");
+				((TabCreator)tabList.get(index - 1)).selectCheckbox();
+				cls = "";
+				removedTab = false;
+			}
     	}
-    	else if (e.getSource() == selectAll2) {
-    		for (int i = 0; i < tableModel.getRowCount(); i++)
-    			tableModel.setValueAt(true, i, 0);   		
-    	}
-    	else if (e.getSource() == selectAll3) {
-    		for (int i = 0; i < tableModel.getRowCount(); i++)
-    			tableModel.setValueAt(true, i, 0);   		
-    	}
+//    	else if (e.getSource() == selectAll2) {
+//    		for (int i = 0; i < tableModel.getRowCount(); i++)
+//    			tableModel.setValueAt(true, i, 0);   		
+//    	}
+//    	else if (e.getSource() == selectAll3) {
+//    		for (int i = 0; i < tableModel.getRowCount(); i++)
+//    			tableModel.setValueAt(true, i, 0);   		
+//    	}
     	else if (e.getSource() == unselectAll) {
-    		for (int i = 0; i < tableModel.getRowCount(); i++)
-    			tableModel.setValueAt(false, i, 0);
+    		int index = 0;
+    		int selectedIndex = tpTop.getSelectedIndex() + 1;
+    		String tabTitle = tpTop.getToolTipTextAt(selectedIndex-1);
+    		System.out.println(selectedIndex);
+    		ListIterator<Object> iterator = tabList.listIterator();
+    		CreateTabs ct = null;
+    		TabCreator tc = null;
+    		Class cls = null;
+    		boolean removedTab = false;
+    		System.out.println("Title: " + tabTitle);
+    		while (iterator.hasNext()) {
+    			Object o = iterator.next();
+    			cls = o.getClass();
+    			if (cls.equals(CreateTabs.class)) {
+    				ct = (CreateTabs)o;
+    				if (selectedIndex == 1) {//ct.returnIndex()) {
+    					cls = CreateTabs.class;    					
+    					index = selectedIndex;
+    					System.out.println(cls + " " + index);//class CreateTabs
+    				}
+    			}
+    			else if (cls.equals(TabCreator.class)) {
+    				System.out.println("*this is a TabCreator*");
+    				tc = (TabCreator)o;
+    				if (tc.removedTab == true){
+    					index = selectedIndex;
+    					removedTab = tc.removedTab;
+    					tabTitle = null;
+    				}
+    				else if (tabTitle == tc.returnLabelName()) {//selectedIndex == tc.returnIndex() ) {
+    					cls = TabCreator.class;
+    					index = selectedIndex;
+    					removedTab = tc.removedTab;
+    					System.out.println("tab title: " + tabTitle + " tab title label: " + tc.returnLabelName());
+    					System.out.println(cls + " Index:" + index + " Removed?" + removedTab);//class CreateTabs			
+    				}				
+    			}
+    		}
+			if (index == 1) {
+				System.out.println("o equals CT");
+				((CreateTabs)tabList.get(0)).unselectCheckbox();
+			}
+			else if (cls.equals(TabCreator.class) && removedTab == true) {
+				System.out.println("\nlinkedList:" + tabList);
+				deleteTabs(index - 1);
+				((TabCreator)tabList.get(index - 1)).unselectCheckbox();
+				System.out.println("removed tab:" + index + "\nlinkedList:" + tabList);
+			}
+			else if (cls.equals(TabCreator.class) && removedTab == false) {
+				System.out.println("o equals TC");
+				((TabCreator)tabList.get(index - 1)).unselectCheckbox();
+				removedTab = false;
+			}
+//			else if (cls.equals(TabCreator.class)) {
+//				System.out.println("o equals TC");
+//				((TabCreator)tabList.get(index - 1)).unselectCheckbox();
+//			}    	
     	}
-    	else if (e.getSource() == unselectAll2) {
-    		for (int i = 0; i < tableModel.getRowCount(); i++)
-    			tableModel.setValueAt(false, i, 0);
+//    	else if (e.getSource() == unselectAll2) {
+//    		for (int i = 0; i < tableModel.getRowCount(); i++)
+//    			tableModel.setValueAt(false, i, 0);
+//    	}
+//    	else if (e.getSource() == unselectAll3) {
+//    		for (int i = 0; i < tableModel.getRowCount(); i++)
+//    			tableModel.setValueAt(false, i, 0);
+//    	}
+    }
+    
+    public void deleteTabs(int index) {
+    	if (tabList.isEmpty() == false) {  	
+	    		tabList.remove(index);
     	}
-    	else if (e.getSource() == unselectAll3) {
-    		for (int i = 0; i < tableModel.getRowCount(); i++)
-    			tableModel.setValueAt(false, i, 0);
+    }
+    
+    /**
+     * Removes all tabs from the Linked List 
+     */
+    public void clearAllTabs() {
+    	if (tabList.isEmpty() == false) {
+    		tabList.clear();
+			System.out.println("removing...");
     	}
     }
 
@@ -263,7 +423,7 @@ public class ExpandablePanelCreator extends MouseAdapter implements ActionListen
         gbc = new GridBagConstraints(0,0,1,1,0.1,0,GridBagConstraints.WEST, 
         GridBagConstraints.BOTH,new Insets(5,5,5,0),0,0);
         JLabel project = new JLabel("Project");
-        project.setForeground(new Color(0,0,128));
+        project.setForeground(new Color(0,0,128)); //change color
         p1.add(project, gbc);
         gbc = new GridBagConstraints(0,2,1,1,0.1,0,GridBagConstraints.WEST, 
         GridBagConstraints.BOTH,new Insets(5,5,5,0),0,0);
