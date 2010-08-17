@@ -421,7 +421,7 @@ def main(argv):
             tell("""
             The next step is to create the esgcet database, and an ESG user:
             """)
-            initdburl = config.getdburl('DEFAULT')
+            initdburl = config.get('DEFAULT', 'dburl')
             scheme = "postgresql"
             userdef = "esgcet"
             passdef = ""
