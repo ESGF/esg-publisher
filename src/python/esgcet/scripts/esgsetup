@@ -498,9 +498,6 @@ def main(argv):
 
             conn.close()
 
-            dburl = "postgresql://%s:%s@%s:%s/%s"%(esguser, esgusepass, host, port, dbname)
-            updateconfig([('DEFAULT', 'dburl', dburl)])
-
             # Test sqlalchemy installation
             try:
                 import sqlalchemy
@@ -520,6 +517,16 @@ def main(argv):
                 
                 """%(`e`,REPOS))
                 raise RuntimeError
+
+            # SQLAlchemy versions <0.6 have protocol "postgres", >=0.6 use "postgresql"
+            from sqlalchemy import __version__ as sqlalchemy_version
+            if sqlalchemy_version >= '0.6':
+                dbschema = 'postgresql'
+            else:
+                dbschema = 'postgres'
+
+            dburl = dbschema+"://%s:%s@%s:%s/%s"%(esguser, esgusepass, host, port, dbname)
+            updateconfig([('DEFAULT', 'dburl', dburl)])
 
             # Setup schema migration if necessary ...
             from pkg_resources import resource_filename
