@@ -1,13 +1,14 @@
 import os
 import socket
+import cStringIO
 from time import sleep
 from esgcet.model import *
 from esgcet.config import getHandlerByName, getConfig
 from thredds import generateThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, reinitializeThredds
-from las import generateLAS, generateLASOutputPath, updateLASMasterCatalog, reinitializeLAS
+from las import reinitializeLAS
 from hessianlib import Hessian
 from esgcet.exceptions import *
-from utility import issueCallback
+from utility import issueCallback, getHessianServiceURL
 from esgcet import messaging
 
 class PublicationState(object):
@@ -42,13 +43,14 @@ class PublicationState(object):
 
 class PublicationStatus(object):
 
-    def __init__(self, statusId=None, service=None):
+    def __init__(self, statusId, service):
         if service is not None:
             self.state = service.getPublishingStatus(statusId)
-            self.message = service.getPublishingResult(statusId)
         else:
             self.state = ''
-            self.message = ''
+        self.message = ''
+        self.service = service
+        self.statusId = statusId
 
     def getState(self):
         return PublicationState.stateMap.get(self.getStateItem(), PublicationState.INVALID_STATE)
@@ -57,6 +59,8 @@ class PublicationStatus(object):
         self.state = state
 
     def getMessage(self):
+        if self.message=='':
+            self.message = self.service.getPublishingResult(self.statusId)
         return self.message
 
     def setMessage(self, message):
@@ -102,17 +106,22 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
     dset.clear_warnings(session, PUBLISH_MODULE)
 
     # Get the catalog associated with the dataset
-    catalog = session.query(Catalog).filter_by(dataset_name=datasetName).first()
+    version = dset.getVersion()
+    catalog = session.query(Catalog).filter_by(dataset_name=datasetName, version=version).first()
     if catalog is None:
         raise ESGPublishError("No THREDDS catalog found for dataset: %s"%datasetName)
     threddsURL = os.path.join(threddsRootURL, catalog.location)
 
     # Publish
     try:
-        statusId = service.createDataset(parentId, threddsURL, -1, "Published", '', 'Version 1')
+        # messaging.info("  Call createDataset ...")
+        statusId = service.createDataset(parentId, threddsURL, -1, "Published")
+        # messaging.info("  Call complete.")
     except socket.error, e:
         raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
+    # messaging.info("  Getting publication status.")
     status = PublicationStatus(statusId, service)
+    # messaging.info("  Publication status received.")
 
     # Create the publishing event
     state = status.getState()
@@ -137,7 +146,7 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
 
     return dset, statusId, state, event.event, status
 
-def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None):
+def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=True, readFromCatalog=False):
     """
     Publish a list of datasets:
 
@@ -146,17 +155,19 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
     - Reinitialize the LAS server.
     - Publish each dataset to the gateway.
 
-    Returns a dictionary: datasetName => status
+    Returns a dictionary: (datasetName, version) => status
     
     datasetNames
-      A list of string dataset names.
+      A list of (string_dataset_name, version) tuples.
 
     Session
       A database Session.
 
     parentId
-      The string persistent identifier of the parent of the datasets. If None (the default),
-      the parent id for each dataset is generated from ``handler.getParentId()``. This function
+      The string (or dictionary) persistent identifier of the parent of the datasets. If None (the default),
+      the parent id for each dataset is generated from ``handler.getParentId()``. If a dictionary, each
+      dataset name is used as a key to lookup the respective parent id. If a string, the parent id is
+      set to the string for all datasets being published. This function
       can be overridden in the project handler to implement a project-specific dataset hierarchy.
 
     handlerDictionary
@@ -180,15 +191,28 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
     perVariable
       Boolean, overrides ``variable_per_file'' config option.
 
+    threddsCatalogDictionary
+      If not None, just generate catalogs in strings, not the THREDDS directories, and set
+      threddsCatalogDictionary[datasetId] = string_catalog
+
+    reinitThredds
+      Boolean flag. If True, create the TDS master catalog and reinitialize the TDS server.
+
+    readFromCatalog
+      Boolean flag. If True, read the TDS catalog definitions from threddsCatalogDictionary. 
+      threddsCatalogDictionary must also be set.
+
     """
 
     session = Session()
     resultDict = {}
+    if readFromCatalog and threddsCatalogDictionary is None:
+            raise ESGPublishError("Must set THREDDS catalog dictionary when readFromCatalog is True.")
 
     # Get handlers for each dataset
     if handlerDictionary is None:
         handlers = {}
-        for datasetName in datasetNames:
+        for datasetName,versionno in datasetNames:
             dset = session.query(Dataset).filter_by(name=datasetName).first()
             if dset is None:
                 raise ESGPublishError("Dataset not found: %s"%datasetName)
@@ -198,33 +222,58 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
         handlers = handlerDictionary
 
     if thredds:
-        for datasetName in datasetNames:
-            handler = handlers[datasetName]
-            threddsOutputPath = generateThreddsOutputPath(datasetName, Session, handler)
-            threddsOutput = open(threddsOutputPath, "w")
-            generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable)
-            threddsOutput.close()
-            try:
-                os.chmod(threddsOutputPath, 0664)
-            except:
-                pass
+        for datasetName,versionno in datasetNames:
+            dset = session.query(Dataset).filter_by(name=datasetName).first()
 
-        updateThreddsMasterCatalog(Session)
-        result = reinitializeThredds()
+            # If the dataset version is not the latest, publish as a per-time dataset without aggregation,
+            # since the dataset variables only relate to the latest dataset version
+            latestVersion = dset.getVersion()
+            if versionno==-1:
+                versionno=latestVersion
+            if versionno!=latestVersion:
+                if perVariable:
+                    messaging.info("Generating THREDDS catalog in per-time format, since version %d is not the latest version (%d)"%(versionno,latestVersion))
+                perVariable = False
+
+            handler = handlers[datasetName]
+
+            # If threddsCatalogDictionary is not set, create the TDS catalog in the TDS content directory ...
+            if threddsCatalogDictionary is None:
+                threddsOutputPath = generateThreddsOutputPath(datasetName, versionno, Session, handler)
+                threddsOutput = open(threddsOutputPath, "w")
+                generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno)
+                threddsOutput.close()
+                try:
+                    os.chmod(threddsOutputPath, 0664)
+                except:
+                    pass
+
+            # ... else if threddsCatalogDictionary is the catalog source:
+            elif readFromCatalog:
+                catalogString = threddsCatalogDictionary[(datasetName,versionno)]
+                threddsOutputPath = generateThreddsOutputPath(datasetName, versionno, Session, handler)
+                threddsOutput = open(threddsOutputPath, "w")
+                messaging.info("Writing THREDDS catalog %s"%threddsOutputPath)
+                threddsOutput.write(catalogString)
+                threddsOutput.close()
+                try:
+                    os.chmod(threddsOutputPath, 0664)
+                except:
+                    pass
+
+            # ... otherwise write the catalog in a 'string file'
+            else:
+                threddsOutputPath = generateThreddsOutputPath(datasetName, versionno, Session, handler) # Creates catalog entry
+                threddsOutput = cStringIO.StringIO()
+                generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno)
+                threddsCatalogDictionary[(datasetName,versionno)] = threddsOutput.getvalue()
+                threddsOutput.close()
+
+        if reinitThredds:
+            updateThreddsMasterCatalog(Session)
+            result = reinitializeThredds()
 
     if las:    
-##         for datasetName in datasetNames:
-##             handler = handlers[datasetName]
-##             lasOutputPath = generateLASOutputPath(datasetName, Session, handler)
-##             lasOutput = open(lasOutputPath, "w")
-##             generateLAS(datasetName, Session, lasOutput, handler)
-##             lasOutput.close()
-##             try:
-##                 os.chmod(lasOutputPath, 0664)
-##             except:
-##                 pass
-
-##         updateLASMasterCatalog(Session)
         try:
             result = reinitializeLAS()
         except Exception, e:
@@ -234,12 +283,12 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
 
         # Create the web service proxy
         config = getConfig()
-        serviceURL = config.get('DEFAULT', 'hessian_service_url')
+        serviceURL = getHessianServiceURL()
         servicePort = config.getint('DEFAULT','hessian_service_port')
         serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        servicePollingDelay = config.getint('DEFAULT','hessian_service_polling_delay')
+        servicePollingDelay = config.getfloat('DEFAULT','hessian_service_polling_delay')
         spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
         threddsRootURL = config.get('DEFAULT', 'thredds_url')
         service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
@@ -248,16 +297,18 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
         lenresults = len(datasetNames)
         n = spi * lenresults
         j = 0
-        for datasetName in datasetNames:
+        for datasetName,versionno in datasetNames:
             if parentId is None:
                 parentIdent = handler.getParentId(datasetName)
+            elif type(parentId)==type({}):
+                parentIdent = parentId[datasetName]
             else:
                 parentIdent = parentId
             messaging.info("Publishing: %s, parent = %s"%(datasetName, parentIdent))
             dset, statusId, state, evname, status = publishDataset(datasetName, parentIdent, service, threddsRootURL, session)
             messaging.info("  Result: %s"%status.getStateItem())
             results.append((dset, statusId, state))
-            resultDict[datasetName] = evname
+            resultDict[(datasetName,versionno)] = evname
 
             # Poll each dataset again
             j += 1
@@ -270,7 +321,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                     evname = PUBLISH_DATASET_EVENT
                     event = Event(dset.name, dset.getVersion(), evname)
                     dset.events.append(event)
-                    resultDict[dset.name] = evname
+                    resultDict[(dset.name,versionno)] = evname
                     issueCallback(progressCallback, j*spi, n, 0, 1)
                     break
                 elif state==PublicationState.PROCESSING:
@@ -285,7 +336,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                     dset.warning("Publication failed for dataset %s with message: %s"%(datasetName, message), ERROR_LEVEL, PUBLISH_MODULE)
                     event = Event(dset.name, dset.getVersion(), evname)
                     dset.events.append(event)
-                    resultDict[dset.name] = evname
+                    resultDict[(dset.name,versionno)] = evname
                     issueCallback(progressCallback, j*spi, n, 0, 1)
                     break
 
@@ -325,7 +376,7 @@ def pollDatasetPublicationStatus(datasetName, Session, service=None):
 
     if service is None:
         config = getConfig()
-        serviceURL = config.get('DEFAULT', 'hessian_service_url')
+        serviceURL = getHessianServiceURL()
         servicePort = config.getint('DEFAULT','hessian_service_port')
         serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')

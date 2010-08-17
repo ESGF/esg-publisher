@@ -100,13 +100,28 @@ public class ESGPublisherTest {
     public void setup() {
 	log.trace("Setting up test");
     }
+    
+    /**
+       This is here just to illustrate that you may have multiple
+       "Before" methods (or After) methods but that they get fired in
+       no guaranteed order, only that they both happen before your
+       tests. Basically you should probably just have one
+       (BeforeClass,Before,After,AfterClass) set of methods per test
+       suite (test class).  Using that as a guildline for how to break
+       up unit testing code.
+     */
+    @Before
+    public void setup2() {
+	log.trace("Setting up test too");
+    }
 
     /**
-       Test method (notice assertions)
+       Test method (notice the use of Java assert as well as JUnit's assertion methods)
      */
     @Test
     public void testSum() {
 	log.trace("test...");
+	assert (pub != null) : "pre-condition is not met pub=["+pub+"]";
 	assertTrue(pub.sum(3,5) == 8);
 	assertTrue(pub.sum(3,2) == 5);
     }
@@ -114,7 +129,7 @@ public class ESGPublisherTest {
     @Test
     public void testSum2() {
 	log.trace("test2...");
-	assumeNotNull(pub);
+	assert (pub != null);
 	assertTrue(pub.sum(3,5) == 8);
 	assertTrue(pub.sum(3,2) == 5);
 	assumeTrue(pub.sum(2,2) > 4);

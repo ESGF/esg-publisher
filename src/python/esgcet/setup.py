@@ -50,7 +50,7 @@ check_version("Postgres", pgvers[0], MIN_PG_VERSION)
 check_version("libxml2", xml2vers[0], MIN_XML2_VERSION)
 check_version("libxslt", xsltvers[0], MIN_XSLT_VERSION)
 
-# Set the version string in esgcet.esgcet.__init.py
+# Set the version string in esgcet.esgcet.__init__.py
 v = file(os.path.join(os.path.dirname(__file__), 'esgcet', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
@@ -63,15 +63,17 @@ setup(
     author = 'PCMDI Software Team',
     author_email = 'webmaster@pcmdi.llnl.gov',
     url = 'http://esg-pcmdi.llnl.gov',
-    install_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.5.0", "lxml>=2.0"],
-    setup_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.5.0", "lxml>=2.0"],
+    install_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.5.3", "lxml>=2.0", "sqlalchemy_migrate>=0.5.4"],
+    setup_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.5.3", "lxml>=2.0", "sqlalchemy_migrate>=0.5.4"],
     dependency_links = ["http://www-pcmdi.llnl.gov/svn/repository/externals"],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
     # test_suite = 'nose.collector',
     # Install the CF standard name table, ESG init file, etc.
-    package_data = {'esgcet.config.etc': ['*.ini', '*.xml', '*.txt'],
-		    'esgcet.ui': ['*.gif'],},
+    package_data = {'esgcet.config.etc': ['*.ini', '*.xml', '*.txt', '*.tmpl'],
+		    'esgcet.ui': ['*.gif'],
+                    'esgcet.schema_migration': ['migrate.cfg'],
+                    },
     scripts = ['scripts/esgextract',
                'scripts/esgcreate_tables',
                'scripts/esgdrop_tables',
@@ -87,5 +89,15 @@ setup(
                'scripts/hsils.py',
                'scripts/msls.py',
                'scripts/srmls.py',
-               ]
+               ],
+    zip_safe = False,                   # Migration repository must be a directory
+    entry_points = """
+      [esgcet.project_handlers]
+      handler_dictionary = esgcet.config:builtinProjectHandlers
+      [esgcet.format_handlers]
+      handler_dictionary = esgcet.config:builtinFormatHandlers
+      [esgcet.metadata_handlers]
+      handler_name = cf_builtin
+      handler = esgcet.config:CFHandler
+      """,
 )

@@ -33,4 +33,5 @@ semantic.cache*
 generated/
 /build
 /dist
-/test-results
+/docs-generated
+/lib/fetched

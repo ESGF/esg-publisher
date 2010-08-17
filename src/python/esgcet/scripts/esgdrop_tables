@@ -4,26 +4,36 @@ import sys
 import getpass
 import getopt
 
+from pkg_resources import resource_filename
 from sqlalchemy import create_engine
 from sqlalchemy.exceptions import *
 from esgcet.model import *
 from esgcet.config import loadConfig
+from migrate.versioning.api import downgrade, version_control, db_version
+from migrate.versioning.exceptions import *
 
 usage = """Usage:
     esgdrop_tables [options]
 
-    Delete the ENTIRE ESG node database.
+    Delete the ENTIRE ESG node database, and initialize schema versioning.
 
 Options:
 
     -i init_file: Initialization file. If not specified, the default installed init file is read.
+
+Notes:
+
+    (1) If schema versioning has been enabled, use 'esginitialize -d 0' to drop all tables.
+        To determine if schema versioning has been enabled, run 'esginitialize --db-version'.
+
+    (2) Once schema versioning has been enabled, it should not be necessary to run esgdrop_tables.    
 
 """
 
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "i:")
+        args, lastargs = getopt.getopt(argv, "hi:")
     except getopt.error:
         print sys.exc_value
         print usage
@@ -31,47 +41,42 @@ def main(argv):
 
     init_file = None
     for flag, arg in args:
-        if flag=='-i':
+        if flag=='-h':
+            print usage
+            sys.exit(0)
+        elif flag=='-i':
             init_file = arg
 
     config = loadConfig(init_file)
-    engine = create_engine(config.get('DEFAULT', 'dburl'), echo=True, pool_recycle=3600)
+    dburl = config.getdburl('initialize')
+    engine = create_engine(dburl, echo=True, pool_recycle=3600)
 
-    tables = [
-        datasetAttrTable,
-        fileAttrTable,
-        fileVariableAttrTable,
-        variableAttrTable,
-        filevarDimensionTable,
-        varDimensionTable,
-        eventTable,
-        fileVariableTable,
-        variableTable,
-        fileVersionTable,
-        fileTable,
-        datasetStatusTable,
-        datasetVersionTable,
-        datasetTable,
-        modelTable,
-        standardNameTable,
-        experimentTable,
-        projectTable,
-        catalogTable,
-        LASCatalogTable,
-        ]
+    repo_cfg_path = resource_filename('esgcet.schema_migration', 'migrate.cfg')
+    repo_path = os.path.dirname(repo_cfg_path)
 
-    for table in tables:
-        try:
-            table.drop(bind=engine)
-        except OperationalError:
-            pass
-        except ProgrammingError:
-            pass
-
-if __name__=='__main__':
+    # Check schema versioning is enabled
+    try:
+        version = db_version(dburl, repo_path, engine_dict={"echo": False})
+    except:
+        pass
+    else:
+        print "Schema versioning is already enabled, please use 'esginitialize -c' instead."
+        sys.exit(0)
 
     ans = raw_input('Do you really want to delete the ENTIRE DATABASE ??? [y/n]: ')
     if ans.lower() !='y':
+        print "The database was NOT deleted - enter 'y' to delete."
         sys.exit(0)
 
+    # Add schema version control to the database if necessary
+    # Initialize to version 1 so that the downgrade will take effect.
+    try:
+        version_control(dburl, repo_path, version=1)
+        print 'Enabled schema version control.'
+    except DatabaseAlreadyControlledError:
+        pass
+
+    downgrade(dburl, repo_path, 0)
+
+if __name__=='__main__':
     main(sys.argv[1:])

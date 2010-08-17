@@ -27,7 +27,7 @@ def call_sessionmaker( root ):
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_file)
-    root.engine = create_engine(config.get('extract', 'dburl'), echo=root.echoSql, pool_recycle=3600)
+    root.engine = create_engine(config.getdburl('extract'), echo=root.echoSql, pool_recycle=3600)
     initLogging('extract', override_sa=root.engine)
     Session = sessionmaker(bind=root.engine, autoflush=True, autocommit=False)
 
