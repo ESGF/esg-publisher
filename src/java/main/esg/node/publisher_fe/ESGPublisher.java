@@ -56,7 +56,7 @@
  ***************************************************************************/
 
 /**
- * <code>ESGPublisher3</code> Displays a Java Swing interface for the ESG 
+ * <code>ESGPublisher</code> Displays a Java Swing interface for the ESG 
  * Publisher tool. This is an important class because it builds the structure
  * of the GUI. 
  * 
@@ -81,7 +81,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 
-public class ESGPublisher3 implements ActionListener {  
+public class ESGPublisher implements ActionListener {  
 	private static final long serialVersionUID = 1L;
     JFrame frame;    
     ImageIcon esgLogo;
@@ -97,7 +97,7 @@ public class ESGPublisher3 implements ActionListener {
     String tabLabel;
 	int actionListenerIndex;
  
-	public ESGPublisher3() {
+	public ESGPublisher() {
 		frame = new JFrame("ESG Data Node: Publisher's Graphical User Interface");
 		tabbedPaneTop = new JTabbedPane();
 	    tabbedPaneBottom = new JTabbedPane();
