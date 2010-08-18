@@ -33,6 +33,9 @@ Options:
     --gateway gateway_host:
         Gateway host name. Used to set default gateway service endpoints for publishing.
         If not set, the user is prompted for service endpoints.
+        Note: if environment variable ESG_GATEWAY_SVC_ROOT is set to the gateway
+        service root, and this option is not used, the host name will be derived
+        from the environment variable.
 
     --handler
         Create customized handlers.
@@ -49,6 +52,7 @@ Options:
 PUBLISH_SERVICE = "remote/secure/client-cert/hessian/publishingService"
 METADATA_SERVICE = "remote/hessian/guest/remoteMetadataService"
 REPOS = "http://www-pcmdi.llnl.gov/svn/repository/externals"
+SERVICE_ROOT = "pcmdi3.llnl.gov/esgcet" # Override by setting ESG_GATEWAY_SVC_ROOT env variable
 urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
 
 def askyn(question, default='y'):
@@ -817,8 +821,17 @@ def main(argv):
                 defaultHessianDebug = 'n'
             defaultProxyCertificate = config.get('DEFAULT', 'hessian_service_certfile', raw=True, default="%(home)s/.globus/certificate-file")
 
+            # Get the service root
+            svcroot = os.environ.get('ESG_GATEWAY_SVC_ROOT')
+            if svcroot is None:
+                svcroot = SERVICE_ROOT
+
+            # Get the gateway host from ESG_GATEWAY_SVC_ROOT if set
+            if gatewayHost is None:
+                gatewayHost = urlparse.urlparse('http://'+svcroot).netloc
+
             # Get the default gateway URL from the remote metadata service URL
-            defaultGatewayURL = "http://pcmdi3.llnl.gov/esgcet"
+            defaultGatewayURL = "http://"+svcroot
             URLtuple = urlparse.urlparse(defaultGatewayURL)
             if gatewayHost is not None:
                 defaultHessianServiceURL = urlparse.urlunparse(("http", gatewayHost, os.path.join(URLtuple[2], METADATA_SERVICE), '', '', ''))
