@@ -73,6 +73,7 @@ setup(
     package_data = {'esgcet.config.etc': ['*.ini', '*.xml', '*.txt', '*.tmpl'],
 		    'esgcet.ui': ['*.gif'],
                     'esgcet.schema_migration': ['migrate.cfg'],
+                    'esgcet.schema_migration.versions': ['*.sql'],
                     },
     scripts = ['scripts/esgextract',
                'scripts/esgcreate_tables',
