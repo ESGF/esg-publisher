@@ -10,6 +10,9 @@
       
       <!-- Public Maven 2 repository -->
       <include url="${ivy.default.root.url}/ivysettings-public.xml"/>
+
+      <!-- Public Javanet repository -->
+      <include url="${ivy.default.root.url}/ivysettings-javanet.xml"/>
       
       <!-- Shiboleth repository -->
       <!-- <include url="${ivy.default.root.url}/ivysettings-shiboleth.xml"/> -->
