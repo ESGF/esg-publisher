@@ -69,7 +69,7 @@ import static org.junit.Assume.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.impl.*;
+//import org.apache.commons.logging.impl.*;
 
 //TODO... this is a place holder skel... 
 //Intended for bootstrapping basic JUnit testing...

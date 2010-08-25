@@ -59,7 +59,7 @@ package esg.node.publisher.connector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.impl.*;
+//import org.apache.commons.logging.impl.*;
 
 
 /**
