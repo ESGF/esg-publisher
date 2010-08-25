@@ -69,6 +69,7 @@ Note: Check Maven for propery dependency parameter values @
                       "http://ant.apache.org/ivy/schemas/ivy.xsd">
   <info organisation="esgf" module="esg-publisher"/>
   <dependencies>
+    <dependency org="net.sourceforge.cobertura" name="cobertura" rev="1.9.4"/>
     <dependency org="commons-logging" name="commons-logging" rev="1.1.1"/>
     <dependency org="log4j" name="log4j" rev="1.2.14">
       <exclude org="com.sun.jdmk"/>
@@ -78,5 +79,6 @@ Note: Check Maven for propery dependency parameter values @
     <dependency org="junit" name="junit" rev="4.8.1"/>
     <dependency org="com.sun.xml.bind" name="jaxb-xjc" rev="2.2"/>
 <!--<dependency org="com.caucho" name="hessian" rev="3.1.5"/> -->
+    <dependency org="com.caucho" name="hessian" rev="3.0.20" />
   </dependencies>
 </ivy-module>

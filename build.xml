@@ -20,9 +20,9 @@
 *   All rights reserved. This file is part of the:                         *
 *   Earth System Grid (ESG) Data Node Software Stack, Version 1.0          *
 *                                                                          *
-*   For details, see http://esg-repo.llnl.gov/esg-node/                    *
+*   For details, see http://esgf.org/                                      *
 *   Please also read this link                                             *
-*    http://esg-repo.llnl.gov/LICENSE                                      *
+*    http://esgf.org/LICENSE                                               *
 *                                                                          *
 *   * Redistribution and use in source and binary forms, with or           *
 *   without modification, are permitted provided that the following        *
@@ -87,7 +87,7 @@ Builds the project via ant (obviously).
 
   <property name="module" value="esg-publisher"/>
   <property name="organization" value="Earth Systems Grid Federation"/>
-  <property name="project_name" value="ESG-Node"/>
+  <property name="project_name" value="ESG-Publisher"/>
   <property name="author" value="Gavin M. Bell"/>
 
   <!--
@@ -104,7 +104,7 @@ Builds the project via ant (obviously).
   <property name="filter" value="false"/>
 
   <!-- **static defines** -->
-  <property name="version_num" value="0.0.0"/>
+  <property name="version_num" value="0.0.0.0"/>
   <filter token="version_num"  value="${version_num}"/>
   <property name="release_name" value="no_name"/>
   <filter token="release_name" value="${release_name}"/>
@@ -112,7 +112,7 @@ Builds the project via ant (obviously).
   <property name="log_dir" value="/esg/logs"/>
   <mkdir dir="${log_dir}" />
   <filter token="log_dir"  value="${log_dir}"/>
-  
+
   <property environment="env"/>
   <!-- ****************** -->
   
@@ -123,7 +123,7 @@ Builds the project via ant (obviously).
       ************************************************************
     -->
   
-  <target name="pre-init" unless="build.master">
+  <target name="-pre-init" unless="build.master">
     <property name="build.compiler" value="javac1.5" /> 
     <property name="build.compiler.emacs" value="true" /> 
     <echo message="set build.compiler to ${build.compiler}"/>
@@ -131,7 +131,7 @@ Builds the project via ant (obviously).
   
   <!-- ********************************************************* -->
   
-  <target name="init" depends="pre-init" unless="build.master" 
+  <target name="init" depends="-pre-init" unless="build.master" 
 	  description="(View the properties defined in this file)">
     <echo message="Initializing build environment..."/>
         
@@ -143,6 +143,7 @@ Builds the project via ant (obviously).
     <property name="dist_dir"   	  value="${basedir}/dist"/>
     <property name="test_src_dir"  	  value="${basedir}/src/java/test"/>
     <property name="test_build_dir"       value="${basedir}/build/test"/>
+    <property name="test_build_dir_inst"  value="${basedir}/build/test-instrumented" />
     <property name="etc_dir"   	          value="${basedir}/etc"/>
     <property name="conf_dir"   	  value="${etc_dir}/conf"/>
     <property name="web_dir"   	          value="${basedir}/web"/>
@@ -157,6 +158,7 @@ Builds the project via ant (obviously).
     <property name="jdoc_dir"   	  value="${doc_dir_generated}/javadocs"/>
     <property name="test_results_dir"     value="${doc_dir_generated}/test-results"/>
     <property name="test_reports_dir"     value="${doc_dir_generated}/test-reports"/>
+    <property name="test_coverage_dir"    value="${doc_dir_generated}/coverage-reports" />
     <property name="lib_deps_reports_dir" value="${doc_dir_generated}/dep-reports"/>
 
     <property name="jaxb_xsd_dir"         value="${etc_dir}/xsd/"/>
@@ -164,8 +166,9 @@ Builds the project via ant (obviously).
     <property name="jaxb_gen_package" value="esg.common.generated"/>
 
     <property name="test_last_failed_file" location="${build_dir}/.lasttestsfailed"/>
-    <property name="ivy.lib.dir" value="${lib_fetched_dir}"/>
-     
+    <property name="test_coverage_file"   value="${basedir}/.cobertura.ser"/>
+    <property name="ivy.lib.dir"          value="${lib_fetched_dir}"/>
+
     <echo message="--------------------------------"/> 
     <echo message="module            = ${module} "/> 
     <echo message="version_num       = ${version_num} "/> 
@@ -186,11 +189,13 @@ Builds the project via ant (obviously).
     <echo message="log_config        = ${log_config}"/>
     <echo message="log_file          = ${log_file}"/>
     <echo message="javadoc_link_src  = ${javadoc_link_src}"/>
+    <echo message="filter            = ${filter} "/> 
     <echo message="--------------------------------"/> 
     <echo message="doc_dir_generated    = ${basedir}/docs-generated"/>
     <echo message="jdoc_dir             = ${jdoc_dir}"/>
     <echo message="test_results_dir     = ${test_results_dir}"/>
     <echo message="test_reports_dir     = ${test_reports_dir}"/>
+    <echo message="test_coverage_dir    = ${test_coverage_dir}"/>
     <echo message="lib_deps_reports_dir = ${doc_dir_generated}/dep-reports"/>
     <echo message="--------------------------------"/> 
     <tstamp/>
@@ -205,15 +210,14 @@ Builds the project via ant (obviously).
   
   <target name="init-ivy" depends="init">
     <property name="ivy_version" value="2.1.0" />
-    <!-- <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy_version}/ivy-${ivy_version}.jar" 
-	      dest="ivy-${ivy_version}.jar" usetimestamp="true"/> -->
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
              uri="antlib:org.apache.ivy.ant" classpath="${lib_dir}/ivy-${ivy_version}.jar"/>
+    <ivy:settings file="./ivysettings.xml" />
   </target>
   
   <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
     <mkdir dir="${lib_fetched_dir}"/>
-    <ivy:retrieve sync="false"/>
+    <ivy:retrieve sync="true"/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
 	<include name="**/*.jar"/>
@@ -247,6 +251,19 @@ Builds the project via ant (obviously).
 	  description="(Cleans out [removes] local workspace jars fetched by Ivy)">
     <echo message="Removing local jars fetched by Ivy"/>
     <delete dir="${lib_fetched_dir}"/>
+  </target>
+
+  <target name="publish" depends="init-ivy" description="Posts build artifact(s) to repository">
+    <ivy:publish resolver="default-chain" 
+		 organisation="esgf" 
+		 module="${module}" 
+		 pubrevision="${version_num}" 
+		 revision="${version_num}"
+		 update="true"
+		 overwrite="true">
+      <artifacts pattern="${dist_dir}/[artifact].[revision].[ext]"/> 
+      <artifacts pattern="${dist_dir}/[artifact]-[revision].[ext]"/> 
+    </ivy:publish>
   </target>
 
   <!--
@@ -293,6 +310,7 @@ Builds the project via ant (obviously).
 
     <copy todir="${build_dir}" filtering="${filter}" overwrite="true">
       <fileset dir="${conf_dir}" includes="**/*.properties,**/*.template,**/*filter-web.xml"/>
+      <fileset dir="${src_dir}" includes="**/*.properties,**/*.template,**/*.xml"/>
     </copy> 
 
     <tstamp/>
@@ -315,7 +333,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}.${version_num}.jar">
       <fileset dir="${build_dir}"
 	       includes="esg/**,**/*.properties"
-	       excludes="**/test/**"/>
+	       excludes="**/test/**,**/test-instrumented/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
@@ -342,7 +360,7 @@ Builds the project via ant (obviously).
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
-	<attribute name="Project"      value="${project_name} (Tests)"/>
+	<attribute name="Project"      value="${project_name} Tests"/>
 	<attribute name="Module"       value="${module}"/>
 	<attribute name="Version"      value="${version_num}"/>
 	<attribute name="Release-Name" value="${release_name}"/>
@@ -354,7 +372,7 @@ Builds the project via ant (obviously).
   </target>
   
   <target name="make_common_jar" depends="make" description="(Creates common jar file)">
-    <echo message="JAR -  ${test_build_dir} ->> ${dist_dir}/${module}-common.${version_num}.jar"/> 
+    <echo message="JAR -  ${build_dir} ->> ${dist_dir}/${module}-common.${version_num}.jar"/> 
     <delete> 
       <fileset dir="." includes="${dist_dir}/${module}-common*.jar"/>
     </delete>
@@ -386,7 +404,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}-fe.${version_num}.jar">
       <fileset dir="${build_dir}" 
 	       includes="esg/node/publisher_fe/**,esg/publisher/common/**,**/*.properties"
-	       excludes="**/test/**,**/node.properties/**"/>
+	       excludes="**/test/**,**test-instrumented/**,**/node.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
@@ -412,7 +430,7 @@ Builds the project via ant (obviously).
     <jar destfile="${dist_dir}/${module}-connector.${version_num}.jar">
       <fileset dir="${build_dir}" 
 	       includes="esg/node/publisher/connector/**,esg/publisher/common/**,**/*.properties"
-	       excludes="**/test/**,**/node.properties/**"/>
+	       excludes="**/test/**,**/test-instrumented/**,**/${module}.properties/**"/>
       <manifest>
 	<attribute name="Organization" value="${organization}"/>
 	<attribute name="Author"       value="${author}"/>
@@ -457,6 +475,8 @@ Builds the project via ant (obviously).
     <echo message="Removing build directory"/> 
     <delete dir="${build_dir}"/>
     <delete dir="${doc_dir_generated}"/>
+    <delete file="${test_coverage_file}"/>
+    <delete dir="${test_build_dir_inst}"/>
     <tstamp/>
   </target>
 
@@ -488,7 +508,6 @@ Builds the project via ant (obviously).
     <delete dir="${jaxb_gen_src_dir}"/>
   </target>
 
-  
   <target name="clean_all"
 	  depends="clean,clean_dist,clean_jaxb,dep_clean_libs"
 	  description="(Cleans out generatable artifacts)"/>
@@ -500,7 +519,7 @@ Builds the project via ant (obviously).
     -->
 
   <target name="make_test" depends="make"
-	  description="(Java compiles all the test source code)">
+	  description="(Java compile all the test source code)">
     <echo message="Java compiling ${module} TESTs..."/>
 
     <path id="test_classpath">
@@ -571,37 +590,72 @@ Builds the project via ant (obviously).
       ant test -Dtestcase=esg.node.publisher.connector.ESGPublisherTest
       (unless="tests_uptodate")
     -->
-  <target name="test" depends="make_test,test_check"
+  <target name="test" depends="make_test"
 	  description="(Runs unit tests: JUnit)">
     <delete dir="${test_results_dir}" />
     <mkdir dir="${test_results_dir}"/>
     <delete dir="${test_reports_dir}" />
     <mkdir dir="${test_reports_dir}"/>
+    <delete dir="${test_coverage_dir}" />
+    <mkdir dir="${test_coverage_dir}" />
+
+    <path id="coverage.classpath">
+      <fileset dir="${lib_dir}" includes="**/*.jar" />
+      <path refid="main_classpath" />
+      <pathelement location="${test_build_dir}" />
+    </path>
+    <taskdef resource="tasks.properties" classpathref="coverage.classpath" />
+    
+    <!-- instrument classes -->
+    <cobertura-instrument todir="${test_build_dir_inst}" datafile="${test_coverage_file}">
+      <fileset dir="${build_dir}/esg">
+	<include name="**/*.class" />
+      </fileset>
+    </cobertura-instrument>
+
+    <!-- set test_classapth to see instrumented classes -->
+    <path id="test_classpath">
+      <pathelement location="${test_build_dir_inst}" />
+      <fileset dir="${lib_dir}" includes="**/junit*.jar" />
+      <path refid="main_classpath" />
+      <pathelement location="${test_build_dir}" />
+    </path>
+
     <junit errorproperty="failed"
 	   failureproperty="failed"
 	   printsummary="on"
 	   fork="yes"
 	   maxmemory="1024M">
+      <sysproperty key="net.sourceforge.cobertura.datafile" value="${test_coverage_file}"/>
       <classpath refid="test_classpath" />
       <formatter type="plain" usefile="false"/>
       <formatter type="xml" />
       <test name="${testcase}" todir="${test_results_dir}" if="testcase"/>
       <batchtest todir="${test_results_dir}" unless="testcase">
-	<fileset dir="${test_build_dir}" includes="**/*Test*.class"/>
+	<fileset dir="${test_build_dir}" includes="**/*Test*.class">
+	  <exclude name="**/Internal*.class"/>
+	  <exclude name="**/*$$*.class"/>
+	</fileset>
       </batchtest>
       <assertions enableSystemAssertions="true">
 	<enable/>
       </assertions>
     </junit>
+
     <junitreport todir="${test_results_dir}">
       <fileset dir="${test_results_dir}">
 	<include name="TEST-*.xml"/>
       </fileset>
       <report format="frames" todir="${test_reports_dir}"/>
     </junitreport>
+
+    <!-- coverage report -->
+    <cobertura-report format="html" srcdir="${src_dir}" destdir="${test_coverage_dir}"     datafile="${test_coverage_file}"/>
+    <cobertura-report format="xml"  srcdir="${src_dir}" destdir="${test_coverage_dir}/xml" datafile="${test_coverage_file}"/>
+
     <echo message="last build failed tests" file="${test_last_failed_file}"/>
     <fail if="failed" message="Unit tests failed.  Check log or reports for details"/>
-    <delete file="${test_last_failed_file}"/> 
+    <delete file="${test_last_failed_file}"/>
   </target>
 
   <!--
@@ -609,7 +663,7 @@ Builds the project via ant (obviously).
       DOCUMENTATION....
       ************************************************************
     -->
-
+  
   <target name="docs" depends="init"
 	  description="(Generates the javadoc for this project)">
     <delete dir="${jdoc_dir}"/>
@@ -628,7 +682,7 @@ Builds the project via ant (obviously).
       </packageset>
 
       <doctitle><![CDATA[<h1>${module}</h1>]]></doctitle>
-      <bottom><![CDATA[<i><a href="http://esg-repo.llnl.gov/esgf" target="_top">ESGF</a> / <a href="http://esg-repo.llnl.gov/" target="_top">BSD OpenSource License</a></i>]]></bottom>
+      <bottom><![CDATA[<i><a href="http://esgf.org/" target="_top">ESGF</a> / <a href="http://esgf.org/LICENSE" target="_top">BSD OpenSource License</a></i>]]></bottom>
       <tag name="todo" scope="all" description="To do:"/>
       <group title="ESG Publisher Client Front End Packages" packages="esg.node.publisher_fe*"/>
       <group title="ESG Node Integration Packages" packages="esg.node.publisher*"/>
@@ -672,13 +726,28 @@ Builds the project via ant (obviously).
   
   <target name="make_everything" depends="make_dist,test,docs,dep_report"
 	  description="(Builds Everything... Distributions, Tests, Docs n Reports)">
-    <echo message="JavaDocs -> file://${jdoc_dir}/index.html"/>
-    <echo message="Unit Test Report -> file://${test_reports_dir}/index.html"/>
+    <echo message="JavaDocs ----------> file://${jdoc_dir}/index.html"/>
     <echo message="Dependency Report -> file://${lib_deps_reports_dir}/esgf-${module}-default.html"/>
-    <echo message="Web Site -> http://esg-repo.llnl.gov/esgf/${module}/index.html"/>
+    <echo message="Unit Test Report  -> file://${test_reports_dir}/index.html"/>
+    <echo message="Coverage Report   -> file://${test_coverage_dir}/index.html"/>
+    <echo message="Web Site ----------> http://esgf.org/${module}-site/index.html"/>
   </target>
 
 
+  <target name="post"  depends="init">
+    <property name="orig.dir" value="${doc_dir_generated}"/>
+    <property name="dest.server" value="esgf.org"/>
+    <property name="dest.dir" value="www/${module}-site/"/>
+    
+    <echo message="orig.dir      = ${orig.dir} "/>
+    <echo message="dest.server   = ${dest.server} "/> 
+    <echo message="dest.dir      = ${dest.dir} "/> 
+    <echo message="dest.user     = ${dest.user} "/> 
+
+    <exec executable="rsync" dir="${basedir}">
+      <arg line="-caOvzl --chmod=g+r,a+r --exclude *~ --exclude semantic* ${orig.dir} ${dest.user}@${dest.server}:${dest.dir}"/>
+    </exec>
+  </target>
 
 
   <!--
