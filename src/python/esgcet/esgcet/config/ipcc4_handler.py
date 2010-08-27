@@ -310,5 +310,66 @@ class IPCC4Handler(BasicHandler):
         if rlz is not None:
             result['run_name'] = rlz
 
+        # Try to determine model from source string
+        if model=='' and 'source' in result:
+            source = result['source']
+            if source[0:7]=='BCC-CM1':
+                model = 'bcc_cm1'
+            elif source[0:6] == 'BCM2.0':
+                model = 'bccr_bcm2_0'
+            elif source[0:7] == 'CCSM3.0':
+                model = 'ncar_ccsm3_0'
+            elif source[0:8] == 'CNRM-CM3':
+                model = 'cnrm_cm3'
+            elif source[0:6] == 'ECHAM5':
+                model = 'mpi_echam5'
+            elif source[0:6] == 'ECHO-G':
+                model = 'miub_echo_g'
+            elif source[0:4] in ['FGCM', 'FGOA']:
+                model = 'iap_fgoals1_0_g'
+            elif source[0:10] in ['GFDL_CM2.1', 'GFDL_AM2.1']:
+                model = 'gfdl_cm2_1'
+            elif source[0:10] in ['GFDL_CM2.0', 'GFDL_SM2.0']:
+                model = 'gfdl_cm2_0'
+            elif source[0:8] == 'GISS AOM':
+                model = 'giss_aom'
+            elif source[0:6] == 'HadCM3':
+                model = 'ukmo_hadcm3'
+            elif source[0:7] == 'HadGEM1':
+                model = 'ukmo_hadgem1'
+            elif source[0:8] == 'INGV-SXG':
+                model = 'ingv_echam4'
+            elif source[0:8] == 'INMCM3.0':
+                model = 'inmcm3_0'
+            elif source[0:8] == 'IPSL-CM4':
+                model = 'ipsl_cm4'
+            elif source[0:9] == 'MRI-CGCM2':
+                model = 'mri_cgcm2_3_2a'
+            elif source[0:8] == 'Parallel':
+                model = 'ncar_pcm1'
+            elif source[0:50] == 'CGCM3.1 (2004): atmosphere:  AGCM3 (GCM13d, T47L31':
+                model = 'cccma_cgcm3_1'
+            elif source[0:50] == 'CGCM3.1 (2004): atmosphere:  AGCM3 (GCM13d, T63L31':
+                model = 'cccma_cgcm3_1_t63'
+            elif source[0:11] == 'CSIRO Mk3.0':
+                model = 'csiro_mk3_0'
+            elif source[0:11] == 'CSIRO Mk3.5':
+                model = 'csiro_mk3_5'
+            elif source[0:49] == 'MIROC3.2 (2004): atmosphere: AGCM (AGCM5.7b, T106':
+                model = 'miroc3_2_hires'
+            elif source[0:48] == 'MIROC3.2 (2004): atmosphere: AGCM (AGCM5.7b, T42':
+                model = 'miroc3_2_medres'
+            elif source[0:3] == 'E3x':
+                model = 'giss_model_e_h'
+            elif source[0:19] == 'GISS ModelE/Russell':
+                model = 'giss_model_e_r'
+            elif source[0:17] == 'GISS ModelE/HYCOM':
+                model = 'giss_model_e_h'
+            elif source[0:3] == 'E3A':
+                model = 'giss_model_e_r'
+            elif source[0:3] == 'E3O':
+                model = 'giss_model_e_h'
+            result['model'] = model
+
         return result
 
