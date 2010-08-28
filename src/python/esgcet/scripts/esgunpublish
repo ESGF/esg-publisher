@@ -46,6 +46,8 @@ Options:
     --database-delete: Delete the associated local database entry for this dataset. By default, the
       database information is left intact.
 
+    --database-only: Short for --skip-gateway --skip-thredds --database-delete
+
     --echo-sql: Echo SQL commands
 
     --gateway-retract: Retract gateway metadata about the dataset. The default is to 
@@ -98,7 +100,7 @@ def cleanupCatalogs(arg, dirname, names):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'echo-sql', 'gateway-retract', 'map=', 'no-republish', 'skip-gateway', 'las', 'log=', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'gateway-retract', 'map=', 'no-republish', 'skip-gateway', 'las', 'log=', 'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -119,6 +121,10 @@ def main(argv):
     useList = False
     for flag, arg in args:
         if flag=='--database-delete':
+            deleteDset = True
+        elif flag=='--database-only':
+            gatewayOp = NO_OPERATION
+            thredds = False
             deleteDset = True
         elif flag=='--echo-sql':
             echoSql = True

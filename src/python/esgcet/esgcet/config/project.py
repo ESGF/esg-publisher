@@ -471,6 +471,24 @@ class ProjectHandler(object):
         self.contextCached = True       # getContext() will not overwrite self.context
         return self.context
 
+    def isEnumerated(self, field):
+        return (self.getFieldType(field) == ENUM)
+
+    def compareEnumeratedValue(self, value, options):
+        return (value in options)
+
+    def mapValidFieldOptions(self, field, options):
+        return options
+
+    def mapEnumeratedValues(self, context):
+        """
+        Map enumerated values to case-sensitive values if possible.
+
+        There is no return value. The context argument is a dictionary
+        that may be modified by replacing values with corresponding validated values.
+        """
+        pass
+
     def validateContext(self, context):
         """
         Validate context values:
@@ -504,12 +522,14 @@ class ProjectHandler(object):
                         raise ESGInvalidMandatoryField("Mandatory field '%s' not set, must be one of %s"%(key, `options`))
                     else:
                         raise ESGInvalidMandatoryField("Mandatory field '%s' not set"%key)
-                elif isenum and value not in options:
-                    raise ESGInvalidMandatoryField("Invalid value of mandatory field '%s': %s, must be one of %s"%(key, value, `options`))
+                elif isenum and not self.compareEnumeratedValue(value, options):
+                    validOptions = self.mapValidFieldOptions(key, options)
+                    raise ESGInvalidMandatoryField("Invalid value of mandatory field '%s': %s, must be one of %s"%(key, value, `validOptions`))
             elif isenum:     # non-mandatory field
                 options += ['', None]
-                if value not in options:
-                    raise ESGPublishError("Invalid value of '%s': %s, must be one of %s"%(key, value, `options`))
+                if not self.compareEnumeratedValue(value, options):
+                    validOptions = self.mapValidFieldOptions(key, options)
+                    raise ESGPublishError("Invalid value of '%s': %s, must be one of %s"%(key, value, `validOptions`))
 
     def getResolution(self):
         """
@@ -624,6 +644,9 @@ class ProjectHandler(object):
                 value = self.getFieldFromMaps(field, groupdict)
                 if value is not None:
                     groupdict[field] = value
+
+        # Map dictionary arguments to 'valid' values where possible
+        self.mapEnumeratedValues(groupdict)
 
         # Generate the dataset ID
         if format is None:
