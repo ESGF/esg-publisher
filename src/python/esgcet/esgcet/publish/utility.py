@@ -531,7 +531,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
             mtime = float(mtime)
         yield (path, (size, mtime))
 
-def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False):
+def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -612,7 +612,10 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
       String comment to associate with new datasets created.
 
     forceAggregate=False
-      if True, run the aggregation step regardless.
+      If True, run the aggregation step regardless.
+
+    readFiles=False
+      If True, interpret directoryMap as having one entry per file, instead of one per directory.
 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
@@ -645,7 +648,10 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
             direcTuples = directoryMap[datasetName]
             firstDirec, sampleFile = direcTuples[0]
             firstFile = os.path.join(firstDirec, sampleFile)
-            fileiter  = multiDirectoryIterator([direc for direc, sampfile in direcTuples], filefilt)
+            if not readFiles:
+                fileiter  = multiDirectoryIterator([direc for direc, sampfile in direcTuples], filefilt)
+            else:
+                fileiter = fnIterator([sampfile for direc, sampfile in direcTuples])
 
         # If the project is not specified, try to read it from the first file
         if handlerDictionary is not None and handlerDictionary.has_key(datasetName):

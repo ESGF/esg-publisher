@@ -37,6 +37,29 @@ cmorArrayAttributes = ['initialization_method', 'physics_version', 'realization'
 
 class IPCC5Handler(BasicHandler):
 
+    def __init__(self, name, path, Session, validate=True, offline=False):
+        self.caseSensitiveValidValues = {} # : field => (dict : lowerCaseValue => validValue)
+        BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
+
+    def initializeFields(self, Session):
+        BasicHandler.initializeFields(self, Session)
+
+        # Enumerated value validation is case-insensitive
+        lowerCaseValidValues = {}
+        for field, valueList in self.validValues.items():
+            lowerCaseValidList = []
+            validDict = {}
+            for value in valueList:
+                if value is not None:
+                    lvalue = value.lower()
+                else:
+                    lvalue = None
+                lowerCaseValidList.append(lvalue)
+                validDict[lvalue] = value
+            lowerCaseValidValues[field] = lowerCaseValidList
+            self.caseSensitiveValidValues[field] = validDict
+        self.validValues = lowerCaseValidValues
+
     def openPath(self, path):
         """Open a sample path, returning a project-specific file object,
         (e.g., a netCDF file object or vanilla file object)."""
@@ -62,6 +85,25 @@ class IPCC5Handler(BasicHandler):
         if freq is not None:
             resolution = resolutionTable[freq]
         return resolution
+
+    def compareEnumeratedValue(self, value, options):
+        if hasattr(value, 'lower'):
+            lvalue = value.lower()
+        else:
+            lvalue = value
+        return (lvalue in options)
+
+    def mapValidFieldOptions(self, field, options):
+        caseSensitiveValues = self.caseSensitiveValidValues[field]
+        return caseSensitiveValues.values()
+
+    def mapEnumeratedValues(self, context):
+        for key in context.keys():
+            if self.isEnumerated(key) and key in self.caseSensitiveValidValues:
+                caseSensitiveValues = self.caseSensitiveValidValues[key]
+                lvalue = context[key]
+                if lvalue in caseSensitiveValues:
+                    context[key] = caseSensitiveValues[lvalue]
 
     def readContext(self, cdfile, model=''):
         "Get a dictionary of keys from an open file"
@@ -94,6 +136,8 @@ class IPCC5Handler(BasicHandler):
 
         if not result.has_key('product'):
             result['product'] = 'output'
+
+        self.mapEnumeratedValues(result)
 
         return result
 
