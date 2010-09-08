@@ -5,7 +5,7 @@ from publish import publishDatasetList
 from esgcet.config import loadConfig, registerHandlers
 from wrappers import esgpublishWrapper, initdb, esgscanWrapper
 
-def scanDirectory(directoryList, project, outputMapfile, datasetId=None, append=False, filter='.*\.nc$', offline=False, service=None):
+def scanDirectory(directoryList, project, outputMapfile, datasetId=None, append=False, filter='.*\.nc$', offline=False, service=None, readFiles=False):
     """
     Scan one or more directories, and generate a mapfile. The mapfile may then be input to ``generateReplicaThreddsCatalog``.
     No return value.
@@ -34,15 +34,18 @@ def scanDirectory(directoryList, project, outputMapfile, datasetId=None, append=
     service=None
       A service identifier, matching a service identifier in the publisher configuration file. Used to determine how offline datasets should be listed.
 
+    readFiles=False
+      If True, read metadata from the data files themselves rather than the directory names.
+
     """
     if append:
         appendPath = outputMapfile
         outputMapfile = None
     else:
         appendPath = None
-    esgscanWrapper(directoryList, projectName=project, outputPath=outputMapfile, datasetName=datasetId, appendPath=appendPath, fileFilt=filter, offline=offline, service=service)
+    esgscanWrapper(directoryList, projectName=project, outputPath=outputMapfile, datasetName=datasetId, appendPath=appendPath, fileFilt=filter, offline=offline, service=service, readFiles=readFiles)
 
-def generateReplicaThreddsCatalog(mapfile, operation, sourceCatalogDictionary, sourceGateway=None, datasetId=None, offline=False, service=None, comment=None, version=None):
+def generateReplicaThreddsCatalog(mapfile, operation, sourceCatalogDictionary, sourceGateway=None, datasetId=None, offline=False, service=None, comment=None, version=None, project=None):
     """
     Scan a collection of files as defined in a mapfile, and generate THREDDS catalogs of the resulting datasets. A dictionary of catalogs is returned. The catalogs are not written to the THREDDS catalog directory, but are returned as strings. This allows the generated catalogs to be compared with the corresponding source catalogs.
 
@@ -76,9 +79,15 @@ def generateReplicaThreddsCatalog(mapfile, operation, sourceCatalogDictionary, s
 
     version=None
       Integer version.
+
+    project=None
+      String project name.
+
+    readFiles=False
+      If True, read metadata from the data files themselves rather than the directory names.
     """
     resultThreddsDictionary = {}
-    esgpublishWrapper(datasetMapfile=mapfile, publishOp=operation, masterGateway=sourceGateway, datasetName=datasetId, offline=offline, service=service, message=comment, thredds=True, las=False, publish=False, threddsCatalogDictionary=resultThreddsDictionary, version=version, reinitThredds=False)
+    esgpublishWrapper(datasetMapfile=mapfile, publishOp=operation, masterGateway=sourceGateway, datasetName=datasetId, offline=offline, service=service, message=comment, thredds=True, las=False, publish=False, threddsCatalogDictionary=resultThreddsDictionary, version=version, reinitThredds=False, projectName=project, readFiles=None)
     return resultThreddsDictionary
 
 def publishCatalogs(threddsCatalogDictionary, parentDatasetIdDictionary, thredds=True, las=True, publish=True):

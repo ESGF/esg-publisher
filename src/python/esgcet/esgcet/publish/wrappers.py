@@ -51,6 +51,7 @@ def esgpublishWrapper(**kw):
     publish = kw.get("publish", False)
     publishOnly = kw.get("publishOnly", False)
     publishOp = kw.get("publishOp", CREATE_OP)
+    readFiles = kw.get("readFiles", False)
     readFromCatalog = kw.get("readFromCatalog", False)
     reinitThredds=kw.get("reinitThredds", True)
     rescan = kw.get("rescan", False)
@@ -117,7 +118,11 @@ def esgpublishWrapper(**kw):
 
             props = properties.copy()
             props.update(initcontext)
-            directoryMap = handler.generateDirectoryMap(directoryList, filefilt, initContext=props, datasetName=datasetName)
+            if not readFiles:
+                directoryMap = handler.generateDirectoryMap(directoryList, filefilt, initContext=props, datasetName=datasetName)
+            else:
+                directoryMap = handler.generateDirectoryMapFromFiles(directoryList, filefilt, initContext=props, datasetName=datasetName)
+
             datasetNames = [(item,-1) for item in directoryMap.keys()]
 
         # Offline dataset. Format the spec as a dataset map : dataset_name => [(path, size), (path, size), ...]
@@ -143,7 +148,7 @@ def esgpublishWrapper(**kw):
 
     # Iterate over datasets
     if not publishOnly:
-        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message)
+        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles)
 
     result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, threddsCatalogDictionary=threddsCatalogDictionary, reinitThredds=reinitThredds, readFromCatalog=readFromCatalog)
 
@@ -170,7 +175,10 @@ def esgscanWrapper(directoryList, **kw):
     outputPath = kw.get("outputPath", None)
     if outputPath is not None:
         output = open(outputPath, 'w')
+    else:
+        output = sys.stdout
     projectName = kw.get("projectName", None)
+    readFiles = kw.get("readFiles", False)
     service = kw.get("service", None)
 
     # Load the configuration and set up a database connection
@@ -198,7 +206,10 @@ def esgscanWrapper(directoryList, **kw):
                 raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
             projectName = handler.name
 
-        datasetMap = handler.generateDirectoryMap(directoryList, filefilt, datasetName=datasetName)
+        if not readFiles:
+            datasetMap = handler.generateDirectoryMap(directoryList, filefilt, datasetName=datasetName)
+        else:
+            datasetMap = handler.generateDirectoryMapFromFiles(directoryList, filefilt, datasetName=datasetName)
 
         # Output the map
         keys = datasetMap.keys()
@@ -207,7 +218,16 @@ def esgscanWrapper(directoryList, **kw):
             direcTuple = datasetMap[datasetId]
             direcTuple.sort()
             for nodepath, filepath in direcTuple:
-                for filepath, sizet in directoryIterator(nodepath, filefilt=filefilt, followSubdirectories=False):
+
+                # If readFiles is not set, generate a map entry for each file in the directory
+                # that matches filefilt ...
+                if not readFiles:
+                    itr = directoryIterator(nodepath, filefilt=filefilt, followSubdirectories=False)
+                # ... otherwise if readFiles is set, generate a map entry for each file
+                else:
+                    itr = fnIterator([filepath])
+
+                for filepath, sizet in itr:
                     size, mtime = sizet
                     extraStuff = "mod_time=%f"%float(mtime)
 
