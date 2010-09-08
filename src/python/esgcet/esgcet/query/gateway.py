@@ -3,13 +3,16 @@ from esgcet.publish import Hessian, RemoteCallException
 from lxml import etree
 from esgcet.exceptions import *
 
-def getRemoteMetadataService():
+def getRemoteMetadataService(serviceUrl=None):
     """Get the remote metadata service.
 
     Returns the service object.
     """
     config = getConfig()
-    remoteMetadataServiceUrl = config.get('DEFAULT', 'hessian_service_remote_metadata_url')
+    if serviceUrl is None:
+        remoteMetadataServiceUrl = config.get('DEFAULT', 'hessian_service_remote_metadata_url')
+    else:
+        remoteMetadataServiceUrl = serviceUrl
     serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
     service = Hessian(remoteMetadataServiceUrl, 80, debug=serviceDebug)
     return service
@@ -21,7 +24,7 @@ def getGatewayDatasetFields():
     """
     return ['id', 'state', 'name']
 
-def getGatewayDatasetMetadata(datasetName):
+def getGatewayDatasetMetadata(datasetName, serviceUrl=None):
     """Get metadata associated with a dataset, from the gateway.
 
     Returns a tuple of dataset fields.
@@ -29,7 +32,7 @@ def getGatewayDatasetMetadata(datasetName):
     datasetName
       The name of the dataset.
     """
-    service = getRemoteMetadataService()
+    service = getRemoteMetadataService(serviceUrl=serviceUrl)
     try:
         metadata = service.getDatasetMetadata(datasetName);
     except RemoteCallException, e:
@@ -43,7 +46,7 @@ def getGatewayDatasetMetadata(datasetName):
     result = tuple([datasetElem.get(field) for field in getGatewayDatasetFields()])
     return result
     
-def getGatewayDatasetChildren(datasetName, sort=True):
+def getGatewayDatasetChildren(datasetName, sort=True, serviceUrl=None):
     """Get the child dataset ids contained in a dataset, from the gateway.
 
     Returns a list of string identifiers of the child datasets.
@@ -54,7 +57,7 @@ def getGatewayDatasetChildren(datasetName, sort=True):
     sort
       Boolean, sort the result if True.
     """
-    service = getRemoteMetadataService()
+    service = getRemoteMetadataService(serviceUrl=serviceUrl)
     try:
         metadata = service.getDatasetHierarchy(datasetName)
     except RemoteCallException, e:
@@ -70,14 +73,14 @@ def getGatewayDatasetChildren(datasetName, sort=True):
         result.sort()
     return result
 
-def getGatewayExperiments():
+def getGatewayExperiments(serviceUrl=None):
     """Get metadata associated with all experiments, from the gateway.
 
     Returns headers, experiment_tuples where:
       - header is the list of field names
       - tuples is a list of tuples, each tuple with the same length as header
     """
-    service = getRemoteMetadataService()
+    service = getRemoteMetadataService(serviceUrl=serviceUrl)
     exps = service.listExperiments()
 
     """Note: expelem is something like:
@@ -105,7 +108,7 @@ def getGatewayExperiments():
         result.append((name, description))
     return header, result
 
-def getGatewayDatasetFiles(datasetName):
+def getGatewayDatasetFiles(datasetName, serviceUrl=None):
     """Get the files contained in a dataset, from the gateway.
     
     Returns headers, file_tuples where:
@@ -116,7 +119,7 @@ def getGatewayDatasetFiles(datasetName):
       The name of the parent dataset.
 
     """
-    service = getRemoteMetadataService()
+    service = getRemoteMetadataService(serviceUrl=serviceUrl)
     filesXML = service.getDatasetFiles(datasetName)
     filesElem = etree.fromstring(filesXML)
     header = ['name', 'id', 'size']
@@ -125,7 +128,7 @@ def getGatewayDatasetFiles(datasetName):
         result.append((file.get("name"), file.get("id"), file.get("size")))
     return header, result
 
-def getGatewayDatasetAccessPoints(datasetName):
+def getGatewayDatasetAccessPoints(datasetName, serviceUrl=None):
     """Get the file access points of files contained in a dataset, from the gateway.
     
     Returns headers, url_tuples where:
@@ -136,7 +139,7 @@ def getGatewayDatasetAccessPoints(datasetName):
       The name of the parent dataset.
 
     """
-    service = getRemoteMetadataService()
+    service = getRemoteMetadataService(serviceUrl=serviceUrl)
     filesXML = service.getDatasetFiles(datasetName)
     filesElem = etree.fromstring(filesXML)
 

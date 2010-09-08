@@ -33,6 +33,10 @@ Options:
     --metadata dataset:
         List the metadata associated with a dataset.
 
+    --service-url service:
+        URL of the remote metadata service. Defaults to the configured value
+        of hessian_service_remote_metadata_url
+
     --urls parent_dataset:
         List file access point URLs. This is similar to --files, but will list each access point
         of a file.
@@ -45,12 +49,13 @@ Options:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['files=', 'help', 'experiments', 'list=', 'list-experiments', 'metadata=', 'urls=', 'verbose'])
+        args, lastargs = getopt.getopt(argv, "hi:", ['files=', 'help', 'experiments', 'list=', 'list-experiments', 'metadata=', 'service-url=', 'urls=', 'verbose'])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    datasetName = None
     filesParent = None
     init_file = None
     listDatasetChildren = False
@@ -59,7 +64,7 @@ def main(argv):
     listMetadata = False
     listUrls = False
     parentDataset = None
-    datasetName = None
+    serviceUrl = None
     urlParent = None
     verbose = False
     for flag, arg in args:
@@ -79,6 +84,8 @@ def main(argv):
         elif flag=='--metadata':
             listMetadata = True
             datasetName = arg
+        elif flag=='--service-url':
+            serviceUrl = arg
         elif flag=='--urls':
             listUrls = True
             urlParent = arg
@@ -95,24 +102,24 @@ def main(argv):
             for childid in result:
                 print childid
         else:
-            fullresult = [getGatewayDatasetMetadata(item) for item in result]
+            fullresult = [getGatewayDatasetMetadata(item, serviceUrl=serviceUrl) for item in result]
             printResult(getGatewayDatasetFields(), fullresult)
 
     if listMetadata:
         header = getGatewayDatasetFields()
-        result = getGatewayDatasetMetadata(datasetName)
+        result = getGatewayDatasetMetadata(datasetName, serviceUrl=serviceUrl)
         printResult(header, [result])
 
     if listExperiments:
-        header, result = getGatewayExperiments()
+        header, result = getGatewayExperiments(serviceUrl=serviceUrl)
         printResult(header, result)
 
     if listFiles:
-        header, result = getGatewayDatasetFiles(filesParent)
+        header, result = getGatewayDatasetFiles(filesParent, serviceUrl=serviceUrl)
         printResult(header, result)
         
     if listUrls:
-        header, result = getGatewayDatasetAccessPoints(urlParent)
+        header, result = getGatewayDatasetAccessPoints(urlParent, serviceUrl=serviceUrl)
         printResult(header, result)
 
 if __name__=='__main__':
