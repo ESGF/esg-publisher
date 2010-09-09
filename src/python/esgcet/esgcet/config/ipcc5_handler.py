@@ -30,8 +30,11 @@ cmorAttributes = {
     'realm': 'modeling_realm',
     'realization': 'realization',
     'run_name': 'realization',
+    'table_id': 'table_id',
     'time_frequency': 'frequency',
     }
+
+cmorTables = ['3hr', '6hrLev', '6hrPlev', 'Amon', 'LImon', 'Lmon', 'OImon', 'Oclim', 'Omon', 'Oyr', 'aero', 'cf3hr', 'cfDay', 'cfMon', 'cfOff', 'cfSites', 'day', 'fx', 'grids']
 
 cmorArrayAttributes = ['initialization_method', 'physics_version', 'realization', 'run_name']
 
@@ -138,6 +141,16 @@ class IPCC5Handler(BasicHandler):
             result['product'] = 'output'
 
         self.mapEnumeratedValues(result)
+
+        # Parse CMOR table.
+        if 'table_id' in result:
+            tableId = result['table_id']
+            fields = tableId.split()
+
+            # Assume table ID has the form 'Table table_id ...'
+            if len(fields)>1 and (fields[1] in cmorTables):
+                table = fields[1]
+                result['cmor_table'] = table
 
         return result
 

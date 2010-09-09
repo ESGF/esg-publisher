@@ -478,6 +478,9 @@ class ProjectHandler(object):
         return (value in options)
 
     def mapValidFieldOptions(self, field, options):
+        """
+        Map to case-sensitive list of options for field.
+        """
         return options
 
     def mapEnumeratedValues(self, context):
@@ -784,6 +787,9 @@ class ProjectHandler(object):
             # If experiment is enumerated, match on the experiment options. This allows
             # experiment ids to contain periods (.) .
             experimentOptions = self.getFieldOptions('experiment')
+
+            # Map to case-sensitive options
+            experimentOptions = self.mapValidFieldOptions('experiment', experimentOptions)
             if idFormat.find('%(experiment)s')!=-1 and experimentOptions is not None:
                 optionOr = reduce(lambda x,y: x+'|'+y, experimentOptions)
                 experimentPattern = r'(?P<experiment>%s)'%optionOr
