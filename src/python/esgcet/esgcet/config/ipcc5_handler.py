@@ -128,6 +128,7 @@ class IPCC5Handler(BasicHandler):
         if 'realization' in result and 'initialization_method' in result and 'physics_version' in result:
             ensemble = 'r%si%sp%s'%(result['realization'], result['initialization_method'], result['physics_version'])
             result['ensemble'] = ensemble
+            result['run_name'] = ensemble
 
         base = os.path.basename(cdfile.path)
         try:
