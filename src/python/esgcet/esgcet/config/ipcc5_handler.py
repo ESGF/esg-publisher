@@ -153,6 +153,12 @@ class IPCC5Handler(BasicHandler):
                 table = fields[1]
                 result['cmor_table'] = table
 
+            # Cache a 'drs_id' attribute for DRS-style dataset lookups
+            if 'product' in result and 'institute' in result and 'model' in result and 'experiment' in result and 'time_frequency' in result and 'realm' in result and 'cmor_table' in result and 'ensemble' in result:
+                drsid = 'cmip5.%s.%s.%s.%s.%s.%s.%s.%s'%(result['product'], result['institute'], result['model'], result['experiment'], result['time_frequency'], result['realm'], result['cmor_table'], result['ensemble'])
+                result['drs_id'] = drsid
+            
+
         return result
 
     
