@@ -744,7 +744,7 @@ class ProjectHandler(object):
                     except:
                         allfields = reduce(lambda x,y: set(x)+set(y), idfields)
                         missingFields = list((set(allfields)-set(groupdict.keys()))-set(config.options(section)))
-                        raise ESGPublishError("Cannot generate a value for dataset_id. One of the following fields could not be determined from the directory structure: %s"%`missingFields`)
+                        raise ESGPublishError("Cannot generate a value for dataset_id. One of the following fields could not be determined from the directory structure: %s\nDirectory = %s"%(`missingFields`, nodepath))
                 else:
                     datasetId = datasetName
                 if datasetMap.has_key(datasetId):

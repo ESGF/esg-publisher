@@ -76,6 +76,7 @@ setup(
                     'esgcet.schema_migration.versions': ['*.sql'],
                     },
     scripts = ['scripts/esgextract',
+               'scripts/esgcopy_files',
                'scripts/esgcreate_tables',
                'scripts/esgdrop_tables',
                'scripts/esginitialize',

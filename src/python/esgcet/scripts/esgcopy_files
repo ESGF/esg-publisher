@@ -139,13 +139,15 @@ def main(argv):
             fmap = sys.stdout
     multiIter = multiDirectoryIterator(directories, filefilt=filefilt)
 
+    # Determine the categories
+    handler = getHandlerByName(project, None, Session)
+
     # For each file:
     for path, sizet in multiIter:
 
-        # Determine the categories
-        handler = getHandlerByName(project, path, Session)
-
         # Determine the category values
+        handler.resetContext()
+        handler.path = path
         context = handler.getContext()
 
         # Build the correct output path

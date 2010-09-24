@@ -311,14 +311,29 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
             csum = checksum(path, checksumClient)
             csumtype = checksumType
 
+        # Check if 'from_file' was specified for this file
+        fromfile = None
+        if extraFields is not None:
+            fromfile = extraFieldsGet(extraFields, (dset.name, path, 'from_file'), dsetVersion)
+        if fromfile is None:
+            oldpath = path
+        else:
+            frombase = os.path.basename(fromfile)
+            tobase = os.path.basename(path)
+            if frombase!=tobase:
+                info("Basenames are different for files: %s and %s. Ignoring 'from_file' option."%(path, fromfile))
+                oldpath = path
+            else:
+                oldpath = fromfile
+
         # If the item is in the current dataset version, get the file version obj and add to the list
-        if locdict.has_key(path):
-            del todelete[path]
-            fileVersionObj = locdict[path]
+        if locdict.has_key(oldpath):
+            del todelete[oldpath]
+            fileVersionObj = locdict[oldpath]
             fileObj = fileVersionObj.parent
             
             # If the file matches the existing file version, no-op, ...
-            if compareFiles(fileVersionObj, handler, path, size, offline, checksum=csum):
+            if os.path.exists(oldpath) and compareFiles(fileVersionObj, handler, path, size, offline, checksum=csum):
                 if not forceRescan:
                     info("File %s exists, skipping"%path)
                 newFileVersionObjs.append(fileVersionObj)
@@ -326,6 +341,8 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
 
             # ... else create a new version of the file
             else:
+                if oldpath!=path:
+                    info("Replacing file %s"%oldpath)
                 newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
                 newFileVersionObjs.append(newFileVersionObj)
                 fileObj.deleteChildren(session)
