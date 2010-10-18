@@ -1,6 +1,9 @@
 "Handle IPCC5 data file metadata"
 
 import os
+import re
+
+from cmip5_product import getProduct
 
 from esgcet.exceptions import *
 from esgcet.config import BasicHandler
@@ -34,10 +37,28 @@ cmorAttributes = {
     'time_frequency': 'frequency',
     }
 
-cmorTables = ['3hr', '6hrLev', '6hrPlev', 'Amon', 'LImon', 'Lmon', 'OImon', 'Oclim', 'Omon', 'Oyr', 'aero', 'cf3hr', 'cfDay', 'cfMon', 'cfOff', 'cfSites', 'day', 'fx', 'grids']
+cmorTables = ['3hr', '6hrLev', '6hrPlev', 'Amon', 'LImon', 'Lmon', 'OImon', 'Oclim', 'Omon', 'Oyr', 'aero', 'cf3hr', 'cfDay', 'cfMon', 'cfOff', 'cfSites', 'day', 'fx', 'grids', 'noTable']
 
 cmorArrayAttributes = ['initialization_method', 'physics_version', 'realization', 'run_name']
 
+def mapToComp(date_str):
+    try:
+        m = re.match(r'(\d{4})(\d{2})?(\d{2})?(\d{2})?', date_str)
+        if not m:
+            raise ValueError()
+
+        (y, m, d, h) = m.groups()
+        result = (int(y), intOrNone(m), intOrNone(d), intOrNone(h))
+    except TypeError:
+        result = (None, None, None, None)
+    return result
+
+def intOrNone(x):
+    if x is None:
+        return None
+    else:
+        return int(x)
+    
 class IPCC5Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
@@ -108,6 +129,18 @@ class IPCC5Handler(BasicHandler):
                 if lvalue in caseSensitiveValues:
                     context[key] = caseSensitiveValues[lvalue]
 
+    def getDateRangeFromPath(self):
+        "Parse date range from DRS-style file path"
+        fields = self.path.split('_')
+        m = re.match(r'(\d+)(?:-(\d+))?(-clim)?', fields[-1])
+        if m is not None:
+            n1, n2, clim = m.groups()
+            ct1 = mapToComp(n1)
+            ct2 = mapToComp(n2)
+        else:
+            ct1 = ct2 = (None, None, None, None)
+        return (ct1, ct2)
+
     def readContext(self, cdfile, model=''):
         "Get a dictionary of keys from an open file"
         result = BasicHandler.readContext(self, cdfile)
@@ -143,6 +176,13 @@ class IPCC5Handler(BasicHandler):
 
         self.mapEnumeratedValues(result)
 
+        # If realm has multiple fields, pick the first one
+        if 'realm' in result:
+            realm = result['realm'].strip()
+            if realm.find(' ')!=-1:
+                realms = realm.split(' ')
+                result['realm'] = realms[0]
+
         # Parse CMOR table.
         if 'table_id' in result:
             tableId = result['table_id']
@@ -152,11 +192,26 @@ class IPCC5Handler(BasicHandler):
             if len(fields)>1 and (fields[1] in cmorTables):
                 table = fields[1]
                 result['cmor_table'] = table
+            else:
+                result['cmor_table'] = 'noTable'
+        else:
+            result['cmor_table'] = 'noTable'
 
-            # Cache a 'drs_id' attribute for DRS-style dataset lookups
-            if 'product' in result and 'institute' in result and 'model' in result and 'experiment' in result and 'time_frequency' in result and 'realm' in result and 'cmor_table' in result and 'ensemble' in result:
-                drsid = 'cmip5.%s.%s.%s.%s.%s.%s.%s.%s'%(result['product'], result['institute'], result['model'], result['experiment'], result['time_frequency'], result['realm'], result['cmor_table'], result['ensemble'])
-                result['drs_id'] = drsid
+        # Parse the product
+        cmor_table = result['cmor_table']
+        variable = result.get('variable', None)
+        experiment = result.get('experiment', None)
+        dateRange = self.getDateRangeFromPath()
+        year1 = dateRange[0][0]
+        year2 = dateRange[1][0]
+        if year2 is None:
+            year2 = year1
+        result['product'] = getProduct(cmor_table, variable, experiment, year1, year2)
+
+        # Cache a 'drs_id' attribute for DRS-style dataset lookups
+        if 'product' in result and 'institute' in result and 'model' in result and 'experiment' in result and 'time_frequency' in result and 'realm' in result and 'cmor_table' in result and 'ensemble' in result:
+            drsid = 'cmip5.%s.%s.%s.%s.%s.%s.%s.%s'%(result['product'], result['institute'], result['model'], result['experiment'], result['time_frequency'], result['realm'], result['cmor_table'], result['ensemble'])
+            result['drs_id'] = drsid
             
 
         return result

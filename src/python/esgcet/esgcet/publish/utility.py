@@ -282,7 +282,7 @@ def multiDirectoryIterator(top, filefilt=None, followSymLinks=True):
         for path, size in directoryIterator(direc, filefilt, followSymLinks):
                 yield (path, size)
 
-def nodeIterator(top, nodefilt, filefilt, followSymLinks=True):
+def nodeIterator(top, nodefilt, filefilt, followSymLinks=True, allFiles=False):
     """Generate an iterator over non-empty directories that match a pattern.
 
     Returns an iterator that returns a tuple (*path*, *sample_file*, *groupdict*) at each iteration, where:
@@ -304,6 +304,10 @@ def nodeIterator(top, nodefilt, filefilt, followSymLinks=True):
 
     followSymLinks
       Boolean flag. Symbolic links are followed unless followSymLinks is False.
+
+    allFiles = False
+      Boolean flag. If True, iterate over all files that match the filter. Otherwise just return
+      the first file that matches.
 
     """
 
@@ -328,7 +332,7 @@ def nodeIterator(top, nodefilt, filefilt, followSymLinks=True):
 
         # Search regular files in top directory
         if stat.S_ISREG(st.st_mode):
-            if not foundOne:
+            if not foundOne or allFiles:
 
                 # Find the first node filter that matches
                 for filt in nodefilt:
