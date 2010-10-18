@@ -197,16 +197,17 @@ class IPCC5Handler(BasicHandler):
         else:
             result['cmor_table'] = 'noTable'
 
-        # Parse the product
-        cmor_table = result['cmor_table']
-        variable = result.get('variable', None)
-        experiment = result.get('experiment', None)
-        dateRange = self.getDateRangeFromPath()
-        year1 = dateRange[0][0]
-        year2 = dateRange[1][0]
-        if year2 is None:
-            year2 = year1
-        result['product'] = getProduct(cmor_table, variable, experiment, year1, year2)
+        # Parse the product if it is unresolved
+        if result['product']=='output':
+            cmor_table = result['cmor_table']
+            variable = result.get('variable', None)
+            experiment = result.get('experiment', None)
+            dateRange = self.getDateRangeFromPath()
+            year1 = dateRange[0][0]
+            year2 = dateRange[1][0]
+            if year2 is None:
+                year2 = year1
+            result['product'] = getProduct(cmor_table, variable, experiment, year1, year2)
 
         # Cache a 'drs_id' attribute for DRS-style dataset lookups
         if 'product' in result and 'institute' in result and 'model' in result and 'experiment' in result and 'time_frequency' in result and 'realm' in result and 'cmor_table' in result and 'ensemble' in result:
