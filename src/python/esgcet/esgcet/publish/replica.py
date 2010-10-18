@@ -45,7 +45,7 @@ def scanDirectory(directoryList, project, outputMapfile, datasetId=None, append=
         appendPath = None
     esgscanWrapper(directoryList, projectName=project, outputPath=outputMapfile, datasetName=datasetId, appendPath=appendPath, fileFilt=filter, offline=offline, service=service, readFiles=readFiles)
 
-def generateReplicaThreddsCatalog(mapfile, operation, sourceCatalogDictionary, sourceGateway=None, datasetId=None, offline=False, service=None, comment=None, version=None, project=None):
+def generateReplicaThreddsCatalog(mapfile, operation, sourceCatalogDictionary, sourceGateway=None, datasetId=None, offline=False, service=None, comment=None, version=None, project=None, readFiles=False):
     """
     Scan a collection of files as defined in a mapfile, and generate THREDDS catalogs of the resulting datasets. A dictionary of catalogs is returned. The catalogs are not written to the THREDDS catalog directory, but are returned as strings. This allows the generated catalogs to be compared with the corresponding source catalogs.
 
@@ -87,7 +87,7 @@ def generateReplicaThreddsCatalog(mapfile, operation, sourceCatalogDictionary, s
       If True, read metadata from the data files themselves rather than the directory names.
     """
     resultThreddsDictionary = {}
-    esgpublishWrapper(datasetMapfile=mapfile, publishOp=operation, masterGateway=sourceGateway, datasetName=datasetId, offline=offline, service=service, message=comment, thredds=True, las=False, publish=False, threddsCatalogDictionary=resultThreddsDictionary, version=version, reinitThredds=False, projectName=project, readFiles=None)
+    esgpublishWrapper(datasetMapfile=mapfile, publishOp=operation, masterGateway=sourceGateway, datasetName=datasetId, offline=offline, service=service, message=comment, thredds=True, las=False, publish=False, threddsCatalogDictionary=resultThreddsDictionary, version=version, reinitThredds=False, projectName=project, readFiles=readFiles)
     return resultThreddsDictionary
 
 def publishCatalogs(threddsCatalogDictionary, parentDatasetIdDictionary, thredds=True, las=True, publish=True):
