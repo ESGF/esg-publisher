@@ -693,6 +693,13 @@ class DatasetVersion(object):
         self.creation_time = creation_time
         self.comment = comment
 
+    def reset(self, creation_time=None, comment=None):
+        "Reset the creation_time and comment, but keep name and version."
+        if creation_time is None:
+            creation_time = datetime.datetime.now()
+        self.creation_time = creation_time
+        self.comment = comment
+
     @persistent_get
     def get_version(self, Session):
         "Return the dataset version number"

@@ -195,6 +195,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         newVersion = existingVersion + 1
         
     dset.reaggregate = False
+    # Add a new version
     if addNewVersion and newVersion>existingVersion:
         newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment)
         info("New dataset version = %d"%newDsetVersionObj.version)
@@ -202,6 +203,17 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
             session.delete(var)
         newDsetVersionObj.files.extend(fobjs)
         event = Event(datasetName, newDsetVersionObj.version, eventFlag)
+        dset.events.append(event)
+        dset.reaggregate = True
+    # Keep the current (latest) version
+    elif addNewVersion and newVersion==existingVersion and operation in [UPDATE_OP, REPLACE_OP]:
+        versionObj.deleteChildren(session)
+        versionObj.reset(creation_time=createTime, comment=comment)
+        info("Keeping dataset version = %d"%versionObj.version)
+        for var in dset.variables:
+            session.delete(var)
+        versionObj.files.extend(fobjs)
+        event = Event(datasetName, versionObj.version, eventFlag)
         dset.events.append(event)
         dset.reaggregate = True
     elif masterGateway is not None:     # Force version set on replication
