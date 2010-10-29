@@ -7,6 +7,7 @@ from esgcet.model import Dataset, DatasetVersion, Event, eventName, eventNumber
 from esgcet.config import getHandlerByName
 from esgcet.exceptions import *
 from esgcet.messaging import warning
+from sqlalchemy import or_
 
 # Query operations
 EQ=1
@@ -89,15 +90,20 @@ def parseQuery(arg):
         op = EQ
     return name, op, value
 
-def filterQuery(query, properties):
+def filterQuery(query, properties, nullableProperties):
     for name, opvalue in properties.items():
         op, value = opvalue
         dsetattr = getattr(Dataset, name)
         if op==EQ:
             query = query.filter(dsetattr == value)
         elif op==LIKE:
-            if name != 'id':
+            if name != 'id' and name not in nullableProperties:
                 query = query.filter(dsetattr.like(value))
+            elif name in nullableProperties:
+                if value=='%':
+                    query = query.filter(or_(dsetattr==None, dsetattr.like(value)))
+                else:
+                    query = query.filter(dsetattr.like(value))
             else:
                 raise Exception("Only test for equality of ids")
             
@@ -214,6 +220,14 @@ def getQueryFields(handler, return_list=True):
     else:
         return (basicHeaders, eventHeaders, categories, derivedHeaders)
 
+def getNullableFields():
+    """
+    Get a list of fields that can have a NULL value in the database. Wildcard queries on these fields
+    will compare against None rather than a blank string.
+    """
+    result = ['master_gateway']
+    return result
+
 def queryDatasets(projectName, handler, Session, properties, select=None, listall=False):
     """Issue a query on datasets.
 
@@ -284,13 +298,14 @@ def queryDatasets(projectName, handler, Session, properties, select=None, listal
     session = Session()
 
     # Issue query on dataset / dataet_versions, filtered by basic properties
+    nullableProperties = getNullableFields()
     if listall:
         query = session.query(Dataset, DatasetVersion).filter(Dataset.id==DatasetVersion.dataset_id).filter(Dataset.project==projectName)
-        query = filterQuery(query, basicProperties)
+        query = filterQuery(query, basicProperties, nullableProperties)
         result = query.order_by(Dataset.name, DatasetVersion.version).all()
     else:
         query = session.query(Dataset).filter_by(project=projectName)
-        query = filterQuery(query, basicProperties)
+        query = filterQuery(query, basicProperties, nullableProperties)
         result1 = query.order_by(Dataset.name).all()
         result = [(item, item.getLatestVersion()) for item in result1]
 

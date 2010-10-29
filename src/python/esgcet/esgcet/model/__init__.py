@@ -90,6 +90,45 @@ def generateFileBase(location, basedict, dsetname):
 
     return result
 
+
+def getInitialDatasetVersion(bydate):
+    """
+    Get an initial dataset version.
+
+    Returns an integer version number
+
+    bydate
+      Boolean. If True, generate version numbers by date.
+
+    """
+    if not bydate:
+        result = 1
+    else:
+        today = datetime.date.today()
+        result = int(today.strftime("%Y%m%d"))
+    return result
+
+def getNextDatasetVersion(current, bydate):
+    """
+    Get the next dataset version.
+
+    Returns an integer version number
+
+    current
+      current version
+
+    bydate
+      Boolean. If True, generate version numbers by date.
+
+    """
+    if not bydate:
+        result = current + 1
+    else:
+        today = datetime.date.today()
+        result = int(today.strftime("%Y%m%d"))
+    return result
+
+
 metadata = MetaData()
 
 projectTable = Table('project', metadata,
@@ -674,9 +713,10 @@ class Dataset(object):
     def __repr__(self):
         return "<Dataset, id=%s, name=%s, project=%s, model=%s, experiment=%s, run_name=%s>"%(`self.id`, self.name, `self.project`, `self.model`, `self.experiment`, self.run_name)
     
-def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None):
+def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, bydate=False):
     if version is None:
-        version = dset.getVersion()+1
+        current = dset.getVersion()
+        version = getNextDatasetVersion(current, bydate)
     if name is None:
         name = dset.generateVersionName(version)
     dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment)

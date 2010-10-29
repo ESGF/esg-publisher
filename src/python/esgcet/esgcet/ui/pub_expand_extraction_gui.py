@@ -276,8 +276,9 @@ class dataset_widgets:
               datasets = []
               versionObjs = []
               for dsetName, version in datasetNames2:
-                  entry, versionObj = Dataset.lookup(dsetName, self.Session, version=version)
-                  if entry is not None:
+                  result = Dataset.lookup(dsetName, self.Session, version=version)
+                  if result is not None:
+                      entry, versionObj = result
                       datasets.append(entry)
                       versionObjs.append(versionObj)
 

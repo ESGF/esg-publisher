@@ -114,10 +114,13 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         else:
             checksumClient = None
             checksumType = None
+
+        versionByDate = config.getboolean(section, 'version_by_date', default=False)
     else:
         varlocate = None
         checksumClient = None
         checksumType = None
+        versionByDate = False
         
     configOptions['variable_locate'] = varlocate
     configOptions['checksumClient'] = checksumClient
@@ -190,9 +193,12 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
     # Create a new dataset version if necessary
     if keepVersion:
-        newVersion = max(existingVersion, 1)
+        if existingVersion<=0:
+            newVersion = getInitialDatasetVersion(versionByDate)
+        else:
+            newVersion = existingVersion
     elif newVersion is None:
-        newVersion = existingVersion + 1
+        newVersion = getNextDatasetVersion(existingVersion, versionByDate)
         
     dset.reaggregate = False
     # Add a new version
@@ -843,6 +849,9 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
             dvar = lookupCoord(name, dsetindex, length)
             if dvar is not None:
                 units = lookupAttr(dvar, 'units')
+                if units is None:
+                    warning("Missing units, variable=%s"%dvar.short_name)
+                    units = ''
                 if hasattr(dvar, 'coord_type'):
                     if dvar.coord_type=='X':
                         var.eastwest_range = dvar.coord_range+':'+units

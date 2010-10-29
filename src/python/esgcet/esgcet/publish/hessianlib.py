@@ -483,26 +483,39 @@ class Hessian:
 
 	request = HessianWriter().write_call(method, params)
 
-	import httplib
+        #----------------------------------------------------------------------
+        # Patch for HTTP proxy support starts here.  Stephen.Pascoe@stfc.ac.uk
+        #
+	import httplib, os, urlparse
 
         if self._scheme=="http":
-            h = httplib.HTTPConnection(self._host, port=self._port)
+            proxy_url = os.environ.get('http_proxy')
+            if proxy_url is not None:
+                if DEBUG:
+                    messaging.info('Proxy detected at %s' % proxy_url)
+                proxy_parts = urlparse.urlparse(proxy_url)
+                proxy_host = proxy_parts.hostname
+                proxy_port = proxy_parts.port
+                if proxy_port is None:
+                    proxy_port = 80
+                h = httplib.HTTPConnection(proxy_host, port=proxy_port)
+            else:
+                h = httplib.HTTPConnection(self._host, port=self._port)
         else:
             h = httplib.HTTPSConnection(self._host, port=self._port, key_file=self._key_file, cert_file=self._cert_file)
 
-	h.putrequest("POST", self._uri)
 
-	# required by HTTP/1.1
-	h.putheader("Host", self._host)
-
-	h.putheader("User-Agent", "hessianlib.py/%s" % __version__)
-	h.putheader("Content-Length", str(len(request)))
-
-	h.endheaders()
+        req_headers = {'Host': self._host,
+                       'User-Agent': "hessianlib.py/%s" % __version__,
+                       'Content-Length': str(len(request)),
+                       }
 
         if DEBUG:
             messaging.info('Sending request: %s'%`request`)
-	h.send(request)
+        h.request("POST", self._url, request, req_headers)
+        #
+        # End Patch from Stephen.Pascoe@stfc.ac.uk
+        #----------------------------------------------------------------------
 
         response = h.getresponse()
         headers = response.getheaders()

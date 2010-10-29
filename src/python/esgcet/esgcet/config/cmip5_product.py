@@ -15,10 +15,17 @@ def getProduct(cmor_table, variable, experiment, year1, year2):
     # decadal1960, decadal1980, decadal2005 => decadal_30
     # Other decadal experiments => decadal_10
     if experiment[0:7]=='decadal':
+        fullexperiment = experiment
         if experiment in ['decadal1960', 'decadal1980', 'decadal2005']:
             experiment = 'decadal_30'
         else:
             experiment = 'decadal_10'
+        try:
+            base_year = int(fullexperiment[7:11])
+        except:
+            base_year = 0
+    else:
+        base_year = None
 
     # If the variable is not in the request list, => output2
     vardict = cmor_variables.get(cmor_table, None)
@@ -52,7 +59,7 @@ def getProduct(cmor_table, variable, experiment, year1, year2):
         priority, dimensions = vardict[variable]
         if 'basin' in dimensions:
             result = 'output1'
-        elif 'olevel' in dimensions:
+        elif 'olevel' in dimensions and priority>1:
             result = 'output2'
         else:
             result = 'output1'
@@ -60,10 +67,10 @@ def getProduct(cmor_table, variable, experiment, year1, year2):
     # CMOR table == 'aero'
     elif cmor_table == 'aero':
         priority, dimensions = vardict[variable]
-        if 'alev' not in dimensions:
+        if 'alevel' not in dimensions:
             result = 'output1'
         else:
-            result = getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, year2)
+            result = getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, year2, base_year=base_year)
 
     # CMOR table == '6hrPlev', '3hr', 'cfMon', 'cfOff'
     elif cmor_table in ['6hrplev', '3hr', 'cfmon', 'cfoff']:
@@ -75,7 +82,7 @@ def getProduct(cmor_table, variable, experiment, year1, year2):
 
     return result
 
-def getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, year2):
+def getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, year2, base_year=None):
     if experiment not in reqdict:
         result = 'output1'
     elif (year1 is None) and (year2 is None):
@@ -87,7 +94,16 @@ def getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, ye
         if reqspec[0]=='abs':
             result = 'output2'
             for y1, y2 in reqspec[1]:
-                if y1<=year1<=year2 and y1<=year2<=y2:
+                if y1<=year1<=y2 and y1<=year2<=y2:
+                    result = 'output1'
+                    break
+
+        # Base year: add the requested years to the base, e.g., for decadal/aero/3d
+        elif reqspec[0]=='base' and base_year is not None:
+            result = 'output2'
+            for y1, y2 in reqspec[1]:
+                reqyear = y1+base_year
+                if year1<=reqyear<=year2:
                     result = 'output1'
                     break
 
