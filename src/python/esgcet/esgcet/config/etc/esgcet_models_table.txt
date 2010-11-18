@@ -17,7 +17,7 @@
   cmip5 | cmcc-cms | | Centro Euro-Mediterraneo per I Cambiamenti Climatici
   cmip5 | cmcc-esm | | Centro Euro-Mediterraneo per I Cambiamenti Climatici
   cmip5 | cnrm-cm5 | | CNRM/CERFACS
-  cmip5 | csiro-mk3-5A | | CSIRO
+  cmip5 | csiro-mk3-6 | | CSIRO-QCCCE
   cmip5 | echam6-mpiom-hr | | Max Planck Institute for Meteorology (MPI-M)
   cmip5 | echam6-mpiom-lr | | Max Planck Institute for Meteorology (MPI-M)
   cmip5 | ec-earth | | EC-Earth
