@@ -197,7 +197,17 @@ class HessianWriter:
 	self.write(pack('>H', len(value)))
 	self.write(value)
     dispatch[StringType] = write_string
-    dispatch[UnicodeType] = write_string
+
+    def write_unicode(self, value):
+        try:
+            svalue = str(value)
+        except UnicodeDecodeError:
+            print "Error translating string to ASCII: %s"%value
+            raise
+	self.write('S')
+	self.write(pack('>H', len(svalue)))
+	self.write(svalue)
+    dispatch[UnicodeType] = write_unicode
 
     def write_boolean(self, value):
         if value:
