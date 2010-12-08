@@ -67,7 +67,7 @@ Note: Check Maven for propery dependency parameter values @
 	    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:noNamespaceSchemaLocation=
                       "http://ant.apache.org/ivy/schemas/ivy.xsd">
-  <info organisation="esgf" module="esg-publisher"/>
+  <info organisation="org.esgf" module="esg-publisher"/>
   <dependencies>
     <dependency org="net.sourceforge.cobertura" name="cobertura" rev="1.9.4"/>
     <dependency org="commons-logging" name="commons-logging" rev="1.1.1"/>
