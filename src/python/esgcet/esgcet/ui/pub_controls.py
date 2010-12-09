@@ -97,7 +97,7 @@ class MyButton(Tkinter.Button):
         kw['image'] = photo1
         apply(Tkinter.Button.__init__, (self, master, cnf), kw)
         self.image = photo1 # save the image from garbage collection
-
+        
 #---------------------------------------------------------------------
 # Controls for the GUI fonts: Font.family (Courier, Helvetica, Ariel,
 #                             Cambria, Calibri)

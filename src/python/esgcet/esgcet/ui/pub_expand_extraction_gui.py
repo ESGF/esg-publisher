@@ -21,6 +21,7 @@ import Tkinter, Pmw, tkFileDialog, tkFont
 import os, string, types
 import pub_controls
 import pub_busy
+from Tkinter import *
 from pub_controls import MyButton
 from pub_controls import font_weight
 from esgcet.query import getQueryFields
@@ -323,10 +324,11 @@ class dataset_widgets:
          new_tabName = "Refresh " + btn_name
          refreshBtn.configure(relief = 'raised', text = new_tabName, bg = 'aliceblue')
 
+      labels_version = self.parent.parent.main_frame.version_label[selected_page] #ganz
       rowFrameLabel2 = self.parent.parent.main_frame.row_frame_label2[selected_page]
       rowFrameLabels = self.parent.parent.main_frame.row_frame_labels[selected_page]
       if rowFrameLabel2.cget('width') < 100: return # This means that the labels are in place
-
+ 
       labelFont=tkFont.Font(self.parent.parent, family = pub_controls.collection_font_type, size=pub_controls.collection_font_size)
 
       lcolor1 = Pmw.Color.changebrightness(self.parent.parent, 'green', 0.8 )
@@ -341,11 +343,15 @@ class dataset_widgets:
 
       #rowFrameLabel2.configure(text = 'Ok/Err', anchor='n', borderwidth = 1, width = 4)
       rowFrameLabel2.destroy()
+
+      # in case the version was included in the header, remove it now
+      labels_version.destroy() # ganz trying to clear out version before continuing...
+
       self.parent.parent.main_frame.row_frame_label2[selected_page] = Tkinter.Button( rowFrameLabels[selected_page].interior(),
                 text = 'Ok/Err',
                 bg = lcolor1,
                 #font = labelFont,
-                width = 4,
+                width = 9, # ganz was 4
                 relief = 'sunken')
       self.parent.parent.main_frame.row_frame_label2[selected_page].pack(side='left', expand=1, fill='both')
 
@@ -370,6 +376,17 @@ class dataset_widgets:
          )
          labels_id.pack(side='left', expand=1, fill='both')
 
+      # ganz todo add Version here!
+      labels_version = Tkinter.Button(rowFrameLabels[selected_page].interior(),
+                text = 'Ver',
+                font = labelFont,
+                bg = lcolor2,
+                relief = 'sunken',
+                borderwidth = 1,
+                width = 4
+      )
+      labels_version.pack(side='left', expand=1, fill='both')
+###############################################################################
       labels_dataset = Tkinter.Button(rowFrameLabels[selected_page].interior(),
                 text = 'Dataset',
                 font = labelFont,
@@ -454,7 +471,7 @@ class dataset_widgets:
             if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
                frame = self.parent.parent.main_frame.add_row_frame[selected_page][x]
                if not dset.has_warnings(self.Session):
-                  ok_err = Tkinter.Button( frame, text = 'Ok', bg = dcolor1, highlightcolor = dcolor1, width = 4, relief = 'sunken')
+                  ok_err = Tkinter.Button( frame, text = 'Ok', bg = dcolor1, highlightcolor = dcolor1, width = 4, relief = 'sunken') #was 4
                else:
                   warningLevel = dset.get_max_warning_level(self.Session) 
                   if warningLevel>=ERROR_LEVEL:
@@ -466,39 +483,61 @@ class dataset_widgets:
                   ok_err = Tkinter.Button( frame, 
                         text = buttonText,
                         bg = buttonColor,
-                        width = 4,
+                        width = 4, ## was 4 ganz
                         relief = 'raised',
                         command = pub_controls.Command( self.error_extraction_button,dset ) )
-               ok_err.grid(row = dset_row, column = 1, sticky = 'nsew')
+               ok_err.grid(row = dset_row, column = 1, sticky = 'nsew') 
                self.parent.parent.main_frame.ok_err[selected_page][x] = ok_err
    
                status = pollDatasetPublicationStatus(dset.get_name(self.Session), self.Session)
                status_text = pub_controls.return_status_text( status )
-               self.parent.parent.main_frame.status_label[selected_page][x] = Tkinter.Label( frame, text = status_text, bg = dcolor1, width = 10, relief = 'sunken')
+               self.parent.parent.main_frame.status_label[selected_page][x] = Tkinter.Label( frame, text = status_text, bg = dcolor1, width = 10, relief = 'sunken') # 4 was 10
                self.parent.parent.main_frame.status_label[selected_page][x].grid(row = dset_row, column = 2, sticky = 'nsew')
    
                if 'id' in list_fields:
                   id = Tkinter.Label( frame, text = `dset.id`, bg = dcolor2, width = 6, relief = 'sunken')
                   id.grid(row = dset_row, column = 3, sticky = 'nsew')
-   
-               self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7, text=dsetVersionName)
-               self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 4, columnspan=2, sticky = 'nsew')
+               
+               #ganz adding rows here...need to add versions
+      #dset.name, versobj.version
+
+               version = Tkinter.Label( frame, text = versobj.version, bg = dcolor2, width = 6, relief = 'sunken')
+               version.grid(row = dset_row, column = 4, sticky = 'nsew')
+         # create a menu
+               popup = Menu(version, tearoff=0)
+               popup.add_command(label="Next") # , command=next) etc...
+               popup.add_command(label="Previous")
+               popup.add_separator()
+               popup.add_command(label="Home 3")
+
+               def do_popupv1(event):
+                # display the popup menu
+                    try:
+                        popup.tk_popup(event.x_root, event.y_root, 0)
+                    finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+                        popup.grab_release()
+
+               version.bind("<Button-3>", do_popupv1)
+
+               self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7, text=dset.name) #dsetVersionName)
+               self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
    
                if 'project' in list_fields:
                   project = Tkinter.Label( frame, text = dset.get_project(self.Session), bg = dcolor3, width = 20, relief = 'sunken', borderwidth = 2)
-                  project.grid(row = dset_row, column = 6, sticky = 'nsew')
+                  project.grid(row = dset_row, column = 7, sticky = 'nsew')
    
                if 'model' in list_fields:
                   model = Tkinter.Label( frame, text = dset.get_model(self.Session), bg = dcolor4, width = 20, relief = 'sunken', borderwidth = 2)
-                  model.grid(row = dset_row, column = 7, sticky = 'nsew')
+                  model.grid(row = dset_row, column = 8, sticky = 'nsew')
    
                if 'experiment' in list_fields:
                   experiment = Tkinter.Label( frame, text = dset.get_experiment(self.Session), bg = dcolor5, width = 20, relief = 'sunken', borderwidth = 2)
-                  experiment.grid(row = dset_row, column = 8, sticky = 'nsew')
+                  experiment.grid(row = dset_row, column = 9, sticky = 'nsew')
    
                if 'run_name' in list_fields:
                   run_name = Tkinter.Label( frame, text = dset.get_run_name(self.Session), bg = dcolor6, width = 20, relief = 'sunken', borderwidth = 2)
-                  run_name.grid(row = dset_row, column = 9, sticky = 'nsew')
+                  run_name.grid(row = dset_row, column = 10, sticky = 'nsew')
          else:
             frame = self.parent.parent.main_frame.add_row_frame[selected_page][x]
             ok_err = Tkinter.Button( frame, text = 'N/A', bg = 'salmon', highlightcolor = dcolor1, width = 4, relief = 'sunken')
@@ -510,8 +549,11 @@ class dataset_widgets:
             id = Tkinter.Label( frame, text = 'N/A', bg = 'salmon', width = 6, relief = 'sunken')
             id.grid(row = dset_row, column = 3, sticky = 'nsew')
 
+            version = Tkinter.Label( frame, text = 'N/A', bg = dcolor2, width = 4, relief = 'sunken')
+            version.grid(row = dset_row, column = 4, sticky = 'nsew')
+
             self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='sunken', bg = 'salmon', fg = 'black' )
-            self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 4, columnspan=2, sticky = 'nsew')
+            self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
 
          x += 1
 

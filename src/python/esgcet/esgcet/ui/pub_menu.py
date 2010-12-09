@@ -22,6 +22,9 @@ import gui_support
 import pub_controls
 import logging
 import pub_busy
+from help_ScrolledText import Help
+from help_HTML import helpHTML
+from help_File_HTML import LocalHelpHTML
 from esgcet.messaging import warning
 from esgcet.publish import deleteDatasetList, DELETE, UNPUBLISH, publishDatasetList
 from pkg_resources import resource_filename
@@ -634,21 +637,48 @@ class create_login_menu:
                 raise
 
 
-
 #----------------------------------------------------------------------------------------
 # Create the Help menu and its menu items
 #----------------------------------------------------------------------------------------
 class create_help_menu:
    """
    Show the help menu -- (e.g., Show Balloons).
+
    """
+   def evt_helpHTML(self, parent):
+
+       widget = helpHTML(self)
+     #  widget = LocalHelpHTML(self)
+
+
+   def evt_help(self, parent):
+       title = 'Help DIALOG'
+       root = Tkinter.Tk()
+       Pmw.initialise(root)
+       root.title(title)
+
+       exitButton = Tkinter.Button(root, text = 'Close', command = root.destroy)
+       exitButton.pack(side = 'bottom')
+       widget = Help(root)
+       root.mainloop()
+
    def __init__( self, main_menu, parent, tear_it):
       H_name = 'Help'
+
+
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
       main_menu.addmenu(H_name, 'Publisher Help', side='right', font = mnFont, tearoff = tear_it)
       gui_support.add_balloon_help(main_menu, H_name, font=mnFont)
-      main_menu.addmenuitem(H_name, 'separator')
-
+   #   main_menu.addmenuitem(H_name, 'separator')
+      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+                         label = 'Help HTML',
+                         font = mnFont,
+                         command = pub_controls.Command(self.evt_helpHTML, parent))
+      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+                         label = 'Help TEXT',
+                         font = mnFont,
+                         command = pub_controls.Command(self.evt_help, parent))
+ 
 
 #---------------------------------------------------------------------
 # End of File

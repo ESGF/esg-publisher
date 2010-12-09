@@ -25,7 +25,7 @@ import pub_busy
 import thread
 import gui_support
 import string
-
+from Tkinter import *
 from pub_controls import font_weight
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from pub_controls import MyButton
@@ -53,6 +53,7 @@ class query_widgets:
       self.parent = parent
       self.Session = parent.parent.Session
       self.select_button = {}
+      self.select_labelV = {}
       self.select_label = {}
 
       #----------------------------------------------------------------------------------------
@@ -136,7 +137,7 @@ class query_widgets:
                 if options[list_fields[i]] is None: 
                    value = ""
                 else:
-                   value = options[list_fields[i]][0]
+                   value = options[list_fields[i]] # ganz bug fix [0]
                 if validate[i] == 1:
                     options[list_fields[i]].insert(0, "-Any-")
                     value = "-Any-"
@@ -186,6 +187,7 @@ class generate_notebook:
       self.status = {}
       self.ok_err = {}
       self.select_label = {}
+      self.select_labelV = {}
       self.pageFrame = {}
       self.pageFrameLabels = {}
       self.editor_parent = self.parent.parent.pane2.pane( 'EditPaneTop' )
@@ -341,6 +343,7 @@ class generate_notebook:
 
 
       frame_ct = self.parent.parent.top_ct
+      
       self.pageFrameLabels[ frame_ct ] = Pmw.ScrolledFrame(group_page.interior(),
                 vscrollmode = 'none',
                 hscrollmode = 'none',
@@ -354,7 +357,7 @@ class generate_notebook:
       banchor = 'w'
       if page_type == "query":
          btext = 'Ok/Err'
-         bwidth = 4
+         bwidth = 4 
          banchor = 'n'
       self.label = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 text = 'Pick',
@@ -367,6 +370,37 @@ class generate_notebook:
                 width = 2,
       )
       self.label.pack(side='left', expand=1, fill='both')
+
+      if btext == '          Dataset':   # version should preceed the Dataset
+# ganz added this to see about putting in a version 2nd try
+        lcolorV = Pmw.Color.changebrightness(self.parent.parent, 'green', 0.8 )
+        self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
+                text = 'Version',
+                relief = 'sunken',
+                borderwidth = 1,
+                #font = labelFont,
+                bg = lcolorV,
+                width = 9
+        )
+        self.label4v.pack(side='left', expand=1, fill='both')
+#
+        popup = Menu(self.pageFrameLabels[ frame_ct ].interior(), tearoff=0)
+        popup.add_command(label="Next") # , command=next) etc...
+        popup.add_command(label="Previous")
+        popup.add_separator()
+        popup.add_command(label="Home 0")
+
+        def do_popup(event):
+                # display the popup menu
+                try:
+                    popup.tk_popup(event.x_root, event.y_root, 0)
+                finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+                    popup.grab_release()
+
+        self.label4v.bind("<Button-3>", do_popup)
+
+
       self.label2 = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 anchor=banchor,
                 justify='left',
@@ -407,6 +441,35 @@ class generate_notebook:
             )
             self.label3.pack(side='left', expand=1, fill='both')
 
+         print "frame count II "
+         print frame_ct
+# ganz added this to see about putting in a version
+         self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
+                text = 'VersionY',
+                relief = 'sunken',
+                borderwidth = 1,
+                font = labelFont,
+                bg = lcolor2,
+                width = 10
+         )
+         self.label4v.pack(side='left', expand=1, fill='both')
+         # create a menu
+         popup = Menu(self.pageFrameLabels[ frame_ct ].interior(), tearoff=0)
+         popup.add_command(label="Next") # , command=next) etc...
+         popup.add_command(label="Previous")
+         popup.add_separator()
+         popup.add_command(label="Home 2")
+
+         def do_popup2(event):
+                # display the popup menu
+                try:
+                    popup.tk_popup(event.x_root, event.y_root, 0)
+                finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+                    popup.grab_release()
+
+         self.label4v.bind("<Button-3>", do_popup2)
+#
          self.label4 = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 text = 'Dataset',
                 relief = 'sunken',
@@ -481,7 +544,7 @@ class generate_notebook:
       self.parent.parent.top_notebook.pack(side = 'top', fill = 'both', expand = 1, padx = 10, pady = 10)
 
       self.parent.parent.top_ct = self.parent.parent.top_ct + 1 # increment the unique page ID number
-
+      
     #----------------------------------------------------------------------------------------
     # Refresh the displayed "Query" page or "Collection" page and show the updated status of
     # each dataset
@@ -535,6 +598,7 @@ class generate_notebook:
       self.add_row_frame = {}
       self.select_button = {}
       self.select_label = {}
+      self.select_labelV = {} # version label
       self.status = {}
       self.ok_err = {}
 
@@ -555,6 +619,8 @@ class generate_notebook:
 
       self.parent.parent.main_frame.row_frame_labels[self.parent.parent.main_frame.selected_top_page] = self.pageFrameLabels
       self.parent.parent.main_frame.row_frame_label2[self.parent.parent.main_frame.selected_top_page] = self.label2
+      # add the version label to the main_frame in order to preserve a handle and delete it when rebuilding headers..
+      self.parent.parent.main_frame.version_label[self.parent.parent.main_frame.selected_top_page] = self.label4v
       self.parent.parent.main_frame.add_row_frame[self.parent.parent.main_frame.selected_top_page] = self.add_row_frame
       self.parent.parent.main_frame.top_page_id[ self.parent.parent.main_frame.selected_top_page ] = self.select_button
       self.parent.parent.main_frame.top_page_id2[ self.parent.parent.main_frame.selected_top_page ] = self.select_label
@@ -633,8 +699,44 @@ class generate_notebook:
           pass
       dsetTuple = (dsetName, versionNum)
       dsetName = generateDatasetVersionId(dsetTuple)
+#ganz adding rows here...need to add versions
+      datasetName = dsetTuple[0] # dataset[0]  #parseDatasetVersionId(dataset)
+      versionno = dsetTuple[1] # dataset[1]
+
+      self.select_labelV[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
+                text = versionno, # generateDatasetVersionId(dataset),
+                font = labelFont,
+                bg = self.keycolor2,
+                disabledforeground = 'black',
+                relief = 'sunken',
+                borderwidth = 2,
+                anchor='w',
+                justify='left',
+                width = 10,
+                #command = pub_controls.Command( self.evt_selected_dataset_text, dsetTuple, num_tag, 1), # was dataset
+      )
+      self.select_labelV[ num_tag ].grid(row = self.row, column = 3, columnspan=5,sticky = 'nsew')
+
+      self.select_labelV[ num_tag ].pack(side='left', expand=1, fill='both')
+         # create a menu
+      popup = Menu(self.add_row_frame[ num_tag ], tearoff=0)
+      popup.add_command(label="Next") # , command=next) etc...
+      popup.add_command(label="Previous")
+      popup.add_separator()
+      popup.add_command(label="Home 3")
+
+      def do_popup3(event):
+                # display the popup menu
+                try:
+                    popup.tk_popup(event.x_root, event.y_root, 0)
+                finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+                    popup.grab_release()
+
+      self.select_labelV[ num_tag ].bind("<Button-3>", do_popup3)
+###################################################################################################
       self.select_label[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
-                text = dsetName,
+                text = datasetName, #dsetName,
                 font = labelFont,
                 bg = self.keycolor2,
                 relief = 'raised',
@@ -689,9 +791,48 @@ class generate_notebook:
                 command = pub_controls.Command( self.evt_selected_dataset, num_tag ),
         )
 	self.select_button[ num_tag ].grid(row = self.row, column = 0, sticky = 'nsew')
+#ganz adding rows here...need to add versions
+        datasetName = dataset[0]  #parseDatasetVersionId(dataset)
+	versionno = dataset[1]
 
+	self.select_labelV[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
+                text = versionno, # generateDatasetVersionId(dataset),
+                font = labelFont,
+                bg = self.keycolor2,
+                disabledforeground = 'black',
+                relief = 'sunken',
+                borderwidth = 2,
+                anchor='w',
+                justify='left',
+                width = 10,
+                #command =  pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 1),
+        )
+        self.select_labelV[ num_tag ].pack(side='left', expand=1, fill='both')
+         # create a menu
+        popup = Menu(self.add_row_frame[ num_tag ], tearoff=0)
+        popup.add_command(label="Next") # , command=next) etc...
+        popup.add_command(label="Previous")
+        popup.add_separator()
+        popup.add_command(label="Home 4")
+
+        def do_popup4(event):
+                # display the popup menu
+                try:
+                    popup.tk_popup(event.x_root, event.y_root, 0)
+                finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+                    popup.grab_release()
+
+        self.select_labelV[ num_tag ].bind("<Button-3>", do_popup4)
+
+
+# ganz changed colunmspan from 5 to one here
+	self.select_labelV[ num_tag ].grid(row = self.row, column = 1, columnspan=1,sticky = 'nsew')
+        self.add_row_frame[ num_tag ].grid_rowconfigure(self.row, weight = 1)
+	self.add_row_frame[ num_tag ].grid_columnconfigure(1, weight = 1)
+###################################################################################################
 	self.select_label[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ], 
-                text = generateDatasetVersionId(dataset),
+                text = datasetName, # generateDatasetVersionId(dataset),
                 font = labelFont,
                 bg = self.keycolor2, 
                 disabledforeground = 'black',
@@ -702,12 +843,15 @@ class generate_notebook:
                 width = 170,
                 command = pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 1),
         )
-	self.select_label[ num_tag ].grid(row = self.row, column = 1, columnspan=5,sticky = 'nsew')
+# ganz changed colunmspan from 5 to 4 here
+	self.select_label[ num_tag ].grid(row = self.row, column = 2, columnspan=4,sticky = 'nsew')
+
+
       #  if page_type == "offline":
       #     self.select_label[ num_tag ].configure(state="disabled")
 
 	self.add_row_frame[ num_tag ].grid_rowconfigure(self.row, weight = 1)
-	self.add_row_frame[ num_tag ].grid_columnconfigure(1, weight = 1)
+	self.add_row_frame[ num_tag ].grid_columnconfigure(2, weight = 1)
 	if self.pageFrame[ frame_ct ].cget('horizflex') == 'expand' or \
                 self.pageFrame[ frame_ct ].cget('vertflex') == 'expand':
             self.pageFrame[ frame_ct ].reposition()
