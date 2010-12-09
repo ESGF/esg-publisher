@@ -151,7 +151,7 @@ Builds the project via ant (obviously).
     <property name="depcache_dir"     	  value="${java.io.tmpdir}/${module}/depcache"/>
     <property name="log_config"       	  value="${conf_dir}/log4j.properties"/>
     <property name="log_file"         	  value="${log_dir}/${module}_v${version_num}.log"/>
-    <property name="javadoc_link_src" 	  value="true"/>
+    <property name="javadoc_link_src" 	  value="false"/>
     <property name="main_class"           value="esg.node.publisher_fe.Main"/>
 
     <property name="doc_dir_generated"    value="${basedir}/docs-generated"/>
