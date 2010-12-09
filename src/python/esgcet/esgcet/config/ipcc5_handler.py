@@ -6,7 +6,7 @@ import re
 from cmip5_product import getProduct
 
 from esgcet.exceptions import *
-from esgcet.config import BasicHandler
+from esgcet.config import BasicHandler, getConfig
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 import numpy
@@ -63,10 +63,13 @@ class IPCC5Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
         self.caseSensitiveValidValues = {} # : field => (dict : lowerCaseValue => validValue)
+        self.checkFilenames = True      # True <=> check variable shortname against file basename
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
     def initializeFields(self, Session):
         BasicHandler.initializeFields(self, Session)
+        config = getConfig()
+        projectSection = 'project:'+self.name
 
         # Enumerated value validation is case-insensitive
         lowerCaseValidValues = {}
@@ -83,6 +86,7 @@ class IPCC5Handler(BasicHandler):
             lowerCaseValidValues[field] = lowerCaseValidList
             self.caseSensitiveValidValues[field] = validDict
         self.validValues = lowerCaseValidValues
+        self.checkFilenames = config.getboolean(projectSection, 'thredds_check_file_names', default=True)
 
     def openPath(self, path):
         """Open a sample path, returning a project-specific file object,
@@ -217,4 +221,29 @@ class IPCC5Handler(BasicHandler):
 
         return result
 
-    
+    def threddsIsValidVariableFilePair(self, variable, fileobj):
+        """Returns True iff the variable and file should be published
+        to a per-variable THREDDS catalog for this project.
+
+        variable
+          A Variable instance.
+
+        fileobj
+          A File instance.
+        """
+        # Require that the variable short name match the portion
+        # of the file basename preceding the first underscore.
+        try:
+            if self.checkFilenames:
+                shortname = variable.short_name
+                path = fileobj.getLocation()
+                basename = os.path.basename(path)
+                pathshortname = basename.split('_')[0]
+                result = (shortname == pathshortname)
+            else:
+                result = True
+        except:
+            result = True
+        if not result:
+            info("Skipping variable %s (in file %s)"%(variable.short_name, fileobj.getLocation()))
+        return result

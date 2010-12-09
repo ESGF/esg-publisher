@@ -495,6 +495,12 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         # Ensure that IDs are unique
         if variable.short_name in excludeVariables:
             continue
+
+        # Check the variable/file combination for project conformance
+        filelist = [(filevar.file.getLocation(), filevar.file.getSize(), filevar.file) for filevar in variable.file_variables if handler.threddsIsValidVariableFilePair(variable, filevar.file)]
+        if len(filelist)==0:
+            continue
+
         if shortNames.has_key(variable.short_name):
             uniqueName = "%s_%d"%(variable.short_name, shortNames[variable.short_name])
             shortNames[variable.short_name] += 1
@@ -521,7 +527,6 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
             timeCoverage = _genTimeCoverage(perVarMetadata, timeFirst, timeLast, resolution)
 
         # Files
-        filelist = [(filevar.file.getLocation(), filevar.file.getSize(), filevar.file) for filevar in variable.file_variables]
         filesID = variableID
         try:
             filesName = handler.generateNameFromContext('variable_files_dataset_name', project_description=project.description, model_description=model.description, experiment_description=experiment.description, variable=variable.short_name, variable_long_name=variable.long_name, variable_standard_name=variable.standard_name)

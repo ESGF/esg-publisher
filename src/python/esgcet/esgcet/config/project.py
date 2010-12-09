@@ -897,3 +897,15 @@ class ProjectHandler(object):
                 datasetMap[generatedDatasetName] = [entry]
 
         return datasetMap
+
+    def threddsIsValidVariableFilePair(self, variable, fileobj):
+        """Returns True iff the variable and file should be published
+        to a per-variable THREDDS catalog for this project.
+
+        variable
+          A Variable instance.
+
+        fileobj
+          A File instance.
+        """
+        return True
