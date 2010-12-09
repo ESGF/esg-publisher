@@ -500,8 +500,10 @@ class dataset_widgets:
                
                #ganz adding rows here...need to add versions
       #dset.name, versobj.version
-
-               version = Tkinter.Label( frame, text = versobj.version, bg = dcolor2, width = 6, relief = 'sunken')
+               ver_1 = versobj.version
+               if (ver_1 ==-1):
+                   ver_1 = "N/A"
+               version = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
                version.grid(row = dset_row, column = 4, sticky = 'nsew')
          # create a menu
                popup = Menu(version, tearoff=0)

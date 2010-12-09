@@ -703,8 +703,11 @@ class generate_notebook:
       datasetName = dsetTuple[0] # dataset[0]  #parseDatasetVersionId(dataset)
       versionno = dsetTuple[1] # dataset[1]
 
+      ver_1 = versionno
+      if (ver_1 ==-1):
+            ver_1 = "N/A"
       self.select_labelV[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
-                text = versionno, # generateDatasetVersionId(dataset),
+                text = ver_1, # generateDatasetVersionId(dataset),
                 font = labelFont,
                 bg = self.keycolor2,
                 disabledforeground = 'black',
@@ -794,9 +797,11 @@ class generate_notebook:
 #ganz adding rows here...need to add versions
         datasetName = dataset[0]  #parseDatasetVersionId(dataset)
 	versionno = dataset[1]
-
+        ver_1 = versionno
+        if (ver_1 ==-1):
+            ver_1 = "N/A"
 	self.select_labelV[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
-                text = versionno, # generateDatasetVersionId(dataset),
+                text = ver_1, # generateDatasetVersionId(dataset),
                 font = labelFont,
                 bg = self.keycolor2,
                 disabledforeground = 'black',
