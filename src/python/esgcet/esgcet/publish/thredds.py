@@ -482,7 +482,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
             _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist[start:stop], flag, lasTimeDelta, dataset.calendar, fa)
             nid += 1
             
-def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber):
+def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber, variablesElem, variableElemDict):
 
     mdhandler = handler.getMetadataHandler()
 
@@ -499,6 +499,9 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         # Check the variable/file combination for project conformance
         filelist = [(filevar.file.getLocation(), filevar.file.getSize(), filevar.file) for filevar in variable.file_variables if handler.threddsIsValidVariableFilePair(variable, filevar.file)]
         if len(filelist)==0:
+            if variable.short_name in variableElemDict:
+                variablesElem.remove(variableElemDict[variable.short_name])
+                del variableElemDict[variable.short_name]
             continue
 
         if shortNames.has_key(variable.short_name):
@@ -829,6 +832,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
             metadata1 = SE(datasetElem, "metadata", inherited="true")
         variables = SE(metadata1, "variables", vocabulary="CF-1.0")
         shortNames = {}
+        variableElemDict = {}
         for variable in dset.variables:
             if variable.short_name not in excludeVariables:
                 # It is possible for a dataset to have different variables with the same name,
@@ -838,6 +842,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                     continue
                 shortNames[variable.short_name] = 1
                 variableElem = _genVariable(variables, variable)
+                variableElemDict[variable.short_name] = variableElem
 
     metadata2 = SE(datasetElem, "metadata", inherited="true")
 ##     geospatialCoverage = SE(metadata2, "geospatialCoverage")
@@ -881,7 +886,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     if perVariable:
         # Per-variable datasets
-        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber)
+        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber, variables, variableElemDict)
     else:
         # Per-time datasets
         _genPerTimeDatasetsV2(datasetElem, dset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber)
