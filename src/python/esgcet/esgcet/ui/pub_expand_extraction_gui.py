@@ -17,17 +17,22 @@
 #                                                                             #
 ###############################################################################
 #
-import Tkinter, Pmw, tkFileDialog, tkFont
-import os, string, types
+import Tkinter
+import Pmw
+import tkFont
+import types
 import pub_controls
 import pub_busy
+import tkMessageBox
+from esgcet.messaging import warning
 from Tkinter import *
 from pub_controls import MyButton
 from pub_controls import font_weight
 from esgcet.query import getQueryFields
 from esgcet.messaging import warning
-from esgcet.publish import pollDatasetPublicationStatus, readDatasetMap, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, parseDatasetVersionId, generateDatasetVersionId
+from esgcet.publish import pollDatasetPublicationStatus, readDatasetMap, CREATE_OP, UPDATE_OP, parseDatasetVersionId, generateDatasetVersionId
 from esgcet.ui import extraction_controls
+from esgcet.ui import comments_editor
 from esgcet.model import Dataset, ERROR_LEVEL
 from esgcet.config import getOfflineLister
 
@@ -130,8 +135,18 @@ class dataset_widgets:
        from esgcet.publish.utility import filelistIterator, directoryIterator
        from esgcet.publish.utility import StopEvent
 
+      
        # To prevent unexplained core dumps, the scrollbar to the right and bottom must be removed
+     
        try:
+          ans = tkMessageBox.askokcancel("Dataset Comments?", "Would you like to supply dataset comments in an editor?")
+          if (ans == TRUE):
+             myeditor = comments_editor.EDITOR()
+             comments = myeditor.edit()
+         
+             for x in comments:
+               print x
+
           self.parent.parent.log_output_window.configure(hscrollmode = 'none', vscrollmode = 'none')
        except:
           pass
@@ -149,6 +164,7 @@ class dataset_widgets:
 
        pub_busy.busyEnd( self.parent.parent )
 
+# ganz todo add in comment code here....
     def return_content2(self, appendOpt=False):
         from esgcet.publish import iterateOverDatasets, processIterator
         from esgcet.config import getHandlerByName
