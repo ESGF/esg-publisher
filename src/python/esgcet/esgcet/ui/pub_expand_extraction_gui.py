@@ -40,10 +40,12 @@ class dataset_widgets:
     """
     Generate the expansion control widgets seen on the left when "Data Extraction" is selected.
     """
+    
 
     def __init__(self, parent):
       self.parent = parent
       self.Session = parent.parent.Session
+      self.comments = "none yet"
 
       #----------------------------------------------------------------------------------------
       # Begin the creation of the button controls
@@ -142,10 +144,10 @@ class dataset_widgets:
           ans = tkMessageBox.askokcancel("Dataset Comments?", "Would you like to supply dataset comments in an editor?")
           if (ans == TRUE):
              myeditor = comments_editor.EDITOR()
-             comments = myeditor.edit()
+             self.comments = myeditor.edit()
          
-             for x in comments:
-               print x
+     #        for x in self.comments:
+     #          print x
 
           self.parent.parent.log_output_window.configure(hscrollmode = 'none', vscrollmode = 'none')
        except:
@@ -285,7 +287,8 @@ class dataset_widgets:
                operation = UPDATE_OP
            else:
                operation = CREATE_OP
-           datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, self.Session, self.parent.parent.aggregateDimension, operation, self.parent.parent.filefilt, initcontext, self.parent.parent.hold_offline[selected_page], properties, testProgress1, testProgress2, self.parent.parent.handlerDictionary, extraFields=extraFields)
+        
+           datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, self.Session, self.parent.parent.aggregateDimension, operation, self.parent.parent.filefilt, initcontext, self.parent.parent.hold_offline[selected_page], properties, self.comments, testProgress1, testProgress2 , self.parent.parent.handlerDictionary, extraFields=extraFields)
 
            # If working on-line then replace the scanned list of datasets with 
            # the complete list of datasets

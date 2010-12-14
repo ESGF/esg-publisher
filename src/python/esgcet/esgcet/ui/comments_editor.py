@@ -9,8 +9,8 @@ class EDITOR:
 # Create a temp file
         editor = os.environ.get('EDITOR')
         if editor is None:
-            editor = "gedit"
-            #editor = "emacs"
+            #editor = "gedit"
+            editor = "emacs"
             #print 'No editor defined.'
             #sys.exit(0)
         tmp = tempfile.mktemp()
@@ -28,9 +28,10 @@ class EDITOR:
             print 'No comment file created, editor %s , please reset EDITOR env variable to a valid graphical editor' % editor
             lines = []
         else:
-            f = open(tmp, "w")
+            f = open(tmp, "r")
             
             lines = f.readlines()
+            #print 'comments recorded %s ', lines
             f.close()
           
     # Remove temp file
