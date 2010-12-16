@@ -10,7 +10,7 @@ class EDITOR:
         editor = os.environ.get('EDITOR')
         if editor is None:
             #editor = "gedit"
-            editor = "emacs"
+            editor = "/usr/local/bin/emacs"
             #print 'No editor defined.'
             #sys.exit(0)
         tmp = tempfile.mktemp()

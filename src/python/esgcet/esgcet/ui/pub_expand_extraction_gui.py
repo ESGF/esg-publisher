@@ -35,6 +35,7 @@ from esgcet.ui import extraction_controls
 from esgcet.ui import comments_editor
 from esgcet.model import Dataset, ERROR_LEVEL
 from esgcet.config import getOfflineLister
+from esgcet.ui.help_ScrolledText import Help
 
 class dataset_widgets:
     """
@@ -529,7 +530,7 @@ class dataset_widgets:
                popup.add_command(label="Next") # , command=next) etc...
                popup.add_command(label="Previous")
                popup.add_separator()
-               popup.add_command(label="Home 3")
+               popup.add_command(label="Home 3a")
 
                def do_popupv1(event):
                 # display the popup menu
@@ -537,13 +538,48 @@ class dataset_widgets:
                         popup.tk_popup(event.x_root, event.y_root, 0)
                     finally:
                     # make sure to release the grab (Tk 8.0a1 only)
-                        popup.grab_release()
+                        popup.grab_release(self)
+                      
+
 
                version.bind("<Button-3>", do_popupv1)
 
                self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7, text=dset.name) #dsetVersionName)
                self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
-   
+
+            # create a menu
+
+               def hello():
+                   print 'hello'
+                   self.evt_help(self)
+
+               popupds = Menu(version, tearoff=0)
+               popupds.add_command(label=" ") # , command=next) etc...
+               popupds.add_separator()
+               popupds.add_command(label="View Comments", command=hello)
+               
+
+               
+               def do_popupds1(event):
+                # display the popup menu
+                    try:
+                        popupds.tk_popup(event.x_root, event.y_root, 0)
+
+                       # print popupds.entrycget(popupds.index('@%d' % event.y), 'label')
+                        
+
+                    finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+                        popupds.grab_release()
+                       # print popupds.entrycget(popupds.index('@%d' % event.y), 'label')
+                        
+                       # if (popupds.entrycget(popupds.index('@%d' % event.y), 'label') == 'View Comments'):
+                       #    self.evt_help(self)
+
+               self.parent.parent.main_frame.top_page_id2[selected_page][x].bind("<Button-3>", do_popupds1)
+
+
+
                if 'project' in list_fields:
                   project = Tkinter.Label( frame, text = dset.get_project(self.Session), bg = dcolor3, width = 20, relief = 'sunken', borderwidth = 2)
                   project.grid(row = dset_row, column = 7, sticky = 'nsew')
@@ -577,6 +613,34 @@ class dataset_widgets:
             self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
 
          x += 1
+
+
+    def show_comments(self, parent):
+        # Create the dialog.
+        dialog = Pmw.TextDialog(parent, scrolledtext_labelpos = 'n',
+                title = 'My TextDialog',
+                defaultbutton = 0,
+                label_text = 'Lawyer jokes')
+        dialog.withdraw()
+        dialog.insert('end', jokes)
+        dialog.configure(text_state = 'disabled')
+
+        # Create button to launch the dialog.
+        w = Tkinter.Button(parent, text = 'Show text dialog',
+                command = dialog.activate)
+        w.pack(padx = 8, pady = 8)
+
+
+    def evt_help(self, parent):
+       title = 'Help DIALOG'
+       root = Tkinter.Tk()
+       Pmw.initialise(root)
+       root.title(title)
+
+       exitButton = Tkinter.Button(root, text = 'Close', command = root.destroy)
+       exitButton.pack(side = 'bottom')
+       widget = Help(root)
+       root.mainloop()
 
     #----------------------------------------------------------------------------------------
     # Show the extraction errors in the output tab window below

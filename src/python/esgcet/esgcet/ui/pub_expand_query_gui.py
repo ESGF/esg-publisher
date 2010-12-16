@@ -726,7 +726,7 @@ class generate_notebook:
       popup.add_command(label="Next") # , command=next) etc...
       popup.add_command(label="Previous")
       popup.add_separator()
-      popup.add_command(label="Home 3")
+      popup.add_command(label="Home 3b")
 
       def do_popup3(event):
                 # display the popup menu
