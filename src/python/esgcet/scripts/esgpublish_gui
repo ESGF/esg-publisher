@@ -157,6 +157,7 @@ class GUI_frame:
        #---------------------------------------------------------------------
        self.top_notebook = root.top_notebook = None
        self.row_frame_labels = root.row_frame_labels = {}
+       self.version_label = root.version_label = {} # ganz
        self.row_frame_label2 = root.row_frame = {}
        self.add_row_frame = root.add_row_frame = {}
        self.top_tab_id = root.top_tab_id = {}
@@ -246,12 +247,13 @@ class GUI_frame:
           # Enable or disable the "Data Publication" button
           if tab_name[:5] == "Query":
              root.pub_buttonexpansion.ControlButton3.configure( state = 'normal' )
-          else:
-             if root.refreshButton[ self.selected_top_page ].cget('relief') == 'flat':
+          elif not root.refreshButton:
+                  root.pub_buttonexpansion.ControlButton3.configure( state = 'normal' )
+          elif root.refreshButton[ self.selected_top_page ].cget('relief') == 'flat':
                 root.pub_buttonexpansion.control_frame3.pack_forget( )
                 root.pub_buttonexpansion.control_toggle3 = 0
                 root.pub_buttonexpansion.ControlButton3.configure( image = root.pub_buttonexpansion.right, state = 'disabled' )
-             else:
+          else:
                 root.pub_buttonexpansion.ControlButton3.configure( state = 'normal' )
        except:
           root.pub_buttonexpansion.control_frame3.pack_forget( )
