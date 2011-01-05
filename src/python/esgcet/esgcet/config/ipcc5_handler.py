@@ -41,6 +41,18 @@ cmorTables = ['3hr', '6hrLev', '6hrPlev', 'Amon', 'LImon', 'Lmon', 'OImon', 'Ocl
 
 cmorArrayAttributes = ['initialization_method', 'physics_version', 'realization', 'run_name']
 
+drsInvalidValues = re.compile(r'[^a-zA-Z0-9-]+')
+drsFields = {
+    'cmor_table' : 1,
+    'ensemble' : 1,
+    'experiment' : 1,
+    'institute' : 1,
+    'model' : 1,
+    'product' : 1,
+    'realm' : 1,
+    'time_frequency' : 1,
+    }
+
 def mapToComp(date_str):
     try:
         m = re.match(r'(\d{4})(\d{2})?(\d{2})?(\d{2})?', date_str)
@@ -59,6 +71,30 @@ def intOrNone(x):
     else:
         return int(x)
     
+def isDRSField(field):
+    return (field in drsFields)
+
+def validateDRSFieldValues(context, cdfile):
+    """DRS fields must be formed from characters a-z,A-Z,0-9,-
+    
+    context: dictionary of context values to be validated
+    cdfile: CdunifFormatHandler instance
+
+    Returns the context with any sequence of invalid characters (for a DRS field) mapped to '-'.
+    
+    For example, 'NOAA  GFDL' is mapped to 'NOAA-GFDL'.
+    """
+
+    for key in context.keys():
+        if isDRSField(key):
+            value = context[key]
+            if drsInvalidValues.search(value) is not None:
+                result = drsInvalidValues.sub('-', value)
+                info('Mapped invalid %s value: %s to %s, file: %s'%(key, value, result, cdfile.path))
+                context[key] = result
+
+    return context
+
 class IPCC5Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
@@ -179,6 +215,7 @@ class IPCC5Handler(BasicHandler):
             result['product'] = 'output'
 
         self.mapEnumeratedValues(result)
+        validateDRSFieldValues(result, cdfile)
 
         # If realm has multiple fields, pick the first one
         if 'realm' in result:
