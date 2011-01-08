@@ -196,11 +196,12 @@ class dataset_widgets:
            warning("Must generate a list of datasets to scan before data extraction can occur.")
            return
 
+#GANZ VERSION_FILTER BELOW?
         if (selected_page is not None) or (self.parent.parent.hold_offline[selected_page] == True):
            extraFields = None 
            if (self.parent.parent.hold_offline[selected_page] == False) or (isinstance(self.parent.parent.hold_offline[selected_page], types.DictType)):
               for x in self.parent.parent.main_frame.top_page_id[selected_page]:
-                dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text') # GANZ TODO version_label
                 dset_name, dsetVersion = parseDatasetVersionId(dsetVersionName)
 
                 # Retrieve all the datasets in the collection for display
@@ -371,7 +372,7 @@ class dataset_widgets:
                 text = 'Ok/Err',
                 bg = lcolor1,
                 #font = labelFont,
-                width = 9, # ganz was 4
+                width = 4, # ganz was 4 was 9
                 relief = 'sunken')
       self.parent.parent.main_frame.row_frame_label2[selected_page].pack(side='left', expand=1, fill='both')
 
@@ -476,14 +477,35 @@ class dataset_widgets:
 
       selected_page = self.parent.parent.main_frame.selected_top_page
       dobj = {}
+      
+      
+      
       for dset,versobj in zip(datasets,versionObjs):
           dobj[(dset.name,versobj.version)] = (dset,versobj)
           if dset.getVersion()==versobj.version:
               dobj[(dset.name,-1)] = (dset,versobj)
+              
+      t_version = -1
       for x in self.parent.parent.main_frame.top_page_id[selected_page]:
          dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
          dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
          dsetName,dsetVers = parseDatasetVersionId(dset_text)
+         
+         if (dsetVers > t_version): 
+                 t_version = dsetVers
+                 
+      print 'Highest version is %s' % t_version        
+              
+      for x in self.parent.parent.main_frame.top_page_id[selected_page]:
+         dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
+         dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+         dsetName,dsetVers = parseDatasetVersionId(dset_text)
+         
+         # ganz filter out versions here for queries
+         if (dsetVers != t_version):
+             print 'skipping %s with version %s' % (dsetName, dsetVers)
+             continue
+         
          dsetId = (dsetName,dsetVers)
          if dsetId in dobj.keys():
             dset, versobj = dobj[dsetId]
@@ -527,8 +549,8 @@ class dataset_widgets:
                version.grid(row = dset_row, column = 4, sticky = 'nsew')
          # create a menu
                popup = Menu(version, tearoff=0)
-               popup.add_command(label="Next") # , command=next) etc...
-               popup.add_command(label="Previous")
+               popup.add_command(label="Show All Versions") # , command=next) etc...
+               popup.add_command(label="Show Latest Versions")
                popup.add_separator()
                popup.add_command(label="Home 3a")
 
@@ -538,7 +560,7 @@ class dataset_widgets:
                         popup.tk_popup(event.x_root, event.y_root, 0)
                     finally:
                     # make sure to release the grab (Tk 8.0a1 only)
-                        popup.grab_release(self)
+                        popup.grab_release()
                       
 
 

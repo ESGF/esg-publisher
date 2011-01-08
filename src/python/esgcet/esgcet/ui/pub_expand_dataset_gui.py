@@ -409,7 +409,7 @@ class dataset_widgets:
        self.generating_file_list_flg = 0
 
     #----------------------------------------------------------------------------------------
-    # From a file, generate the dynamic list of files and thier sizes
+    # From a file, generate the dynamic list of files and their sizes
     #----------------------------------------------------------------------------------------
     def open_text_file( self, dirfilename, lock ):
        import time

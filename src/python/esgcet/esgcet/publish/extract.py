@@ -294,7 +294,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
         info("Updating files in dataset: %s, version %d"%(dset.name, dsetVersion.version))
 
     haveLatestDsetVersion = (dsetVersion.version == dset.getVersion())
-
+    
     # Get the list of FileVersion objects for this version
     locdict = {}
     todelete = {}

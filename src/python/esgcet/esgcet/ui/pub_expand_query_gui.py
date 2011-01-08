@@ -371,10 +371,10 @@ class generate_notebook:
       )
       self.label.pack(side='left', expand=1, fill='both')
 
-      if btext == '          Dataset':   # version should preceed the Dataset
+#      if btext == '          Dataset':   # version should preceed the Dataset
 # ganz added this to see about putting in a version 2nd try
-        lcolorV = Pmw.Color.changebrightness(self.parent.parent, 'green', 0.8 )
-        self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
+      lcolorV = Pmw.Color.changebrightness(self.parent.parent, 'green', 0.8 )
+      self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 text = 'Version',
                 relief = 'sunken',
                 borderwidth = 1,
@@ -382,23 +382,23 @@ class generate_notebook:
                 bg = lcolorV,
                 width = 9
         )
-        self.label4v.pack(side='left', expand=1, fill='both')
+#        self.label4v.pack(side='left', expand=1, fill='both')
 #
-        popup = Menu(self.pageFrameLabels[ frame_ct ].interior(), tearoff=0)
-        popup.add_command(label="Next") # , command=next) etc...
-        popup.add_command(label="Previous")
-        popup.add_separator()
-        popup.add_command(label="Home 0")
+#        popup = Menu(self.pageFrameLabels[ frame_ct ].interior(), tearoff=0)
+#        popup.add_command(label="Show All Versions") # , command=next) etc...
+#        popup.add_command(label="Show Latest Version")
+        #popup.add_separator()
+        #popup.add_command(label="Home 0")
 
-        def do_popup(event):
+#        def do_popup(event):
                 # display the popup menu
-                try:
-                    popup.tk_popup(event.x_root, event.y_root, 0)
-                finally:
+#                try:
+#                    popup.tk_popup(event.x_root, event.y_root, 0)
+#                finally:
                     # make sure to release the grab (Tk 8.0a1 only)
-                    popup.grab_release()
+#                    popup.grab_release()
 
-        self.label4v.bind("<Button-3>", do_popup)
+#        self.label4v.bind("<Button-3>", do_popup)
 
 
       self.label2 = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
@@ -555,12 +555,35 @@ class generate_notebook:
         self.parent.parent.busyCursor = 'watch'
         self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
         pub_busy.busyStart( self.parent.parent )
-
+        latest_version = -1
+        versionNum1 = 0
+# ganz filter versions, if set
+        print 'refreshing.....GANZ'
+        for x in self.parent.parent.main_frame.top_page_id[selected_page]:
+               if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
+                  dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                  #version_label
+                  query_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                  print selected_page
+                  print x #self.parent.parent.main_frame.version_label[selected_page][x]
+                  #query_name, versionNum = parseDatasetVersionId(dsetVersionName)
+                  if versionNum1 > latest_version:
+                      latest_version = versionNum1
+                  
+                  #for item in versionNum1[:]:
+                  #    versionNum1.remove(item) 
+         
+        print 'highest version is %6d' % (latest_version)
+                      
         if self.parent.parent.refreshButton[selected_page].cget('relief') == 'raised':
            for x in self.parent.parent.main_frame.top_page_id[selected_page]:
                if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
                   dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
                   query_name, versionNum = parseDatasetVersionId(dsetVersionName)
+                  
+                  if versionNum != latest_version: 
+                      continue
+                  
                   status = pollDatasetPublicationStatus(query_name, self.Session)
             
                   self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
@@ -603,24 +626,70 @@ class generate_notebook:
       self.ok_err = {}
 
       # loop through all the datasets for display
+      
+      # ganz perform some version filtering here
       temp_datasetlist = {}
       if page_type in ["collection", "offline"]:
-         for i in range( len(self.parent.parent.datasetNames) ):
-             temp_datasetlist[ i ] = self.parent.parent.datasetNames[ i ]
-      
+         
+         #filter out versions
+         t_version = -1
+         for i in range( len(self.parent.parent.datasetNames) ):            
+             temp_dataset = self.parent.parent.datasetNames[ i ]
+      #       datasetName = temp_dataset[0]  #parseDatasetVersionId(dataset)
+             versionno = temp_dataset[1] 
+             if (versionno > t_version): 
+                 t_version = versionno
+                 
+         print 'Highest version is %s' % t_version
+         j=0
+         for i in range( len(self.parent.parent.datasetNames) ):            
+             temp_dataset = self.parent.parent.datasetNames[ i ]
+      #       datasetName = temp_dataset[0]  #parseDatasetVersionId(dataset)
+             versionno = temp_dataset[1] 
+             if (versionno == t_version): 
+                 temp_datasetlist[ j ] = temp_dataset
+                 j=j+1
+          
+ #        for i in range( len(self.parent.parent.datasetNames) ):
+ #            datasetName = dataset[0]  #parseDatasetVersionId(dataset)
+ #            versionno = dataset[1]
+ #            temp_datasetlist[ i ] = self.parent.parent.datasetNames[ i ]
+ 
+      # ganz, loop her to get the versions
       if page_type in ["collection", "offline"]:
          for x in temp_datasetlist:
              self.addPageRow( x, temp_datasetlist[x], page_type = page_type)
       else:
+          
+         t_version = -1
+         for x in query_result:
+            versionNum = -1
+            try:
+                versionIndex = list_fields.index('version')
+                versionNum = string.atoi(x[versionIndex])
+            except:
+                    pass
+            if (versionNum > t_version): 
+                t_version = versionNum
+                
+                
+         print 'Highest Query version is %s' % t_version     
          i = 0
          for x in query_result:
-             self.addQueryPageRow( i, x, list_fields )
-             i += 1
+             versionNum = -1
+             try:
+                versionIndex = list_fields.index('version')
+                versionNum = string.atoi(x[versionIndex])
+             except:
+                    pass
+             if (versionNum == t_version): 
+                 self.addQueryPageRow( i, x, list_fields )
+                 i += 1
 
       self.parent.parent.main_frame.row_frame_labels[self.parent.parent.main_frame.selected_top_page] = self.pageFrameLabels
       self.parent.parent.main_frame.row_frame_label2[self.parent.parent.main_frame.selected_top_page] = self.label2
       # add the version label to the main_frame in order to preserve a handle and delete it when rebuilding headers..
-      self.parent.parent.main_frame.version_label[self.parent.parent.main_frame.selected_top_page] = self.label4v
+      self.parent.parent.main_frame.version_label[self.parent.parent.main_frame.selected_top_page] =  self.label4v
       self.parent.parent.main_frame.add_row_frame[self.parent.parent.main_frame.selected_top_page] = self.add_row_frame
       self.parent.parent.main_frame.top_page_id[ self.parent.parent.main_frame.selected_top_page ] = self.select_button
       self.parent.parent.main_frame.top_page_id2[ self.parent.parent.main_frame.selected_top_page ] = self.select_label
@@ -628,7 +697,7 @@ class generate_notebook:
       self.parent.parent.main_frame.ok_err[ self.parent.parent.main_frame.selected_top_page ] = self.ok_err
 
     #----------------------------------------------------------------------------------------
-    # Add one dataset information row to the "Query" page
+    # Add one dataset information row to the "Query" page QUERY COLLECTION
     #----------------------------------------------------------------------------------------
     def addQueryPageRow( self, num_tag, query_result, list_fields ):
       # set the color for each item in the row
@@ -776,7 +845,7 @@ class generate_notebook:
       self.row = self.row + 1 # increment to the next dataset row
 
     #---------------------------------------------------------------------
-    # Add one dataset information row to the "Collection" page
+    # Add one dataset information row to the "Collection" page INITIAL COLLECTION
     #---------------------------------------------------------------------
     def addPageRow( self, num_tag, dataset, page_type = "collection" ):
         frame_ct = self.parent.parent.top_ct
@@ -797,42 +866,42 @@ class generate_notebook:
 #ganz adding rows here...need to add versions
         datasetName = dataset[0]  #parseDatasetVersionId(dataset)
 	versionno = dataset[1]
-        ver_1 = versionno
-        if (ver_1 ==-1):
-            ver_1 = "N/A"
-	self.select_labelV[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
-                text = ver_1, # generateDatasetVersionId(dataset),
-                font = labelFont,
-                bg = self.keycolor2,
-                disabledforeground = 'black',
-                relief = 'sunken',
-                borderwidth = 2,
-                anchor='w',
-                justify='left',
-                width = 10,
+#        ver_1 = versionno
+#        if (ver_1 ==-1):
+#            ver_1 = "N/A"
+#	self.select_labelV[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
+#                text = ver_1, # generateDatasetVersionId(dataset),
+#                font = labelFont,
+#                bg = self.keycolor2,
+#                disabledforeground = 'black',
+#                relief = 'sunken',
+#                borderwidth = 2,
+#                anchor='w',
+#                justify='left',
+#                width = 10,
                 #command =  pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 1),
-        )
-        self.select_labelV[ num_tag ].pack(side='left', expand=1, fill='both')
+#        )
+#        self.select_labelV[ num_tag ].pack(side='left', expand=1, fill='both')
          # create a menu
-        popup = Menu(self.add_row_frame[ num_tag ], tearoff=0)
-        popup.add_command(label="Next") # , command=next) etc...
-        popup.add_command(label="Previous")
-        popup.add_separator()
-        popup.add_command(label="Home 4")
+#        popup = Menu(self.add_row_frame[ num_tag ], tearoff=0)
+#        popup.add_command(label="Show All Versions") # , command=next) etc...
+#        popup.add_command(label="Show Latest Versions")
+#        popup.add_separator()
+#        popup.add_command(label="Home 4")
 
-        def do_popup4(event):
+#        def do_popup4(event):
                 # display the popup menu
-                try:
-                    popup.tk_popup(event.x_root, event.y_root, 0)
-                finally:
-                    # make sure to release the grab (Tk 8.0a1 only)
-                    popup.grab_release()
+#                try:
+#                    popup.tk_popup(event.x_root, event.y_root, 0)
+#                finally:
+#                    # make sure to release the grab (Tk 8.0a1 only)
+#                    popup.grab_release()
 
-        self.select_labelV[ num_tag ].bind("<Button-3>", do_popup4)
+#        self.select_labelV[ num_tag ].bind("<Button-3>", do_popup4)
 
 
 # ganz changed colunmspan from 5 to one here
-	self.select_labelV[ num_tag ].grid(row = self.row, column = 1, columnspan=1,sticky = 'nsew')
+#	self.select_labelV[ num_tag ].grid(row = self.row, column = 1, columnspan=1,sticky = 'nsew')
         self.add_row_frame[ num_tag ].grid_rowconfigure(self.row, weight = 1)
 	self.add_row_frame[ num_tag ].grid_columnconfigure(1, weight = 1)
 ###################################################################################################
@@ -848,8 +917,8 @@ class generate_notebook:
                 width = 170,
                 command = pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 1),
         )
-# ganz changed colunmspan from 5 to 4 here
-	self.select_label[ num_tag ].grid(row = self.row, column = 2, columnspan=4,sticky = 'nsew')
+# ganz changed colunmspan from 5 to 4 here fix return to column=1 from 2 and columnspan to 5 from 4
+	self.select_label[ num_tag ].grid(row = self.row, column = 1, columnspan=5,sticky = 'nsew')
 
 
       #  if page_type == "offline":
