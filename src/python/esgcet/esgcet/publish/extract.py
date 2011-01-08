@@ -540,7 +540,7 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
 
     varlocate
       List with elements [varname, pattern]. The variable will be extracted from the file only if the filename
-      matches the pattern at the start. Example: [['ps', 'ps_'], ['xyz', 'xyz_']]
+      matches the pattern at the start. Example: [['ps', 'ps\_'], ['xyz', 'xyz\_']]
 
     context
       A dictionary with keys project, model, experiment, and run.

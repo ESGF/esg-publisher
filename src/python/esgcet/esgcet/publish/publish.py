@@ -189,7 +189,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
       String service name. If omitted, the first online/offline service in the configuration is used.
 
     perVariable
-      Boolean, overrides ``variable_per_file'' config option.
+      Boolean, overrides ``variable_per_file`` config option.
 
     threddsCatalogDictionary
       If not None, just generate catalogs in strings, not the THREDDS directories, and set

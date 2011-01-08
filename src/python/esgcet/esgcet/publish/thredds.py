@@ -641,7 +641,7 @@ def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance
       String service name. If omitted, the first online/offline service in the configuration is used.
 
     perVariable
-      Boolean, overrides ``variable_per_file'' config option.
+      Boolean, overrides ``variable_per_file`` config option.
 
     versionNumber
       Version number. Defaults to latest.
