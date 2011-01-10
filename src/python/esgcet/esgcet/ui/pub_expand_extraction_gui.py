@@ -59,34 +59,34 @@ class dataset_widgets:
       #                  tagindent = 25)
 
       # Create and pack the LabeledWidgets to "Select All" datasets
-      lw_start1 = Pmw.LabeledWidget(self.parent.control_frame2,
-                    labelpos = 'w',
-                    label_font = bnFont,
-                    label_text = 'Dataset: ')
-      lw_start1.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
-      cw_start = Tkinter.Button(lw_start1.interior(),
-                    text='Select All',
-                    font = bnFont,
-                    background = "aliceblue",
-                    command = pub_controls.Command( self.evt_dataset_select_all ))
-      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
+#      lw_start1 = Pmw.LabeledWidget(self.parent.control_frame2,
+#                    labelpos = 'w',
+#                    label_font = bnFont,
+#                    label_text = 'Dataset: ')
+#      lw_start1.component('hull').configure(relief='sunken', borderwidth=2)
+#      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+#      cw_start = Tkinter.Button(lw_start1.interior(),
+#                    text='Select All',
+#                    font = bnFont,
+#                    background = "aliceblue",
+#                    command = pub_controls.Command( self.evt_dataset_select_all ))
+#      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
 
       # Create and pack the LabeledWidgets to "Unselect All" datasets
-      bnFont=tkFont.Font(self.parent.parent, family = pub_controls.label_button_font_type,  size=pub_controls.label_button_font_size, weight=font_weight)
+#      bnFont=tkFont.Font(self.parent.parent, family = pub_controls.label_button_font_type,  size=pub_controls.label_button_font_size, weight=font_weight)
 
-      lw_start2 = Pmw.LabeledWidget(self.parent.control_frame2,
-                    labelpos = 'w',
-                    label_font = bnFont,
-                    label_text = 'Dataset: ')
-      lw_start2.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start2.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
-      cw_start = Tkinter.Button(lw_start2.interior(),
-                    text='Unselect All',
-                    font = bnFont,
-                    background = "aliceblue",
-                    command = pub_controls.Command( self.evt_dataset_unselect_all ))
-      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
+#      lw_start2 = Pmw.LabeledWidget(self.parent.control_frame2,
+#                    labelpos = 'w',
+#                    label_font = bnFont,
+#                    label_text = 'Dataset: ')
+#      lw_start2.component('hull').configure(relief='sunken', borderwidth=2)
+#      lw_start2.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+#      cw_start = Tkinter.Button(lw_start2.interior(),
+#                    text='Unselect All',
+#                    font = bnFont,
+#                    background = "aliceblue",
+#                    command = pub_controls.Command( self.evt_dataset_unselect_all ))
+#      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
 
       # Create and pack the LabeledWidgets to start extraction
       self.generating_file_list_flg = 0
@@ -118,8 +118,8 @@ class dataset_widgets:
                     command = pub_controls.Command( self.start_update_extraction_button, True ))
       cw_update.pack(padx=10, pady=10, expand='yes', fill='both')
 
-      Pmw.alignlabels( (lw_start1, lw_start2, lw_start3, lw_update) )
-
+#      Pmw.alignlabels( (lw_start1, lw_start2, lw_start3, lw_update) )
+      Pmw.alignlabels( (lw_start3, lw_update) )
       #self.button_controls.pack(side='top', fill='x', pady=3)
       #----------------------------------------------------------------------------------------
       # End the creation of the button controls
@@ -485,16 +485,16 @@ class dataset_widgets:
           if dset.getVersion()==versobj.version:
               dobj[(dset.name,-1)] = (dset,versobj)
               
-      t_version = -1
-      for x in self.parent.parent.main_frame.top_page_id[selected_page]:
-         dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
-         dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-         dsetName,dsetVers = parseDatasetVersionId(dset_text)
+      #t_version = -1
+      #for x in self.parent.parent.main_frame.top_page_id[selected_page]:
+      #   dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
+      #   dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+      #   dsetName,dsetVers = parseDatasetVersionId(dset_text)
          
-         if (dsetVers > t_version): 
-                 t_version = dsetVers
+      #   if (dsetVers > t_version): 
+      #           t_version = dsetVers
                  
-      print 'Highest version is %s' % t_version        
+      #print 'Highest version is %s' % t_version        
               
       for x in self.parent.parent.main_frame.top_page_id[selected_page]:
          dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
@@ -502,9 +502,9 @@ class dataset_widgets:
          dsetName,dsetVers = parseDatasetVersionId(dset_text)
          
          # ganz filter out versions here for queries
-         if (dsetVers != t_version):
-             print 'skipping %s with version %s' % (dsetName, dsetVers)
-             continue
+         #if (dsetVers != t_version):
+         #    print 'skipping %s with version %s' % (dsetName, dsetVers)
+         #    continue
          
          dsetId = (dsetName,dsetVers)
          if dsetId in dobj.keys():

@@ -59,32 +59,32 @@ class quality_control_widgets:
       #                  tagindent = 25)
 
       # Create and pack the LabeledWidgets to "Select All" datasets
-      lw_start1 = Pmw.LabeledWidget(self.parent.control_frame3,
-                    labelpos = 'w',
-                    label_font = bnFont,
-                    label_text = 'Dataset: ')
-      lw_start1.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
-      cw_start = Tkinter.Button(lw_start1.interior(),
-                    text='Select All',
-                    font = bnFont,
-                    background = "aliceblue",
-                    command = pub_controls.Command( self.evt_dataset_select_all ))
-      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
+#      lw_start1 = Pmw.LabeledWidget(self.parent.control_frame3,
+#                    labelpos = 'w',
+#                    label_font = bnFont,
+#                    label_text = 'Dataset: ')
+#      lw_start1.component('hull').configure(relief='sunken', borderwidth=2)
+#      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+#      cw_start = Tkinter.Button(lw_start1.interior(),
+#                    text='Select All',
+#                    font = bnFont,
+#                    background = "aliceblue",
+#                    command = pub_controls.Command( self.evt_dataset_select_all ))
+#      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
 
       # Create and pack the LabeledWidgets to "Unselect All" datasets
-      lw_start2 = Pmw.LabeledWidget(self.parent.control_frame3,
-                    labelpos = 'w',
-                    label_font = bnFont,
-                    label_text = 'Dataset: ')
-      lw_start2.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start2.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
-      cw_start = Tkinter.Button(lw_start2.interior(),
-                    text='Unselect All',
-                    font = bnFont,
-                    background = "aliceblue",
-                    command = pub_controls.Command( self.evt_dataset_unselect_all ))
-      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
+#      lw_start2 = Pmw.LabeledWidget(self.parent.control_frame3,
+#                    labelpos = 'w',
+#                    label_font = bnFont,
+#                    label_text = 'Dataset: ')
+#      lw_start2.component('hull').configure(relief='sunken', borderwidth=2)
+#      lw_start2.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+#      cw_start = Tkinter.Button(lw_start2.interior(),
+#                    text='Unselect All',
+#                    font = bnFont,
+#                    background = "aliceblue",
+#                    command = pub_controls.Command( self.evt_dataset_unselect_all ))
+#      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
 
       # Create and pack the LabeledWidgets to "Publish" datasets
       self.generating_file_list_flg = 0
@@ -101,7 +101,7 @@ class quality_control_widgets:
                     command = pub_controls.Command( self.start_harvest, parent ))
       cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
 
-      Pmw.alignlabels( (lw_start1, lw_start2, lw_start3) )
+ #     Pmw.alignlabels( (lw_start1, lw_start2, lw_start3) )
 
       # Create and pack the LabeledWidgets to THREDDS catalog the data
       self.generating_file_list_flg = 0

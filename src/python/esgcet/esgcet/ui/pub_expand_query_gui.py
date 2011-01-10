@@ -555,35 +555,14 @@ class generate_notebook:
         self.parent.parent.busyCursor = 'watch'
         self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
         pub_busy.busyStart( self.parent.parent )
-        latest_version = -1
-        versionNum1 = 0
-# ganz filter versions, if set
-        print 'refreshing.....GANZ'
-        for x in self.parent.parent.main_frame.top_page_id[selected_page]:
-               if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
-                  dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-                  #version_label
-                  query_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-                  print selected_page
-                  print x #self.parent.parent.main_frame.version_label[selected_page][x]
-                  #query_name, versionNum = parseDatasetVersionId(dsetVersionName)
-                  if versionNum1 > latest_version:
-                      latest_version = versionNum1
-                  
-                  #for item in versionNum1[:]:
-                  #    versionNum1.remove(item) 
-         
-        print 'highest version is %6d' % (latest_version)
+
                       
         if self.parent.parent.refreshButton[selected_page].cget('relief') == 'raised':
            for x in self.parent.parent.main_frame.top_page_id[selected_page]:
                if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
                   dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
                   query_name, versionNum = parseDatasetVersionId(dsetVersionName)
-                  
-                  if versionNum != latest_version: 
-                      continue
-                  
+
                   status = pollDatasetPublicationStatus(query_name, self.Session)
             
                   self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
@@ -613,6 +592,9 @@ class generate_notebook:
     #----------------------------------------------------------------------------------------
     # Display the datasets on the page as a result of querying or defining a dataset id
     #----------------------------------------------------------------------------------------
+     #----------------------------------------------------------------------------------------
+    # Display the datasets on the page as a result of querying or defining a dataset id
+    #----------------------------------------------------------------------------------------
     def display_datasets( self, page_type = "collection", query_result = None, list_fields = None ):
    
       self.row = 0
@@ -621,80 +603,35 @@ class generate_notebook:
       self.add_row_frame = {}
       self.select_button = {}
       self.select_label = {}
-      self.select_labelV = {} # version label
       self.status = {}
       self.ok_err = {}
 
       # loop through all the datasets for display
-      
-      # ganz perform some version filtering here
       temp_datasetlist = {}
       if page_type in ["collection", "offline"]:
-         
-         #filter out versions
-         t_version = -1
-         for i in range( len(self.parent.parent.datasetNames) ):            
-             temp_dataset = self.parent.parent.datasetNames[ i ]
-      #       datasetName = temp_dataset[0]  #parseDatasetVersionId(dataset)
-             versionno = temp_dataset[1] 
-             if (versionno > t_version): 
-                 t_version = versionno
-                 
-         print 'Highest version is %s' % t_version
-         j=0
-         for i in range( len(self.parent.parent.datasetNames) ):            
-             temp_dataset = self.parent.parent.datasetNames[ i ]
-      #       datasetName = temp_dataset[0]  #parseDatasetVersionId(dataset)
-             versionno = temp_dataset[1] 
-             if (versionno == t_version): 
-                 temp_datasetlist[ j ] = temp_dataset
-                 j=j+1
-          
- #        for i in range( len(self.parent.parent.datasetNames) ):
- #            datasetName = dataset[0]  #parseDatasetVersionId(dataset)
- #            versionno = dataset[1]
- #            temp_datasetlist[ i ] = self.parent.parent.datasetNames[ i ]
- 
-      # ganz, loop her to get the versions
+         for i in range( len(self.parent.parent.datasetNames) ):
+             temp_datasetlist[ i ] = self.parent.parent.datasetNames[ i ]
+      
       if page_type in ["collection", "offline"]:
          for x in temp_datasetlist:
              self.addPageRow( x, temp_datasetlist[x], page_type = page_type)
       else:
-          
-         t_version = -1
-         for x in query_result:
-            versionNum = -1
-            try:
-                versionIndex = list_fields.index('version')
-                versionNum = string.atoi(x[versionIndex])
-            except:
-                    pass
-            if (versionNum > t_version): 
-                t_version = versionNum
-                
-                
-         print 'Highest Query version is %s' % t_version     
          i = 0
          for x in query_result:
-             versionNum = -1
-             try:
-                versionIndex = list_fields.index('version')
-                versionNum = string.atoi(x[versionIndex])
-             except:
-                    pass
-             if (versionNum == t_version): 
-                 self.addQueryPageRow( i, x, list_fields )
-                 i += 1
+             self.addQueryPageRow( i, x, list_fields )
+             i += 1
 
       self.parent.parent.main_frame.row_frame_labels[self.parent.parent.main_frame.selected_top_page] = self.pageFrameLabels
       self.parent.parent.main_frame.row_frame_label2[self.parent.parent.main_frame.selected_top_page] = self.label2
-      # add the version label to the main_frame in order to preserve a handle and delete it when rebuilding headers..
       self.parent.parent.main_frame.version_label[self.parent.parent.main_frame.selected_top_page] =  self.label4v
       self.parent.parent.main_frame.add_row_frame[self.parent.parent.main_frame.selected_top_page] = self.add_row_frame
       self.parent.parent.main_frame.top_page_id[ self.parent.parent.main_frame.selected_top_page ] = self.select_button
       self.parent.parent.main_frame.top_page_id2[ self.parent.parent.main_frame.selected_top_page ] = self.select_label
       self.parent.parent.main_frame.status_label[ self.parent.parent.main_frame.selected_top_page ] = self.status
       self.parent.parent.main_frame.ok_err[ self.parent.parent.main_frame.selected_top_page ] = self.ok_err
+   
+    
+    
 
     #----------------------------------------------------------------------------------------
     # Add one dataset information row to the "Query" page QUERY COLLECTION
