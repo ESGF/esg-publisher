@@ -16,18 +16,21 @@
 #                                                                             #
 ###############################################################################
 #
+from Tkinter import *
 import Tkinter, Pmw, tkFont
 import os, string
 import gui_support
 import pub_controls
 import logging
 import pub_busy
+import pub_expand_deletion_control_gui
 from help_ScrolledText import Help
 from help_HTML import helpHTML
 from help_File_HTML import LocalHelpHTML
 from esgcet.messaging import warning
 from esgcet.publish import deleteDatasetList, DELETE, UNPUBLISH, publishDatasetList
 from pkg_resources import resource_filename
+
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
 off_icon = resource_filename('esgcet.ui', 'off.gif')
@@ -453,13 +456,19 @@ class create_dataset_menu:
    """
    Create the dataset menu and its menu items.
    """
+   
+   #DeleteLocalDB =  None
+   #DeleteGateway =  None
+   #DeleteThredds =  None
+
+   
    def __init__( self, main_menu, parent, tear_it ):
       self.Session = parent.Session
 
       # Set the arrow icons
       self.on  = Tkinter.PhotoImage(file=on_icon)
       self.off = Tkinter.PhotoImage(file=off_icon)
-
+      
       dataset_name = 'Dataset'
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
       main_menu.addmenu(dataset_name, 'Publisher Dataset', side='left', font = mnFont, tearoff = tear_it)
@@ -529,6 +538,14 @@ class create_dataset_menu:
 
       datasetNames = []
       GUI_line = {}
+      DELETE = 1
+      #UNPUBLISH = 2
+      NO_OPERATION = 3
+      DeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DeleteLocalDB 
+      DeleteGateway = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox2() #   DeleteGateway
+      DeleteThredds = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox3() #   DeleteThredds
+
+
       selected_page = parent.main_frame.selected_top_page
       if selected_page is not None:
          tab_name = parent.top_notebook.getcurselection()
@@ -549,12 +566,26 @@ class create_dataset_menu:
       else:
          warning("%d: No pages generated for selection. Remove is only used to remove datasets from the Publisher." % logging.WARNING)
 
-      # Remove dataset from the gateway
-      gatewayOp = DELETE
-      thredds = True
-      deleteDset = False
-      testProgress = (parent.parent.statusbar.show, 0, 100)
-      status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, deleteDset, progressCallback=testProgress)
+      # Remove dataset from the gateway, etc.
+   
+      if DeleteGateway==1:
+          gatewayOp = DELETE
+      else:
+          gatewayOp = NO_OPERATION
+    # now decide if there is anything to do
+      if (gatewayOp==1 or DeleteLocalDB==1 or DeleteThredds==1) :   
+          las=False
+          thredds = False
+          if DeleteThredds==1:
+              thredds = True
+              
+          deleteDset = False
+          if DeleteLocalDB==1:
+              deleteDset = True
+              
+          testProgress = (parent.parent.statusbar.show, 0, 100)
+          status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)
+
 
       # Show the published status
       try:

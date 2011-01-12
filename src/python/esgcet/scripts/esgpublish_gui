@@ -49,7 +49,7 @@ esg_bg = resource_filename('esgcet.ui', 'esg_bg.gif')
 esg_ini = resource_filename('esgcet.config.etc', 'esg.ini')
 
 
-Version = "1.0 beta"
+Version = "2.0 beta"
 
 
 #----------------------------------------------------------------------------

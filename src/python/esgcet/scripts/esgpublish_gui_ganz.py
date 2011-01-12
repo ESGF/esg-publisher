@@ -178,6 +178,8 @@ class GUI_frame:
        self.directoryMap = root.directoryMap = {}
        self.top_ct = root.top_ct = 1
        self.selected_top_page = root.selected_top_page = None
+       
+ 
 
        #----------------------------------------------------------------------------
        # Create the Button Expansions in the ControlPane Widget located in the 
