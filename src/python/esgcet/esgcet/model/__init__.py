@@ -10,6 +10,8 @@ from esgcet.exceptions import *
 
 MAX_FILENAME_DUPLICATES = 1000          # Maximum number of duplicate file basenames in a dataset
 MAX_STANDARD_NAME_LENGTH = 128
+MAX_COORD_RANGE_LENGTH = 32
+MAX_ABS_COORD_RANGE = 9.9999e+19        # Warning if abs(coord) is larger
 
 # Set _database to "postgres", "mysql", or "sqllite" to avoid reading the config file twice
 _database = "postgres"
@@ -128,6 +130,14 @@ def getNextDatasetVersion(current, bydate):
         result = int(today.strftime("%Y%m%d"))
     return result
 
+def isValidCoordinateRange(val1, val2):
+    return not (max(abs(val1), abs(val2)) > MAX_ABS_COORD_RANGE)
+
+def genCoordinateRange(val1, val2):
+    result = '%f:%f'%(val1, val2)
+    if len(result)>MAX_COORD_RANGE_LENGTH:
+        result = '%.7e:%.7e'%(val1, val2)
+    return result
 
 metadata = MetaData()
 
@@ -240,7 +250,7 @@ fileVariableTable = Table('file_variable', metadata,
                           Column('aggdim_first', MyDouble),
                           Column('aggdim_last', MyDouble),
                           Column('aggdim_units', types.String(64)),
-                          Column('coord_range', types.String(32)),
+                          Column('coord_range', types.String(MAX_COORD_RANGE_LENGTH)),
                           Column('coord_type', types.String(8)),
                           Column('coord_values', types.Text), # String representation for Z coordinate variable
                           mysql_engine='InnoDB',

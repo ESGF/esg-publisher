@@ -606,14 +606,20 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
             var0 = openfile.getVariable(varname, index=0)
             varn = openfile.getVariable(varname, index=-1)
             if cfHandler.axisIsLatitude(filevar):
-                filevar.coord_range = '%f:%f'%(var0, varn)
+                filevar.coord_range = genCoordinateRange(var0, varn)
+                if not isValidCoordinateRange(var0, varn):
+                    warning("Latitude coordinate range: %s is suspicious, file = %s, variable = %s"%(filevar.coord_range, openfile.path, varname))
                 filevar.coord_type = 'Y'
             elif cfHandler.axisIsLongitude(filevar):
-                filevar.coord_range = '%f:%f'%(var0, varn)
+                filevar.coord_range = genCoordinateRange(var0, varn)
+                if not isValidCoordinateRange(var0, varn):
+                    warning("Longitude coordinate range: %s is suspicious, file = %s, variable = %s"%(filevar.coord_range, openfile.path, varname))
                 filevar.coord_type = 'X'
             elif cfHandler.axisIsLevel(filevar):
                 vararray = openfile.getVariable(varname)
-                filevar.coord_range = '%f:%f'%(var0, varn)
+                filevar.coord_range = genCoordinateRange(var0, varn)
+                if not isValidCoordinateRange(var0, varn):
+                    warning("Vertical level coordinate range: %s is suspicious, file = %s, variable = %s"%(filevar.coord_range, openfile.path, varname))
                 filevar.coord_type = 'Z'
                 filevar.coord_values = str(vararray)[1:-1] # See set_printoptions call above
 
