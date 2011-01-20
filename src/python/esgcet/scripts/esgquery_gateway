@@ -97,7 +97,7 @@ def main(argv):
     initLogging('DEFAULT')
 
     if listDatasetChildren:
-        result = getGatewayDatasetChildren(parentDataset)
+        result = getGatewayDatasetChildren(parentDataset, serviceUrl=serviceUrl)
         if not verbose:
             for childid in result:
                 print childid
