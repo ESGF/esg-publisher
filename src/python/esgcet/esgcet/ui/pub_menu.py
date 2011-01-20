@@ -30,7 +30,7 @@ from help_File_HTML import LocalHelpHTML
 from esgcet.messaging import warning
 from esgcet.publish import deleteDatasetList, DELETE, UNPUBLISH, publishDatasetList
 from pkg_resources import resource_filename
-
+from esgcet.publish.utility import generateDatasetVersionId
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
 off_icon = resource_filename('esgcet.ui', 'off.gif')
@@ -552,11 +552,19 @@ class create_dataset_menu:
          for x in parent.main_frame.top_page_id[selected_page]:
             if parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
                 dset_name = parent.main_frame.top_page_id2[selected_page][x].cget('text')
-
+                
+                # ganz TODO test
+                #dsetVersionName1 = self.parent.parent.main_frame.top_page_id2v[selected_page][x].cget('text')
+                #query_name, dset_version = parseDatasetVersionId(dsetVersionName1)
+                dset_version = parent.main_frame.version_label[selected_page][x].cget('text')
+                #dset_version = 1
+                if (dset_version == 'N/A' or not dset_version):
+                    continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
-                if status == 3:
-                   datasetNames.append( dset_name )
+                if status == 3 or DeleteLocalDB or DeleteGateway or DeleteThredds:
+                   #datasetNames.append(generateDatasetVersionId((dset_name, dset_version)))   
+                   datasetNames.append([dset_name, dset_version])   # ganz create name/version to delete                 
                 else:
                    parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image = self.off)
                 GUI_line[ dset_name ] = x
@@ -586,6 +594,8 @@ class create_dataset_menu:
           testProgress = (parent.parent.statusbar.show, 0, 100)
           status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)
 
+
+#Ganz: do I need to explicitly remove each row from the list or just change it's status?
 
       # Show the published status
       try:

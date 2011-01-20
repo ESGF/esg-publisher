@@ -228,8 +228,8 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         event = Event(datasetName, newVersion, eventFlag)
         dset.events.append(event)
 
-    info("Adding file info to database")
-    session.commit()
+    info("Adding file info to database")  # ganz TODO should I update the dataSetNames[] with the new version now?
+    session.commit()                      # NOTE: dset is returned which holds it!
     session.close()
 
     return dset

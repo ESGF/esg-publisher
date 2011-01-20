@@ -19,6 +19,10 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 # By default, os.stat(path).st_mtime returns a float.
 os.stat_float_times(False)
 
+class saveDataSet:
+    dataset = {}
+    
+
 def getTypeAndLen(att):
     """Get the type descriptor of an attribute.
     """
@@ -413,7 +417,15 @@ def parseDatasetVersionId(datasetVersionId):
     if len(fields)==1:
         result = (datasetVersionId, -1)
     elif len(fields)==2:
-        result = (fields[0], string.atoi(fields[1]))
+        ver=string.atoi(fields[1])
+        if saveDataSet.dataset:
+            for name1,ver1 in saveDataSet.dataset:
+                if name1==fields[0]:
+                    ver = ver1
+                    print 'GANZ returning version %d for %s' (ver , fields[0])
+                    break
+        #result = (fields[0], string.atoi(fields[1]))    
+        result = (fields[0], ver)
     else:
         raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
     return result
@@ -715,7 +727,13 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
         dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, useVersion=versionno, forceRescan=forceAggregate, **context)
        
-
+        # ganz TEST TODO 1/12/11 try replacing the version here!
+#        datasetNames[iloop]=datasetName,dataset.getVersion()
+        
+#        tname, tvers = datasetNames[iloop]
+#        print tname
+#        print tvers
+        
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
         runAggregate = (not offline)
         if hasattr(dataset, 'reaggregate'):
@@ -735,6 +753,8 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         handler.saveContext(datasetName, Session)
         datasets.append(dataset)
 
+    saveDataSet.dataset = datasets
+    
     return datasets
 
 def isConstant(ar):

@@ -366,7 +366,8 @@ class dataset_widgets:
       rowFrameLabel2.destroy()
 
       # in case the version was included in the header, remove it now
-      labels_version.destroy() # ganz trying to clear out version before continuing...
+      if (labels_version):
+          labels_version.destroy() # ganz trying to clear out version before continuing...
 
       self.parent.parent.main_frame.row_frame_label2[selected_page] = Tkinter.Button( rowFrameLabels[selected_page].interior(),
                 text = 'Ok/Err',
@@ -545,61 +546,42 @@ class dataset_widgets:
                ver_1 = versobj.version
                if (ver_1 ==-1):
                    ver_1 = "N/A"
-               version = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
-               version.grid(row = dset_row, column = 4, sticky = 'nsew')
+                   # ganz TODO test this to see if this records the version 1/12/11
+               
+               
+               """ Ganz: this code is a test to see if I can save the version label, 1/17/11
+                 comment out the top code and insert the rest
+               """
+               #version = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
+               #version.grid(row = dset_row, column = 4, sticky = 'nsew')
+               
+               self.parent.parent.main_frame.version_label[selected_page][x] = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
+               self.parent.parent.main_frame.version_label[selected_page][x].grid(row = dset_row, column = 4, sticky = 'nsew')
+               """ end of test """
+               
+               #self.parent.parent.main_frame.version_label1[selected_page][x] = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
+               #self.parent.parent.main_frame.version_label1[selected_page][x].grid(row=dset_row,column = 4, columnspan=2, sticky = 'nsew')
          # create a menu
-               popup = Menu(version, tearoff=0)
-               popup.add_command(label="Show All Versions") # , command=next) etc...
-               popup.add_command(label="Show Latest Versions")
-               popup.add_separator()
-               popup.add_command(label="Home 3a")
+#               popup = Menu(version, tearoff=0)
+#               popup.add_command(label="Show All Versions") # , command=next) etc...
+#               popup.add_command(label="Show Latest Versions")
+#               popup.add_separator()
+#               popup.add_command(label="Home 3a")
 
-               def do_popupv1(event):
+#               def do_popupv1(event):
                 # display the popup menu
-                    try:
-                        popup.tk_popup(event.x_root, event.y_root, 0)
-                    finally:
+#                    try:
+#                        popup.tk_popup(event.x_root, event.y_root, 0)
+#                    finally:
                     # make sure to release the grab (Tk 8.0a1 only)
-                        popup.grab_release()
+#                        popup.grab_release()
                       
 
 
-               version.bind("<Button-3>", do_popupv1)
+#               version.bind("<Button-3>", do_popupv1)
 
                self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7, text=dset.name) #dsetVersionName)
                self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
-
-            # create a menu
-
-               def hello():
-                   print 'hello'
-                   self.evt_help(self)
-
-               popupds = Menu(version, tearoff=0)
-               popupds.add_command(label=" ") # , command=next) etc...
-               popupds.add_separator()
-               popupds.add_command(label="View Comments", command=hello)
-               
-
-               
-               def do_popupds1(event):
-                # display the popup menu
-                    try:
-                        popupds.tk_popup(event.x_root, event.y_root, 0)
-
-                       # print popupds.entrycget(popupds.index('@%d' % event.y), 'label')
-                        
-
-                    finally:
-                    # make sure to release the grab (Tk 8.0a1 only)
-                        popupds.grab_release()
-                       # print popupds.entrycget(popupds.index('@%d' % event.y), 'label')
-                        
-                       # if (popupds.entrycget(popupds.index('@%d' % event.y), 'label') == 'View Comments'):
-                       #    self.evt_help(self)
-
-               self.parent.parent.main_frame.top_page_id2[selected_page][x].bind("<Button-3>", do_popupds1)
-
 
 
                if 'project' in list_fields:
@@ -628,9 +610,14 @@ class dataset_widgets:
             id = Tkinter.Label( frame, text = 'N/A', bg = 'salmon', width = 6, relief = 'sunken')
             id.grid(row = dset_row, column = 3, sticky = 'nsew')
 
-            version = Tkinter.Label( frame, text = 'N/A', bg = dcolor2, width = 4, relief = 'sunken')
-            version.grid(row = dset_row, column = 4, sticky = 'nsew')
+# test ganz 1/17/11
+            #version = Tkinter.Label( frame, text = 'N/A', bg = dcolor2, width = 4, relief = 'sunken')
+            #version.grid(row = dset_row, column = 4, sticky = 'nsew')
 
+            self.parent.parent.main_frame.version_label[selected_page][x] = Tkinter.Label( frame, text = 'N/A', bg = dcolor2, width = 4, relief = 'sunken')
+            self.parent.parent.main_frame.version_label[selected_page][x].grid(row = dset_row, column = 4, sticky = 'nsew')
+            # same test as above
+            
             self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='sunken', bg = 'salmon', fg = 'black' )
             self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
 
