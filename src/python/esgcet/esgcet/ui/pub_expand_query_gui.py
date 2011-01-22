@@ -365,7 +365,7 @@ class generate_notebook:
                 hull_height = 2*text_height
       )
       self.pageFrameLabels[ frame_ct ].pack(fill='x', padx = 2, pady = 3)
-      bwidth=170
+      bwidth=149 # was 170
       btext='          Dataset'
       banchor = 'w'
       if page_type == "query":
@@ -524,8 +524,8 @@ class generate_notebook:
                 borderwidth = 1,
                 #font = labelFont,
                 bg = lcolor6,
-                width = 23
-            )
+                width = 21
+            ) # width was 23
             self.label8.pack(side='left', expand=1, fill='both')
 
       # Show the background

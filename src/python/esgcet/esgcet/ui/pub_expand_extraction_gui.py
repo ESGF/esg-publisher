@@ -202,7 +202,14 @@ class dataset_widgets:
            if (self.parent.parent.hold_offline[selected_page] == False) or (isinstance(self.parent.parent.hold_offline[selected_page], types.DictType)):
               for x in self.parent.parent.main_frame.top_page_id[selected_page]:
                 dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text') # GANZ TODO version_label
-                dset_name, dsetVersion = parseDatasetVersionId(dsetVersionName)
+                
+                   # ganz added this 1/21/11
+                if (self.parent.parent.main_frame.version_label[selected_page] ):
+                    dset_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')               
+                    dsetVersion = self.parent.parent.main_frame.version_label[selected_page][x].cget('text')                 
+                  #####################################################################################               
+                else:
+                    dset_name, dsetVersion = parseDatasetVersionId(dsetVersionName)
 
                 # Retrieve all the datasets in the collection for display
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
@@ -459,8 +466,8 @@ class dataset_widgets:
                 bg = lcolor6,
                 relief = 'sunken',
                 borderwidth = 1,
-                width = 23
-         )
+                width = 20  
+         ) # width was 23
          labels_run_name.pack(side='left', expand=1, fill='both')
 
     #----------------------------------------------------------------------------------------
@@ -500,12 +507,14 @@ class dataset_widgets:
       for x in self.parent.parent.main_frame.top_page_id[selected_page]:
          dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
          dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-         dsetName,dsetVers = parseDatasetVersionId(dset_text)
          
-         # ganz filter out versions here for queries
-         #if (dsetVers != t_version):
-         #    print 'skipping %s with version %s' % (dsetName, dsetVers)
-         #    continue
+                    # ganz added this 1/21/11 NOT NEC
+#         if (self.parent.parent.main_frame.version_label[selected_page] ):
+#                    dsetName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')               
+#                    dsetVers = self.parent.parent.main_frame.version_label[selected_page][x].cget('text')                 
+                  #####################################################################################               
+#         else:
+         dsetName,dsetVers = parseDatasetVersionId(dset_text)
          
          dsetId = (dsetName,dsetVers)
          if dsetId in dobj.keys():
@@ -529,8 +538,12 @@ class dataset_widgets:
                         width = 4, ## was 4 ganz
                         relief = 'raised',
                         command = pub_controls.Command( self.error_extraction_button,dset ) )
+               #ok_err.grid(row = dset_row, column = 1, sticky = 'nsew') 
+               #self.parent.parent.main_frame.ok_err[selected_page][x] = ok_err
+ 
                ok_err.grid(row = dset_row, column = 1, sticky = 'nsew') 
-               self.parent.parent.main_frame.ok_err[selected_page][x] = ok_err
+               self.parent.parent.main_frame.ok_err[selected_page][x] = ok_err 
+ 
    
                status = pollDatasetPublicationStatus(dset.get_name(self.Session), self.Session)
                status_text = pub_controls.return_status_text( status )
@@ -555,7 +568,9 @@ class dataset_widgets:
                #version = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
                #version.grid(row = dset_row, column = 4, sticky = 'nsew')
                
-               self.parent.parent.main_frame.version_label[selected_page][x] = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
+               self.parent.parent.main_frame.version_label[selected_page][x] = Tkinter.Label( frame, text = ver_1, 
+                                                                                              bg = dcolor2, width = 6, 
+                                                                                              relief = 'sunken' )
                self.parent.parent.main_frame.version_label[selected_page][x].grid(row = dset_row, column = 4, sticky = 'nsew')
                """ end of test """
                
@@ -582,7 +597,25 @@ class dataset_widgets:
 
                self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='raised', bg = dcolor7, text=dset.name) #dsetVersionName)
                self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
+# ganz add this code to enable users to view all the files/dates and times within a dataset
+         # create a menu
+#               popup = Menu(ok_err, tearoff=0)
+#               popup.add_command(label="Show All Files", command=pub_controls.Command( self.file_display_button,dset )) 
 
+#               def do_popupv1(event):
+                # display the popup menu
+#                    try:
+#                        popup.tk_popup(event.x_root, event.y_root, 0)
+#                    finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+#                        popup.grab_release()
+                      
+
+
+#               self.parent.parent.main_frame.version_label[selected_page][x].bind("<Button-3>", self.evt_file_display_button)
+                              
+               
+               
 
                if 'project' in list_fields:
                   project = Tkinter.Label( frame, text = dset.get_project(self.Session), bg = dcolor3, width = 20, relief = 'sunken', borderwidth = 2)
@@ -657,8 +690,12 @@ class dataset_widgets:
     def error_extraction_button( self, dset ):
        from pkg_resources import resource_filename
        remove_gif = resource_filename('esgcet.ui', 'remove.gif')
-
+       
+       
        dset_name = dset.get_name(self.Session)
+       
+       print dset_name
+       
        tab_name = dset_name.replace('_', '-')
        list_of_tabs = self.parent.parent.bottom_notebook.pagenames( )
        tabFont = tkFont.Font(self.parent.parent, family = pub_controls.tab_font_type, size=pub_controls.tab_font_size)
@@ -701,6 +738,10 @@ class dataset_widgets:
           for x in dset_warnings:
               dset_output_window.appendtext( x+"\n" )
 
+
+          dset_output_window.appendtext( "This is a test from ganzberger \n" )
+          self.file_display_button( dset, dset_output_window )
+          
           self.parent.parent.bottom_notebook.selectpage( tab_name )
 
           # Button remove
@@ -709,6 +750,75 @@ class dataset_widgets:
           b = Tkinter.Button(tab,image=remove_icon,command=pub_controls.Command(self.evt_remove_error_page, tab_name) )
           b.pack(side='right')
           b.image = remove_icon
+
+#
+#----------------------------------------------------------------------------------------
+# ganz added this to display all the files associated with a dataset along with their dates/times
+#----------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------
+    # Show the extraction errors in the output tab window below
+    #----------------------------------------------------------------------------------------
+    def file_display_button( self, dset , dset_output_window):
+          from pkg_resources import resource_filename
+          remove_gif = resource_filename('esgcet.ui', 'remove.gif')
+       
+      
+          dset_name = dset.get_name(self.Session)
+          print dset_name
+ 
+#############################################################
+          dmap = {}
+          offlineMap = {}
+          extraFields = {}
+          extra_fields = False
+          variables = {}
+          
+          from esgcet.exceptions import *
+#          for versionId in dset_name:
+#             name,useVersion = parseDatasetVersionId(versionId)
+#             dset = Dataset.lookup(name, self.Session)
+          session = self.Session()
+          if dset is None:
+             raise ESGQueryError("Dataset not found: %s"%name)
+          session.add(dset)
+          #if useVersion==-1:
+          useVersion = dset.getVersion()
+
+          versionObj = dset.getVersionObj(useVersion)
+          if versionObj is None:
+                 raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
+          filelist = versionObj.getFiles() # file versions 
+        
+          dmap[(dset_name,useVersion)] = [(file.getLocation(), `file.getSize()`) for file in filelist]
+
+          if extra_fields:
+                 for file in filelist:
+                     modtime = file.getModtime()
+                     location = file.getLocation()
+                     if modtime is not None:
+                         extraFields[(dset_name, useVersion, location, 'mod_time')] = modtime
+                     checksum = file.getChecksum()
+                     if checksum is not None:
+                         extraFields[(dset_name, useVersion, location, 'checksum')] = checksum
+                         extraFields[(dset_name, useVersion, location, 'checksum_type')] = file.getChecksumType()
+                    
+          offlineMap[dset_name] = dset.offline
+          session.close()
+          
+          variables = dset.get_variables(self.Session)
+          
+#          dset has the following variables:
+#lat_bnds   lon_bnds  pr  time_bnds  lon lat time
+# variables = dset.get_variables(self.Session)
+
+          
+          for fn in filelist:
+             dset_output_window.appendtext( fn.getLocation() + "\n")
+             for v in variables:
+                 dset_output_window.appendtext( v.short_name + "\n") #.getName() + "\n") 
+
+#############################################################
+
 
     #----------------------------------------------------------------------------------------
     # Remove the dataset error tab

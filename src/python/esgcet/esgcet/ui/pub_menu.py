@@ -66,6 +66,20 @@ def return_log_settings_from_ini_file( parent ):
    proj_spec_invoke='Warning'
    md_extract_invoke='Warning'
 
+   from functools import partial as pto
+   from Tkinter import Tk, Button, X
+   from tkMessageBox import showinfo, showwarning, showerror
+   import os.path
+    
+    # ganz added this here to check for missing esg.ini file
+   if (os.path.exists(parent.init_file) != True):
+       msg = 'The esg.ini file is not present in '
+       msg = msg + parent.init_file
+       msg = msg + '\nPlease copy it there and retry command.'
+       showwarning('Warning',msg)
+       raise(msg)
+       #return;
+
    fp = open(parent.init_file, 'r')
    for x in fp.xreadlines():
       if x.find("# Shared options") != -1: 
@@ -285,8 +299,11 @@ class create_file_menu:
         notebook.tab('General').focus_set()
 
         page = notebook.add('Log Level')
-        self.log_settings = set_log_preferences( page, parent )
-
+        # ganz added this code 1/20/11
+        try:
+            self.log_settings = set_log_preferences( page, parent )
+        except:
+            return
 
         notebook.setnaturalsize()
 

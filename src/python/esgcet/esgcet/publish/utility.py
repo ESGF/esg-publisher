@@ -484,7 +484,7 @@ def readDatasetMap(mappath, parse_extra_fields=False):
         if parse_extra_fields:
             fields = splitLine(line)
             versionName, path, size = fields[0:3]
-            datasetName,versionno = parseDatasetVersionId(versionName)
+            datasetName,versionno = parseDatasetVersionId(versionName) #ver here ok as is.ganz
             if len(fields)>3:
                 for field in fields[3:]:
                     efield, evalue = field.split('=')

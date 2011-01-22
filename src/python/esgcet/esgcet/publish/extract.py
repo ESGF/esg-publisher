@@ -945,7 +945,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                     compare = (lastValues[0:-1] <= firstValues[1:])
                 if compare.any():
                     overlaps = compare.nonzero()[0]
-                    dset.warning("Variable %s is duplicated:"%(var.short_name), WARNING_LEVEL, AGGREGATE_MODULE)
+                    dset.warning("Variable %s is Duplicated:"%(var.short_name), WARNING_LEVEL, AGGREGATE_MODULE)
                     var.has_errors = True
                     nprint = min(len(overlaps), 3)
                     for i in range(nprint):
