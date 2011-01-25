@@ -53,6 +53,7 @@ PUBLISH_SERVICE = "remote/secure/client-cert/hessian/publishingService"
 METADATA_SERVICE = "remote/hessian/guest/remoteMetadataService"
 REPOS = "http://www-pcmdi.llnl.gov/svn/repository/externals"
 SERVICE_ROOT = "pcmdi3.llnl.gov/esgcet" # Override by setting ESG_GATEWAY_SVC_ROOT env variable
+DEFAULT_COMPOUND_FILE_SERVICE = 'fileservice'
 urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
 
 def askyn(question, default='y'):
@@ -638,6 +639,7 @@ def main(argv):
         - Create a top-level ESG catalog, and add a link to the top TDS catalog.
         - Test TDS reinitialization. This makes the data visible
           through TDS without restarting the server.
+        - Setup TDS service definitions. Examples of services are http, GridFTP, etc.  
         - Save TDS configuration options to esg.ini
 
         One of the TDS configuration options is thredds_dataset_roots. This is a list
@@ -742,7 +744,7 @@ def main(argv):
             # Create initial ESG catalog
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
-            from esgcet.config import loadConfig, initLogging
+            from esgcet.config import loadConfig, initLogging, getThreddsServiceSpecs
             from esgcet.publish import updateThreddsMasterCatalog, updateThreddsRootCatalog, reinitializeThredds
             from esgcet.exceptions import ESGPublishError
 
@@ -770,12 +772,34 @@ def main(argv):
             currentRoots =  config.get('DEFAULT', 'thredds_dataset_roots')
             threddsDatasetRoots = askForMultiple("THREDDS dataset root directories (option=thredds_dataset_roots)\nEach entry has the form 'path_identifier | absolute_directory_path'", displayCurrent=currentRoots)
             
+            # Get the gridFTP URL. If multiple file services are defined, create a compound service.
+            threddsServiceSpecs = getThreddsServiceSpecs(config, 'DEFAULT', 'thredds_file_services')
+            isCompound = (len(threddsServiceSpecs)>1)
+            if isCompound:
+                servTypes = [item[0] for item in threddsServiceSpecs]
+                defaultCompoundName = DEFAULT_COMPOUND_FILE_SERVICE
+                for servtype, servurl, servname, compoundName in threddsServiceSpecs:
+                    if compoundName is not None:
+                        defaultCompoundName = compoundName
+                        break
+                compoundName = askfor("Compound file service name (includes the services: %s)"%`servTypes`, default=defaultCompoundName)
+            threddsFileSpecs = ''
+            for servtype, servurl, servname, compName in threddsServiceSpecs:
+                if servtype=='GridFTP':
+                    servurl = askfor("THREDDS GridFTP service URL", default=servurl)
+                    servname = askfor("THREDDS GridFTP service name", default=servname)
+                if isCompound:
+                    threddsFileSpecs += '\n%s | %s | %s | %s'%(servtype, servurl, servname, compoundName)
+                else:
+                    threddsFileSpecs += '\n%s | %s | %s'%(servtype, servurl, servname)
+
             # Set ESG configuration options
             updateconfig([('DEFAULT', 'thredds_reinit_url', threddsReinitURL),
                           ('DEFAULT', 'thredds_reinit_error_url', threddsErrorURL),
                           ('DEFAULT', 'thredds_username', threddsUser),
                           ('DEFAULT', 'thredds_password', threddsPassword),
                           ('DEFAULT', 'thredds_dataset_roots', threddsDatasetRoots),
+                          ('DEFAULT', 'thredds_file_services', threddsFileSpecs),
                           ], currentConfig=config)
             
             try:
