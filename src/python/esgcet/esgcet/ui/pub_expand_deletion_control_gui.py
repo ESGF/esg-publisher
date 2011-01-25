@@ -110,7 +110,7 @@ class deletion_widgets:
       DeleteThredds = Checkbutton(self.parent.control_frame5, text = "Thredds Server", variable = deletion_widgets.CheckVar3, \
                  onvalue = 1, offvalue = 0, height=2, width = 15)
  
-      DeleteLocalDB = Checkbutton(self.parent.control_frame5, 
+      DoNotDeleteLocalDB = Checkbutton(self.parent.control_frame5, 
                                   relief='sunken',
                                  # tag_font = ('Times', 18, 'bold'),
                                   text = "Leave on Local DB", variable = deletion_widgets.CheckVar1, \
@@ -118,7 +118,7 @@ class deletion_widgets:
       
       DeleteGateway.grid(row=1, column=0, sticky=W)
       DeleteThredds.grid(row=2, column=0, sticky=W)
-      DeleteLocalDB.grid(row=3, column=0, sticky=W)
+      DoNotDeleteLocalDB.grid(row=3, column=0, sticky=W)
       
       bnFont=tkFont.Font(self.parent.parent, family = pub_controls.label_button_font_type,  size=pub_controls.label_button_font_size, weight=font_weight)
 
@@ -136,7 +136,7 @@ class deletion_widgets:
       cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
       lw_start3.grid(row=4, sticky=W)
       
-      DeleteLocalDB.select()
+      #DoNotDeleteLocalDB.select()
       DeleteGateway.select()
       DeleteThredds.select()
 #      Pmw.alignlabels( (lw_start1, C1,C2,C3, lw_start3) )

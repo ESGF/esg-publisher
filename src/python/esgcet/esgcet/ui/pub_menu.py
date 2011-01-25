@@ -558,7 +558,7 @@ class create_dataset_menu:
       DELETE = 1
       #UNPUBLISH = 2
       NO_OPERATION = 3
-      DeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DeleteLocalDB 
+      DoNotDeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DoNotDeleteLocalDB 
       DeleteGateway = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox2() #   DeleteGateway
       DeleteThredds = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox3() #   DeleteThredds
 
@@ -579,7 +579,7 @@ class create_dataset_menu:
                     continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
-                if status == 3 or DeleteLocalDB or DeleteGateway or DeleteThredds:
+                if status == 3 or DoNotDeleteLocalDB or DeleteGateway or DeleteThredds:
                    #datasetNames.append(generateDatasetVersionId((dset_name, dset_version)))   
                    datasetNames.append([dset_name, dset_version])   # ganz create name/version to delete                 
                 else:
@@ -598,15 +598,15 @@ class create_dataset_menu:
       else:
           gatewayOp = NO_OPERATION
     # now decide if there is anything to do
-      if (gatewayOp==1 or DeleteLocalDB==1 or DeleteThredds==1) :   
+      if (gatewayOp==1 or DeleteThredds==1) :   
           las=False
           thredds = False
           if DeleteThredds==1:
               thredds = True
               
-          deleteDset = False
-          if DeleteLocalDB==1:
-              deleteDset = True
+          deleteDset = True
+          if DoNotDeleteLocalDB==1:
+              deleteDset = False
               
           testProgress = (parent.parent.statusbar.show, 0, 100)
           status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)

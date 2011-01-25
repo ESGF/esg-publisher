@@ -461,8 +461,6 @@ class generate_notebook:
             )
             self.label3.pack(side='left', expand=1, fill='both')
 
-         print "frame count II "
-         print frame_ct
 # ganz added this to see about putting in a version
          self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 text = 'Ver',
