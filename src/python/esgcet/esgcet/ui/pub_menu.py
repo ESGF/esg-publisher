@@ -579,7 +579,7 @@ class create_dataset_menu:
                     continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
-                if status == 3 or DoNotDeleteLocalDB or DeleteGateway or DeleteThredds:
+                if status == 3  or DeleteGateway or DeleteThredds:
                    #datasetNames.append(generateDatasetVersionId((dset_name, dset_version)))   
                    datasetNames.append([dset_name, dset_version])   # ganz create name/version to delete                 
                 else:
