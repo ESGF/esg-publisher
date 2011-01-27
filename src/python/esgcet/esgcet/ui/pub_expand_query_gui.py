@@ -572,8 +572,8 @@ class generate_notebook:
                                    
                   query_name, versionNum = parseDatasetVersionId(dsetVersionName)
 # ganz TODO test only remove
-                  print query_name
-                  print versionNum
+#                  print query_name
+#                  print versionNum
                   
                   status = pollDatasetPublicationStatus(query_name, self.Session)
             

@@ -8,6 +8,7 @@ from esgcet.model import *
 from esgcet.exceptions import *
 from sqlalchemy.orm import join
 from esgcet.messaging import debug, info, warning, error, critical, exception
+import os.path
 
 _nsmap = {
     None : "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
@@ -150,17 +151,44 @@ def hasThreddsService(serviceName, serviceDict):
                 break
     return result
 
+#def _getRootPathAndLoc(fileobj, rootDict):
+#    fileFields = fileobj.getLocation().split(os.sep)
+#    if fileFields[0]=='':
+#        del fileFields[0]
+#
+#    filesRootPath = None
+#    filesRootLoc = None
+#    for rootPath, rootLoc in rootDict.items():
+#        if fileFields[:len(rootLoc)] == rootLoc:
+#            filesRootPath = rootPath
+#            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
+#
+#    return filesRootPath, filesRootLoc
+
+# ganz test with this one
 def _getRootPathAndLoc(fileobj, rootDict):
     fileFields = fileobj.getLocation().split(os.sep)
     if fileFields[0]=='':
         del fileFields[0]
-
+    if fileFields[0]=='.':
+        del fileFields[0]
+        
     filesRootPath = None
     filesRootLoc = None
     for rootPath, rootLoc in rootDict.items():
-        if fileFields[:len(rootLoc)] == rootLoc:
-            filesRootPath = rootPath
-            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
+        
+        filesRootPath = rootPath
+        filesRootLoc = os.sep+apply(os.path.join, rootLoc)
+        filePath = os.sep+apply(os.path.join, fileFields)
+        fullFilePath = filesRootLoc+filePath
+                
+        if (os.path.exists(fullFilePath)):
+#            print 'Found filesRootLoc %s' + fullFilePath
+            return filesRootPath, filesRootLoc
+
+#        if fileFields[:len(rootLoc)] == rootLoc:
+#            filesRootPath = rootPath
+#            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
 
     return filesRootPath, filesRootLoc
 
@@ -540,7 +568,7 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
             # one associated service is a Thredds service
             if hasThreddsServ:
                 # Sanity check: are all the dataset files under the same rootpath?
-                rootpath, rootloc = _getRootPathAndLoc(filevar.file, datasetRootDict)
+                rootpath, rootloc = _getRootPathAndLoc(filevar.file, datasetRootDict) # ganz revert back after testing
                 if rootpath is None:
                     raise ESGPublishError("File %s is not contained in any THREDDS root path. Please add an entry to thredds_dataset_roots in the configuration file."%path)
                 if rootpath!=filesRootPath:
@@ -864,7 +892,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     filelist = dset.getFiles()
     if len(filelist)==0:
         raise ESGPublishError("Dataset %s does not contain any files, cannot publish"%dset.name)
-    filesRootPath, filesRootLoc = _getRootPathAndLoc(dset.getFiles()[0], datasetRootDict)
+    filesRootPath, filesRootLoc = _getRootPathAndLoc(dset.getFiles()[0], datasetRootDict) # ganz revert back after testing
     hasThreddsServ = hasThreddsService(serviceName, serviceDict)
     if hasThreddsServ and filesRootPath is None:
         raise ESGPublishError("File %s is not contained in any THREDDS root path. Please add an entry to thredds_dataset_roots in the configuration file."%dset.getFiles()[0].getLocation())
