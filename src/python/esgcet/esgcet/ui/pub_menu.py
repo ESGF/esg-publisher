@@ -558,7 +558,7 @@ class create_dataset_menu:
       DELETE = 1
       #UNPUBLISH = 2
       NO_OPERATION = 3
-      DoNotDeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DoNotDeleteLocalDB 
+      DeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DeleteLocalDB 
       DeleteGateway = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox2() #   DeleteGateway
       DeleteThredds = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox3() #   DeleteThredds
 
@@ -579,7 +579,7 @@ class create_dataset_menu:
                     continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
-                if status == 3  or DeleteGateway or DeleteThredds:
+                if status == 3  or DeleteGateway or DeleteThredds or DeleteLocalDB:
                    #datasetNames.append(generateDatasetVersionId((dset_name, dset_version)))   
                    datasetNames.append([dset_name, dset_version])   # ganz create name/version to delete                 
                 else:
@@ -598,15 +598,10 @@ class create_dataset_menu:
       else:
           gatewayOp = NO_OPERATION
     # now decide if there is anything to do
-      if (gatewayOp==1 or DeleteThredds==1) :   
+      if (gatewayOp==1 or DeleteThredds==1 or DeleteLocalDB==1) :   
           las=False
-          thredds = False
-          if DeleteThredds==1:
-              thredds = True
-              
-          deleteDset = True
-          if DoNotDeleteLocalDB==1:
-              deleteDset = False
+          thredds = (DeleteThredds==1)              
+          deleteDset = (DeleteLocalDB==1)
               
           testProgress = (parent.parent.statusbar.show, 0, 100)
           status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)
@@ -732,10 +727,10 @@ class create_help_menu:
                          label = 'Help HTML',
                          font = mnFont,
                          command = pub_controls.Command(self.evt_helpHTML, parent))
-      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
-                         label = 'Help TEXT',
-                         font = mnFont,
-                         command = pub_controls.Command(self.evt_help, parent))
+#      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+#                         label = 'Help TEXT',
+#                         font = mnFont,
+#                         command = pub_controls.Command(self.evt_help, parent))
  
 
 #---------------------------------------------------------------------

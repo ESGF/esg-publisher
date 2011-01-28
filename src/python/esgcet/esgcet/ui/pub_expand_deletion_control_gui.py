@@ -104,21 +104,17 @@ class deletion_widgets:
       lw_start1.grid(row=0, sticky=N)
       
       
-      
+      DeleteLocalDB = Checkbutton(self.parent.control_frame5, text = "Local DB", variable = deletion_widgets.CheckVar1, \
+                 onvalue = 1, offvalue = 0, height=2, width = 10) # was 10
       DeleteGateway = Checkbutton(self.parent.control_frame5, text = "Gateway", variable = deletion_widgets.CheckVar2, \
                  onvalue = 1, offvalue = 0, height=2, width = 10)
       DeleteThredds = Checkbutton(self.parent.control_frame5, text = "Thredds Server", variable = deletion_widgets.CheckVar3, \
                  onvalue = 1, offvalue = 0, height=2, width = 15)
  
-      DoNotDeleteLocalDB = Checkbutton(self.parent.control_frame5, 
-                                  relief='sunken',
-                                 # tag_font = ('Times', 18, 'bold'),
-                                  text = "Leave on Local DB", variable = deletion_widgets.CheckVar1, \
-                                  onvalue = 1, offvalue = 0, height=2, width = 22) # was 10
       
-      DeleteGateway.grid(row=1, column=0, sticky=W)
-      DeleteThredds.grid(row=2, column=0, sticky=W)
-      DoNotDeleteLocalDB.grid(row=3, column=0, sticky=W)
+      DeleteLocalDB.grid(row=1, column=0, sticky=W)
+      DeleteGateway.grid(row=2, column=0, sticky=W)
+      DeleteThredds.grid(row=3, column=0, sticky=W)
       
       bnFont=tkFont.Font(self.parent.parent, family = pub_controls.label_button_font_type,  size=pub_controls.label_button_font_size, weight=font_weight)
 
@@ -136,7 +132,7 @@ class deletion_widgets:
       cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
       lw_start3.grid(row=4, sticky=W)
       
-      #DoNotDeleteLocalDB.select()
+      DeleteLocalDB.select()
       DeleteGateway.select()
       DeleteThredds.select()
 #      Pmw.alignlabels( (lw_start1, C1,C2,C3, lw_start3) )
@@ -161,15 +157,15 @@ class deletion_widgets:
 
     @staticmethod
     def get_CheckBox1():
-        return deletion_widgets.CheckVar1.get()
+        return deletion_widgets.CheckVar1.get() # local db
     
     @staticmethod
     def get_CheckBox2():
-        return deletion_widgets.CheckVar2.get()
+        return deletion_widgets.CheckVar2.get() # gateway
     
     @staticmethod
     def get_CheckBox3():
-        return deletion_widgets.CheckVar3.get()
+        return deletion_widgets.CheckVar3.get() # thredds
     
 #---------------------------------------------------------------------
 # End of File
