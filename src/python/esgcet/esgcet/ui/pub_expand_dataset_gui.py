@@ -263,7 +263,7 @@ class dataset_widgets:
       self.lw_file.component('hull').configure(relief='sunken', borderwidth=2)
       self.lw_file.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
       self.cw_file = Tkinter.Button(self.lw_file.interior(),
-                    text='File',
+                    text='Map File',
                     font = bnFont,
                     background = "lightblue",
                     foreground='black',
@@ -409,7 +409,7 @@ class dataset_widgets:
        self.generating_file_list_flg = 0
 
     #----------------------------------------------------------------------------------------
-    # From a file, generate the dynamic list of files and thier sizes
+    # From a file, generate the dynamic list of files and their sizes
     #----------------------------------------------------------------------------------------
     def open_text_file( self, dirfilename, lock ):
        import time

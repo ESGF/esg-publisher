@@ -162,8 +162,8 @@ class create_publisher_button_expansion:
       self.parent.balloon.bind(self.ControlButton5, "Remove datasets from the system.")
       self.control_frame5 = Tkinter.Frame(button_parent, width=5,height=5)
 
-      # generate the deletion control widgets
-      self.query_widgets = pub_expand_deletion_control_gui.deletion_widgets( self )
+      # generate the deletion control widgets (was query_widgets BUG?)
+      self.deletion_widgets = pub_expand_deletion_control_gui.deletion_widgets( self )
       #----------------------------------------------------------------------------------------
       # End the create the fifth control button for "Dataset Deletion"
       #----------------------------------------------------------------------------------------

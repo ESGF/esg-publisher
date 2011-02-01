@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Untitled Document</title>
+</head>
+
+<body>
+<h1>&nbsp;</h1>
+<blockquote>
+  <blockquote>
+    <blockquote>
+      <h1><strong>Welcome to ESG Publication GUI Help      </strong></h1>
+      <p>&nbsp;</p>
+    </blockquote>
+  </blockquote>
+</blockquote>
+<h2>Overview of the ESG publisher GUI</h2>
+<p>The ESG Publisher is an application that makes data resident on a local system (the <em>node</em>) visible for search and  download from an ESG web portal, running on the <em>gateway</em> system. Data may be disk-resident or on archival mass storage accessible from the node.</p>
+<p><a title="Basic Ideas" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#basic-ideas">Basic Ideas</a><br />
+  <a title="Getting Started" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#getting-started">Getting Started</a><br />
+  Publication Steps</p>
+<ul>
+  <li><a title="Step 1: Authenticate with the MyProxy server:" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-1-authenticate-with">Authentication</a></li>
+  <li><a title="Step 2a: Specify Project and Dataset:" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-2a-specify-project">Specify project and dataset</a><br />
+  </li>
+  <li><a title="Step 2b: Data Extraction:" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-2b-data-extraction">Scan data (data extraction)</a><br />
+  </li>
+  <li><a title="Step 2c: Modify metadata" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-2c-modify-metadata-1">Modify metadata</a></li>
+  <li><a title="Steps 3-5: Data Publication" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#steps-3-5-data-1">Publish datasets</a></li>
+  <li><a title="Dataset deletion" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#dataset-deletion-unpublish">Delete datasets</a></li>
+  <li><a title="Querying" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#querying">Query datasets</a></li>
+</ul>
+<p>&nbsp;</p>
+<p><img src="./publisher_gui_1.jpg" alt="publisher_gui_1" width="541" height="396" /></p>
+<p>&nbsp;</p>
+<p>&nbsp; </p>
+<hr />
+<p><br />
+  There are two equivalent ways to publish data:</p>
+<ul>
+  <li>From a graphical user interface, described in this document;<br />
+  </li>
+  <li>Using a <a title="external-link" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-scripts/">script</a>.</li>
+</ul>
+<p> </p>
+<p>In both cases the publication steps are as follows:</p>
+<p> </p>
+<img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/node_diagram.png/image_preview" alt="ESG node diagram" />
+<p> </p>
+<p> </p>
+<ol>
+  <li><a title="Step 1: Authenticate with the MyProxy server:" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-1-authenticate-with">Authenticate</a> with a MyProxy server. This is a single sign-on that  generates a limited lifetime proxy certificate. Note that this  certificate is only used for the final gateway publication step.</li>
+  <li>Scan the  data files in one or more datasets, and write the scanned metadata to a  relational database:</li>
+  <ul>
+    <li><a title="Step 2a: Specify Project and Dataset:" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-2a-specify-project">Specify project and dataset</a></li>
+    <li><a title="Step 2b: Data Extraction:" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-2b-data-extraction">Scan the data files</a> and extract metadata</li>
+    <li>Optionally <a title="Step 2c: Modify metadata" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#step-2c-modify-metadata">modify dataset information</a>.<br />
+    </li>
+  </ul>
+  <li>Write the metadata to one or more TDS catalogs, and reinitialize the Thredds Data Server (TDS) from the catalogs.</li>
+  <li>If the Live Access Server (LAS) is implemented on the node, generate an LAS configuration file and reinitialize LAS.</li>
+  <li><a title="Steps 3-5: Data Publication" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#steps-3-5-data">Publish</a> the new TDS catalogs to the gateway.</li>
+</ol>
+<p><br />
+  The publisher GUI also supports dataset <a title="Dataset deletion (unpublish)" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#dataset-deletion-unpublish">deletion</a> and <a title="Querying" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-gui#querying">queries</a>.<br />
+  <br />
+</p>
+<h3><a name="basic-ideas" id="basic-ideas"></a>Basic Ideas</h3>
+<p>There are a few basic ideas and assumptions to know about publishing:</p>
+<ul>
+  <li>In ESG, datasets are hierarchical collections. Typically a   dataset will consist of a set of associated data files. When a dataset   is published, two of the important pieces of information passed to the   gateway are the Dataset Identifiier and the Parent Identifier. This says   to the gateway: 'publish dataset X in the parent collection Y'. The   Publisher application supports user-defined naming conventions for   consistent, automated generation of identifiers. A common convention is   fields separated with periods, for example,   'pcmdi.ipcc4.gfdl_cm2_0.20c3m.run1.monthly'.</li>
+  <li>At the top level   datasets are organized into projects. A project is the activity for   which the datasets are generated. A prominent example of a project is   the IPCC Fifth Assessment Report (AR5). It is up to the data publisher   to decide what datasets belong to a project.<br />
+  </li>
+  <li>The publisher   application iis designed to scan large volumes of data. Multiple   datasets can be scanned and published in a single operation. In the   extreme, if all datasets for a project are stored in a single,   consistently-named directory structure, they can all be published at one   time.<br />
+  </li>
+  <li>
+    <p>Metadata refers to information about data, for example, the name of   the model and the experiment identifier. A main function of the   publisher is to determine what metadata fields are associated with a   datasets and the values of those fields. The set of metadata fields to   be scanned is determined by the project, and can vary between projects.   This information is stored in a configuration file, <a title="external-link" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publisher-configuration/">esg.ini</a>.</p>
+  </li>
+  <li>There are several ways the publisher can read metadata:</li>
+  <ul>
+    <li>Scanning the headers of the data files. If the data files are   online (read-accessible) and in CF-compliant netCDF format, the   publisher can read the information during file scanning. To handle other   formats, data handlers can be plugged in to the publisher software. If   the data is offline (resident on archival storage) a different method is   used. <br />
+    </li>
+    <li>Some metadata can be determined from the directory   structure of the data files, if the data is consistently organized. Data   may be resident in more than one top-level (root) directory.</li>
+    <li>Metadata   can be input directly by the data publisher, on a dataset by dataset   basis or as default values for all datasets to be published.</li>
+  </ul>
+  <li>The publisher stores metadata in a database on the node.  Once a   collection of files are scanned they do not need to be rescanned, for   instance when a few files are to be added or modified; only the new data   must be processed. The publisher supports querying the database for   information on what has already been published, and for the status of   ongoing publication operations.</li>
+  <li>The last step is to contact the   gateway to finalize the publication process. At this point the publisher   must authenticate to the gateway. This is done by running the   'myproxy-logon' client from the command line to generate a temporary   certificate. The location of the certificate is part of the publisher   configuration. The lifetime of the certificate is 12 hours by default;   during that period the publisher can reuse the certificate.<br />
+  </li>
+</ul>
+<h3><a name="getting-started" id="getting-started"></a>Getting Started</h3>
+<p>At this point we assume that the ESG publication clients are   installed and configured for your system. Before running the ESG   Publisher client for the first time:</p>
+<ul>
+  <li>Find the location of the myproxy-logon client, and verify your username and password.</li>
+  <li>Find the location of python and the publication clients. Add this directory to your path.<br />
+  </li>
+  <li>Create the directory $HOME/.esgcet. Copy the <a title="external-link" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publisher-configuration/">initialization file esg.ini</a> to this directory. You can edit this file to override the system-wide defaults.</li>
+  <li>In esg.ini:</li>
+  <ul>
+    <li>search for the parameter thredds_root. This is the root   directory for TDS catalogs. Ensure that you have read-write permissions   to this directory and its contents.</li>
+    <li>find  the parameter hessian_service_certfile. This is the location where myproxy-logon should write the proxy certificate.<br />
+    </li>
+  </ul>
+</ul>
+<p><br />
+  To start the ESG publisher GUI:</p>
+<pre>% esgpublish_gui &amp;  </pre>
+<p>This screen appears:</p>
+<p><img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/Slide3.png" alt="" /></p>
+<ul>
+  <li>The collapsible function menu corresponds to the publication steps.</li>
+  <li>The dataset window lists the datasets currently being processed, or the results of a query.</li>
+  <li>The output window echoes the logging output.</li>
+  <li>The status bar indicates the progress of a dataset scan or publication.<br />
+  </li>
+</ul>
+<p> </p>
+<h3><a name="step-1-authenticate-with" id="step-1-authenticate-with"></a>Step 1: Authenticate with the MyProxy server:</h3>
+<pre># Ensure that the Globus environment is set. For example, in csh:  % setenv GLOBUS_LOCATION &lt;globus-directory&gt;  % source $GLOBUS_LOCATION/etc/globus-user-env.csh    # Or in Bourne shell:  % GLOBUS_LOCATION=&lt;globus-directory&gt;  % export GLOBUS_LOCATION  % source $GLOBUS_LOCATION/etc/globus-user-env.sh    % myproxy-logon -s &lt;host&gt; -l &lt;username&gt; -p &lt;port&gt; -o &lt;certificate_location&gt;  Enter MyProxy pass phrase:  A credential has been received for user &lt;username&gt; in &lt;certificate_location&gt;.</pre>
+<h3><a name="step-2a-specify-project" id="step-2a-specify-project"></a>Step 2a: Specify Project and Dataset:</h3>
+<p> </p>
+<img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/SpecProject.png" alt="" />
+<p> </p>
+<p> </p>
+<ul>
+  <li>Select the project from the pulldown menu.</li>
+  <li>If the datasets   are offline, on tertiary storage, choose the Off-line checkbox.   Otherwise if the data to be scanned is online and accessible, choose   On-line.</li>
+  <li>The files to be scanned can be selected from a directory, or from a <a title="ESG publication scripts" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-scripts#example-specifying-the-dataset">mapfile</a> generated with the <strong>esgscan_directory</strong> script. After the files are selected the datasets are listed in the Dataset Window.<br />
+  </li>
+</ul>
+<p><br />
+  Notes:</p>
+<ul>
+  <li>If  no dataset entries appear in the  dataset window,  it means   that  none of the directories specified match the directory templates   for the selected project. To correct this, edit the directory_format   option in the current project section of the <a title="external-link" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publisher-configuration/">configuration file</a>, adding an entry to match the directory name.</li>
+  <li>The   Fields button allows you to set values for mandatory fields for this   project.  In general it is better to let the publisher discover metadata   values if possible, especially if multiple datasets are processed. The   specified values will override any information in the file or directory   name, so use this option with caution.<br />
+  </li>
+</ul>
+<h3><a name="step-2b-data-extraction" id="step-2b-data-extraction"></a>Step 2b: Data Extraction:</h3>
+<p><br />
+  <img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/DataExtract.png" alt="" /></p>
+<p> </p>
+<ul>
+  <li>The options are:</li>
+  <ul>
+    <li>Create/Replace to create a new dataset or replace an existing one. <br />
+    </li>
+    <li>Append/Update to add or replace files in an existing dataset; if the dataset does not exist the default is to create one.</li>
+  </ul>
+  <li>During the scan:</li>
+  <ul>
+    <li>the status bar tracks the scan progress,</li>
+    <li>the output window echoes logging information</li>
+    <li>the error tab shows all errors<br />
+    </li>
+  </ul>
+  <li>When the scan is complete:</li>
+  <ul>
+    <li>the dataset window displays metadata for each dataset scanned. Datasets for which scan errors occurred are highlighted in red.<br />
+    </li>
+    <li>the Data Publication menu is enabled.<br />
+      <br />
+    </li>
+  </ul>
+</ul>
+<h3><a name="step-2c-modify-metadata" id="step-2c-modify-metadata"></a>Step 2c: Modify metadata </h3>
+<img src="http://www2-pcmdi.llnl.gov/Members/bdrach/Picture7.png" alt="" />
+<p><br />
+  <img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/ModifyMetadata.png" alt="" /></p>
+<p>Select a dataset entry in the dataset window:</p>
+<ul>
+  <li>Metadata for that dataset is displayed</li>
+  <li>Mandatory fields are  highlighted in blue. (Fields are defined as mandatory in the configuration file).</li>
+  <li>Field values found during the scan are displayed in red. Fixed fields are shaded red, all other fields can be modified.</li>
+  <li>When done, select 'Save Changes'. This saves changes to the database.<br />
+    <br />
+  </li>
+</ul>
+<h3><a name="steps-3-5-data" id="steps-3-5-data"></a>Steps 3-5: Data Publication </h3>
+<p><br />
+  <img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/copy2_of_copy_of_Publication.png" alt="" /><br />
+  <br />
+</p>
+<p>Select the Data Publication function menu. The dataset window shows   the datasets just scanned. By default all the datasets are selected for   publication. Click the check boxes to toggle selection.</p>
+<p>When Publish is clicked:</p>
+<ul>
+  <li>THREDDS data server (TDS) catalogs are created for each new dataset.</li>
+  <li>The TDS is reinitialized.</li>
+  <li>If the Live Access Server is implemented, the LAS configuration file is written and LAS reinitialized.</li>
+  <li>The gateway server is notified that new datasets have been published.</li>
+</ul>
+The <a title="ESG publication scripts" href="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/esg-publication-scripts">publishing scripts</a> can be used to run the above steps separately if desired.
+<p> </p>
+<h3><a name="dataset-deletion-unpublish" id="dataset-deletion-unpublish"></a>Dataset deletion<br />
+</h3>
+<p> </p>
+<p><img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/copy_of_Deletion.png" alt="" /><br />
+  <br />
+</p>
+<p>To delete a dataset (just the metadata, not the files):</p>
+<ul>
+  <li>Select the dataset(s) to be deleted by clicking the leftmost  button in the dataset window. The datasets indicated by checkboxes will  be deleted.<br />
+  </li>
+  <li>From the Dataset pulldown menu, click 'Remove'.</li>
+  <li>When the deletion is complete, the status of the datasets changes to 'GW Deletion' (gateway deletion).<br />
+  </li>
+</ul>
+<p>Note: A record of the dataset is left in the database. To remove this record as well, use the <strong>esgunpublish</strong> script.</p>
+<h3><a name="querying" id="querying"></a>Querying<br />
+</h3>
+<p> </p>
+<p><img src="http://www2-pcmdi.llnl.gov/Members/bdrach/.personal/Query.png" alt="" /><br />
+  <br />
+</p>
+<p>Select 'Query Data Information' in the Dataset Query menu. The   matching datasets appear in the Dataset window: You can select,   republish, or delete any of the displayed datasets.</p>
+</body>
+</html>

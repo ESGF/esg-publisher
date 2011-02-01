@@ -228,8 +228,8 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         event = Event(datasetName, newVersion, eventFlag)
         dset.events.append(event)
 
-    info("Adding file info to database")
-    session.commit()
+    info("Adding file info to database")  # ganz TODO should I update the dataSetNames[] with the new version now?
+    session.commit()                      # NOTE: dset is returned which holds it!
     session.close()
 
     return dset
@@ -294,7 +294,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
         info("Updating files in dataset: %s, version %d"%(dset.name, dsetVersion.version))
 
     haveLatestDsetVersion = (dsetVersion.version == dset.getVersion())
-
+    
     # Get the list of FileVersion objects for this version
     locdict = {}
     todelete = {}
@@ -945,7 +945,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                     compare = (lastValues[0:-1] <= firstValues[1:])
                 if compare.any():
                     overlaps = compare.nonzero()[0]
-                    dset.warning("Variable %s is duplicated:"%(var.short_name), WARNING_LEVEL, AGGREGATE_MODULE)
+                    dset.warning("Variable %s is Duplicated:"%(var.short_name), WARNING_LEVEL, AGGREGATE_MODULE)
                     var.has_errors = True
                     nprint = min(len(overlaps), 3)
                     for i in range(nprint):

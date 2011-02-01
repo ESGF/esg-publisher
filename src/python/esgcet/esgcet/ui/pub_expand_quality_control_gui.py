@@ -17,6 +17,9 @@
 #                                                                             #
 ###############################################################################
 #
+
+from Tkinter import *
+
 import Tkinter, Pmw, tkFileDialog, tkFont
 import os, string
 import pub_editorviewer
@@ -46,6 +49,13 @@ class quality_control_widgets:
       # Set the arrow icons
       self.on  = Tkinter.PhotoImage(file=on_icon)
       self.off = Tkinter.PhotoImage(file=off_icon)
+      
+      global CheckVar1
+      quality_control_widgets.CheckVar1 = IntVar() # local db
+      global CheckVar2
+      quality_control_widgets.CheckVar2 = IntVar() # gateway
+      global CheckVar3
+      quality_control_widgets.CheckVar3 = IntVar() # thredds
 
       #----------------------------------------------------------------------------------------
       # Begin the creation of the button controls
@@ -59,41 +69,71 @@ class quality_control_widgets:
       #                  tagindent = 25)
 
       # Create and pack the LabeledWidgets to "Select All" datasets
+#      lw_start1 = Pmw.LabeledWidget(self.parent.control_frame3,
+#                    labelpos = 'w',
+#                    label_font = bnFont,
+#                    label_text = 'Dataset: ')
+#      lw_start1.component('hull').configure(relief='sunken', borderwidth=2)
+#      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+#      cw_start = Tkinter.Button(lw_start1.interior(),
+#                    text='Select All',
+#                    font = bnFont,
+#                    background = "aliceblue",
+#                    command = pub_controls.Command( self.evt_dataset_select_all ))
+#      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
+
+      # Create and pack the LabeledWidgets to "Unselect All" datasets
+#      lw_start2 = Pmw.LabeledWidget(self.parent.control_frame3,
+#                    labelpos = 'w',
+#                    label_font = bnFont,
+#                    label_text = 'Dataset: ')
+#      lw_start2.component('hull').configure(relief='sunken', borderwidth=2)
+#      lw_start2.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+#      cw_start = Tkinter.Button(lw_start2.interior(),
+#                    text='Unselect All',
+#                    font = bnFont,
+#                    background = "aliceblue",
+#                    command = pub_controls.Command( self.evt_dataset_unselect_all ))
+#      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
+
+      # Create and pack the LabeledWidgets to "Publish" datasets
+      
+      
+ ############################################################################################     
+      
       lw_start1 = Pmw.LabeledWidget(self.parent.control_frame3,
                     labelpos = 'w',
                     label_font = bnFont,
-                    label_text = 'Dataset: ')
-      lw_start1.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
-      cw_start = Tkinter.Button(lw_start1.interior(),
-                    text='Select All',
-                    font = bnFont,
-                    background = "aliceblue",
-                    command = pub_controls.Command( self.evt_dataset_select_all ))
-      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
-
-      # Create and pack the LabeledWidgets to "Unselect All" datasets
-      lw_start2 = Pmw.LabeledWidget(self.parent.control_frame3,
-                    labelpos = 'w',
-                    label_font = bnFont,
-                    label_text = 'Dataset: ')
-      lw_start2.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start2.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
-      cw_start = Tkinter.Button(lw_start2.interior(),
-                    text='Unselect All',
-                    font = bnFont,
-                    background = "aliceblue",
-                    command = pub_controls.Command( self.evt_dataset_unselect_all ))
-      cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
-
-      # Create and pack the LabeledWidgets to "Publish" datasets
+                    label_text = 'Select where to Publish Datasets: ')
+      lw_start1.component('hull').configure(relief='flat', borderwidth=2)
+      lw_start1.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)      
+      lw_start1.grid(row=0, sticky=N)
+      
+      
+      
+      PublishGateway = Checkbutton(self.parent.control_frame3, text = "Gateway", variable = quality_control_widgets.CheckVar2, \
+                 onvalue = 1, offvalue = 0, height=2, width = 10)
+      PublishThredds = Checkbutton(self.parent.control_frame3, text = "Thredds Server", variable = quality_control_widgets.CheckVar3, \
+                 onvalue = 1, offvalue = 0, height=2, width = 15)
+      #PublishLocalDB = Checkbutton(self.parent.control_frame3, text = "Local DB", variable = quality_control_widgets.CheckVar1, \
+      #           onvalue = 1, offvalue = 0, height=2, width = 10) # was 10
+      
+      PublishGateway.pack(side='left', expand = 1, fill = 'both', padx=3, pady=10)  
+      PublishThredds.pack(side='left', expand = 1, fill = 'both', padx=3, pady=10) 
+      #PublishLocalDB.pack(side='left', expand = 1, fill = 'both', padx=3, pady=10)     
+      PublishGateway.grid(row=1, column=0, sticky=W)
+      PublishThredds.grid(row=2, column=0, sticky=W)
+      #PublishLocalDB.grid(row=3, column=0, sticky=W)
+      
+      ##############################################################################
+      
       self.generating_file_list_flg = 0
       lw_start3 = Pmw.LabeledWidget(self.parent.control_frame3,
                     labelpos = 'w',
                     label_font = bnFont,
-                    label_text = 'Release data: ')
+                    label_text = 'Release Data: ')
       lw_start3.component('hull').configure(relief='sunken', borderwidth=2)
-      lw_start3.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
+      lw_start3.pack(side='bottom', expand = 1, fill = 'both', padx=10, pady=10)
       cw_start = Tkinter.Button(lw_start3.interior(),
                     text='Publish',
                     font = bnFont,
@@ -101,8 +141,16 @@ class quality_control_widgets:
                     command = pub_controls.Command( self.start_harvest, parent ))
       cw_start.pack(padx=10, pady=10, expand='yes', fill='both')
 
-      Pmw.alignlabels( (lw_start1, lw_start2, lw_start3) )
+      lw_start3.grid(row=3, sticky=W) # added set to 4 if checking for Local DB
+      
+      PublishGateway.select()
+      PublishThredds.select()
+      #PublishLocalDB.select()
 
+
+ #     Pmw.alignlabels( (lw_start1, lw_start2, lw_start3) )
+#########=====================================================================
+#Removing this since I don't know why it's here...ganz 1/25/11
       # Create and pack the LabeledWidgets to THREDDS catalog the data
       self.generating_file_list_flg = 0
       lw_catalog = Pmw.LabeledWidget(self.parent.control_frame3,
@@ -113,7 +161,8 @@ class quality_control_widgets:
                     text='THREDDS',
                     command = pub_controls.Command( self.catalog_thredds, parent ))
       cw_catalog.pack(padx=10, pady=10, expand='yes', fill='both')
-
+      #lw_catalog.grid(row=5, sticky=W) # added ganz
+#########=====================================================================
       #self.button_controls.pack(side='top', fill='x', pady=3)
       #----------------------------------------------------------------------------------------
       # End the creation of the button controls
@@ -128,6 +177,18 @@ class quality_control_widgets:
     def evt_dataset_unselect_all( self ):
        self.parent.parent.menu.Dataset.evt_unselect_all_dataset( self.parent.parent )
 
+    @staticmethod
+    def get_CheckBox1():
+        return quality_control_widgets.CheckVar1.get()
+    
+    @staticmethod
+    def get_CheckBox2():
+        return quality_control_widgets.CheckVar2.get()
+    
+    @staticmethod
+    def get_CheckBox3():
+        return quality_control_widgets.CheckVar3.get()
+    
     def start_harvest( self, parent ):
         from esgcet.publish import publishDatasetList
         from esgcet.model import Dataset, PUBLISH_FAILED_EVENT, ERROR_LEVEL
@@ -158,7 +219,13 @@ class quality_control_widgets:
 
             if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
                 dset_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-                dsetTuple = parseDatasetVersionId(dset_name)
+                #######################################
+                                  # ganz added this 1/18/11    
+                versionNum = self.parent.parent.main_frame.version_label[selected_page][x].cget('text') 
+                dsetTuple = (dset_name, versionNum)
+                #dsetName = generateDatasetVersionId(dsetTuple)                
+                  #####################################################################################
+                # dsetTuple = parseDatasetVersionId(dset_name) # ganz no longer necessary
                 datasetNames.append(dsetTuple)
                 GUI_line[ dset_name ] = x
             else:
@@ -167,7 +234,13 @@ class quality_control_widgets:
 
         # Publish collection of datasets
         testProgress = (self.parent.parent.statusbar.show, 0, 100)
-        status_dict = publishDatasetList(datasetNames, self.Session, progressCallback=testProgress)
+        publishThredds = (quality_control_widgets.get_CheckBox3()==1)
+        publishGateway = (quality_control_widgets.get_CheckBox2()==1)
+        if (publishThredds):
+            print 'publishing to Thredds'
+        if (publishGateway):
+            print 'publishing to Gateway'            
+        status_dict = publishDatasetList(datasetNames, self.Session, publish=publishGateway, thredds=publishThredds, progressCallback=testProgress)
 
         # Show the published status
         for x in status_dict.keys():

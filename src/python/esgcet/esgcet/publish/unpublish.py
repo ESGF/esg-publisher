@@ -137,7 +137,7 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
 DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
-def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False):
+def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=True, progressCallback=None, deleteAll=False, republish=False):
     """
     Delete or retract a list of datasets:
 
@@ -160,7 +160,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     gatewayOperation
       An enumeration. If:
       - publish.DELETE: Remove all metadata from the gateway database.
-      - publish.UNPUBLISH: (Defauult) Remove metadata that allows dataset discovery from the gateway.
+      - publish.UNPUBLISH: (Default) Remove metadata that allows dataset discovery from the gateway.
       - publish.NO_OPERATION: No gateway delete/retract operation is called.
 
     thredds
@@ -170,7 +170,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
       Boolean flag: if true (the default), reinitialize server.
 
     deleteInDatabase
-      Boolean flag: if true (default is False), delete the database entry.
+      Boolean flag: if true (default is True), delete the database entry.
     
     progressCallback
       Tuple (callback, initial, final) where ``callback`` is a function of the form ``callback(progress)``, ``initial`` is the initial value reported, ``final`` is the final value reported.
@@ -183,6 +183,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
 
     """
 
+    
     if gatewayOperation not in (DELETE, UNPUBLISH, NO_OPERATION):
         raise ESGPublishError("Invalid gateway operation: %d"%gatewayOperation)
     deleteOnGateway = (gatewayOperation==DELETE)
@@ -192,6 +193,13 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     resultDict = {}
     config = getConfig()
 
+    if (thredds):
+        print 'delete thredds'
+    if (deleteOnGateway):
+        print 'delete gateway'
+    if (deleteInDatabase):
+        print 'delete db'
+               
     # Check the dataset names and cache the results for the gateway, thredds, and database phases
     nameDict = {}
     for datasetName,version in datasetNames:

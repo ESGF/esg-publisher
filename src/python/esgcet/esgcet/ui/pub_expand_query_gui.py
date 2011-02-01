@@ -25,7 +25,7 @@ import pub_busy
 import thread
 import gui_support
 import string
-
+from Tkinter import *
 from pub_controls import font_weight
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from pub_controls import MyButton
@@ -53,6 +53,7 @@ class query_widgets:
       self.parent = parent
       self.Session = parent.parent.Session
       self.select_button = {}
+      self.select_labelV = {}
       self.select_label = {}
 
       #----------------------------------------------------------------------------------------
@@ -136,7 +137,7 @@ class query_widgets:
                 if options[list_fields[i]] is None: 
                    value = ""
                 else:
-                   value = options[list_fields[i]][0]
+                   value = options[list_fields[i]] # ganz bug fix [0]
                 if validate[i] == 1:
                     options[list_fields[i]].insert(0, "-Any-")
                     value = "-Any-"
@@ -186,6 +187,7 @@ class generate_notebook:
       self.status = {}
       self.ok_err = {}
       self.select_label = {}
+      self.select_labelV = {}
       self.pageFrame = {}
       self.pageFrameLabels = {}
       self.editor_parent = self.parent.parent.pane2.pane( 'EditPaneTop' )
@@ -205,6 +207,7 @@ class generate_notebook:
     #----------------------------------------------------------------------------------------
     def new_query_page( self, parent, tab_name=None, query_id=None ):
       # Start the busy routine to indicate to the users something is happening
+      
       self.parent.parent.busyCursor = 'watch'
       self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
       pub_busy.busyStart( self.parent.parent )
@@ -214,6 +217,8 @@ class generate_notebook:
       handler = getHandlerByName(projectName, None, self.Session)
       tabcolor = Pmw.Color.changebrightness(self.parent.parent, pub_controls.query_tab_color, 0.6 )
 
+# works up to here
+      
       if query_id is None:
         for x in self.parent.query_fields.keys():
            query_string = self.parent.query_fields[x].get().lstrip()
@@ -226,10 +231,16 @@ class generate_notebook:
            del properties['id'] # This causes an error because you cannot modify the 'id'
           
         listProperties = False
-
+        
+        
+      
         result, headers = queryDatasets(projectName, handler, self.Session, properties)
-
+       # works up to here
+       
+       # running this causes it to fail!
         self.new_page(parent, tabName=None, tab_color=tabcolor, page_type = "query", query_result = result, list_fields = headers)
+        
+        
       else:
         result, headers = queryDatasets(projectName, handler, self.Session, properties)
         for x in result:
@@ -239,8 +250,10 @@ class generate_notebook:
               query_id_found = True
               break
         if query_id_found is False:
-	  warning("The specified dataset id '%s' was not found.", query_id)
+	       warning("The specified dataset id '%s' was not found.", query_id)
 
+# fails here
+      
       # Enable the "Data Publication" button
       self.parent.ControlButton3.configure( state = 'normal' )
 
@@ -249,6 +262,8 @@ class generate_notebook:
           datasetNames.append( x[1] )
       dmap, offline_map, extraFields = queryDatasetMap( datasetNames, self.Session, extra_fields=True )
       # Check if offline or not, then set the iteration values for each page
+      
+      
       selected_page = self.parent.parent.main_frame.selected_top_page
       self.parent.parent.hold_offline[selected_page] = offline_map
       self.parent.parent.main_frame.projectName[selected_page] = projectName
@@ -341,6 +356,7 @@ class generate_notebook:
 
 
       frame_ct = self.parent.parent.top_ct
+      
       self.pageFrameLabels[ frame_ct ] = Pmw.ScrolledFrame(group_page.interior(),
                 vscrollmode = 'none',
                 hscrollmode = 'none',
@@ -349,12 +365,12 @@ class generate_notebook:
                 hull_height = 2*text_height
       )
       self.pageFrameLabels[ frame_ct ].pack(fill='x', padx = 2, pady = 3)
-      bwidth=170
+      bwidth=149 # was 170
       btext='          Dataset'
       banchor = 'w'
       if page_type == "query":
          btext = 'Ok/Err'
-         bwidth = 4
+         bwidth = 4 
          banchor = 'n'
       self.label = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 text = 'Pick',
@@ -367,6 +383,44 @@ class generate_notebook:
                 width = 2,
       )
       self.label.pack(side='left', expand=1, fill='both')
+
+#      if btext == '          Dataset':   # version should preceed the Dataset
+# ganz added this to see about putting in a version 2nd try
+      self.label4v = ""
+      
+      #ganz this code should go in query below (433)
+      # ganz commented this out 1/19/11
+#      lcolorV = Pmw.Color.changebrightness(self.parent.parent, 'green', 0.8 )
+#      if list_fields != None: 
+       #if  'version' in list_fields:
+#        self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
+#                text = 'Ver',
+#                relief = 'sunken',
+#                borderwidth = 1,
+                #font = labelFont,
+#                bg = lcolorV,
+#                width = 9
+#         )
+#        self.label4v.pack(side='left', expand=1, fill='both')
+##########################################################################
+#
+#        popup = Menu(self.pageFrameLabels[ frame_ct ].interior(), tearoff=0)
+#        popup.add_command(label="Show All Versions") # , command=next) etc...
+#        popup.add_command(label="Show Latest Version")
+        #popup.add_separator()
+        #popup.add_command(label="Home 0")
+
+#        def do_popup(event):
+                # display the popup menu
+#                try:
+#                    popup.tk_popup(event.x_root, event.y_root, 0)
+#                finally:
+                    # make sure to release the grab (Tk 8.0a1 only)
+#                    popup.grab_release()
+
+#        self.label4v.bind("<Button-3>", do_popup)
+
+
       self.label2 = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 anchor=banchor,
                 justify='left',
@@ -406,6 +460,17 @@ class generate_notebook:
                 width = 6
             )
             self.label3.pack(side='left', expand=1, fill='both')
+
+# ganz added this to see about putting in a version
+         self.label4v = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
+                text = 'Ver',
+                relief = 'sunken',
+                borderwidth = 1,
+                font = labelFont,
+                bg = lcolor2,
+                width = 9
+         )
+         self.label4v.pack(side='left', expand=1, fill='both')
 
          self.label4 = Tkinter.Button(self.pageFrameLabels[ frame_ct ].interior(),
                 text = 'Dataset',
@@ -457,8 +522,8 @@ class generate_notebook:
                 borderwidth = 1,
                 #font = labelFont,
                 bg = lcolor6,
-                width = 23
-            )
+                width = 21
+            ) # width was 23
             self.label8.pack(side='left', expand=1, fill='both')
 
       # Show the background
@@ -475,13 +540,14 @@ class generate_notebook:
       hsbr2.config(command=pub_controls.Command( self.sync_scroll_move, self.parent.parent.top_ct) )
 
       # Display the datasets in the page
+      
       self.display_datasets( page_type, query_result, list_fields )
-
+      
       # Now view the newly created notebook page
       self.parent.parent.top_notebook.pack(side = 'top', fill = 'both', expand = 1, padx = 10, pady = 10)
 
       self.parent.parent.top_ct = self.parent.parent.top_ct + 1 # increment the unique page ID number
-
+      
     #----------------------------------------------------------------------------------------
     # Refresh the displayed "Query" page or "Collection" page and show the updated status of
     # each dataset
@@ -493,18 +559,34 @@ class generate_notebook:
         self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
         pub_busy.busyStart( self.parent.parent )
 
+                      
         if self.parent.parent.refreshButton[selected_page].cget('relief') == 'raised':
            for x in self.parent.parent.main_frame.top_page_id[selected_page]:
                if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
                   dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+                  
+                  # ganz added this 1/18/11
+                  query_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')               
+                  versionNum = self.parent.parent.main_frame.version_label[selected_page][x].cget('text')                 
+                  #####################################################################################
+                                   
                   query_name, versionNum = parseDatasetVersionId(dsetVersionName)
+# ganz TODO test only remove
+#                  print query_name
+#                  print versionNum
+                  
                   status = pollDatasetPublicationStatus(query_name, self.Session)
             
                   self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
 
                   # Make sure you update the Ok/Err button
+                  # ganz added this (1/18/11) here to catch the case when dset=None (e.g. no local db entry exists)
                   dset = Dataset.lookup(query_name, self.Session)
-                  if dset.has_warnings(self.Session):
+                  if (dset == None):
+                     buttonColor = "yellow"
+                     buttonText = "Warning"
+                     self.parent.parent.main_frame.ok_err[selected_page][x].configure(bg=buttonColor, text=buttonText)                     
+                  elif dset.has_warnings(self.Session):
                      warningLevel = dset.get_max_warning_level(self.Session)
                      if warningLevel>=ERROR_LEVEL:
                          buttonColor = "pink"
@@ -527,6 +609,9 @@ class generate_notebook:
     #----------------------------------------------------------------------------------------
     # Display the datasets on the page as a result of querying or defining a dataset id
     #----------------------------------------------------------------------------------------
+     #----------------------------------------------------------------------------------------
+    # Display the datasets on the page as a result of querying or defining a dataset id
+    #----------------------------------------------------------------------------------------
     def display_datasets( self, page_type = "collection", query_result = None, list_fields = None ):
    
       self.row = 0
@@ -535,6 +620,8 @@ class generate_notebook:
       self.add_row_frame = {}
       self.select_button = {}
       self.select_label = {}
+      self.label4v = {}
+      self.select_labelV = {}
       self.status = {}
       self.ok_err = {}
 
@@ -552,19 +639,27 @@ class generate_notebook:
          for x in query_result:
              self.addQueryPageRow( i, x, list_fields )
              i += 1
-
+         
+        
       self.parent.parent.main_frame.row_frame_labels[self.parent.parent.main_frame.selected_top_page] = self.pageFrameLabels
       self.parent.parent.main_frame.row_frame_label2[self.parent.parent.main_frame.selected_top_page] = self.label2
+      #self.parent.parent.main_frame.version_label[self.parent.parent.main_frame.selected_top_page] =  self.label4v # ganz 1/19/11
       self.parent.parent.main_frame.add_row_frame[self.parent.parent.main_frame.selected_top_page] = self.add_row_frame
       self.parent.parent.main_frame.top_page_id[ self.parent.parent.main_frame.selected_top_page ] = self.select_button
       self.parent.parent.main_frame.top_page_id2[ self.parent.parent.main_frame.selected_top_page ] = self.select_label
+      self.parent.parent.main_frame.version_label[self.parent.parent.main_frame.selected_top_page] =  self.select_labelV # TODO ganz added this to test
       self.parent.parent.main_frame.status_label[ self.parent.parent.main_frame.selected_top_page ] = self.status
       self.parent.parent.main_frame.ok_err[ self.parent.parent.main_frame.selected_top_page ] = self.ok_err
+   
+    
+    
 
     #----------------------------------------------------------------------------------------
-    # Add one dataset information row to the "Query" page
+    # Add one dataset information row to the "Query" page QUERY COLLECTION
     #----------------------------------------------------------------------------------------
     def addQueryPageRow( self, num_tag, query_result, list_fields ):
+        
+        
       # set the color for each item in the row
       dcolor1 = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.8 )
       dcolor2 = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.7 )
@@ -577,6 +672,10 @@ class generate_notebook:
       frame_ct = self.parent.parent.top_ct
       labelFont=tkFont.Font(self.parent.parent, family= pub_controls.collection_font_type, size=pub_controls.collection_font_size)
       self.add_row_frame[ num_tag ] = self.pageFrame[ frame_ct ].interior()
+
+
+
+
 
       self.select_button[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
 #                compound = Tkinter.LEFT,
@@ -620,6 +719,7 @@ class generate_notebook:
       self.status[ num_tag ] = Tkinter.Label( self.add_row_frame[ num_tag ], text = status_text, bg = dcolor1, highlightcolor = dcolor1, width = 10, relief = 'sunken')
       self.status[ num_tag ].grid(row = self.row, column = 2, sticky = 'nsew')
 
+
       if 'id' in list_fields:
          id = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[0], bg = dcolor2, width = 6, relief = 'sunken')
          id.grid(row = self.row, column = 3, sticky = 'nsew')
@@ -631,10 +731,24 @@ class generate_notebook:
           versionNum = string.atoi(query_result[versionIndex])
       except:
           pass
+      
+   
       dsetTuple = (dsetName, versionNum)
       dsetName = generateDatasetVersionId(dsetTuple)
+#ganz adding rows here...need to add versions
+      datasetName = dsetTuple[0] # dataset[0]  #parseDatasetVersionId(dataset)
+      versionno = dsetTuple[1] # dataset[1]
+
+      ver_1 = versionno
+      if (ver_1 ==-1):
+            ver_1 = "N/A"
+
+      self.select_labelV[ num_tag ] = Tkinter.Label( self.add_row_frame[ num_tag ], text = ver_1, bg = dcolor2, width = 11, relief = 'sunken')
+      self.select_labelV[ num_tag ].grid(row = self.row, column = 4, sticky = 'nsew')
+       
+
       self.select_label[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ],
-                text = dsetName,
+                text = datasetName, #dsetName,
                 font = labelFont,
                 bg = self.keycolor2,
                 relief = 'raised',
@@ -644,23 +758,23 @@ class generate_notebook:
                 width = 71,
                 command = pub_controls.Command( self.evt_selected_dataset_text, dsetTuple, num_tag, 0 ),
         )
-      self.select_label[ num_tag ].grid(row = self.row, column = 4, columnspan=2, sticky = 'nsew')
+      self.select_label[ num_tag ].grid(row = self.row, column = 5, columnspan=2, sticky = 'nsew')
 
       if 'project' in list_fields:
          project = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[2], bg = dcolor3, width = 20, relief = 'sunken', borderwidth = 2)
-         project.grid(row = self.row, column = 6, sticky = 'nsew')
+         project.grid(row = self.row, column = 7, sticky = 'nsew')
 
       if 'model' in list_fields:
          model = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[3], bg = dcolor4, width = 20, relief = 'sunken', borderwidth = 2)
-         model.grid(row = self.row, column = 7, sticky = 'nsew')
+         model.grid(row = self.row, column = 8, sticky = 'nsew')
 
       if 'experiment' in list_fields:
          experiment = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[4], bg = dcolor5, width = 20, relief = 'sunken', borderwidth = 2)
-         experiment.grid(row = self.row, column = 8, sticky = 'nsew')
+         experiment.grid(row = self.row, column = 9, sticky = 'nsew')
 
       if 'run_name' in list_fields:
          run_name = Tkinter.Label( self.add_row_frame[ num_tag ], text = query_result[5], bg = dcolor6, width = 20, relief = 'sunken', borderwidth = 2)
-         run_name.grid(row = self.row, column = 9, sticky = 'nsew')
+         run_name.grid(row = self.row, column = 10, sticky = 'nsew')
 
       self.add_row_frame[ num_tag ].grid_rowconfigure(self.row, weight = 1)
       self.add_row_frame[ num_tag ].grid_columnconfigure(1, weight = 1)
@@ -671,9 +785,12 @@ class generate_notebook:
       self.row = self.row + 1 # increment to the next dataset row
 
     #---------------------------------------------------------------------
-    # Add one dataset information row to the "Collection" page
+    # Add one dataset information row to the "Collection" page INITIAL COLLECTION
     #---------------------------------------------------------------------
     def addPageRow( self, num_tag, dataset, page_type = "collection" ):
+        
+       
+        
         frame_ct = self.parent.parent.top_ct
         labelFont=tkFont.Font(self.parent.parent, family = pub_controls.collection_font_type, size=pub_controls.collection_font_size)
         self.add_row_frame[ num_tag ] = self.pageFrame[ frame_ct ].interior()
@@ -689,9 +806,19 @@ class generate_notebook:
                 command = pub_controls.Command( self.evt_selected_dataset, num_tag ),
         )
 	self.select_button[ num_tag ].grid(row = self.row, column = 0, sticky = 'nsew')
+#ganz adding rows here...need to add versions
+        datasetName = dataset[0]  #parseDatasetVersionId(dataset)
+	versionno = dataset[1]
 
+
+
+# ganz changed colunmspan from 5 to one here
+#	self.select_labelV[ num_tag ].grid(row = self.row, column = 1, columnspan=1,sticky = 'nsew')
+        self.add_row_frame[ num_tag ].grid_rowconfigure(self.row, weight = 1)
+	self.add_row_frame[ num_tag ].grid_columnconfigure(1, weight = 1)
+###################################################################################################
 	self.select_label[ num_tag ] = Tkinter.Button(self.add_row_frame[ num_tag ], 
-                text = generateDatasetVersionId(dataset),
+                text = datasetName, # generateDatasetVersionId(dataset),
                 font = labelFont,
                 bg = self.keycolor2, 
                 disabledforeground = 'black',
@@ -702,12 +829,15 @@ class generate_notebook:
                 width = 170,
                 command = pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 1),
         )
+# ganz changed colunmspan from 5 to 4 here fix return to column=1 from 2 and columnspan to 5 from 4
 	self.select_label[ num_tag ].grid(row = self.row, column = 1, columnspan=5,sticky = 'nsew')
+
+
       #  if page_type == "offline":
       #     self.select_label[ num_tag ].configure(state="disabled")
 
 	self.add_row_frame[ num_tag ].grid_rowconfigure(self.row, weight = 1)
-	self.add_row_frame[ num_tag ].grid_columnconfigure(1, weight = 1)
+	self.add_row_frame[ num_tag ].grid_columnconfigure(2, weight = 1)
 	if self.pageFrame[ frame_ct ].cget('horizflex') == 'expand' or \
                 self.pageFrame[ frame_ct ].cget('vertflex') == 'expand':
             self.pageFrame[ frame_ct ].reposition()

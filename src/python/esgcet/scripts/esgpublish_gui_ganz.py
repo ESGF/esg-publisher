@@ -49,7 +49,7 @@ esg_bg = resource_filename('esgcet.ui', 'esg_bg.gif')
 esg_ini = resource_filename('esgcet.config.etc', 'esg.ini')
 
 
-Version = "2.0 beta"
+Version = "1.0 beta"
 
 
 #----------------------------------------------------------------------------
@@ -158,11 +158,13 @@ class GUI_frame:
        self.top_notebook = root.top_notebook = None
        self.row_frame_labels = root.row_frame_labels = {}
        self.version_label = root.version_label = {} # ganz
+       #self.version_label1 = root.version_label = {} # ganz TODO test only
        self.row_frame_label2 = root.row_frame = {}
        self.add_row_frame = root.add_row_frame = {}
        self.top_tab_id = root.top_tab_id = {}
        self.top_page_id = root.top_page_id = {}
        self.top_page_id2 = root.top_page_id2 = {}
+       #self.top_page_id2v = root.top_page_id2v = {}
        self.status_label = root.status_label = {}
        self.ok_err = root.ok_err = {}
        self.projectName = root.projectName = {}
@@ -178,6 +180,8 @@ class GUI_frame:
        self.directoryMap = root.directoryMap = {}
        self.top_ct = root.top_ct = 1
        self.selected_top_page = root.selected_top_page = None
+       
+ 
 
        #----------------------------------------------------------------------------
        # Create the Button Expansions in the ControlPane Widget located in the 
@@ -270,9 +274,11 @@ class GUI_frame:
          try:
             del self.top_page_id[self.top_tab_id[tab_name]]
             del self.top_page_id2[self.top_tab_id[tab_name]]
+            #del self.top_page_id2v[self.top_tab_id[tab_name]]
          except:
             del self.top_page_id[ tab_name ]
             del self.top_page_id2[ tab_name ]
+            #del self.top_page_id2v[ tab_name ]
          del self.top_tab_id[ tab_name ]
 
       self.top_notebook.delete( tab_name )

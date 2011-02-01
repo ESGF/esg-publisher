@@ -16,15 +16,21 @@
 #                                                                             #
 ###############################################################################
 #
+from Tkinter import *
 import Tkinter, Pmw, tkFont
 import os, string
 import gui_support
 import pub_controls
 import logging
 import pub_busy
+import pub_expand_deletion_control_gui
+from help_ScrolledText import Help
+from help_HTML import helpHTML
+from help_File_HTML import LocalHelpHTML
 from esgcet.messaging import warning
 from esgcet.publish import deleteDatasetList, DELETE, UNPUBLISH, publishDatasetList
 from pkg_resources import resource_filename
+from esgcet.publish.utility import generateDatasetVersionId
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
 off_icon = resource_filename('esgcet.ui', 'off.gif')
@@ -59,6 +65,20 @@ def return_log_settings_from_ini_file( parent ):
    db_init_invoke = 'Warning'
    proj_spec_invoke='Warning'
    md_extract_invoke='Warning'
+
+   from functools import partial as pto
+   from Tkinter import Tk, Button, X
+   from tkMessageBox import showinfo, showwarning, showerror
+   import os.path
+    
+    # ganz added this here to check for missing esg.ini file
+   if (os.path.exists(parent.init_file) != True):
+       msg = 'The esg.ini file is not present in '
+       msg = msg + parent.init_file
+       msg = msg + '\nPlease copy it there and retry command.'
+       showwarning('Warning',msg)
+       raise(msg)
+       #return;
 
    fp = open(parent.init_file, 'r')
    for x in fp.xreadlines():
@@ -279,8 +299,11 @@ class create_file_menu:
         notebook.tab('General').focus_set()
 
         page = notebook.add('Log Level')
-        self.log_settings = set_log_preferences( page, parent )
-
+        # ganz added this code 1/20/11
+        try:
+            self.log_settings = set_log_preferences( page, parent )
+        except:
+            return
 
         notebook.setnaturalsize()
 
@@ -450,13 +473,19 @@ class create_dataset_menu:
    """
    Create the dataset menu and its menu items.
    """
+   
+   #DeleteLocalDB =  None
+   #DeleteGateway =  None
+   #DeleteThredds =  None
+
+   
    def __init__( self, main_menu, parent, tear_it ):
       self.Session = parent.Session
 
       # Set the arrow icons
       self.on  = Tkinter.PhotoImage(file=on_icon)
       self.off = Tkinter.PhotoImage(file=off_icon)
-
+      
       dataset_name = 'Dataset'
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
       main_menu.addmenu(dataset_name, 'Publisher Dataset', side='left', font = mnFont, tearoff = tear_it)
@@ -526,17 +555,33 @@ class create_dataset_menu:
 
       datasetNames = []
       GUI_line = {}
+      DELETE = 1
+      #UNPUBLISH = 2
+      NO_OPERATION = 3
+      DeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DeleteLocalDB 
+      DeleteGateway = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox2() #   DeleteGateway
+      DeleteThredds = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox3() #   DeleteThredds
+
+
       selected_page = parent.main_frame.selected_top_page
       if selected_page is not None:
          tab_name = parent.top_notebook.getcurselection()
          for x in parent.main_frame.top_page_id[selected_page]:
             if parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
                 dset_name = parent.main_frame.top_page_id2[selected_page][x].cget('text')
-
+                
+                # ganz TODO test
+                #dsetVersionName1 = self.parent.parent.main_frame.top_page_id2v[selected_page][x].cget('text')
+                #query_name, dset_version = parseDatasetVersionId(dsetVersionName1)
+                dset_version = parent.main_frame.version_label[selected_page][x].cget('text')
+                #dset_version = 1
+                if (dset_version == 'N/A' or not dset_version):
+                    continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
-                if status == 3:
-                   datasetNames.append( dset_name )
+                if status == 3  or DeleteGateway or DeleteThredds or DeleteLocalDB:
+                   #datasetNames.append(generateDatasetVersionId((dset_name, dset_version)))   
+                   datasetNames.append([dset_name, dset_version])   # ganz create name/version to delete                 
                 else:
                    parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image = self.off)
                 GUI_line[ dset_name ] = x
@@ -546,12 +591,23 @@ class create_dataset_menu:
       else:
          warning("%d: No pages generated for selection. Remove is only used to remove datasets from the Publisher." % logging.WARNING)
 
-      # Remove dataset from the gateway
-      gatewayOp = DELETE
-      thredds = True
-      deleteDset = False
-      testProgress = (parent.parent.statusbar.show, 0, 100)
-      status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, deleteDset, progressCallback=testProgress)
+      # Remove dataset from the gateway, etc.
+   
+      if DeleteGateway==1:
+          gatewayOp = DELETE
+      else:
+          gatewayOp = NO_OPERATION
+    # now decide if there is anything to do
+      if (gatewayOp==1 or DeleteThredds==1 or DeleteLocalDB==1) :   
+          las=False
+          thredds = (DeleteThredds==1)              
+          deleteDset = (DeleteLocalDB==1)
+              
+          testProgress = (parent.parent.statusbar.show, 0, 100)
+          status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)
+
+
+#Ganz: do I need to explicitly remove each row from the list or just change it's status?
 
       # Show the published status
       try:
@@ -634,21 +690,48 @@ class create_login_menu:
                 raise
 
 
-
 #----------------------------------------------------------------------------------------
 # Create the Help menu and its menu items
 #----------------------------------------------------------------------------------------
 class create_help_menu:
    """
    Show the help menu -- (e.g., Show Balloons).
+
    """
+   def evt_helpHTML(self, parent):
+
+       widget = helpHTML(self)
+     #  widget = LocalHelpHTML(self)
+
+
+   def evt_help(self, parent):
+       title = 'Help DIALOG'
+       root = Tkinter.Tk()
+       Pmw.initialise(root)
+       root.title(title)
+
+       exitButton = Tkinter.Button(root, text = 'Close', command = root.destroy)
+       exitButton.pack(side = 'bottom')
+       widget = Help(root)
+       root.mainloop()
+
    def __init__( self, main_menu, parent, tear_it):
       H_name = 'Help'
+
+
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
       main_menu.addmenu(H_name, 'Publisher Help', side='right', font = mnFont, tearoff = tear_it)
       gui_support.add_balloon_help(main_menu, H_name, font=mnFont)
-      main_menu.addmenuitem(H_name, 'separator')
-
+   #   main_menu.addmenuitem(H_name, 'separator')
+      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+                         label = 'Help HTML',
+                         font = mnFont,
+                         command = pub_controls.Command(self.evt_helpHTML, parent))
+#      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+#                         label = 'Help TEXT',
+#                         font = mnFont,
+#                         command = pub_controls.Command(self.evt_help, parent))
+ 
 
 #---------------------------------------------------------------------
 # End of File
