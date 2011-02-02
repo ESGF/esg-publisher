@@ -45,7 +45,7 @@ class MetadataHandler(object):
         Return True iff the variable is a time coordinate.
 
         variable
-          instance of ``esgcet.model.Variable''
+          instance of ``esgcet.model.Variable``
 
         """
         raise ESGMethodNotImplemented
@@ -58,7 +58,7 @@ class MetadataHandler(object):
         Return True iff the variable is a longitude coordinate.
 
         variable
-          instance of ``esgcet.model.Variable''
+          instance of ``esgcet.model.Variable``
 
         """
         raise ESGMethodNotImplemented
@@ -71,7 +71,7 @@ class MetadataHandler(object):
         Return True iff the variable is a latitude coordinate.
 
         variable
-          instance of ``esgcet.model.Variable''
+          instance of ``esgcet.model.Variable``
 
         """
         raise ESGMethodNotImplemented
@@ -84,7 +84,7 @@ class MetadataHandler(object):
         Return True iff the variable is a vertical level coordinate.
 
         variable
-          instance of ``esgcet.model.Variable''
+          instance of ``esgcet.model.Variable``
 
         """
         raise ESGMethodNotImplemented
@@ -97,7 +97,7 @@ class MetadataHandler(object):
         Returns the String 'up' or 'down'.
 
         variable
-          instance of ``esgcet.model.Variable''
+          instance of ``esgcet.model.Variable``
         
         """
         raise ESGMethodNotImplemented
@@ -110,7 +110,7 @@ class MetadataHandler(object):
         Returns a String calendar.
 
         variable
-          instance of ``esgcet.model.Variable''
+          instance of ``esgcet.model.Variable``
         
         """
         raise ESGMethodNotImplemented
@@ -140,9 +140,9 @@ class MetadataHandler(object):
 
         Return (equivalent, firstTime, lastTime, lastEstimated) where:
           - equivalent is a Boolean, True iff the two representations are equivalent
-          - firstTime is a cdtime ``comptime'' value representing the first timepoint
-          - lastTime is a cdtime ``comptime'' value representing the last timepoint
-          - lastEstimated is a cdtime ``comptime'' value representing the last timepoint, based on
+          - firstTime is a cdtime ``comptime`` value representing the first timepoint
+          - lastTime is a cdtime ``comptime`` value representing the last timepoint
+          - lastEstimated is a cdtime ``comptime`` value representing the last timepoint, based on
             the (firstValue, deltaValue, npoints) representation.
 
         The first timepoint in the range is a relative time (firstValue, units, calendar);

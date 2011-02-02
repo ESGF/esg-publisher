@@ -451,7 +451,7 @@ def readDatasetMap(mappath, parse_extra_fields=False):
 
     A dataset map is a text file, each line having the form:
 
-    dataset_id | absolute_file_path | size [ | ``from_file``=<path> [ | extra_field=extra_value ...]]
+    dataset_id | absolute_file_path | size [ | ``from_file`` =<path> [ | extra_field=extra_value ...]]
 
     where dataset_id has the form dataset_name[#version]
 

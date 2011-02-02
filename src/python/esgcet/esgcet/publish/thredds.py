@@ -2,6 +2,8 @@ import os
 import logging
 import urllib2
 import string
+import hashlib
+import urlparse
 from lxml.etree import Element, SubElement as SE, ElementTree, Comment
 from esgcet.config import splitLine, splitRecord, getConfig, getThreddsServiceSpecs, getThreddsAuxiliaryServiceSpecs
 from esgcet.model import *
@@ -25,22 +27,33 @@ DEFAULT_THREDDS_SERVICE_APPLICATIONS = {
     'HTTPServer':['Web Browser','Web Script'],
     'OpenDAP':['Web Browser'],
     'SRM':[],
+    'LAS':['Web Browser'],
     }
 DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     'GridFTP':'true',
     'HTTPServer':'true',
     'OpenDAP':'false',
     'SRM':'false',
+    'LAS':'false',
     }
 DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     'GridFTP':'GridFTP',
     'HTTPServer':'HTTPServer',
     'OpenDAP':'OpenDAP',
     'SRM':'SRM',
+    'LAS':'Live Access Server',
     }
 
 ThreddsBases = ['/thredds/fileServer', '/thredds/dodsC', '/thredds/wcs', '/thredds/ncServer']
 ThreddsFileServer = '/thredds/fileServer'
+
+def genLasServiceHash(serviceAddr):
+    p = urlparse.urlparse(serviceAddr[:-1])
+    d = os.path.dirname(p.path)
+    dbase = urlparse.urlunparse((p.scheme, p.netloc, d, None, None, None))
+    s16 = '\xfe\xff'+(dbase.encode('utf-16-be'))
+    result = hashlib.md5(s16).hexdigest().upper()
+    return result    
 
 def normTime(filevar, tounits, mdhandler):
     try:
@@ -191,6 +204,12 @@ def _getRootPathAndLoc(fileobj, rootDict):
 #            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
 
     return filesRootPath, filesRootLoc
+
+def _genLASAccess(parent, dsetname, serviceSpecs, hash, idtype, dataFormat):
+    servtype, url, serviceName, compoundname = serviceSpecs
+    urlPath = "?%s=%s_ns_%s"%(idtype, hash, dsetname)
+    lasAccess = SE(parent, "access", urlPath=urlPath, serviceName=serviceName, dataFormat=dataFormat)
+    return lasAccess
 
 def _genService(parent, specs, initDictionary=None, serviceApplications=None, serviceAuthRequired=None, serviceDescriptions=None):
 
@@ -416,7 +435,7 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
     if nvars>0:
         parent.append(aggDataset)
 
-def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvlist, flag, las_time_delta, calendar, start):
+def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvlist, flag, las_time_delta, calendar, start, lasServiceSpecs, lasServiceHash):
     aggDataset = Element("dataset", name=aggName, ID=aggID, urlPath=aggID, serviceName=aggServiceName)
     aggIDProp = SE(aggDataset, "property", name="aggregation_id", value=aggID)
     if flag==EVEN:
@@ -429,6 +448,10 @@ def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvli
 
     # Note: Create time_length here so that THREDDS is happy, set its value below
     timeLengthProperty = SE(aggDataset, "property", name="time_length", value="0")
+
+    if lasServiceSpecs is not None:
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+
     netcdf = SE(aggDataset, "netcdf", nsmap=nsmap)
     aggElem = SE(netcdf, "aggregation", type="joinExisting", dimName=aggdim_name)
     agglen = 0
@@ -438,7 +461,7 @@ def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvli
     timeLengthProperty.set("value", "%d"%agglen)
     parent.append(aggDataset)    
 
-def _genLASAggregations(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, lasTimeDelta, perVarMetadata, versionNumber):
+def _genLASAggregations(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, lasTimeDelta, perVarMetadata, versionNumber, lasServiceSpecs, lasServiceHash):
 
     mdhandler = handler.getMetadataHandler()
 
@@ -453,6 +476,8 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     perAggVariables = SE(aggDataset, "variables", vocabulary="CF-1.0")
     perAggVariable = _genVariable(perAggVariables, variable)
     aggDataset.append(perVarMetadata)
+    if lasServiceSpecs is not None:
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
 
     # Sort filevars according to aggdim_first normalized to the dataset basetime
     filevars = []
@@ -496,7 +521,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     if iseven:
         subAggID = "%s.%d"%(aggID, 1)
         subAggName = "%s - Subset %d"%(aggName, 1)
-        _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist, EVEN, lasTimeDelta, dataset.calendar, first)
+        _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist, EVEN, lasTimeDelta, dataset.calendar, first, lasServiceSpecs, lasServiceHash)
 
     # Split the aggregation so that each piece is either evenly spaced or not.
     else:
@@ -507,10 +532,10 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
         for start, stop, flag, nchunk, fa, la, le in chunks:
             subAggID = "%s.%d"%(aggID, nid)
             subAggName = "%s - Subset %d"%(aggName, nid)
-            _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist[start:stop], flag, lasTimeDelta, dataset.calendar, fa)
+            _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist[start:stop], flag, lasTimeDelta, dataset.calendar, fa, lasServiceSpecs, lasServiceHash)
             nid += 1
             
-def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber):
+def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber, variablesElem, variableElemDict, lasServiceSpecs, lasServiceHash):
 
     mdhandler = handler.getMetadataHandler()
 
@@ -527,6 +552,9 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         # Check the variable/file combination for project conformance
         filelist = [(filevar.file.getLocation(), filevar.file.getSize(), filevar.file) for filevar in variable.file_variables if handler.threddsIsValidVariableFilePair(variable, filevar.file)]
         if len(filelist)==0:
+            if variable.short_name in variableElemDict:
+                variablesElem.remove(variableElemDict[variable.short_name])
+                del variableElemDict[variable.short_name]
             continue
 
         if shortNames.has_key(variable.short_name):
@@ -602,7 +630,7 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         if variable.has_errors or dataset.aggdim_units is None:
             continue
         if las_configure:
-            _genLASAggregations(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, las_time_delta, perVarMetadata, versionNumber)
+            _genLASAggregations(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, las_time_delta, perVarMetadata, versionNumber, lasServiceSpecs, lasServiceHash)
         else:
             _genAggregationsV2(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, perVarMetadata, versionNumber)
 
@@ -666,7 +694,7 @@ def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance
       String service name. If omitted, the first online/offline service in the configuration is used.
 
     perVariable
-      Boolean, overrides ``variable_per_file'' config option.
+      Boolean, overrides ``variable_per_file`` config option.
 
     versionNumber
       Version number. Defaults to latest.
@@ -744,8 +772,19 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     lasConfigure = config.getboolean(section, 'las_configure', False)
     if lasConfigure:
         lasTimeDelta = handler.generateNameFromContext('las_time_delta')
+
+        # Get the LAS service specs
+        lasServiceSpecs = None
+        lasServiceHash = None
+        for entry in threddsAggregationSpecs:
+            if entry[0]=='LAS':
+                lasServiceSpecs = entry
+                lasServiceHash = genLasServiceHash(entry[1])
+                break
     else:
         lasTimeDelta = None
+        lasServiceSpecs = None
+        lasServiceHash = None
     resolution = handler.getResolution()
     description = handler.getField('description')
     rights = handler.getField('rights')
@@ -857,6 +896,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
             metadata1 = SE(datasetElem, "metadata", inherited="true")
         variables = SE(metadata1, "variables", vocabulary="CF-1.0")
         shortNames = {}
+        variableElemDict = {}
         for variable in dset.variables:
             if variable.short_name not in excludeVariables:
                 # It is possible for a dataset to have different variables with the same name,
@@ -866,6 +906,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                     continue
                 shortNames[variable.short_name] = 1
                 variableElem = _genVariable(variables, variable)
+                variableElemDict[variable.short_name] = variableElem
 
     metadata2 = SE(datasetElem, "metadata", inherited="true")
 ##     geospatialCoverage = SE(metadata2, "geospatialCoverage")
@@ -875,6 +916,10 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     dataType.text = "Grid"
     dataFormat = SE(metadata2, "dataFormat")
     dataFormat.text = "NetCDF"
+
+    # Add LAS access element if configuring LAS
+    if lasConfigure and (lasServiceSpecs is not None):
+        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
 
     if service is not None:
         serviceName = service
@@ -909,7 +954,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     if perVariable:
         # Per-variable datasets
-        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber)
+        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber, variables, variableElemDict, lasServiceSpecs, lasServiceHash)
     else:
         # Per-time datasets
         _genPerTimeDatasetsV2(datasetElem, dset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber)
