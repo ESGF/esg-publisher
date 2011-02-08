@@ -83,7 +83,7 @@ def getProduct(cmor_table, variable, experiment, year1, year2):
     return result
 
 def getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, year2, base_year=None):
-    if experiment not in reqdict:
+    if (reqdict is None) or (experiment not in reqdict):
         result = 'output1'
     elif (year1 is None) and (year2 is None):
         result = 'output'

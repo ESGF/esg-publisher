@@ -422,7 +422,7 @@ def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvli
     timeLengthProperty = SE(aggDataset, "property", name="time_length", value="0")
 
     if lasServiceSpecs is not None:
-        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     netcdf = SE(aggDataset, "netcdf", nsmap=nsmap)
     aggElem = SE(netcdf, "aggregation", type="joinExisting", dimName=aggdim_name)
@@ -449,7 +449,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     perAggVariable = _genVariable(perAggVariables, variable)
     aggDataset.append(perVarMetadata)
     if lasServiceSpecs is not None:
-        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     # Sort filevars according to aggdim_first normalized to the dataset basetime
     filevars = []
@@ -891,7 +891,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     # Add LAS access element if configuring LAS
     if lasConfigure and (lasServiceSpecs is not None):
-        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     if service is not None:
         serviceName = service
