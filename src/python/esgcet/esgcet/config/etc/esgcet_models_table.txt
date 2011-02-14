@@ -34,6 +34,8 @@
   cmip5 | gfdl-hiram-c180 | | GFDL-HIRAM-C180, Geophysical Fluid Dynamics Laboratory
   cmip5 | gfdl-hiram-c360 | | GFDL-HIRAM-C360, Geophysical Fluid Dynamics Laboratory
   cmip5 | giss-e | | NASA Goddard Institute for Space Studies, ModelE
+  cmip5 | hadgem2-es | | HadGEM2-ES, Met Office Hadley Centre
+  cmip5 | HadGEM2-ES | | HadGEM2-ES, Met Office Hadley Centre
   cmip5 | inmcm4 | | Institute for Numerical Mathematics
   cmip5 | ipsl-cm5a-lr | | IPSL-CM5A-LR, Institut Pierre-Simon Laplace
   cmip5 | ipsl-cm5a-mr | | IPSL-CM5A-MR, Institut Pierre-Simon Laplace

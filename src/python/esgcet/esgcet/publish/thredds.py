@@ -654,7 +654,8 @@ def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootP
             if rootIndex==0:
                 urlpath = path.replace(filesRootLoc, filesRootPath, 1)
             else:
-                warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
+                # ganz, not sure why this is warning us here...publishing occurs okay? 2/7/11
+                # warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
                 urlpath = path
         else:
             urlpath = path

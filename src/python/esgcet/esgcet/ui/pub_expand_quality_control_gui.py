@@ -247,7 +247,7 @@ class quality_control_widgets:
              status = status_dict[ x ]
              dsetName, versionNo = x
              dsetVersionName = generateDatasetVersionId(x)
-             guiLine = GUI_line[dsetVersionName]
+             guiLine = GUI_line[dsetName] # dsetVersionName]
             
              self.parent.parent.main_frame.status_label[selected_page][guiLine].configure(text=pub_controls.return_status_text( status) )
              dset = Dataset.lookup(dsetName, self.Session)

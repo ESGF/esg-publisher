@@ -739,7 +739,7 @@ class dataset_widgets:
               dset_output_window.appendtext( x+"\n" )
 
 
-          dset_output_window.appendtext( "This is a test from ganzberger \n" )
+          #dset_output_window.appendtext( "This is a test from ganzberger \n" )
           self.file_display_button( dset, dset_output_window )
           
           self.parent.parent.bottom_notebook.selectpage( tab_name )
@@ -764,7 +764,7 @@ class dataset_widgets:
        
       
           dset_name = dset.get_name(self.Session)
-          print dset_name
+          #print dset_name
  
 #############################################################
           dmap = {}
@@ -812,10 +812,10 @@ class dataset_widgets:
 # variables = dset.get_variables(self.Session)
 
           
-          for fn in filelist:
-             dset_output_window.appendtext( fn.getLocation() + "\n")
-             for v in variables:
-                 dset_output_window.appendtext( v.short_name + "\n") #.getName() + "\n") 
+#          for fn in filelist:
+#             dset_output_window.appendtext( fn.getLocation() + "\n")
+#             for v in variables:
+#                 dset_output_window.appendtext( v.short_name + "\n") #.getName() + "\n") 
 
 #############################################################
 
