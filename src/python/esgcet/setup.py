@@ -65,7 +65,7 @@ setup(
     url = 'http://esg-pcmdi.llnl.gov',
     install_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.5.3", "lxml>=2.0", "sqlalchemy_migrate>=0.6"],
     setup_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.5.3", "lxml>=2.0", "sqlalchemy_migrate>=0.6"],
-    dependency_links = ["http://www-pcmdi.llnl.gov/svn/repository/externals"],
+    dependency_links = ["http://www-pcmdi.llnl.gov/dist/externals"],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
     # test_suite = 'nose.collector',
