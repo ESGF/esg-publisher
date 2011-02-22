@@ -729,7 +729,9 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     threddsAggregationSpecs = getThreddsServiceSpecs(config, section, 'thredds_aggregation_services')
     threddsFileSpecs = getThreddsServiceSpecs(config, section, 'thredds_file_services')
     threddsOfflineSpecs = getThreddsServiceSpecs(config, section, 'thredds_offline_services')
-    threddsRestrictAccess = config.get(section, 'thredds_restrict_access')
+    threddsRestrictAccess = config.get(section, 'thredds_restrict_access', default=None)
+    if threddsRestrictAccess is None:
+        warning("thredds_restrict_access is not set: THREDDS datasets will be openly readable.")
     threddsDatasetRootsOption = config.get('DEFAULT', 'thredds_dataset_roots')
     threddsDatasetRootsSpecs = splitRecord(threddsDatasetRootsOption)
     threddsServiceApplicationSpecs = getThreddsAuxiliaryServiceSpecs(config, section, 'thredds_service_applications', multiValue=True)
@@ -812,7 +814,11 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                 datasetDesc = datasetName
                 
     dsetVersionID = "%s.v%d"%(datasetName, dsetVersion)
-    datasetElem = SE(catalog, "dataset", name=datasetDesc, ID=dsetVersionID, restrictAccess=threddsRestrictAccess)
+    datasetElem = SE(catalog, "dataset", name=datasetDesc, ID=dsetVersionID)
+
+    # If thredds_restrict_access is set, add restrictAccess attribute, otherwise data is open
+    if threddsRestrictAccess is not None:
+        datasetElem.set("restrictAccess", threddsRestrictAccess)
 
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
