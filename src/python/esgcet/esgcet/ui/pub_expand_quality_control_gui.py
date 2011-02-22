@@ -189,6 +189,11 @@ class quality_control_widgets:
     def get_CheckBox3():
         return quality_control_widgets.CheckVar3.get()
     
+ # ganz refresh [if there were no exceptions] dataset list after publications
+    def my_refresh(self):     
+       selected_page = self.parent.parent.main_frame.selected_top_page
+       self.parent.parent.pub_buttonexpansion.query_widgets.parent.parent.ntk.evt_refresh_list_of_datasets(selected_page )
+          
     def start_harvest( self, parent ):
         from esgcet.publish import publishDatasetList
         from esgcet.model import Dataset, PUBLISH_FAILED_EVENT, ERROR_LEVEL
@@ -273,6 +278,8 @@ class quality_control_widgets:
                      )
 
         pub_busy.busyEnd( self.parent.parent )
+        self.my_refresh()
+
 
     #----------------------------------------------------------------------------------------
     # Event button to generate THREDDS configuration file

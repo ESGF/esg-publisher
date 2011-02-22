@@ -48,7 +48,9 @@ class query_widgets:
     """
     Generate the query widgets seen on the left when "Metadata Query, Update, and 
     Delete" is selected.
+    
     """
+    
     def __init__(self, parent):
       self.parent = parent
       self.Session = parent.parent.Session

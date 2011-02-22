@@ -545,6 +545,7 @@ class create_dataset_menu:
 
       pub_busy.busyEnd( parent )
 
+       
    def evt_remove_dataset(self, parent):
       from esgcet.publish import pollDatasetPublicationStatus
 
@@ -618,6 +619,9 @@ class create_dataset_menu:
          pass
 
       pub_busy.busyEnd( parent )
+      # ganz refresh [if there were no exceptions] dataset list after deletions 
+      parent.pub_buttonexpansion.query_widgets.parent.parent.ntk.evt_refresh_list_of_datasets(selected_page )
+     
 
 #----------------------------------------------------------------------------------------
 # Create the Login menu and its menu items

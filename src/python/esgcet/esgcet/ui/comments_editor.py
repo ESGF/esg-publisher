@@ -14,7 +14,7 @@ class EDITOR:
             #print 'No editor defined.'
             #sys.exit(0)
         tmp = tempfile.mktemp()
-        print 'Editing', tmp
+        #print 'Editing temporary Comment file: ', tmp
 
 # Edit a temp file
 
