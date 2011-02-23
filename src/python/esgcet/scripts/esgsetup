@@ -540,7 +540,6 @@ def main(argv):
 
             try:
                 from migrate.versioning.api import version_control, db_version, downgrade
-                from migrate.versioning.exceptions import DatabaseAlreadyControlledError
             except ImportError, e:
                 tell("""
 
@@ -551,9 +550,16 @@ def main(argv):
                 The sqlalchemy_migrate package has not been installed. It should have been built when
                 the esgcet package was installed.
 
-                Run 'easy_install sqlalchemy_migrate' and ensure that the package built correctly.
+                Run 'easy_install SQLAlchemy-migrate' and ensure that the package built correctly.
                 """%`e`)
                 raise RuntimeError
+            
+            try:
+                # >=0.6.1
+                from migrate import DatabaseAlreadyControlledError
+            except:
+                # <=0.6.0
+                from migrate.versioning.exceptions import DatabaseAlreadyControlledError
 
             # ... If the database was just created, then just initialize version control with version=0
             if createdb:
