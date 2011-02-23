@@ -545,6 +545,14 @@ class create_dataset_menu:
 
       pub_busy.busyEnd( parent )
 
+   def warn_On_Removal(self):
+       from Tkinter import *
+       import tkMessageBox
+
+       return tkMessageBox.askokcancel("Removing Datasets WARNING:", 
+                                       "Removing the local DB could result in dataset orphans on either the gateway or thredds server. \nCancel to Quit or Ok to Proceed")
+
+
        
    def evt_remove_dataset(self, parent):
       from esgcet.publish import pollDatasetPublicationStatus
@@ -593,7 +601,11 @@ class create_dataset_menu:
          warning("%d: No pages generated for selection. Remove is only used to remove datasets from the Publisher." % logging.WARNING)
 
       # Remove dataset from the gateway, etc.
-   
+      if ((DeleteGateway==0 or DeleteThredds==0) and DeleteLocalDB==1) :
+          ans = self.warn_On_Removal()
+          if (ans == FALSE):
+              return
+      
       if DeleteGateway==1:
           gatewayOp = DELETE
       else:
