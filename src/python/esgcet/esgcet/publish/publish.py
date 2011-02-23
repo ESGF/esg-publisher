@@ -371,7 +371,7 @@ def pollDatasetPublicationStatus(datasetName, Session, service=None):
     
     status = dset.get_publication_status()
     """ ganz this is a test...02/22/2010 """
-    #print 'STATUS = %d' % status
+    print 'NAME = %s  STATUS = %d' % (datasetName,status)
     
     if status!=START_PUBLISH_DATASET_EVENT:
         session.close()
