@@ -614,13 +614,9 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
 #                    thredds_dataset_roots =
 #                        esg_dataroot | /esg/data 
 #                        ganz_test | /home/esg-user/esg-publisher/src/python/esgcet/scripts
-# but this never gets here because rootloc is not a substring of path (see path.find test above)
-# instead we drop into the else below and this seems to work... Question why would we want urlpath to be built 
-# to look like ganz_test/./output/CCCMA/cccma-canesm2/1pctCO2/day/atmos/huss/r1i1p1/huss_day_cccma-canesm2_1pctCO2_r1i1p1_20000101-20000101.nc
-
                     urlpath = path.replace(rootloc, rootpath, 1)
                 else:
-                    # warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
+                    warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
                     urlpath = path
             else:
                 urlpath = path
@@ -663,8 +659,7 @@ def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootP
             if rootIndex==0:
                 urlpath = path.replace(filesRootLoc, filesRootPath, 1)
             else:
-                # ganz, not sure why this is warning us here...publishing occurs okay? 2/7/11
-                # warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
+                warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
                 urlpath = path
         else:
             urlpath = path
@@ -952,7 +947,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     filelist = dset.getFiles()
     if len(filelist)==0:
         raise ESGPublishError("Dataset %s does not contain any files, cannot publish"%dset.name)
-    filesRootPath, filesRootLoc = _getRootPathAndLoc(dset.getFiles()[0], datasetRootDict) # ganz revert back after testing
+    filesRootPath, filesRootLoc = _getRootPathAndLoc(dset.getFiles()[0], datasetRootDict) 
     hasThreddsServ = hasThreddsService(serviceName, serviceDict)
     if hasThreddsServ and filesRootPath is None:
         raise ESGPublishError("File %s is not contained in any THREDDS root path. Please add an entry to thredds_dataset_roots in the configuration file."%dset.getFiles()[0].getLocation())

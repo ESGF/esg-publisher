@@ -208,77 +208,81 @@ class quality_control_widgets:
         self.parent.parent.busyCursor = 'watch'
         self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
         pub_busy.busyStart( self.parent.parent )
- 
+        try:
         # Generate the list of datasets to be published
-        datasetNames=[]
-        GUI_line = {}
-        tab_name = self.parent.parent.top_notebook.getcurselection()
-        selected_page = self.parent.parent.main_frame.selected_top_page
+           datasetNames=[]
+           GUI_line = {}
+           tab_name = self.parent.parent.top_notebook.getcurselection()
+           selected_page = self.parent.parent.main_frame.selected_top_page
 
-        if (selected_page is None):
-           warning("Must generate a list of datasets to scan before publishing can occur.")
-           pub_busy.busyEnd( self.parent.parent )
-           return
+           if (selected_page is None):
+              warning("Must generate a list of datasets to scan before publishing can occur.")
+              pub_busy.busyEnd( self.parent.parent )
+              return
 
-        for x in self.parent.parent.main_frame.top_page_id[selected_page]:
+           for x in self.parent.parent.main_frame.top_page_id[selected_page]:
 
-            if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
-                dset_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+               if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
+                   dset_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
                 #######################################
                                   # ganz added this 1/18/11    
-                versionNum = self.parent.parent.main_frame.version_label[selected_page][x].cget('text') 
-                dsetTuple = (dset_name, versionNum)
+                   versionNum = self.parent.parent.main_frame.version_label[selected_page][x].cget('text') 
+                   dsetTuple = (dset_name, versionNum)
                 #dsetName = generateDatasetVersionId(dsetTuple)                
                   #####################################################################################
                 # dsetTuple = parseDatasetVersionId(dset_name) # ganz no longer necessary
-                datasetNames.append(dsetTuple)
-                GUI_line[ dset_name ] = x
-            else:
-                if self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') == 'salmon':
-                   self.parent.parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image = self.off)
+                   datasetNames.append(dsetTuple)
+                   GUI_line[ dset_name ] = x
+               else:
+                   if self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('bg') == 'salmon':
+                      self.parent.parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image = self.off)
 
         # Publish collection of datasets
-        testProgress = (self.parent.parent.statusbar.show, 0, 100)
-        publishThredds = (quality_control_widgets.get_CheckBox3()==1)
-        publishGateway = (quality_control_widgets.get_CheckBox2()==1)
-        if (publishThredds):
-            print 'publishing to Thredds'
-        if (publishGateway):
-            print 'publishing to Gateway'            
-        status_dict = publishDatasetList(datasetNames, self.Session, publish=publishGateway, thredds=publishThredds, progressCallback=testProgress)
+           testProgress = (self.parent.parent.statusbar.show, 0, 100)
+           publishThredds = (quality_control_widgets.get_CheckBox3()==1)
+           publishGateway = (quality_control_widgets.get_CheckBox2()==1)
+           if (publishThredds):
+               print 'publishing to Thredds'
+           if (publishGateway):
+               print 'publishing to Gateway'  
+                      
+           status_dict = publishDatasetList(datasetNames, self.Session, publish=publishGateway, thredds=publishThredds, progressCallback=testProgress)
 
         # Show the published status
-        for x in status_dict.keys():
-             status = status_dict[ x ]
-             dsetName, versionNo = x
-             dsetVersionName = generateDatasetVersionId(x)
-             guiLine = GUI_line[dsetName] # dsetVersionName]
+           for x in status_dict.keys():
+                status = status_dict[ x ]
+                dsetName, versionNo = x
+                dsetVersionName = generateDatasetVersionId(x)
+                guiLine = GUI_line[dsetName] # dsetVersionName]
             
-             self.parent.parent.main_frame.status_label[selected_page][guiLine].configure(text=pub_controls.return_status_text( status) )
-             dset = Dataset.lookup(dsetName, self.Session)
-             if dset.has_warnings(self.Session):
-                 warningLevel = dset.get_max_warning_level(self.Session)
-                 if warningLevel>=ERROR_LEVEL:
-                     buttonColor = "pink"
-                     buttonText = "Error"
-                 else:
-                     buttonColor = "yellow"
-                     buttonText = "Warning"
-                 self.parent.parent.main_frame.ok_err[selected_page][guiLine].configure(
-                     text = buttonText,
-                     bg = buttonColor,
-                     relief = 'raised',
-                     command = pub_controls.Command( self.parent.parent.pub_buttonexpansion.extraction_widgets.error_extraction_button, dset ) )
-             else:
-                 self.parent.parent.main_frame.ok_err[selected_page][guiLine].configure(
-                     text = 'Ok',
-                     bg = dcolor1,
-                     highlightcolor = dcolor1,
-                     relief = 'sunken',
-                     )
-
-        pub_busy.busyEnd( self.parent.parent )
-        self.my_refresh()
+                self.parent.parent.main_frame.status_label[selected_page][guiLine].configure(text=pub_controls.return_status_text( status) )
+                dset = Dataset.lookup(dsetName, self.Session)
+                if dset.has_warnings(self.Session):
+                    warningLevel = dset.get_max_warning_level(self.Session)
+                    if warningLevel>=ERROR_LEVEL:
+                        buttonColor = "pink"
+                        buttonText = "Error"
+                    else:
+                        buttonColor = "yellow"
+                        buttonText = "Warning"
+                    self.parent.parent.main_frame.ok_err[selected_page][guiLine].configure(
+                        text = buttonText,
+                        bg = buttonColor,
+                        relief = 'raised',
+                        command = pub_controls.Command( self.parent.parent.pub_buttonexpansion.extraction_widgets.error_extraction_button, dset ) )
+                else:
+                    self.parent.parent.main_frame.ok_err[selected_page][guiLine].configure(
+                        text = 'Ok',
+                        bg = dcolor1,
+                        highlightcolor = dcolor1,
+                        relief = 'sunken',
+                        )
+        except Exception as excpt:
+            pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+        finally:
+           pub_busy.busyEnd( self.parent.parent )
+           self.my_refresh()
 
 
     #----------------------------------------------------------------------------------------
