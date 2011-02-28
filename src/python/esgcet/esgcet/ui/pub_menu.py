@@ -524,26 +524,36 @@ class create_dataset_menu:
       parent.busyCursor = 'watch'
       parent.busyWidgets = [parent.pane2.pane( 'EditPaneTop' ), parent.pane2.pane( 'EditPaneBottom' ), parent.pane2.pane( 'EditPaneStatus' ), parent.pane.pane( 'ControlPane' )]
       pub_busy.busyStart( parent )
-      selected_page = parent.main_frame.selected_top_page
-      keycolor1 = Pmw.Color.changebrightness(parent, 'aliceblue', 0.6 )
-      if selected_page is not None:
-         for x in parent.main_frame.top_page_id[selected_page]:
-             parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = keycolor1, image=self.on)
+      try:
+         selected_page = parent.main_frame.selected_top_page
+         keycolor1 = Pmw.Color.changebrightness(parent, 'aliceblue', 0.6 )
+         if selected_page is not None:
+            for x in parent.main_frame.top_page_id[selected_page]:
+                parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = keycolor1, image=self.on)
 
-      pub_busy.busyEnd( parent )
+      except Exception as excpt:
+            pub_busy.busyEnd( parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+      finally:
+           pub_busy.busyEnd( parent )
+      #pub_busy.busyEnd( parent )
 
    def evt_unselect_all_dataset(self, parent):
       # Start the busy routine to indicate to the users something is happening
       parent.busyCursor = 'watch'
       parent.busyWidgets = [parent.pane2.pane( 'EditPaneTop' ), parent.pane2.pane( 'EditPaneBottom' ), parent.pane2.pane( 'EditPaneStatus' ), parent.pane.pane( 'ControlPane' )]
       pub_busy.busyStart( parent )
-
-      selected_page = parent.main_frame.selected_top_page
-      if selected_page is not None:
-         for x in parent.main_frame.top_page_id[selected_page]:
-             parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image=self.off)
-
-      pub_busy.busyEnd( parent )
+      try:
+         selected_page = parent.main_frame.selected_top_page
+         if selected_page is not None:
+            for x in parent.main_frame.top_page_id[selected_page]:
+                parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image=self.off)
+      except Exception as excpt:
+            pub_busy.busyEnd( parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+      finally:
+           pub_busy.busyEnd( parent )
+      #pub_busy.busyEnd( parent )
 
    def warn_On_Removal(self):
        from Tkinter import *

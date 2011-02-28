@@ -214,69 +214,75 @@ class generate_notebook:
       self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
       pub_busy.busyStart( self.parent.parent )
 
-      properties = {}
-      projectName = self.parent.query_fields['project'].get() # Must have projectName
-      handler = getHandlerByName(projectName, None, self.Session)
-      tabcolor = Pmw.Color.changebrightness(self.parent.parent, pub_controls.query_tab_color, 0.6 )
+      try:
+         properties = {}
+         projectName = self.parent.query_fields['project'].get() # Must have projectName
+         handler = getHandlerByName(projectName, None, self.Session)
+         tabcolor = Pmw.Color.changebrightness(self.parent.parent, pub_controls.query_tab_color, 0.6 )
 
 # works up to here
       
-      if query_id is None:
-        for x in self.parent.query_fields.keys():
-           query_string = self.parent.query_fields[x].get().lstrip()
-           if (query_string == "-Any-") or (len(query_string) == 0):
-              properties[x] = (2, "%")
-           elif query_string != "-Any-":
-              properties[x] = (1, query_string)
+         if query_id is None:
+           for x in self.parent.query_fields.keys():
+              query_string = self.parent.query_fields[x].get().lstrip()
+              if (query_string == "-Any-") or (len(query_string) == 0):
+                 properties[x] = (2, "%")
+              elif query_string != "-Any-":
+                 properties[x] = (1, query_string)
 
-        if properties['id'] == (2, "%"):
-           del properties['id'] # This causes an error because you cannot modify the 'id'
+           if properties['id'] == (2, "%"):
+              del properties['id'] # This causes an error because you cannot modify the 'id'
           
-        listProperties = False
+           listProperties = False
         
         
       
-        result, headers = queryDatasets(projectName, handler, self.Session, properties)
+           result, headers = queryDatasets(projectName, handler, self.Session, properties)
        # works up to here
        
        # running this causes it to fail!
-        self.new_page(parent, tabName=None, tab_color=tabcolor, page_type = "query", query_result = result, list_fields = headers)
+           self.new_page(parent, tabName=None, tab_color=tabcolor, page_type = "query", query_result = result, list_fields = headers)
         
         
-      else:
-        result, headers = queryDatasets(projectName, handler, self.Session, properties)
-        for x in result:
-           query_id_found = False
-           if query_id == x[0][:-1]:
-              self.new_page(parent, tabName=None, tab_color=tabcolor, page_type = "query", query_result = [x] , list_fields = headers)
-              query_id_found = True
-              break
-        if query_id_found is False:
-	       warning("The specified dataset id '%s' was not found.", query_id)
+         else:
+           result, headers = queryDatasets(projectName, handler, self.Session, properties)
+           for x in result:
+              query_id_found = False
+              if query_id == x[0][:-1]:
+                 self.new_page(parent, tabName=None, tab_color=tabcolor, page_type = "query", query_result = [x] , list_fields = headers)
+                 query_id_found = True
+                 break
+           if query_id_found is False:
+	          warning("The specified dataset id '%s' was not found.", query_id)
 
 # fails here
       
       # Enable the "Data Publication" button
-      self.parent.ControlButton3.configure( state = 'normal' )
+         self.parent.ControlButton3.configure( state = 'normal' )
 
-      datasetNames = []
-      for x in result:
-          datasetNames.append( x[1] )
-      dmap, offline_map, extraFields = queryDatasetMap( datasetNames, self.Session, extra_fields=True )
+         datasetNames = []
+         for x in result:
+             datasetNames.append( x[1] )
+         dmap, offline_map, extraFields = queryDatasetMap( datasetNames, self.Session, extra_fields=True )
       # Check if offline or not, then set the iteration values for each page
       
       
-      selected_page = self.parent.parent.main_frame.selected_top_page
-      self.parent.parent.hold_offline[selected_page] = offline_map
-      self.parent.parent.main_frame.projectName[selected_page] = projectName
-      self.parent.parent.main_frame.dmap[selected_page] = dmap
-      self.parent.parent.main_frame.extraFields[selected_page] = extraFields
-      self.parent.parent.main_frame.datasetMapfile[selected_page] = None
-      self.parent.parent.directoryMap[selected_page] = None
-      self.parent.parent.main_frame.dirp_firstfile[selected_page] = None
-      self.parent.parent.defaultGlobalValues[selected_page] = {}
+         selected_page = self.parent.parent.main_frame.selected_top_page
+         self.parent.parent.hold_offline[selected_page] = offline_map
+         self.parent.parent.main_frame.projectName[selected_page] = projectName
+         self.parent.parent.main_frame.dmap[selected_page] = dmap
+         self.parent.parent.main_frame.extraFields[selected_page] = extraFields
+         self.parent.parent.main_frame.datasetMapfile[selected_page] = None
+         self.parent.parent.directoryMap[selected_page] = None
+         self.parent.parent.main_frame.dirp_firstfile[selected_page] = None
+         self.parent.parent.defaultGlobalValues[selected_page] = {}
 
-      pub_busy.busyEnd( self.parent.parent )
+      except Exception as excpt:
+            pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+      finally:
+           pub_busy.busyEnd( self.parent.parent )
+      #pub_busy.busyEnd( self.parent.parent )
  
     #----------------------------------------------------------------------------------------
     # Generate a new page (i.e., tab) as a result of querying or defining a dataset id
@@ -561,44 +567,48 @@ class generate_notebook:
         self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
         pub_busy.busyStart( self.parent.parent )
 
-                      
-        if self.parent.parent.refreshButton[selected_page].cget('relief') == 'raised':
-           for x in self.parent.parent.main_frame.top_page_id[selected_page]:
-               if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
-                  dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
+        try:              
+           if self.parent.parent.refreshButton[selected_page].cget('relief') == 'raised':
+              for x in self.parent.parent.main_frame.top_page_id[selected_page]:
+                  if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('relief') == 'raised':
+                     dsetVersionName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
                   
                   # ganz added this 1/18/11
-                  query_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')               
-                  versionNum = self.parent.parent.main_frame.version_label[selected_page][x].cget('text')                 
+                     query_name = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')               
+                     versionNum = self.parent.parent.main_frame.version_label[selected_page][x].cget('text')                 
                   #####################################################################################
                                    
-                  query_name, versionNum = parseDatasetVersionId(dsetVersionName)
+                     query_name, versionNum = parseDatasetVersionId(dsetVersionName)
 # ganz TODO test only remove
 #                  print query_name
 #                  print versionNum
                   
-                  status = pollDatasetPublicationStatus(query_name, self.Session)
+                     status = pollDatasetPublicationStatus(query_name, self.Session)
             
-                  self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
+                     self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
 
                   # Make sure you update the Ok/Err button
                   # ganz added this (1/18/11) here to catch the case when dset=None (e.g. no local db entry exists)
-                  dset = Dataset.lookup(query_name, self.Session)
-                  if (dset == None):
-                     buttonColor = "yellow"
-                     buttonText = "Warning"
-                     self.parent.parent.main_frame.ok_err[selected_page][x].configure(bg=buttonColor, text=buttonText)                     
-                  elif dset.has_warnings(self.Session):
-                     warningLevel = dset.get_max_warning_level(self.Session)
-                     if warningLevel>=ERROR_LEVEL:
-                         buttonColor = "pink"
-                         buttonText = "Error"
-                     else:
-                         buttonColor = "yellow"
-                         buttonText = "Warning"
-                     self.parent.parent.main_frame.ok_err[selected_page][x].configure(bg=buttonColor, text=buttonText)
-
-        pub_busy.busyEnd( self.parent.parent )
+                     dset = Dataset.lookup(query_name, self.Session)
+                     if (dset == None):
+                        buttonColor = "yellow"
+                        buttonText = "Warning"
+                        self.parent.parent.main_frame.ok_err[selected_page][x].configure(bg=buttonColor, text=buttonText)                     
+                     elif dset.has_warnings(self.Session):
+                        warningLevel = dset.get_max_warning_level(self.Session)
+                        if warningLevel>=ERROR_LEVEL:
+                            buttonColor = "pink"
+                            buttonText = "Error"
+                        else:
+                            buttonColor = "yellow"
+                            buttonText = "Warning"
+                        self.parent.parent.main_frame.ok_err[selected_page][x].configure(bg=buttonColor, text=buttonText)
+        except Exception as excpt:
+            pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+        finally:
+           pub_busy.busyEnd( self.parent.parent )
+      #  pub_busy.busyEnd( self.parent.parent )
         info("Completed refreshing the display.")
 
     #----------------------------------------------------------------------------------------

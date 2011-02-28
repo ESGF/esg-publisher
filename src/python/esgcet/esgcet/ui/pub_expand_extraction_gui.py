@@ -162,10 +162,15 @@ class dataset_widgets:
        self.parent.parent.busyCursor = 'watch'
        self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
        pub_busy.busyStart( self.parent.parent )
+       try:
+          self.return_content2( appendOpt = append_status )
 
-       self.return_content2( appendOpt = append_status )
-
-       pub_busy.busyEnd( self.parent.parent )
+       except Exception as excpt:
+            pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+       finally:
+           pub_busy.busyEnd( self.parent.parent )
+       #pub_busy.busyEnd( self.parent.parent )
 
 # ganz todo add in comment code here....
     def return_content2(self, appendOpt=False):

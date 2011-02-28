@@ -283,8 +283,8 @@ class dataset_widgets:
       #----------------------------------------------------------------------------------------
 
     #----------------------------------------------------------------------------------------
-    # From a directory path name, generate the dynamic list of files and thier
-    # sizes in the directoy tree.
+    # From a directory path name, generate the dynamic list of files and their
+    # sizes in the directory tree.
     #----------------------------------------------------------------------------------------
     def myfun3( self, dirp, lock ):
        import fnmatch, time
@@ -325,7 +325,7 @@ class dataset_widgets:
        self.generating_file_list_flg = 0
 
     #----------------------------------------------------------------------------------------
-    # From a file, generate the dynamic list of files and thier sizes
+    # From a file, generate the dynamic list of files and their sizes
     #----------------------------------------------------------------------------------------
     def open_text_file( self, dirfilename, lock ):
        import time
@@ -385,6 +385,7 @@ class dataset_widgets:
 
        self.parent.parent.busyCursor = 'watch'
        self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' )]
+       # note this busy cursor is reset in the method myfun3
        pub_busy.busyStart(self.parent.parent)
 
        # Remove the old list
@@ -412,6 +413,8 @@ class dataset_widgets:
 
        self.parent.parent.busyCursor = 'watch'
        self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' )]
+       
+       # Note: this busy cursor is reset in open_text_file
        pub_busy.busyStart(self.parent.parent)
 
        # Remove the old list
