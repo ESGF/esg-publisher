@@ -980,7 +980,10 @@ def readThreddsWithAuthentication(url, config):
         page = handle.read()
         handle.close()
     except Exception, e:
-        error("Error reading url %s: %s"%(url,`e`))
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        error("Error reading url %s: %s"%(url, msg))
         raise
     return page
     
@@ -1005,7 +1008,10 @@ def reinitializeThredds():
     try:
         reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
     except Exception, e:
-        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%e)
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
 
     if reinitResult.find(threddsReinitSuccessPattern)==-1:
         raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%`reinitResult`)

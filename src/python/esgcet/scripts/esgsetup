@@ -149,7 +149,7 @@ def setupconfig():
     # Does $HOME/.esgcet/esg.ini exist? If so, ask to proceed.
     templatename = os.path.join(configdir, 'template.ini')
     if os.path.exists(configname):
-        if not askyn("Configuration file %s exists, replace?"%configname):
+        if not askyn("Configuration file %s exists, replace?"%configname, default='n'):
             raise RuntimeError
 
     # Copy template.ini.

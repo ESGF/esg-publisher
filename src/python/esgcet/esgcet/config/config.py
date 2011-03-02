@@ -239,10 +239,10 @@ def loadConfig1(configFile):
             else:
                 try:
                     from pkg_resources import resource_stream
+                    fp = resource_stream('esgcet.config.etc', 'esg.ini')
                 except:
-                    raise ESGPublishError("No configuration file specified.")
+                    raise ESGPublishError("No configuration file specified, try setting $ESGINI.")
 
-                fp = resource_stream('esgcet.config.etc', 'esg.ini')
                 config1 = SaneConfigParser(`fp`)
                 config1.readfp(fp)
     else:    
