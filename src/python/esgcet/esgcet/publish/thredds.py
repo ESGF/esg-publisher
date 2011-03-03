@@ -450,7 +450,7 @@ def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvli
     timeLengthProperty = SE(aggDataset, "property", name="time_length", value="0")
 
     if lasServiceSpecs is not None:
-        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     netcdf = SE(aggDataset, "netcdf", nsmap=nsmap)
     aggElem = SE(netcdf, "aggregation", type="joinExisting", dimName=aggdim_name)
@@ -477,7 +477,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     perAggVariable = _genVariable(perAggVariables, variable)
     aggDataset.append(perVarMetadata)
     if lasServiceSpecs is not None:
-        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     # Sort filevars according to aggdim_first normalized to the dataset basetime
     filevars = []
@@ -762,7 +762,9 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     threddsAggregationSpecs = getThreddsServiceSpecs(config, section, 'thredds_aggregation_services')
     threddsFileSpecs = getThreddsServiceSpecs(config, section, 'thredds_file_services')
     threddsOfflineSpecs = getThreddsServiceSpecs(config, section, 'thredds_offline_services')
-    threddsRestrictAccess = config.get(section, 'thredds_restrict_access')
+    threddsRestrictAccess = config.get(section, 'thredds_restrict_access', default=None)
+    if threddsRestrictAccess is None:
+        warning("thredds_restrict_access is not set: THREDDS datasets will be openly readable.")
     threddsDatasetRootsOption = config.get('DEFAULT', 'thredds_dataset_roots')
     threddsDatasetRootsSpecs = splitRecord(threddsDatasetRootsOption)
     threddsServiceApplicationSpecs = getThreddsAuxiliaryServiceSpecs(config, section, 'thredds_service_applications', multiValue=True)
@@ -845,7 +847,11 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                 datasetDesc = datasetName
                 
     dsetVersionID = "%s.v%d"%(datasetName, dsetVersion)
-    datasetElem = SE(catalog, "dataset", name=datasetDesc, ID=dsetVersionID, restrictAccess=threddsRestrictAccess)
+    datasetElem = SE(catalog, "dataset", name=datasetDesc, ID=dsetVersionID)
+
+    # If thredds_restrict_access is set, add restrictAccess attribute, otherwise data is open
+    if threddsRestrictAccess is not None:
+        datasetElem.set("restrictAccess", threddsRestrictAccess)
 
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
@@ -924,7 +930,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     # Add LAS access element if configuring LAS
     if lasConfigure and (lasServiceSpecs is not None):
-        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     if service is not None:
         serviceName = service
@@ -1007,7 +1013,10 @@ def readThreddsWithAuthentication(url, config):
         page = handle.read()
         handle.close()
     except Exception, e:
-        error("Error reading url %s: %s"%(url,`e`))
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        error("Error reading url %s: %s"%(url, msg))
         raise
     return page
     
@@ -1032,7 +1041,10 @@ def reinitializeThredds():
     try:
         reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
     except Exception, e:
-        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%e)
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
 
     if reinitResult.find(threddsReinitSuccessPattern)==-1:
         raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%`reinitResult`)
