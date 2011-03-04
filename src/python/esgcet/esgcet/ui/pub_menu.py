@@ -588,14 +588,19 @@ class create_dataset_menu:
          for x in parent.main_frame.top_page_id[selected_page]:
             if parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
                 dset_name = parent.main_frame.top_page_id2[selected_page][x].cget('text')
-                
-                # ganz TODO test
+                               
                 #dsetVersionName1 = self.parent.parent.main_frame.top_page_id2v[selected_page][x].cget('text')
                 #query_name, dset_version = parseDatasetVersionId(dsetVersionName1)
-                dset_version = parent.main_frame.version_label[selected_page][x].cget('text')
+                """ ganz I am modifying this so that if a user selects a dataset without a version then we delete all versions of that dataset"""
+                try:
+                    dset_version = parent.main_frame.version_label[selected_page][x].cget('text')
+                except:
+                    dset_version = -1
+                    #print 'Delete all versions'   
                 #dset_version = 1
                 if (dset_version == 'N/A' or not dset_version):
-                    continue   # not published, yet
+                    dset_version = -1
+                    # continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
                 if status == 3  or DeleteGateway or DeleteThredds or DeleteLocalDB:

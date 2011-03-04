@@ -424,7 +424,7 @@ def parseDatasetVersionId(datasetVersionId):
                     ver = ver1
                     print 'GANZ returning version %d for %s' (ver , fields[0])
                     break
-        #result = (fields[0], string.atoi(fields[1]))    
+        #result = (fields[0], string.atoi(fields[1]))
         result = (fields[0], ver)
     else:
         raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
