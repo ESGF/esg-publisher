@@ -148,7 +148,7 @@ def esgpublishWrapper(**kw):
 
     # Iterate over datasets
     if not publishOnly:
-        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, comment=message, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, readFiles=readFiles)
+        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles)
 
     result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, threddsCatalogDictionary=threddsCatalogDictionary, reinitThredds=reinitThredds, readFromCatalog=readFromCatalog)
 
