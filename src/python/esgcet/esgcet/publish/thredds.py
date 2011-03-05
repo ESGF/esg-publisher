@@ -10,7 +10,6 @@ from esgcet.model import *
 from esgcet.exceptions import *
 from sqlalchemy.orm import join
 from esgcet.messaging import debug, info, warning, error, critical, exception
-import os.path
 
 _nsmap = {
     None : "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
@@ -164,44 +163,17 @@ def hasThreddsService(serviceName, serviceDict):
                 break
     return result
 
-#def _getRootPathAndLoc(fileobj, rootDict):
-#    fileFields = fileobj.getLocation().split(os.sep)
-#    if fileFields[0]=='':
-#        del fileFields[0]
-#
-#    filesRootPath = None
-#    filesRootLoc = None
-#    for rootPath, rootLoc in rootDict.items():
-#        if fileFields[:len(rootLoc)] == rootLoc:
-#            filesRootPath = rootPath
-#            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
-#
-#    return filesRootPath, filesRootLoc
-
-# ganz test with this one
 def _getRootPathAndLoc(fileobj, rootDict):
     fileFields = fileobj.getLocation().split(os.sep)
     if fileFields[0]=='':
         del fileFields[0]
-    if fileFields[0]=='.':
-        del fileFields[0]
-        
+
     filesRootPath = None
     filesRootLoc = None
     for rootPath, rootLoc in rootDict.items():
-        
-        filesRootPath = rootPath
-        filesRootLoc = os.sep+apply(os.path.join, rootLoc)
-        filePath = os.sep+apply(os.path.join, fileFields)
-        fullFilePath = filesRootLoc+filePath
-                
-        if (os.path.exists(fullFilePath)):
-#            print 'Found filesRootLoc %s' + fullFilePath
-            return filesRootPath, filesRootLoc
-
-#        if fileFields[:len(rootLoc)] == rootLoc:
-#            filesRootPath = rootPath
-#            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
+        if fileFields[:len(rootLoc)] == rootLoc:
+            filesRootPath = rootPath
+            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
 
     return filesRootPath, filesRootLoc
 
@@ -450,7 +422,7 @@ def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvli
     timeLengthProperty = SE(aggDataset, "property", name="time_length", value="0")
 
     if lasServiceSpecs is not None:
-        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     netcdf = SE(aggDataset, "netcdf", nsmap=nsmap)
     aggElem = SE(netcdf, "aggregation", type="joinExisting", dimName=aggdim_name)
@@ -477,7 +449,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     perAggVariable = _genVariable(perAggVariables, variable)
     aggDataset.append(perVarMetadata)
     if lasServiceSpecs is not None:
-        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(aggDataset, aggID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     # Sort filevars according to aggdim_first normalized to the dataset basetime
     filevars = []
@@ -601,22 +573,17 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
             # one associated service is a Thredds service
             if hasThreddsServ:
                 # Sanity check: are all the dataset files under the same rootpath?
-                rootpath, rootloc = _getRootPathAndLoc(filevar.file, datasetRootDict) # ganz revert back after testing
+                rootpath, rootloc = _getRootPathAndLoc(filevar.file, datasetRootDict)
                 if rootpath is None:
                     raise ESGPublishError("File %s is not contained in any THREDDS root path. Please add an entry to thredds_dataset_roots in the configuration file."%path)
                 if rootpath!=filesRootPath:
                     warning('rootpath=%s does not match dataset root path=%s'%(rootpath, filesRootPath))
-# rootloc = str: /home/esg-user/esg-publisher/src/python/esgcet/scripts
-# path = unicode: ./output/CCCMA/cccma-canesm2/1pctCO2/day/atmos/huss/r1i1p1/huss_day_cccma-canesm2_1pctCO2_r1i1p1_20000101-20000101.nc
+
                 rootIndex = path.find(rootloc)
                 if rootIndex==0:
-                    # attempting to replace the rootloc, above, with the thredds_dataset_roots found in esg.ini e.g. ganz_test
-#                    thredds_dataset_roots =
-#                        esg_dataroot | /esg/data 
-#                        ganz_test | /home/esg-user/esg-publisher/src/python/esgcet/scripts
                     urlpath = path.replace(rootloc, rootpath, 1)
                 else:
-                    warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
+                    # warning('File %s is not in a dataset root. Add an entry to thredds_dataset_roots with a directory containing this file'%path)
                     urlpath = path
             else:
                 urlpath = path
@@ -762,7 +729,9 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     threddsAggregationSpecs = getThreddsServiceSpecs(config, section, 'thredds_aggregation_services')
     threddsFileSpecs = getThreddsServiceSpecs(config, section, 'thredds_file_services')
     threddsOfflineSpecs = getThreddsServiceSpecs(config, section, 'thredds_offline_services')
-    threddsRestrictAccess = config.get(section, 'thredds_restrict_access')
+    threddsRestrictAccess = config.get(section, 'thredds_restrict_access', default=None)
+    if threddsRestrictAccess is None:
+        warning("thredds_restrict_access is not set: THREDDS datasets will be openly readable.")
     threddsDatasetRootsOption = config.get('DEFAULT', 'thredds_dataset_roots')
     threddsDatasetRootsSpecs = splitRecord(threddsDatasetRootsOption)
     threddsServiceApplicationSpecs = getThreddsAuxiliaryServiceSpecs(config, section, 'thredds_service_applications', multiValue=True)
@@ -845,7 +814,11 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                 datasetDesc = datasetName
                 
     dsetVersionID = "%s.v%d"%(datasetName, dsetVersion)
-    datasetElem = SE(catalog, "dataset", name=datasetDesc, ID=dsetVersionID, restrictAccess=threddsRestrictAccess)
+    datasetElem = SE(catalog, "dataset", name=datasetDesc, ID=dsetVersionID)
+
+    # If thredds_restrict_access is set, add restrictAccess attribute, otherwise data is open
+    if threddsRestrictAccess is not None:
+        datasetElem.set("restrictAccess", threddsRestrictAccess)
 
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
@@ -924,7 +897,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     # Add LAS access element if configuring LAS
     if lasConfigure and (lasServiceSpecs is not None):
-        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "dsid", "NetCDF")
+        _genLASAccess(datasetElem, dsetVersionID, lasServiceSpecs, lasServiceHash, "catid", "NetCDF")
 
     if service is not None:
         serviceName = service
@@ -947,7 +920,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     filelist = dset.getFiles()
     if len(filelist)==0:
         raise ESGPublishError("Dataset %s does not contain any files, cannot publish"%dset.name)
-    filesRootPath, filesRootLoc = _getRootPathAndLoc(dset.getFiles()[0], datasetRootDict) 
+    filesRootPath, filesRootLoc = _getRootPathAndLoc(dset.getFiles()[0], datasetRootDict)
     hasThreddsServ = hasThreddsService(serviceName, serviceDict)
     if hasThreddsServ and filesRootPath is None:
         raise ESGPublishError("File %s is not contained in any THREDDS root path. Please add an entry to thredds_dataset_roots in the configuration file."%dset.getFiles()[0].getLocation())
@@ -1007,7 +980,10 @@ def readThreddsWithAuthentication(url, config):
         page = handle.read()
         handle.close()
     except Exception, e:
-        error("Error reading url %s: %s"%(url,`e`))
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        error("Error reading url %s: %s"%(url, msg))
         raise
     return page
     
@@ -1032,7 +1008,10 @@ def reinitializeThredds():
     try:
         reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
     except Exception, e:
-        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%e)
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
 
     if reinitResult.find(threddsReinitSuccessPattern)==-1:
         raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%`reinitResult`)

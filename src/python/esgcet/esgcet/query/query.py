@@ -172,7 +172,7 @@ def getDerived(dset, dsetVersion, derivedHeaders, handler):
         elif attname=='version_name':
             value = dsetVersion.name
         elif attname=='comment':
-            value = dsetVersion.comment   # "ganz..need to retrieve comments (175 query.py)"
+            value = dsetVersion.comment
         result.append(value)
     return result
 
@@ -213,7 +213,7 @@ def getQueryFields(handler, return_list=True):
     
     basicHeaders = ['id', 'name', 'project', 'model', 'experiment', 'run_name', 'offline', 'master_gateway']
     eventHeaders = ['publish_time', 'publish_status']
-    derivedHeaders = ['parent', 'version', 'version_name', 'comment'] # ganz added comment to header
+    derivedHeaders = ['parent', 'version', 'version_name', 'comment']
     categories = handler.getFieldNames()
     if return_list:
         allProperties = list(set(basicHeaders+categories+eventHeaders+derivedHeaders))
@@ -435,8 +435,7 @@ def queryDatasetMap(datasetNames, Session, extra_fields=False):
         versionObj = dset.getVersionObj(useVersion)
         if versionObj is None:
             raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
-        filelist = versionObj.getFiles() # file versions 
-        
+        filelist = versionObj.getFiles() # file versions
         dmap[(name,useVersion)] = [(file.getLocation(), `file.getSize()`) for file in filelist]
 
         if extra_fields:

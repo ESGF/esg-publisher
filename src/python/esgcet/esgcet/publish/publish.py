@@ -370,7 +370,6 @@ def pollDatasetPublicationStatus(datasetName, Session, service=None):
         return PUBLISH_FAILED_EVENT
     
     status = dset.get_publication_status()
-    
     if status!=START_PUBLISH_DATASET_EVENT:
         session.close()
         return status
