@@ -557,6 +557,7 @@ class create_dataset_menu:
 
    def warn_On_Removal(self):
 
+       import tkMessageBox
        return tkMessageBox.askokcancel("Removing Datasets WARNING:", 
                                        "Removing the local DB could result in dataset orphans on either the gateway or thredds server. \nCancel to Quit or Ok to Proceed")
 

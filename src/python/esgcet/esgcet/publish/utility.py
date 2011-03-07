@@ -19,8 +19,6 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 # By default, os.stat(path).st_mtime returns a float.
 os.stat_float_times(False)
 
-    
-
 def getTypeAndLen(att):
     """Get the type descriptor of an attribute.
     """
@@ -414,7 +412,7 @@ def parseDatasetVersionId(datasetVersionId):
     fields = datasetVersionId.split('#')
     if len(fields)==1:
         result = (datasetVersionId, -1)
-    elif len(fields)==2: 
+    elif len(fields)==2:
         result = (fields[0], string.atoi(fields[1]))
     else:
         raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
@@ -474,7 +472,7 @@ def readDatasetMap(mappath, parse_extra_fields=False):
         if parse_extra_fields:
             fields = splitLine(line)
             versionName, path, size = fields[0:3]
-            datasetName,versionno = parseDatasetVersionId(versionName) #ver here ok as is.ganz
+            datasetName,versionno = parseDatasetVersionId(versionName)
             if len(fields)>3:
                 for field in fields[3:]:
                     efield, evalue = field.split('=')
@@ -541,7 +539,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
             mtime = float(mtime)
         yield (path, (size, mtime))
 
-def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, comment, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, forceAggregate=False, readFiles=False):
+def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -590,9 +588,6 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
     properties
       Dictionary of property/value pairs. The properties must be configured in the initialization file section
       corresponding to the project, and do not override existing metadata values. Contrast with ``initcontext``.
-    
-    comment
-      String comment to associate with new datasets created.
 
     testProgress1=None
       Tuple (callback, initial, final) where ``callback`` is a function of the form *callback(progress)*,
@@ -621,12 +616,14 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
       Otherwise the TDS catalog is written with a 'master_gateway' property, flagging the dataset(s)
       as replicated.
 
+    comment=None
+      String comment to associate with new datasets created.
+
     forceAggregate=False
       If True, run the aggregation step regardless.
 
     readFiles=False
       If True, interpret directoryMap as having one entry per file, instead of one per directory.
-
 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
@@ -714,16 +711,8 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
               testProgress1[2] = (100./ct)*iloop + (50./ct)
            else:
               testProgress1[2] = (100./ct)*iloop + (100./ct)
-
         dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, useVersion=versionno, forceRescan=forceAggregate, **context)
-       
-        # ganz TEST TODO 1/12/11 try replacing the version here!
-#        datasetNames[iloop]=datasetName,dataset.getVersion()
-        
-#        tname, tvers = datasetNames[iloop]
-#        print tname
-#        print tvers
-        
+
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
         runAggregate = (not offline)
         if hasattr(dataset, 'reaggregate'):
@@ -742,7 +731,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         # Save the context with the dataset, so that it can be searched later
         handler.saveContext(datasetName, Session)
         datasets.append(dataset)
-    
+
     return datasets
 
 def isConstant(ar):

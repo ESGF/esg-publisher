@@ -302,7 +302,7 @@ class dataset_widgets:
            else:
                operation = CREATE_OP
         
-           datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, self.Session, self.parent.parent.aggregateDimension, operation, self.parent.parent.filefilt, initcontext, self.parent.parent.hold_offline[selected_page], properties, self.comments, testProgress1, testProgress2 , self.parent.parent.handlerDictionary, extraFields=extraFields)
+           datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, self.Session, self.parent.parent.aggregateDimension, operation, self.parent.parent.filefilt, initcontext, self.parent.parent.hold_offline[selected_page], properties, comment=self.comments, testProgress1=testProgress1, testProgress2=testProgress2 , handlerDictionary=self.parent.parent.handlerDictionary, extraFields=extraFields)
 
            # If working on-line then replace the scanned list of datasets with 
            # the complete list of datasets
