@@ -19,8 +19,6 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 # By default, os.stat(path).st_mtime returns a float.
 os.stat_float_times(False)
 
-class saveDataSet:
-    dataset = {}
     
 
 def getTypeAndLen(att):
@@ -416,16 +414,8 @@ def parseDatasetVersionId(datasetVersionId):
     fields = datasetVersionId.split('#')
     if len(fields)==1:
         result = (datasetVersionId, -1)
-    elif len(fields)==2:
-        ver=string.atoi(fields[1])
-        if saveDataSet.dataset:
-            for name1,ver1 in saveDataSet.dataset:
-                if name1==fields[0]:
-                    ver = ver1
-                    print 'GANZ returning version %d for %s' (ver , fields[0])
-                    break
-        #result = (fields[0], string.atoi(fields[1]))
-        result = (fields[0], ver)
+    elif len(fields)==2: 
+        result = (fields[0], string.atoi(fields[1]))
     else:
         raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
     return result
@@ -752,8 +742,6 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         # Save the context with the dataset, so that it can be searched later
         handler.saveContext(datasetName, Session)
         datasets.append(dataset)
-
-    saveDataSet.dataset = datasets
     
     return datasets
 
