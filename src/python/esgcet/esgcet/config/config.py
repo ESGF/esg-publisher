@@ -558,9 +558,14 @@ def getThreddsServiceSpecs(config, section, option):
         else:
             raise ESGPublishError("Invalid configuration option %s: %s"%(option, `item`))
         serviceBase = item[1].strip()
+        serviceType = item[0].strip()
 
-        # Ensure that service base has a trailing slash
-        if serviceBase[-1]!=os.sep:
+        # Ensure that LAS service base does NOT have a trailing slash ...
+        if serviceType=='LAS':
+            if serviceBase[-1]==os.sep:
+                item[1] = serviceBase[:-1]
+        # ... and that a non-LAS service base has a trailing slash
+        elif serviceBase[-1]!=os.sep:
             serviceBase += os.sep
             item[1] = serviceBase
 
