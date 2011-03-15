@@ -412,17 +412,17 @@ class dataset_widgets:
          )
          labels_id.pack(side='left', expand=1, fill='both')
 
-      # ganz todo add Version here!
+      # ganz todo add Version here! 9 was 4
       labels_version = Tkinter.Button(rowFrameLabels[selected_page].interior(),
                 text = 'Ver',
                 font = labelFont,
                 bg = lcolor2,
                 relief = 'sunken',
                 borderwidth = 1,
-                width = 4
+                width = 9
       )
       labels_version.pack(side='left', expand=1, fill='both')
-###############################################################################
+############################################################################### 
       labels_dataset = Tkinter.Button(rowFrameLabels[selected_page].interior(),
                 text = 'Dataset',
                 font = labelFont,
@@ -574,9 +574,9 @@ class dataset_widgets:
                """
                #version = Tkinter.Label( frame, text = ver_1, bg = dcolor2, width = 6, relief = 'sunken')
                #version.grid(row = dset_row, column = 4, sticky = 'nsew')
-               
+               # width was 6 column = 4
                self.parent.parent.main_frame.version_label[selected_page][x] = Tkinter.Label( frame, text = ver_1, 
-                                                                                              bg = dcolor2, width = 6, 
+                                                                                              bg = dcolor2, width = 11, 
                                                                                               relief = 'sunken' )
                self.parent.parent.main_frame.version_label[selected_page][x].grid(row = dset_row, column = 4, sticky = 'nsew')
                """ end of test """
