@@ -252,6 +252,31 @@ def loadConfig1(configFile):
         config1.read(configFile)
     return config1
 
+def loadConfig2(configFile=None):
+    
+        # First check the environment variable ESGINI
+        configFile = os.environ.get('ESGINI')
+        if configFile is not None:
+            if not os.path.exists(configFile):
+                raise ESGPublishError("Cannot find configuration file (specified in $ESGINI): %s"%configFile)
+            else:
+                config1 = SaneConfigParser(configFile)
+                config1.read(configFile)
+        else:
+            
+            # Then look in $HOME/.esgcet/esg.ini
+            home = os.environ.get('HOME')
+            if home is not None:
+                configFile = os.path.join(home, '.esgcet', 'esg.ini')
+            if configFile is not None and os.path.exists(configFile):
+                config1 = SaneConfigParser(configFile)
+                config1.read(configFile)
+
+            # If not found, look in the Python installation directory
+            
+    
+        return configFile
+
 def loadConfig(configFile):
     """
     Load the 'ini' style configuration file.

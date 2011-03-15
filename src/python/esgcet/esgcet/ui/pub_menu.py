@@ -31,10 +31,41 @@ from esgcet.messaging import warning
 from esgcet.publish import deleteDatasetList, DELETE, UNPUBLISH, publishDatasetList
 from pkg_resources import resource_filename
 from esgcet.publish.utility import generateDatasetVersionId
+from esgcet.config import *
+
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
 off_icon = resource_filename('esgcet.ui', 'off.gif')
 
+
+def getConfigFile(configFile=None):
+          
+    
+        # First check the environment variable ESGINI
+        configFile = os.environ.get('ESGINI')
+        if configFile is not None:
+            if not os.path.exists(configFile):
+                raise ESGPublishError("Cannot find configuration file (specified in $ESGINI): %s"%configFile)
+            else:
+                return configFile               
+        else:
+            
+            # Then look in $HOME/.esgcet/esg.ini
+            home = os.environ.get('HOME')
+            if home is not None:
+                configFile = os.path.join(home, '.esgcet', 'esg.ini')
+            if configFile is not None and os.path.exists(configFile):
+                return configFile
+
+            # If not found, look in the Python installation directory
+            
+        if (configFile == None):
+              msg = 'The esg.ini file cannot be found in $HOME/.esgcet'
+              msg = msg + '\nPlease copy it there and retry command.'
+              showwarning('Warning',msg)
+              raise(msg)
+        #return configFile
+ 
 #----------------------------------------------------------------------------------------
 # Function to change the color of a widget
 #----------------------------------------------------------------------------------------
@@ -46,13 +77,32 @@ def evt_change_color( widget, parent, event ):
 # Read esg.ini file and pull out the log filename
 #----------------------------------------------------------------------------------------
 def return_log_file_name( parent ):
-   fp = open(parent.init_file, 'r')
+#   fp = open(parent.init_file, 'r') 
+   from tkMessageBox import showinfo, showwarning, showerror
+   configFile = getConfigFile()
+   found = False
+   fp = open(configFile, 'r')
    for x in fp.xreadlines():
       if x.find("# log_filename") != -1: 
+          found = True
           break
    fp.close()
+ 
+   config = loadConfig(None)
+   section =  'extract'
+   log_filename = config.get(section, 'log_filename', default=None)
+   if (log_filename != None): 
+       print log_filename
+       return log_filename
+ 
+   if (found == False):    
+       msg = 'The esg.ini file does not specify a log file. '
+       msg = msg + '\nPlease add one, e.g. # log_filename,  and retry command.'
+       showwarning('Warning',msg)
+       raise(msg)
+     
    return x
-
+    
 #----------------------------------------------------------------------------------------
 # Read esg.ini file and pull out the log level for each configuration
 #----------------------------------------------------------------------------------------
@@ -71,51 +121,75 @@ def return_log_settings_from_ini_file( parent ):
    from tkMessageBox import showinfo, showwarning, showerror
    import os.path
     
-    # ganz added this here to check for missing esg.ini file
-   if (os.path.exists(parent.init_file) != True):
-       msg = 'The esg.ini file is not present in '
-       msg = msg + parent.init_file
-       msg = msg + '\nPlease copy it there and retry command.'
-       showwarning('Warning',msg)
-       raise(msg)
-       #return;
-
-   fp = open(parent.init_file, 'r')
-   for x in fp.xreadlines():
-      if x.find("# Shared options") != -1: 
+ 
+   try:   
+       configFile = getConfigFile()
+   except :
+       print "Error getting config file ", sys.exc_info()
+       
+     
+   
+   if (configFile == None):
+       return
+   try:
+      #fp = open(parent.init_file, 'r')
+      fp = open(configFile, 'r')
+      for x in fp.xreadlines():
+         if x.find("# Shared options") != -1: 
           shared_opt_flg = True
           db_init_flg = False
           proj_spec_flg = False
           md_extract_flg = False
-      if x.find("# Database initialization") != -1:
+         if x.find("# Database initialization") != -1:
           shared_opt_flg = False
           db_init_flg = True
           proj_spec_flg = False
           md_extract_flg = False
-      if x.find("# Project-specific configuration") != -1:
+         if x.find("# Project-specific configuration") != -1:
           shared_opt_flg = False
           db_init_flg = False
           proj_spec_flg = True
           md_extract_flg = False
-      if x.find("# Metadata extraction") != -1:
+         if x.find("# Metadata extraction") != -1:
           shared_opt_flg = False
           db_init_flg = False
           proj_spec_flg = False
           md_extract_flg = True
-      if ( (x.find("log_level") != -1) and shared_opt_flg ):
+         if ( (x.find("log_level") != -1) and shared_opt_flg ):
            shared_opt_flg = False
            shared_opt_invoke =  x[(x.find("=")+1):].strip().capitalize()
-      if ( (x.find("log_level") != -1) and db_init_flg ):
+         if ( (x.find("log_level") != -1) and db_init_flg ):
            db_init_flg = False
            db_init_invoke =  x[(x.find("=")+1):].strip().capitalize()
-      if ( (x.find("log_level") != -1) and proj_spec_flg ):
+         if ( (x.find("log_level") != -1) and proj_spec_flg ):
            proj_spec_flg = False
            proj_spec_invoke =  x[(x.find("=")+1):].strip().capitalize()
-      if ( (x.find("log_level") != -1) and md_extract_flg ):
+         if ( (x.find("log_level") != -1) and md_extract_flg ):
            md_extract_flg = False
            md_extract_invoke =  x[(x.find("=")+1):].strip().capitalize()
-   fp.close()
+      fp.close()
 
+   except:
+       pass
+   
+   #print "Preferences for logging: "
+   """
+   if shared_opt_flg == True:
+       print "shared_opt_flg log level is ON "
+   if db_init_flg == True:
+       print "db_init_flg log level is ON "
+   if proj_spec_flg == True:
+       print "proj_spec_flg log level is ON "      
+   if md_extract_flg == True:
+       print "md_extract_flg log level is ON "  
+   
+   print "shared_opt_invoke log level is set to  ", shared_opt_invoke
+   print "db_init_invoke log level is set to  ", db_init_invoke
+   print "proj_spec_invoke log level is set to  ", proj_spec_invoke
+   print "md_extract_invoke log level is set to  ", md_extract_invoke
+   """
+  
+   
    return shared_opt_invoke, db_init_invoke, proj_spec_invoke, md_extract_invoke
 
 #----------------------------------------------------------------------------------------
@@ -244,11 +318,13 @@ class create_file_menu:
    def __init__( self, main_menu, parent, tear_it ):
       file_name = 'Publisher'
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
+      
       main_menu.addmenu(file_name, 'Publisher Preferences and Options', font = mnFont, tearoff = tear_it)
       #---------------------------------------------------------------------------------
       # Create the "Preferences" menu item
       #---------------------------------------------------------------------------------
       self.evt_preferences_flg = False
+      #""" ganz to remove preferences option....
       main_menu.addmenuitem(file_name, 'command', 'Set Publisher Preferences',
                          label = 'Preferences...',
                          font = mnFont,
@@ -258,6 +334,7 @@ class create_file_menu:
       # Create the cascade "Exit" menu and its items
       #---------------------------------------------------------------------------------
       main_menu.addmenuitem(file_name, 'separator')
+      #"""
       main_menu.addmenuitem(file_name, 'command', 'Close Publisher',
                           label = "Exit Publisher",
                           font = mnFont,
@@ -302,8 +379,12 @@ class create_file_menu:
         # ganz added this code 1/20/11
         try:
             self.log_settings = set_log_preferences( page, parent )
+        
+        
+          
         except:
-            return
+          print "set_log_preferences call failed...", sys.exc_info()
+          return
 
         notebook.setnaturalsize()
 
@@ -346,12 +427,13 @@ class set_general:
         #---------------------------------------------------------------------------------
 	# Create and pack the EntryFields to show the initialization file
         #---------------------------------------------------------------------------------
+        configFile = getConfigFile()
 	self.init_file = Pmw.EntryField(frame,
 		labelpos = 'w',
 		label_text = 'Initialization File: ',
                 entry_background = "aliceblue",
                 entry_width =  60,
-                value = parent.init_file,
+                value = configFile,
                 )
         self.init_file.pack(side = 'top', expand = 1, fill = 'x', pady = 5 )
         self.init_file.component('entry').bind('<KeyPress>', pub_controls.Command(evt_change_color, self.init_file, parent ))
@@ -394,11 +476,13 @@ class set_general:
 
         entries = ( self.init_file, self.aggr_dim, self.validate_std_name )
         Pmw.alignlabels(entries)
+        
 
 class set_log_preferences:
    """
    Set up the Log Preference tab page -- shows the "Output" log filename and toggle to indicate whether or not to show Echo SQL Commands.
    """
+   
    def __init__( self, page, parent ):
 
         shared_opt_invoke, db_init_invoke, proj_spec_invoke, md_extract_invoke = return_log_settings_from_ini_file( parent )
@@ -423,12 +507,13 @@ class set_log_preferences:
                 entry_width =  160,
                 )
         self.log_dirname_str.pack(side = 'left', expand = 1, fill = 'x', padx = 5, pady = 5 )
-
+        
         fn = return_log_file_name( parent ).strip()
         if fn[0] != "#":
            fn = fn[fn.find("=")+1:].strip()
            if fn!='':
               parent.log_dirname = fn
+              self.log_dirname_str.setvalue(fn)
 
         frame.pack(side='top', fill='x')
 
@@ -463,7 +548,10 @@ class set_log_preferences:
        dialog_icon = tkFileDialog.SaveAs(master=self.log_dirname_btn,
                          filetypes=[("Text files", "*.txt", "TEXT")], title = 'Save Log Output In...')
        dirfilename=dialog_icon.show(initialdir=os.getcwd())
-       self.log_dirname_str.setvalue( dirfilename )
+       if (dirfilename != None):
+           self.log_dirname_str.setvalue( dirfilename )
+       else:
+           self.log_dirname_str.setvalue( parent.log_dirname )
 
 
 #----------------------------------------------------------------------------------------
@@ -633,8 +721,6 @@ class create_dataset_menu:
           testProgress = (parent.parent.statusbar.show, 0, 100)
           status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)
 
-
-#Ganz: do I need to explicitly remove each row from the list or just change it's status?
 
       # Show the published status
       try:

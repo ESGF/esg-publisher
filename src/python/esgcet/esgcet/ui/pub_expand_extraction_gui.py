@@ -142,7 +142,9 @@ class dataset_widgets:
        # To prevent unexplained core dumps, the scrollbar to the right and bottom must be removed
      
        try:
-          ans = tkMessageBox.askokcancel("Dataset Comments?", "For all new datasets, would you like to supply comments in an editor?")
+          from tkMessageBox   import askquestion, showerror
+          ans = tkMessageBox.askquestion("Dataset Comments?", "For all new datasets, would you like to supply comments in an editor?")
+          #ans = tkMessageBox.askokcancel("Dataset Comments?", "For all new datasets, would you like to supply comments in an editor?")
           if (ans == TRUE):
              myeditor = comments_editor.EDITOR()
              self.comments = myeditor.edit()
