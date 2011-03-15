@@ -36,7 +36,7 @@ from esgcet.config import *
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
 off_icon = resource_filename('esgcet.ui', 'off.gif')
-
+validate_st_names = True
 
 def getConfigFile(configFile=None):
           
@@ -414,12 +414,15 @@ class create_file_menu:
                parent.log_dirname = newlog
             parent.aggregateDimension = self.general_settings.aggr_dim.getvalue() 
             parent.engine.echo = eval( parent.echoSql )
+            parent.validateStandardName=self.general_settings.validate_std_name.getvalue()
             self.pref_dialog.destroy()
 
 class set_general:
    """
    Set up the General Preference tab page. Allows the user to set the initialization file, aggregation dimension, and validate standard names.
    """
+   
+   
    def __init__( self, page, parent ):
 
         frame = Tkinter.Frame( page )
@@ -472,7 +475,7 @@ class set_general:
         #---------------------------------------------------------------------------------
         for text in ('True', 'False'):
             self.validate_std_name.add(text)
-        self.validate_std_name.setvalue(str(True))
+        self.validate_std_name.setvalue(str(parent.validateStandardName))
 
         entries = ( self.init_file, self.aggr_dim, self.validate_std_name )
         Pmw.alignlabels(entries)
