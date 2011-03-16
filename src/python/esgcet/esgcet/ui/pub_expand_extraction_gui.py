@@ -238,7 +238,7 @@ class dataset_widgets:
               if dmap is not None:
                  for x in datasetNames:
                     dsetId = x[0] 
-                    datasetName = datasetNames[0]
+                    datasetName = x
                     try:
                         dmapentry = dmap[datasetName]
                     except:
