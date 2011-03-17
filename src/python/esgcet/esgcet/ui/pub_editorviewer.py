@@ -285,8 +285,8 @@ class create_publisher_editor_viewer:
         # View the dataset fields in the page
         #--------------------------------------------------------------------------------
         for i in range(len(return_fields)):
-            print " ganz dataset test %s", return_fields[i]
-            print values[0][i]
+            #print " ganz dataset test %s", return_fields[i]
+            #print values[0][i]
             value = values[0][i]
             try:
                 self.field_list[return_fields[i]] = show_field( self.parent, self.dataset_frame, return_fields[i].capitalize(), options[ return_fields[i] ], value, mandatory[i], validate[i] )
