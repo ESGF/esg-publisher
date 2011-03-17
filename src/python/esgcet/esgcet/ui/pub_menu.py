@@ -419,7 +419,8 @@ class create_file_menu:
 
 class set_general:
    """
-   Set up the General Preference tab page. Allows the user to set the initialization file, aggregation dimension, and validate standard names.
+   Set up the General Preference tab page. Allows the user to set the initialization file, 
+   aggregation dimension, and validate standard names.
    """
    
    

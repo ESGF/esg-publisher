@@ -26,6 +26,7 @@ import pub_busy
 import tkMessageBox
 from esgcet.messaging import warning
 from Tkinter import *
+from esgcet.exceptions import *
 from pub_controls import MyButton
 from pub_controls import font_weight
 from esgcet.query import getQueryFields
@@ -145,9 +146,12 @@ class dataset_widgets:
           from tkMessageBox   import askquestion, showerror
           ans = tkMessageBox.askquestion("Dataset Comments?", "For all new datasets, would you like to supply comments in an editor?")
           #ans = tkMessageBox.askokcancel("Dataset Comments?", "For all new datasets, would you like to supply comments in an editor?")
-          if (ans == TRUE):
-             myeditor = comments_editor.EDITOR()
-             self.comments = myeditor.edit()
+          ans1 = str(ans)  # since we get back a _tkinter.Tcl_Obj not a string we need to convert to test...ganz
+        
+
+          if (ans1 == 'yes' ):
+            myeditor = comments_editor.EDITOR()
+            self.comments = myeditor.edit()
          
      #        for x in self.comments:
      #          print x
@@ -198,7 +202,7 @@ class dataset_widgets:
         tab_name = self.parent.parent.top_notebook.getcurselection()
         selected_page = self.parent.parent.main_frame.selected_top_page
         datasetNames = []
-        datasetNames2 = []
+       # datasetNames2 = []
         if (selected_page is None):
            warning("Must generate a list of datasets to scan before data extraction can occur.")
            return
@@ -219,11 +223,13 @@ class dataset_widgets:
                     dset_name, dsetVersion = parseDatasetVersionId(dsetVersionName)
 
                 # Retrieve all the datasets in the collection for display
+                """ ganz test code
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
                 status_text = pub_controls.return_status_text( status )
                 if status_text != 'Error':
                    dsetTuple = parseDatasetVersionId(self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text'))
                    datasetNames2.append(dsetTuple)
+                """
                 # Retrieve only the datasets that have been selected
                 if self.parent.parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon':
                    dsetTuple =  parseDatasetVersionId(self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text'))
@@ -308,10 +314,20 @@ class dataset_widgets:
 
            # If working on-line then replace the scanned list of datasets with 
            # the complete list of datasets
+           #test
+           """
+           print 'datasetNames:'
+           for t1 in datasetNames:
+               print t1
+           print 'datasetNames2:'    
+           for t2 in datasetNames2:
+               print t2
+           """   
            if not self.parent.parent.hold_offline[selected_page]:
               datasets = []
               versionObjs = []
-              for dsetName, version in datasetNames2:
+              # ganz finally, tested datasetNames2 here
+              for dsetName, version in datasetNames:
                   result = Dataset.lookup(dsetName, self.Session, version=version)
                   if result is not None:
                       entry, versionObj = result
@@ -780,7 +796,7 @@ class dataset_widgets:
           extra_fields = False
           variables = {}
           
-          from esgcet.exceptions import *
+#          from esgcet.exceptions import *
 #          for versionId in dset_name:
 #             name,useVersion = parseDatasetVersionId(versionId)
 #             dset = Dataset.lookup(name, self.Session)
