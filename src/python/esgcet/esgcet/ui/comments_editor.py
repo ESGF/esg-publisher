@@ -1,20 +1,31 @@
 #!/usr/bin/env python
 import os
 import tempfile
+import Tkinter, Pmw, tkFileDialog, tkFont
 
 title = 'Editor DIALOG'
 class EDITOR:
-   
+    def __init__(self, parent):
+      self.parent = parent
+    
     def edit(self):
 # Create a temp file
         editor = os.environ.get('EDITOR')
         if editor is None:
             #editor = "gedit"
-            editor = "/usr/local/bin/emacs"
-            #print 'No editor defined.'
-            #sys.exit(0)
+            # ======== Select a file for opening:
+            print "Please set your favorite editor in the EDITOR environmental variable for future use." 
+            try:
+                dialog_icon = tkFileDialog.Open(master=self.parent.control_frame2,title = 'Editor Selection')
+                editor=dialog_icon.show(initialdir="/")   #os.getcwd())
+            except Exception as excpt:
+                print excpt
+  
+  # finally if all else fails....
+            if editor == None:
+                editor = "/usr/local/bin/emacs"
+                
         tmp = tempfile.mktemp()
-        #print 'Editing temporary Comment file: ', tmp
 
 # Edit a temp file
 
@@ -38,14 +49,3 @@ class EDITOR:
             os.remove(tmp)
         return lines
 ######################################################################
-
-# testing, can remove later
-if __name__ == '__main__':
-
-    myeditor = EDITOR()
-    lines = myeditor.edit()
-
-    for x in lines:
-       print x
- 
-

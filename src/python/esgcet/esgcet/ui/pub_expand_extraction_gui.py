@@ -150,7 +150,7 @@ class dataset_widgets:
         
 
           if (ans1 == 'yes' ):
-            myeditor = comments_editor.EDITOR()
+            myeditor = comments_editor.EDITOR(self.parent)
             self.comments = myeditor.edit()
          
      #        for x in self.comments:
