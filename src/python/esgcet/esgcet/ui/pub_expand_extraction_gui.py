@@ -256,7 +256,7 @@ class dataset_widgets:
                         del dmap[trykey]
                         dmap[datasetName] = dmapentry
                     firstFile = dmapentry[0][0]
-	            self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, firstFile, self.Session)
+                    self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, firstFile, self.Session)
                     handler = self.parent.parent.handlerDictionary[dsetId]
                  # Copy the defaultGlobalValues into initcontext
                  initcontext = self.parent.parent.main_frame.defaultGlobalValues[selected_page]
