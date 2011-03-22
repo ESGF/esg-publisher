@@ -207,7 +207,6 @@ class dataset_widgets:
            warning("Must generate a list of datasets to scan before data extraction can occur.")
            return
 
-#GANZ VERSION_FILTER BELOW?
         if (selected_page is not None) or (self.parent.parent.hold_offline[selected_page] == True):
            extraFields = None 
            if (self.parent.parent.hold_offline[selected_page] == False) or (isinstance(self.parent.parent.hold_offline[selected_page], types.DictType)):
@@ -256,14 +255,38 @@ class dataset_widgets:
                         del dmap[trykey]
                         dmap[datasetName] = dmapentry
                     firstFile = dmapentry[0][0]
+  
                     self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, firstFile, self.Session)
                     handler = self.parent.parent.handlerDictionary[dsetId]
                  # Copy the defaultGlobalValues into initcontext
                  initcontext = self.parent.parent.main_frame.defaultGlobalValues[selected_page]
               else:
-                 for x in datasetNames:
+                  # more test code
+                 myholdDirectoryMap = self.parent.parent.directoryMap[selected_page] 
+                 #mydatasetNames = [(item,-1) for item in myholdDirectoryMap.keys()]
+                 mydatasetNames = [(item) for item in myholdDirectoryMap.keys()]
+                 #end
+                 for x in mydatasetNames:
                     dsetId = x[0] 
-                    firstFile = self.parent.parent.main_frame.dirp_firstfile[selected_page]
+                    datasetName = x
+                    # ganz this is test code
+                    try:
+                        dmapentry = myholdDirectoryMap[datasetName]
+                    except:
+
+                        # Check if the dataset map key was changed from (dsetname,-1) to (dsetname,version).
+                        # If so, replace the entry with the new key.
+                        
+                        trykey = (datasetName[0], -1)
+                        dmapentry = myholdDirectoryMap[trykey]
+                        del myholdDirectoryMap[trykey]
+                        myholdDirectoryMap[datasetName] = dmapentry
+                        
+                    firstFile = dmapentry[0][1]
+                    #end of test code
+                    
+                    #firstFile = self.parent.parent.main_frame.dirp_firstfile[selected_page]
+ 
                     self.parent.parent.handlerDictionary[dsetId] = getHandlerByName(projectName, firstFile, self.Session)
                     handler = self.parent.parent.handlerDictionary[dsetId]
            else:      # working off-line
@@ -530,7 +553,7 @@ class dataset_widgets:
       for x in self.parent.parent.main_frame.top_page_id[selected_page]:
          dset_row = self.parent.parent.main_frame.top_page_id[selected_page][x].cget('text')
          dset_text = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')
-         
+         #if (self.parent.parent.main_frame.)
                     # ganz added this 1/21/11 NOT NEC
 #         if (self.parent.parent.main_frame.version_label[selected_page] ):
 #                    dsetName = self.parent.parent.main_frame.top_page_id2[selected_page][x].cget('text')               
@@ -656,8 +679,11 @@ class dataset_widgets:
                   run_name = Tkinter.Label( frame, text = dset.get_run_name(self.Session), bg = dcolor6, width = 20, relief = 'sunken', borderwidth = 2)
                   run_name.grid(row = dset_row, column = 10, sticky = 'nsew')
          else:
+             
+             #GANZ tested removed and replaced this 3/20/2011 
+            
             frame = self.parent.parent.main_frame.add_row_frame[selected_page][x]
-            ok_err = Tkinter.Button( frame, text = 'N/A', bg = 'salmon', highlightcolor = dcolor1, width = 4, relief = 'sunken')
+            ok_err = Tkinter.Button( frame, text = 'N/A', bg = 'salmon', highlightcolor = dcolor1, width = 4, relief = 'sunken') #was dcolor1
             ok_err.grid(row = dset_row, column = 1, sticky = 'nsew')
 
             status = Tkinter.Label( frame, text = 'N/A', bg = 'salmon', width = 10, relief = 'sunken')
@@ -665,18 +691,19 @@ class dataset_widgets:
 
             id = Tkinter.Label( frame, text = 'N/A', bg = 'salmon', width = 6, relief = 'sunken')
             id.grid(row = dset_row, column = 3, sticky = 'nsew')
-
+            
 # test ganz 1/17/11
             #version = Tkinter.Label( frame, text = 'N/A', bg = dcolor2, width = 4, relief = 'sunken')
             #version.grid(row = dset_row, column = 4, sticky = 'nsew')
-
+            # was dcolor2
             self.parent.parent.main_frame.version_label[selected_page][x] = Tkinter.Label( frame, text = 'N/A', bg = dcolor2, width = 4, relief = 'sunken')
             self.parent.parent.main_frame.version_label[selected_page][x].grid(row = dset_row, column = 4, sticky = 'nsew')
             # same test as above
             
             self.parent.parent.main_frame.top_page_id2[selected_page][x].configure( width=71, relief='sunken', bg = 'salmon', fg = 'black' )
             self.parent.parent.main_frame.top_page_id2[selected_page][x].grid(row=dset_row,column = 5, columnspan=2, sticky = 'nsew')
-
+            
+            
          x += 1
 
 

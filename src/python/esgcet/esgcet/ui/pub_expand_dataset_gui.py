@@ -497,10 +497,9 @@ class dataset_widgets:
        self.parent.parent.hold_offline[selected_page] = onoff_flag
        self.parent.parent.main_frame.projectName[selected_page] = self.project_dataset.get()
 
-    def fill_in_data_information_directory( self, dirp, onoff_line = "online" ):
+    def fill_in_data_information_directory( self, dirp, readFiles, onoff_line = "online" ):
        from esgcet.publish import multiDirectoryIterator
        from esgcet.config import getHandler, getHandlerByName
-
        if onoff_line == "online":
           self.parent.parent.filefilt = ".*\\" + self.parent.parent.extension[0][1:] + "$"
 
@@ -527,7 +526,12 @@ class dataset_widgets:
           properties = {}
           props = properties.copy()
           props.update(initcontext)
-          holdDirectoryMap = handler.generateDirectoryMap(lastargs, self.parent.parent.filefilt, initContext=props)
+          
+          if not readFiles:
+            holdDirectoryMap = handler.generateDirectoryMap(lastargs, self.parent.parent.filefilt, initContext=props)
+          else:  
+            holdDirectoryMap = handler.generateDirectoryMapFromFiles(lastargs, self.parent.parent.filefilt, initContext=props)
+          
           self.parent.parent.datasetNames = [(item,-1) for item in holdDirectoryMap.keys()]
           self.parent.parent.datasetNames.sort()
           tab_name= "Collection %i" % self.parent.parent.top_ct
@@ -675,6 +679,7 @@ class dataset_widgets:
 
     #-----------------------------------------------------------------
     # event functions to popup the directory selection window
+    # --project cmip5 --read-files
     #-----------------------------------------------------------------
     def evt_popup_directory_window( self ):
        # Reset the button colors
@@ -728,7 +733,7 @@ class dataset_widgets:
              self.dialog.activate(geometry= "+%d+%d" % (p1+d1, p2+d2) )
              if self.parent.parent.offline_directories != "Cancel":
              # Load up the data information from data extraction
-                self.fill_in_data_information_directory( dirfilename, onoff_line = onoff_line )
+                self.fill_in_data_information_directory( dirfilename, True, onoff_line = onoff_line )
           else:
              onoff_line = "online"
              if self.generating_file_list_flg == 1: return
@@ -745,7 +750,7 @@ class dataset_widgets:
              self.parent.parent.extension.append( (self.data_filter._entryfield.get().split()[-1]) )
 
           # Load up the data information from data extraction
-             self.fill_in_data_information_directory( dirfilename, onoff_line = onoff_line )
+             self.fill_in_data_information_directory( dirfilename, True, onoff_line = onoff_line )
 
        # Change the color of the selected button
           bcolorbg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.25 )

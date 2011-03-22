@@ -584,8 +584,11 @@ class generate_notebook:
 #                  print versionNum
                   
                      status = pollDatasetPublicationStatus(query_name, self.Session)
-            
-                     self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
+                     # ganz catch non selected Red entries to skip 3/20/2011
+                     try:
+                       self.parent.parent.main_frame.status_label[selected_page][x].configure(text=pub_controls.return_status_text( status))
+                     except:
+                         continue
 
                   # Make sure you update the Ok/Err button
                   # ganz added this (1/18/11) here to catch the case when dset=None (e.g. no local db entry exists)
