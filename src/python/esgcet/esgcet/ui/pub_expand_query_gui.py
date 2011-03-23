@@ -842,8 +842,8 @@ class generate_notebook:
                 anchor='w',
                 justify='left',
                 width = 170,
-                command = pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 1),
-        )
+                command = pub_controls.Command( self.evt_selected_dataset_text, dataset, num_tag, 0),
+        )   # ganz the above genFrom was 1 3/22/11
 # ganz changed colunmspan from 5 to 4 here fix return to column=1 from 2 and columnspan to 5 from 4
 	self.select_label[ num_tag ].grid(row = self.row, column = 1, columnspan=5,sticky = 'nsew')
 
