@@ -36,6 +36,7 @@ from esgcet.ui import comments_editor
 from esgcet.model import Dataset, ERROR_LEVEL
 from esgcet.config import getOfflineLister
 from esgcet.ui.help_ScrolledText import Help
+from esgcet.exceptions import *
 
 class dataset_widgets:
     """
@@ -778,7 +779,6 @@ class dataset_widgets:
           extra_fields = False
           variables = {}
           
-          from esgcet.exceptions import *
 #          for versionId in dset_name:
 #             name,useVersion = parseDatasetVersionId(versionId)
 #             dset = Dataset.lookup(name, self.Session)
