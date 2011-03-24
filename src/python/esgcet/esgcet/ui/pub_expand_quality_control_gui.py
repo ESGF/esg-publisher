@@ -277,7 +277,7 @@ class quality_control_widgets:
                         highlightcolor = dcolor1,
                         relief = 'sunken',
                         )
-        except Exception as excpt:
+        except:
             pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
             raise
         finally:

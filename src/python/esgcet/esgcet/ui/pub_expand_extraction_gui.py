@@ -165,7 +165,7 @@ class dataset_widgets:
        try:
           self.return_content2( appendOpt = append_status )
 
-       except Exception as excpt:
+       except:
             pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
             raise
        finally:

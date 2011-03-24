@@ -277,7 +277,7 @@ class generate_notebook:
          self.parent.parent.main_frame.dirp_firstfile[selected_page] = None
          self.parent.parent.defaultGlobalValues[selected_page] = {}
 
-      except Exception as excpt:
+      except:
             pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
             raise
       finally:
@@ -603,7 +603,7 @@ class generate_notebook:
                             buttonColor = "yellow"
                             buttonText = "Warning"
                         self.parent.parent.main_frame.ok_err[selected_page][x].configure(bg=buttonColor, text=buttonText)
-        except Exception as excpt:
+        except:
             pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
             raise
         finally:

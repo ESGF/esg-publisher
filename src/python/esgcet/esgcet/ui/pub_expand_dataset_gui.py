@@ -753,7 +753,7 @@ class dataset_widgets:
           self.cw_dir.configure( background=bcolorbg, foreground=bcolorfg )
 
 #
-       except Exception as excpt:
+       except:
             pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
             raise
        finally:
@@ -798,7 +798,7 @@ class dataset_widgets:
        # Load up the data information from data extraction. This must be done outside the start of the Thread.
           self.fill_in_data_information_file( dirfilename, onoff_line = onoff_line )
  
-       except Exception as excpt:
+       except:
             pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
             raise
        finally:
