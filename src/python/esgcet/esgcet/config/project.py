@@ -395,6 +395,8 @@ class ProjectHandler(object):
         for key, value in context.items():
             self.context[key] = value
 
+        self.generateDerivedContext()
+
         self.contextCached = True
         return self.context
 
@@ -842,6 +844,13 @@ class ProjectHandler(object):
 
         """
         raise ESGMethodNotImplemented
+
+    def generateDerivedContext(self):
+        """Generate properties based on existing context values.
+
+        self.context is modified as a side effect.
+        """
+        pass
 
     def resetContext(self):
         """Reset the context to an empty dictionary.
