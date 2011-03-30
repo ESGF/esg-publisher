@@ -24,7 +24,7 @@ def getTypeAndLen(att):
     """
     if isinstance(att, numpy.ndarray):
         result = (att.dtype.char, len(att))
-    elif isinstance(att, types.StringType):
+    elif isinstance(att, types.StringType) or isinstance(att, types.UnicodeType):
         result = ('S', 1)
     elif isinstance(att, types.FloatType):
         result = ('d', 1)

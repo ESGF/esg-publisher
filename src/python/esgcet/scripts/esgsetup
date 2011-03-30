@@ -30,6 +30,13 @@ Options:
 
     --db: Initialize the database.
 
+    --db-admin-password password: Password for database administrator. If not specified, the
+        value is requested interactively. Only used with the --db option.
+
+    --db-user-password password: Password for non-administrative database user, that owns the
+        esgcet database. If not specified, the value is requested interactively. Only used
+        with the --db option.
+
     --gateway gateway_host:
         Gateway host name. Used to set default gateway service endpoints for publishing.
         If not set, the user is prompted for service endpoints.
@@ -42,10 +49,13 @@ Options:
 
     --publish: Initialize publication-related configuration options.
 
-    --thredds: Initialize the THREDDS server.
-
     --rootid root_identifier:
         Initialize the ESG root identifier during the --config phase.
+
+    --thredds: Initialize the THREDDS server.
+
+    --thredds-password password: Password for TDS reinitialization. If not specified, the
+        value is requested interactively. Only used with the --thredds option.
 
 """
     
@@ -286,12 +296,14 @@ class SaneConfigParser(SafeConfigParser):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'thredds'])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin-password=', 'db-user-password=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    dbpass = None
+    esgusepass = None
     gatewayHost = None
     generateHandler = False
     initconfig = False
@@ -299,6 +311,7 @@ def main(argv):
     initthredds = False
     initpublish = False
     initroot = False
+    threddsPassword = None
     for flag, arg in args:
         if flag in ['-h', '--help']:
             print usage
@@ -307,6 +320,10 @@ def main(argv):
             initconfig = True
         elif flag=='--db':
             initdb = True
+        elif flag=='--db-admin-password':
+            dbpass = arg
+        elif flag=='--db-user-password':
+            esgusepass = arg
         elif flag=='--gateway':
             gatewayHost = arg
         elif flag=='--handler':
@@ -315,6 +332,8 @@ def main(argv):
             initpublish = True
         elif flag=='--thredds':
             initthredds = True
+        elif flag=='--thredds-password':
+            threddsPassword = arg
         elif flag=='--rootid':
             initroot = True
             rootid = arg
@@ -399,7 +418,8 @@ def main(argv):
                 sys.exit(1)
                 
             dbadmin = askfor("Database administrator name", env='PGUSER')
-            dbpass = askfor("Administrator password", silent=True)
+            if dbpass is None:
+                dbpass = askfor("Administrator password", silent=True)
             host = askfor("Host name", default="localhost", env='PGHOST')
             port = askfor("Database port", default="5432", env='PGPORT')
             connectString = "dbname='postgres' user='%s' password='%s' host='%s' port='%s'"%(dbadmin, dbpass, host, port)
@@ -456,11 +476,13 @@ def main(argv):
                 createuser = False
 
             # Create the user if necessary
-            esgusepass = askfor("esgcet user password", silent=True)
-            esgusepassagain = askfor("Confirm esgcet user password", silent=True)
-            if esgusepass!=esgusepassagain:
-                tell("Passwords do not match")
-                raise RuntimeError
+            if esgusepass is None:
+                esgusepass = askfor("esgcet user password", silent=True)
+                esgusepassagain = askfor("Confirm esgcet user password", silent=True)
+                if esgusepass!=esgusepassagain:
+                    tell("Passwords do not match")
+                    raise RuntimeError
+
             if createuser:
                 tell("Creating new database user %s"%esguser)
                 cur.execute("create user %s with encrypted password '%s'"%(esguser, esgusepass))
@@ -768,11 +790,12 @@ def main(argv):
             threddsReinitURL = askfor("URL for TDS reinitialization [Note: the correct value differs between THREDDS V3 and V4] (thredds_reinit_url)", default=config.get('DEFAULT', 'thredds_reinit_url'))
             threddsErrorURL = askfor("URL of TDS error log [Note: the correct value differs between THREDDS V3 and V4] (thredds_reinit_error_url)", default=config.get('DEFAULT', 'thredds_reinit_error_url'))
             threddsUser = askfor("TDS username (thredds_username)", default=config.get('DEFAULT', 'thredds_username'))
-            threddsPassword = askfor("TDS password", silent=True)
-            threddsPassword2 = askfor("Confirm TDS password", silent=True)
-            if threddsPassword!=threddsPassword2:
-                tell("Passwords do not match")
-                raise RuntimeError
+            if threddsPassword is None:
+                threddsPassword = askfor("TDS password", silent=True)
+                threddsPassword2 = askfor("Confirm TDS password", silent=True)
+                if threddsPassword!=threddsPassword2:
+                    tell("Passwords do not match")
+                    raise RuntimeError
 
             # Get the document roots
             currentRoots =  config.get('DEFAULT', 'thredds_dataset_roots')

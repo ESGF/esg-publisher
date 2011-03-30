@@ -624,7 +624,7 @@ class create_dataset_menu:
             for x in parent.main_frame.top_page_id[selected_page]:
                 parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = keycolor1, image=self.on)
 
-      except Exception as excpt:
+      except:
             pub_busy.busyEnd( parent )  # catch here in order to turn off the busy cursor ganz
             raise
       finally:
@@ -641,7 +641,7 @@ class create_dataset_menu:
          if selected_page is not None:
             for x in parent.main_frame.top_page_id[selected_page]:
                 parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image=self.off)
-      except Exception as excpt:
+      except:
             pub_busy.busyEnd( parent )  # catch here in order to turn off the busy cursor ganz
             raise
       finally:

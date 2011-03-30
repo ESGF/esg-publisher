@@ -1,0 +1,112 @@
+#!/usr/bin/env python
+# Adapted for numpy/ma/cdms2 by convertcdms.py
+
+# Find where the bogus time values are
+# Usage esgcheck_times [-c catenate_list] [-f filelist] nc-file
+
+import sys, cdms2 as cdms, numpy.oldnumeric as Numeric, getopt, glob, string
+
+usage = """Usage:
+    esgcheck_times [options] path
+
+    -or-
+
+    esgcheck_times -f filelist [options]
+
+    Check the validity of time values.
+
+Options:
+
+    -c 'pattern': Echo time ranges for a list of files. 'pattern' should be quoted.
+
+    -e: Just print "[Error] path" if file is bad.
+
+    -f filelist: Check each file in the list.
+
+    -h: Help message.
+    
+"""
+def checkone_a(dimen, f, func, echoifbad=False):
+    if f[dimen] is None:
+        return
+
+    times = f[dimen][:]
+    if len(times)==0:
+        raise RuntimeError, "Zero length %s axis."%dimen
+    t0 = times[:-1]
+    t1 = times[1:]
+    # check = Numeric.greater_equal(t0,t1)
+    check = apply(func, (t0,t1))
+
+    badinds = Numeric.compress(check,range(len(check)))
+    if len(badinds)>0:
+        firstind = max(badinds[0]-2, 0)
+        lastind = min(firstind+20, len(times))
+        if echoifbad:
+            print '[Error] %s'%f.id
+        else:
+            print dimen+'[%d:%d]=%s'%(firstind, lastind,`times[firstind:lastind]`)
+
+def checkone(f, echoifbad=False):
+    print f.id
+    checkone_a('time', f, Numeric.greater_equal, echoifbad)
+    checkone_a('lev', f, Numeric.less_equal, echoifbad)
+
+def main(argv):
+
+    try:
+        opts, lastargs = getopt.getopt(argv[1:],"c:ef:h")
+    except:
+        print sys.exc_value
+        print help
+        sys.exit(0)
+
+    checkglob = None
+    filelist = None
+    verbose = True
+    echo = False
+    for opt, arg in opts:
+        if opt=='-c':
+            checkglob = arg
+        elif opt=='-e':
+            echo=True
+        elif opt=='-f':
+            filelist = open(arg)
+        elif opt=='-h':
+            print usage
+            sys.exit(0)
+
+    if filelist is None:
+        for path in lastargs:
+            f = cdms.open(path)
+            checkone(f, echoifbad=echo)
+            f.close()
+    else:
+        for line in filelist.readlines():
+            line = string.strip(line)
+            if line[0]=='#':
+                continue
+            try:
+                f = cdms.open(line)
+            except cdms.error.CDMSError:
+                print '[Error: open] %s'%line
+                continue
+            checkone(f, echoifbad=echo)
+            f.close()
+
+    if checkglob is not None:
+        checklist = glob.glob(checkglob)
+        prevtime = -1.e20
+        for path in checklist:
+            f = cdms.open(path)
+            time = f['time']
+            print path, time[0], time[-1], time.units,
+            if time[0]<prevtime:
+                print '(*)'
+            else:
+                print
+            prevtime = time[0] 
+            f.close()
+
+if __name__=='__main__':
+    main(sys.argv)
