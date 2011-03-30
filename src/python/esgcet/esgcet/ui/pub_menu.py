@@ -371,9 +371,10 @@ class create_file_menu:
         #---------------------------------------------------------------------------------
         # Add the "Appearance" page to the notebook
         #---------------------------------------------------------------------------------
-        page = notebook.add('General')
-        self.general_settings = set_general( page, parent )
-        notebook.tab('General').focus_set()
+        # ganz disable General tab, this info is not useful, at this time. 3/29/11
+        #page = notebook.add('General')
+        #self.general_settings = set_general( page, parent )
+        #notebook.tab('General').focus_set()
 
         page = notebook.add('Log Level')
         # ganz added this code 1/20/11
