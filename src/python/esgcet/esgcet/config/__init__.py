@@ -12,10 +12,12 @@ from metadata import MetadataHandler
 
 from ipcc4_handler import IPCC4Handler
 from ipcc5_handler import IPCC5Handler
+from tamip_handler import TAMIPHandler
 builtinProjectHandlers = {
     'basic_builtin' : BasicHandler,
     'ipcc4_builtin' : IPCC4Handler,
     'ipcc5_builtin' : IPCC5Handler,
+    'tamip_builtin' : TAMIPHandler,
     }
 builtinFormatHandlers = {
     'netcdf_builtin' : CdunifFormatHandler,
