@@ -120,9 +120,19 @@ def tell(info):
     print info
 
 def getconfignames():
-    home = os.environ['HOME']
-    configdir = os.path.join(home, '.esgcet')
-    configname = os.path.join(configdir, 'esg.ini')
+    """Create esg.ini as:
+    (1) $ESGINI if it exists
+    (2) $HOME/.esgcet/esg.ini otherwise
+    """
+    configname = os.environ.get('ESGINI')
+    if configname is not None:
+        if os.path.exists(configname) and not os.path.isfile(configname):
+            raise RuntimeError("$ESGINI = %s, is not a file"%configname)
+        configdir = os.path.dirname(configname)
+    else:
+        home = os.environ['HOME']
+        configdir = os.path.join(home, '.esgcet')
+        configname = os.path.join(configdir, 'esg.ini')
     return configdir, configname
 
 def updateconfig(updates, currentConfig=None):
@@ -145,25 +155,29 @@ def setupconfig():
     Create initial configuration file:
 
     esg.ini is a text file that configures ESG publication
-    software. This file will be created in
-    $HOME/.esgcet/esg.ini, if it does not already exist.
+    software. This file will be created as
+
+    (a) the value of environment variable $ESGINI if set, or
+    (b) $HOME/.esgcet/esg.ini
+
+    if it does not already exist.
 
     """)
 
     # Create .esgcet directory.
     configdir, configname = getconfignames()
     if not os.path.exists(configdir):
-        tell("Creating $HOME/.esgcet")
+        tell("Creating %s"%configdir)
         os.mkdir(configdir, 0755)
 
     # Does $HOME/.esgcet/esg.ini exist? If so, ask to proceed.
     templatename = os.path.join(configdir, 'template.ini')
     if os.path.exists(configname):
         if not askyn("Configuration file %s exists, replace?"%configname, default='n'):
-            raise RuntimeError
+            return
 
     # Copy template.ini.
-    tell("Copying template.ini to $HOME/.esgcet/esg.ini")
+    tell("Copying template.ini to %s"%configname)
     from pkg_resources import resource_string, cleanup_resources
     templatestring = resource_string('esgcet.config.etc', 'template.ini')
     esgini = open(configname, 'w')
@@ -177,7 +191,7 @@ def setupconfig():
     # Copy model initialization file
     modelInitName = os.path.join(configdir, 'esgcet_models_table.txt')
     if not os.path.exists(modelInitName):
-        tell("Copying esgcet_models_table to $HOME/.esgcet")
+        tell("Copying esgcet_models_table to %s"%configdir)
         modelinitstring = resource_string('esgcet.config.etc', 'esgcet_models_table.txt')
         modelini = open(modelInitName, 'w')
         modelini.write(modelinitstring)
@@ -186,7 +200,7 @@ def setupconfig():
     # Copy standard name table
     standardNameInitName = os.path.join(configdir, 'cf-standard-name-table.xml')
     if not os.path.exists(standardNameInitName):
-        tell("Copying cf-standard-name-table.xml to $HOME/.esgcet")
+        tell("Copying cf-standard-name-table.xml to %s"%configdir)
         standard_nameinitstring = resource_string('esgcet.config.etc', 'cf-standard-name-table.xml')
         standard_nameini = open(standardNameInitName, 'w')
         standard_nameini.write(standard_nameinitstring)
@@ -345,10 +359,7 @@ def main(argv):
 
     # Config file initialization
     if initconfig:
-        try:
-            setupconfig()
-        except RuntimeError:
-            tell("Script aborted.")
+        setupconfig()
 
         if initroot:
             updateconfig([('DEFAULT', 'root_id', rootid)])
@@ -643,7 +654,7 @@ def main(argv):
                 raise OSError("Cannot run esginitialize: %s. Is $CDAT_HOME/bin in the path?"%`e`)
                 
         except RuntimeError:
-            tell("Script aborted.")
+            tell("Script exited.")
 
     # THREDDS initialization
     if initthredds:
@@ -838,7 +849,7 @@ def main(argv):
                 raise RuntimeError
 
         except RuntimeError:
-            tell("Script aborted.")
+            tell("Script exited.")
 
     # remote publication initialization
     if initpublish:
@@ -917,7 +928,7 @@ def main(argv):
                           ], currentConfig=config)
             
         except RuntimeError:
-            tell("Script aborted.")
+            tell("Script exited.")
 
     # Customized handler setup
     if generateHandler:
