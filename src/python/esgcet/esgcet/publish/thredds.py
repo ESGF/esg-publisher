@@ -20,23 +20,25 @@ _XLINK = '{%s}'%_nsmap['xlink']
 SEQ=2
 EVEN = 1
 UNEVEN = 2
+
+GRIDFTP_SERVICE_TYPE = "GridFTP"
 DEFAULT_THREDDS_CATALOG_VERSION = "2"
 DEFAULT_THREDDS_SERVICE_APPLICATIONS = {
-    'GridFTP':['DataMover-Lite'],
+    GRIDFTP_SERVICE_TYPE:['DataMover-Lite'],
     'HTTPServer':['Web Browser','Web Script'],
     'OpenDAP':['Web Browser'],
     'SRM':[],
     'LAS':['Web Browser'],
     }
 DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
-    'GridFTP':'true',
+    GRIDFTP_SERVICE_TYPE:'true',
     'HTTPServer':'true',
     'OpenDAP':'false',
     'SRM':'false',
     'LAS':'false',
     }
 DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
-    'GridFTP':'GridFTP',
+    GRIDFTP_SERVICE_TYPE:'GridFTP',
     'HTTPServer':'HTTPServer',
     'OpenDAP':'OpenDAP',
     'SRM':'SRM',
@@ -296,7 +298,7 @@ def _genVariable(parent, variable):
     variableElem.text = variable.long_name
     return variableElem
 
-def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, variable=None, fileVersionObj=None):
+def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, variable=None, fileVersionObj=None, gridftpMap=True):
     dataset = SE(parent, "dataset", ID=ID, name=name)
 
     # Cache the URL for notification
@@ -342,6 +344,14 @@ def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, 
             isSimple, isThreddsService, serviceType, base, isThreddsFileService = serviceDict[subName]
             if isThreddsService:
                 publishPath = urlPath
+            # Map dataset roots for gridFTP if gridftp_map_dataset_roots config option is true
+            elif serviceType==GRIDFTP_SERVICE_TYPE:
+                if gridftpMap:
+                    publishPath = urlPath
+                else:
+                    publishPath = path
+                if publishPath[0]!=os.sep:
+                    publishPath = os.sep+publishPath
             else:
                 publishPath = path
             if isThreddsFileService:
@@ -507,7 +517,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
             _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist[start:stop], flag, lasTimeDelta, dataset.calendar, fa, lasServiceSpecs, lasServiceHash)
             nid += 1
             
-def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber, variablesElem, variableElemDict, lasServiceSpecs, lasServiceHash):
+def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber, variablesElem, variableElemDict, lasServiceSpecs, lasServiceHash, gridftpMap=True):
 
     mdhandler = handler.getMetadataHandler()
 
@@ -594,7 +604,7 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
             modTime = fileobj.getModificationFtime()
             checksum = fileobj.getChecksum()
             checksumType = fileobj.getChecksumType()
-            fileDataset = _genFileV2(parent, path, size, fileVersionID, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, variable=variable, fileVersionObj=fileVersionObj)
+            fileDataset = _genFileV2(parent, path, size, fileVersionID, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, variable=variable, fileVersionObj=fileVersionObj, gridftpMap=gridftpMap)
 
         # Aggregation
         # Don't generate an aggregation if the variable has time overlaps or a non-monotonic aggregate dimension,
@@ -606,7 +616,7 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         else:
             _genAggregationsV2(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, perVarMetadata, versionNumber)
 
-def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber):
+def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber, gridftpMap=True):
     datasetVersionObj = dataset.getVersionObj(versionNumber)
     filelist = [(fileobj.getLocation(), fileobj.getSize(), fileobj) for fileobj in datasetVersionObj.files]
     filesID = datasetName
@@ -637,7 +647,7 @@ def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootP
         fileVersion = fileobj.getVersion()
         checksum = fileobj.getChecksum()
         checksumType = fileobj.getChecksumType()
-        fileDataset = _genFileV2(parent, path, size, threddsFileId, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, fileVersionObj=fileobj)
+        fileDataset = _genFileV2(parent, path, size, threddsFileId, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, fileVersionObj=fileobj, gridftpMap=gridftpMap)
 
 def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance=None, genRoot=False, service=None, perVariable=None, versionNumber=-1):
     """
@@ -738,6 +748,8 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     threddsServiceAuthRequiredSpecs = getThreddsAuxiliaryServiceSpecs(config, section, 'thredds_service_auth_required')
     threddsServiceDescriptionSpecs = getThreddsAuxiliaryServiceSpecs(config, section, 'thredds_service_descriptions')
     excludeVariables = splitLine(config.get(section, 'thredds_exclude_variables', default=''), sep=',')
+    gridftpMapDatasetRoots = config.getboolean(section, 'gridftp_map_dataset_roots', default=True)
+
     if not offline:
         if perVariable is None:
             perVariable = config.getboolean(section, 'variable_per_file', False)
@@ -932,10 +944,10 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     if perVariable:
         # Per-variable datasets
-        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber, variables, variableElemDict, lasServiceSpecs, lasServiceHash)
+        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber, variables, variableElemDict, lasServiceSpecs, lasServiceHash, gridftpMap=gridftpMapDatasetRoots)
     else:
         # Per-time datasets
-        _genPerTimeDatasetsV2(datasetElem, dset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber)
+        _genPerTimeDatasetsV2(datasetElem, dset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber, gridftpMap=gridftpMapDatasetRoots)
 
     # Call the THREDDS catalog hook if set
     catalogHook = handler.getThreddsCatalogHook()
