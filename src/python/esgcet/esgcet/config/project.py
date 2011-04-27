@@ -811,7 +811,7 @@ class ProjectHandler(object):
                 if context.has_key(key) and value!=context[key]:
                     warning("Dataset ID=%s, but %s=%s"%(datasetName, key, context[key]))
                 else:
-                    context[key] = value
+                    context[str(key)] = value
             break
 
         if not formatMatched:
