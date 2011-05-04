@@ -448,7 +448,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     mdhandler = handler.getMetadataHandler()
 
     # Generate the top-level aggregation
-    aggID = "%s.v%d.aggregation"%(variableID, versionNumber)
+    aggID = "%s.%d.aggregation"%(variableID, versionNumber)
     try:
         aggName = handler.generateNameFromContext('variable_aggregation_dataset_name', project_description=project.description, model_description=model.description, experiment_description = experiment.description, variable=variable.short_name, variable_long_name=variable.long_name, variable_standard_name=variable.standard_name)
     except:
