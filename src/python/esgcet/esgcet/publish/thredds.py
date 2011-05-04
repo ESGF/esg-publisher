@@ -749,6 +749,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     threddsServiceDescriptionSpecs = getThreddsAuxiliaryServiceSpecs(config, section, 'thredds_service_descriptions')
     excludeVariables = splitLine(config.get(section, 'thredds_exclude_variables', default=''), sep=',')
     gridftpMapDatasetRoots = config.getboolean(section, 'gridftp_map_dataset_roots', default=True)
+    datasetIdTemplate = config.get(section, 'dataset_id', raw=True, default=None)
 
     if not offline:
         if perVariable is None:
@@ -834,6 +835,8 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
+    if datasetIdTemplate is not None:
+        datasetIdTemplate = SE( datasetElem, "property", name="dataset_id_template_", value=datasetIdTemplate)
 
     if dset.master_gateway is not None:
         SE(datasetElem, "property", name="master_gateway", value=dset.master_gateway)
