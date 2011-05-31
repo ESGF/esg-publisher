@@ -90,11 +90,11 @@ def getTimeDependentProduct(cmor_table, variable, experiment, reqdict, year1, ye
     else:
         reqspec = reqdict[experiment]
 
-        # Absolute time range
+        # Absolute time range. Include in output1 if the file overlaps the requested year range
         if reqspec[0]=='abs':
             result = 'output2'
             for y1, y2 in reqspec[1]:
-                if y1<=year1<=y2 and y1<=year2<=y2:
+                if y1<=year1<=y2 or y1<=year2<=y2 or (year1<=y1 and y2<=year2):
                     result = 'output1'
                     break
 
