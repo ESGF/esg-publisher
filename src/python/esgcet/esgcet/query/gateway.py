@@ -22,7 +22,7 @@ def getGatewayDatasetFields():
 
     Returns a list of string field names.
     """
-    return ['id', 'state', 'name']
+    return ['id', 'state', 'name', 'source_catalog_uri']
 
 def getGatewayDatasetMetadata(datasetName, serviceUrl=None):
     """Get metadata associated with a dataset, from the gateway.
