@@ -101,6 +101,11 @@ Builds the project via ant (obviously).
   <property file="${basedir}/etc/${module}.ant.properties"/> 
   <echo message="user property file ${basedir}/etc/${module}.ant.properties"/>
 
+  <exec executable="bash" dir="${basedir}" outputproperty="version_num">
+    <arg value="-c"/>
+    <arg value="git describe | sed -n 's/v\([a-zA-Z0-9.]*\)-.*/\1/p'"/>
+  </exec>
+
   <property name="filter" value="false"/>
 
   <!-- **static defines** -->
