@@ -9,7 +9,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from esgcet.exceptions import *
 
 MAX_FILENAME_DUPLICATES = 1000          # Maximum number of duplicate file basenames in a dataset
-MAX_STANDARD_NAME_LENGTH = 128
+MAX_STANDARD_NAME_LENGTH = 255
 MAX_COORD_RANGE_LENGTH = 32
 MAX_ABS_COORD_RANGE = 9.9999e+19        # Warning if abs(coord) is larger
 
