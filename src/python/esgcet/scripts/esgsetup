@@ -655,6 +655,7 @@ def main(argv):
                 
         except RuntimeError:
             tell("Script exited.")
+            sys.exit(1)
 
     # THREDDS initialization
     if initthredds:
@@ -850,6 +851,7 @@ def main(argv):
 
         except RuntimeError:
             tell("Script exited.")
+            sys.exit(1)
 
     # remote publication initialization
     if initpublish:
@@ -929,6 +931,7 @@ def main(argv):
             
         except RuntimeError:
             tell("Script exited.")
+            sys.exit(1)
 
     # Customized handler setup
     if generateHandler:
