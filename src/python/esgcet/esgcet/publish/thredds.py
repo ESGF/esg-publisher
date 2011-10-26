@@ -9,6 +9,7 @@ from esgcet.config import splitLine, splitRecord, getConfig, getThreddsServiceSp
 from esgcet.model import *
 from esgcet.exceptions import *
 from sqlalchemy.orm import join
+from sqlalchemy import desc
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 _nsmap = {
@@ -1158,7 +1159,8 @@ def updateThreddsMasterCatalog(dbSession):
 
     # Get the dataset catalogs. Note: include all dataset versions.
     session = dbSession()
-    for subcatalog in session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).all():
+    for subcatalog in session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).order_by(Catalog.dataset_name, desc(Catalog.version)).all():
+#     for subcatalog in session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).all():
         # Check that an existing catalog rootpath was not removed from the dataset roots list.
         # If so, THREDDS will choke.
         # Note: It's OK if the rootpath is None: that means the associated service is non-THREDDS
