@@ -14,12 +14,12 @@ from esgcet.exceptions import *
 
 usage = """Usage:
     esgsetup --config [--rootid root_identifier]
-    esgsetup --db
-    esgsetup --thredds
+    esgsetup --db [--db-admin-password password] [--db-user-password password]
+    esgsetup --thredds [--thredds-password password]
     esgsetup --publish [--gateway gateway_host]
     esgsetup --handler
 
-    Setup the ESG node software.
+    Setup the ESG publication configuration.
 
 Options:
 
@@ -45,12 +45,14 @@ Options:
         from the environment variable.
 
     --handler
-        Create customized handlers.
+        Create customized handlers. Turns off minimal setup.
 
     --publish: Initialize publication-related configuration options.
 
     --rootid root_identifier:
         Initialize the ESG root identifier during the --config phase.
+
+    --minimal-setup: Ask the minimum number of questions. May be used with any other options.
 
     --thredds: Initialize the THREDDS server.
 
@@ -65,8 +67,11 @@ REPOS = "http://www-pcmdi.llnl.gov/svn/repository/externals"
 SERVICE_ROOT = "pcmdi3.llnl.gov/esgcet" # Override by setting ESG_GATEWAY_SVC_ROOT env variable
 DEFAULT_COMPOUND_FILE_SERVICE = 'fileservice'
 urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
+minimalSetup = False                   # If True, ask the minimum number of questions
 
 def askyn(question, default='y'):
+    if minimalSetup:
+        return (default=='y')
     answer = raw_input("%s [%s]: "%(question, default))
     if answer=='':
         result = default
@@ -83,6 +88,8 @@ def askfor(question, default=None, env=None, silent=False):
     """
     if default is None and env is not None:
         default = os.environ.get(env)
+    if minimalSetup and default is not None:
+        return default
     if not silent:
         asker = raw_input
     else:
@@ -309,8 +316,10 @@ class SaneConfigParser(SafeConfigParser):
 
 def main(argv):
 
+    global minimalSetup
+
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin-password=', 'db-user-password=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'thredds', 'thredds-password='])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin-password=', 'db-user-password=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -342,6 +351,8 @@ def main(argv):
             gatewayHost = arg
         elif flag=='--handler':
             generateHandler = True
+        elif flag=='--minimal-setup':
+            minimalSetup = True
         elif flag=='--publish':
             initpublish = True
         elif flag=='--thredds':
@@ -356,6 +367,9 @@ def main(argv):
         print 'No option specified.'
         print usage
         sys.exit(0)
+
+    if generateHandler:
+        minimalSetup = False
 
     # Config file initialization
     if initconfig:
@@ -763,7 +777,7 @@ def main(argv):
             defaultThreddsTopURL = urlparse.urlunparse(urlfields)
             threddsTopURL = askfor("URL of TDS root directory (this should include the full hostname or IP address, NOT localhost)", default=defaultThreddsTopURL)
             threddsURL = os.path.join(threddsTopURL, "esgcet")
-            threddsMasterCatalog = askfor("Title of ESG master catalog (thredds_master_catalog_name)", default=config.get('DEFAULT', 'thredds_master_catalog_name'))
+            threddsMasterCatalog = askfor("Title of ESG master catalog (thredds_master_catalog_name)", default=config.get('DEFAULT', 'thredds_master_catalog_name', default="PCMDI Earth System Grid catalog"))
             threddsRootCatalog = askfor("Title of ESG root catalog (thredds_root_catalog_name)", default=config.get('DEFAULT', 'thredds_root_catalog_name', default="PCMDI Earth System Root catalog"))
 
             # Create ESG catalog directory
