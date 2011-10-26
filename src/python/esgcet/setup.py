@@ -89,6 +89,7 @@ setup(
                'scripts/esgpublish',
                'scripts/esgquery_gateway',
                'scripts/esgunpublish',
+               'scripts/esgupdate_metadata',
                'scripts/hsils.py',
                'scripts/msls.py',
                'scripts/srmls.py',

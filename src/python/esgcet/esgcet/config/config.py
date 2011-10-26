@@ -361,7 +361,11 @@ def loadStandardNameTable(path):
     standardNames = {}
     for node in root:
         if node.tag=='entry':
-            name = node.attrib['id'].strip()[:MAX_STANDARD_NAME_LENGTH]
+            name = node.attrib['id'].strip()
+            if len(name) > MAX_STANDARD_NAME_LENGTH:
+                warning("Standard_name is too long.  Schema requires standard_name to be <= %d characters\n  %s"%(MAX_STANDARD_NAME_LENGTH, name))
+                continue
+
             units = amip = grib = description = ''
             for subnode in node:
                 if subnode.tag=='canonical_units':

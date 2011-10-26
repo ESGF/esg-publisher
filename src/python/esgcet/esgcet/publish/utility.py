@@ -606,7 +606,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
       Boolean, True if the dataset version should not be incremented.
 
     newVersion
-      Set the new version number explicitly. By default the version number is incremented by 1. See keepVersion.
+      Integer or dictionary. Set the new version number
+      explicitly. If a dictionary, maps dataset_id => version. By
+      default the version number is incremented by 1. See keepVersion.
 
     extraFields
       Extra dataset map fields, as from **readDatasetMap**.
@@ -628,11 +630,23 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
 
+    versionIsMap = (type(newVersion) is types.DictType)
+    if versionIsMap:
+        saveVersionMap = newVersion
+
     prevProject = None
     datasets = []
     ct = len(datasetNames)
     for iloop in range(ct): 
         datasetName,versionno = datasetNames[iloop]
+
+        # If using a version map, lookup the version for this dataset
+        if versionIsMap:
+            try:
+                newVersion = saveVersionMap[datasetName]
+            except KeyError:
+                raise ESGPublishError("Dataset not found in version map: %s"%datasetName)
+            
         context = initcontext.copy()
 
         # Get offline flag

@@ -147,13 +147,20 @@ def getGatewayDatasetAccessPoints(datasetName, serviceUrl=None):
     for capability in filesElem.iter("{http://www.earthsystemgrid.org/}data_access_capability"):
         capabilityDict[capability.get("name")] = (capability.get("type"), capability.get("base_uri"))
 
-    header = ['name', 'id', 'size', 'type', 'url']
+    header = ['name', 'id', 'size', 'capability', 'url', 'checksum', 'algorithm']
     result = []
     for file in filesElem.iter("{http://www.earthsystemgrid.org/}file"):
-        for fileAccessPoint in file:
+        for checksumElem in file.iter("{http://www.earthsystemgrid.org/}checksum"):
+            checksum = checksumElem.get("value")
+            algorithm = checksumElem.get("algorithm")
+            break
+        else:
+            checksum = ''
+            algorithm = ''
+        for fileAccessPoint in file.iter("{http://www.earthsystemgrid.org/}file_access_point"):
             capabilityName = fileAccessPoint.get("data_access_capability")
             uri = fileAccessPoint.get("uri")
             capabilityType, baseUri = capabilityDict[capabilityName]
             url = baseUri+uri
-            result.append((file.get("name"), file.get("id"), file.get("size"), capabilityType, url))
+            result.append((file.get("name"), file.get("id"), file.get("size"), capabilityType, url, checksum, algorithm))
     return header, result
