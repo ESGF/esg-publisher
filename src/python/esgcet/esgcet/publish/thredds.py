@@ -1167,7 +1167,8 @@ def updateThreddsMasterCatalog(dbSession):
         # and doesn't have a rootpath prefix.
         if subcatalog.rootpath is not None and subcatalog.rootpath not in threddsDatasetRootPaths:
             warning("Catalog entry for dataset %s has rootpath = %s. Please add this to thredds_dataset_roots in the configuration file and regenerate the THREDDS catalog."%(subcatalog.dataset_name, subcatalog.rootpath))
-            session.delete(subcatalog)
+            # NOTE! Don't delete the catalog - it may have been generated using a different configuration!
+            # session.delete(subcatalog)
         else:
 
             # print catalog.dataset_name, catalog.location
