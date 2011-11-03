@@ -30,6 +30,22 @@ Options:
     -v, --verbose
         Print messages.
 
+Notes:
+
+    (1) The mapfile is a text file, with one line per file. Each line has the form:
+
+        dataset_name | absolute_path | byte_length [ | property=value [ | property=value ...]]
+
+        For adding checksum information, the properties are:
+
+        checksum=...
+        checksum_type=MD5
+
+        Modification times (epochal times) are indicated with the mod_time property. For example:
+
+        cmip5.output1.INM.inmcm4.1pctCO2.day.atmos.day.r1i1p1 | /foo/bar/output1/INM/inmcm4/1pctCO2/day/atmos/day/r1i1p1/huss/1/huss_day_inmcm4_1pctCO2_r1i1p1_20900101-20991231.nc | 315462976 | mod_time=1276872789.000000 | checksum=7fcd959a4bb57e4079c8e65a7a5d0499 | checksum_type=MD5
+        cmip5.output1.INM.inmcm4.1pctCO2.day.atmos.day.r1i1p1 | /foo/bar/output1/INM/inmcm4/1pctCO2/day/atmos/day/r1i1p1/huss/1/huss_day_inmcm4_1pctCO2_r1i1p1_21000101-21091231.nc | 315462976 | mod_time=1276872919.000000 | checksum=6f805cbee324d7151c95c752f5d8352e | checksum_type=MD5
+
 """
 
 def main(argv):
