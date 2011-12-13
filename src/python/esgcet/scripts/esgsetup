@@ -30,6 +30,10 @@ Options:
 
     --db: Initialize the database.
 
+    --db-host: Hostname for database connection
+
+    --db-port: Port used for database connection
+
     --db-admin-password password: Password for database administrator. If not specified, the
         value is requested interactively. Only used with the --db option.
 
@@ -319,14 +323,17 @@ def main(argv):
     global minimalSetup
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin-password=', 'db-user-password=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin','db-admin-password=', 'db-user-password=', 'db-host=', 'db-port=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    dbadmin = None
     dbpass = None
     esgusepass = None
+    host = None
+    port = None
     gatewayHost = None
     generateHandler = False
     initconfig = False
@@ -343,10 +350,16 @@ def main(argv):
             initconfig = True
         elif flag=='--db':
             initdb = True
+        elif flag=='--db-admin':
+            dbadmin = arg
         elif flag=='--db-admin-password':
             dbpass = arg
         elif flag=='--db-user-password':
             esgusepass = arg
+        elif flag=='--db-host':
+            host = arg
+        elif flag=='--db-port':
+            port = arg
         elif flag=='--gateway':
             gatewayHost = arg
         elif flag=='--handler':
@@ -442,11 +455,15 @@ def main(argv):
                 """%(`e`,REPOS))
                 sys.exit(1)
                 
-            dbadmin = askfor("Database administrator name", env='PGUSER')
+            if dbadmin is None:
+                dbadmin = askfor("Database administrator name", env='PGUSER')
             if dbpass is None:
                 dbpass = askfor("Administrator password", silent=True)
-            host = askfor("Host name", default="localhost", env='PGHOST')
-            port = askfor("Database port", default="5432", env='PGPORT')
+            if host is None:
+                host = askfor("Host name", default="localhost", env='PGHOST')
+            if port is None:
+                port = askfor("Database port", default="5432", env='PGPORT')
+
             connectString = "dbname='postgres' user='%s' password='%s' host='%s' port='%s'"%(dbadmin, dbpass, host, port)
             echoConnectString = "dbname='postgres' user='%s' password='...' host='%s' port='%s'"%(dbadmin, host, port)
 
