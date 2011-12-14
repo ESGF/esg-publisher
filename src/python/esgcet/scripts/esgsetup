@@ -39,6 +39,8 @@ Options:
     --db-admin-password password: Password for database administrator. If not specified, the
         value is requested interactively. Only used with the --db option.
 
+    --db-user user: Name of the (non-administrative) owner of the esgcet database.
+    
     --db-user-password password: Password for non-administrative database user, that owns the
         esgcet database. If not specified, the value is requested interactively. Only used
         with the --db option.
@@ -326,7 +328,7 @@ def main(argv):
     global minimalSetup
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user-password=', 'db-host=', 'db-port=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -334,6 +336,7 @@ def main(argv):
 
     dbadmin = None
     dbpass = None
+    dbuser = None
     esgusepass = None
     host = None
     port = None
@@ -357,6 +360,8 @@ def main(argv):
             dbadmin = arg
         elif flag=='--db-admin-password':
             dbpass = arg
+        elif flag=='--db-user':
+            dbuser = arg
         elif flag=='--db-user-password':
             esgusepass = arg
         elif flag=='--db-host':
@@ -505,7 +510,10 @@ def main(argv):
                     if portdef is not None:
                         portdef = portdef[1:]
                 
-            esguser = askfor("esgcet database user", default=userdef, ignore_minimal=True)
+            if dbuser is not None:
+                esguser = dbuser
+            else:
+                esguser = askfor("esgcet database user", default=userdef)
 
             # Does this user exist?
             cur.execute("select usename, usesuper, usecreatedb from pg_user where usename='%s'"%esguser)
