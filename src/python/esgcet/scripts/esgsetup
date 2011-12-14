@@ -14,7 +14,7 @@ from esgcet.exceptions import *
 
 usage = """Usage:
     esgsetup --config [--rootid root_identifier]
-    esgsetup --db [--db-admin-password password] [--db-user-password password]
+    esgsetup --db [--db-admin admin] [--db-host hostname] [--db-port port] [--db-admin-password password] [--db-user-password password]
     esgsetup --thredds [--thredds-password password]
     esgsetup --publish [--gateway gateway_host]
     esgsetup --handler
@@ -30,9 +30,11 @@ Options:
 
     --db: Initialize the database.
 
-    --db-host: Hostname for database connection
+    --db-admin admin: Name of database administrator. Defaults to $PGUSER.
 
-    --db-port: Port used for database connection
+    --db-host hostname: Hostname for database connection. Defaults to $PGHOST, or 'localhost' if not set.
+
+    --db-port port: Port used for database connection. Defaults to $PGPORT, or 5432 if not set.
 
     --db-admin-password password: Password for database administrator. If not specified, the
         value is requested interactively. Only used with the --db option.
@@ -83,16 +85,17 @@ def askyn(question, default='y'):
         result = answer[0].lower()
     return (result=='y')
 
-def askfor(question, default=None, env=None, silent=False):
+def askfor(question, default=None, env=None, silent=False, ignore_minimal=False):
     """
     question: String prompt
     default: String to return if a blank string is returned
     env: Get the default from the environment.
     silent: Don't echo (for passwords)
+    ignore_minimal: ask even if minimal setup is set
     """
     if default is None and env is not None:
         default = os.environ.get(env)
-    if minimalSetup and default is not None:
+    if minimalSetup and (not ignore_minimal) and default is not None:
         return default
     if not silent:
         asker = raw_input
@@ -323,7 +326,7 @@ def main(argv):
     global minimalSetup
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin','db-admin-password=', 'db-user-password=', 'db-host=', 'db-port=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user-password=', 'db-host=', 'db-port=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -502,7 +505,7 @@ def main(argv):
                     if portdef is not None:
                         portdef = portdef[1:]
                 
-            esguser = askfor("esgcet database user", default=userdef)
+            esguser = askfor("esgcet database user", default=userdef, ignore_minimal=True)
 
             # Does this user exist?
             cur.execute("select usename, usesuper, usecreatedb from pg_user where usename='%s'"%esguser)
