@@ -203,7 +203,12 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
     dset.reaggregate = False
     # Add a new version
     if addNewVersion and newVersion>existingVersion:
-        newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment)
+        datasetTechNotes = datasetTechNotesTitle = None
+        if hasattr(dset, "dataset_tech_notes"):
+            datasetTechNotes = dset.dataset_tech_notes
+        if hasattr(dset, "dataset_tech_notes_title"):
+            datasetTechNotesTitle = dset.dataset_tech_notes_title
+        newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment, tech_notes=datasetTechNotes, tech_notes_title=datasetTechNotesTitle)
         info("New dataset version = %d"%newDsetVersionObj.version)
         for var in dset.variables:
             session.delete(var)
@@ -249,18 +254,31 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
 
         csum = None
         csumtype = checksumType
+        techNotes = None
+        techNotesTitle = None
+        datasetTechNotes = None
+        datasetTechNotesTitle = None
         if extraFields is not None:
             csum = extraFields.get((dset.name, -1, path, 'checksum'), None)
             csumtype = extraFields.get((dset.name, -1, path, 'checksum_type'), None)
+            techNotes = extraFields.get((dset.name, -1, path, 'tech_notes'), None)
+            techNotesTitle = extraFields.get((dset.name, -1, path, 'tech_notes_title'), None)
+            datasetTechNotes = extraFields.get((dset.name, -1, path, 'dataset_tech_notes'), None)
+            datasetTechNotesTitle = extraFields.get((dset.name, -1, path, 'dataset_tech_notes_title'), None)
         if csum is None and not offline and checksumClient is not None:
             csum = checksum(path, checksumClient)
             csumtype = checksumType
+
+        # Cache the dataset tech notes info for later use
+        if datasetTechNotes is not None:
+            dset.dataset_tech_notes = datasetTechNotes
+            dset.dataset_tech_notes_title = datasetTechNotesTitle
 
         # Create a file and version
         base = generateFileBase(path, basedict, dset.name)
         file = File(base, 'netCDF')
         basedict[base] = 1
-        fileVersion = FileVersion(1, path, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
+        fileVersion = FileVersion(1, path, size, mod_time=mtime, checksum=csum, checksum_type=csumtype, tech_notes=techNotes, tech_notes_title=techNotesTitle)
         file.versions.append(fileVersion)
         fobjlist.append(fileVersion)
         seq += 1
@@ -322,12 +340,25 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
         size, mtime=sizet
         csum = None
         csumtype = checksumType
+        techNotes = None
+        techNotesTitle = None
+        datasetTechNotes = None
+        datasetTechNotesTitle = None
         if extraFields is not None:
             csum = extraFieldsGet(extraFields, (dset.name, path, 'checksum'), dsetVersion)
             csumtype = extraFieldsGet(extraFields, (dset.name, path, 'checksum_type'), dsetVersion)
+            techNotes = extraFields.get((dset.name, -1, path, 'tech_notes'), None)
+            techNotesTitle = extraFields.get((dset.name, -1, path, 'tech_notes_title'), None)
+            datasetTechNotes = extraFields.get((dset.name, -1, path, 'dataset_tech_notes'), None)
+            datasetTechNotesTitle = extraFields.get((dset.name, -1, path, 'dataset_tech_notes_title'), None)
         if csum is None and not offline and checksumClient is not None:
             csum = checksum(path, checksumClient)
             csumtype = checksumType
+
+        # Cache the dataset tech notes info for later use
+        if datasetTechNotes is not None:
+            dset.dataset_tech_notes = datasetTechNotes
+            dset.dataset_tech_notes_title = datasetTechNotesTitle
 
         # Check if 'from_file' was specified for this file
         fromfile = None
@@ -361,7 +392,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
             else:
                 if oldpath!=path:
                     info("Replacing file %s"%oldpath)
-                newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
+                newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype, tech_notes=techNotes, tech_notes_title=techNotesTitle)
                 newFileVersionObjs.append(newFileVersionObj)
                 fileObj.deleteChildren(session)
                 fileModified = True
@@ -369,7 +400,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
         # Else create a new file / file version object and add to the list ...
         else:
             fileObj = FileFactory(dset, path, basedict, session)
-            newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype)
+            newFileVersionObj = FileVersionFactory(fileObj, path, session, size, mod_time=mtime, checksum=csum, checksum_type=csumtype, tech_notes=techNotes, tech_notes_title=techNotesTitle)
             newFileVersionObjs.append(newFileVersionObj)
             fileModified = True
 

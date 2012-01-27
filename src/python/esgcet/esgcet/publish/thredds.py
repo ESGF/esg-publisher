@@ -306,6 +306,13 @@ def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, 
     if fileVersionObj is not None:
         fileVersionObj.url = urlPath
 
+    # Add tech notes documentation if present
+    if fileVersionObj.tech_notes is not None:
+        documentation = SE(dataset, "documentation", type="summary")
+        documentation.set(_XLINK+"href", fileVersionObj.tech_notes)
+        if fileVersionObj.tech_notes_title is not None:
+            documentation.set(_XLINK+"title", fileVersionObj.tech_notes_title)
+
     fileIDProp = SE(dataset, "property", name="file_id", value=fileid)
     fileVersionProp = SE(dataset, "property", name="file_version", value=str(fileVersion))
     sizeProp = SE(dataset, "property", name="size", value=str(size))
@@ -833,6 +840,13 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     # If thredds_restrict_access is set, add restrictAccess attribute, otherwise data is open
     if threddsRestrictAccess is not None:
         datasetElem.set("restrictAccess", threddsRestrictAccess)
+
+    # Add tech notes documentation if present
+    if dsetVersionObj.tech_notes is not None:
+        documentation = SE(datasetElem, "documentation", type="summary")
+        documentation.set(_XLINK+"href", dsetVersionObj.tech_notes)
+        if dsetVersionObj.tech_notes_title is not None:
+            documentation.set(_XLINK+"title", dsetVersionObj.tech_notes_title)
 
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
