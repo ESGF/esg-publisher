@@ -337,7 +337,8 @@ def main(argv):
         sys.exit(0)
 
     dbadmin = None
-    dbdef = "esgcet"
+    dbdef = None
+    dbDefault = "esgcet"
     dbpass = None
     dbuser = None
     esgusepass = None
@@ -507,12 +508,23 @@ def main(argv):
             passdef = ""
             hostdef = host
             portdef = port
+            dbdef2 = None               # Existing database 
             if initdburl is not None:
                 m = re.match(urlpat, initdburl)
                 if m is not None:
-                    scheme, userdef, passdef, hostdef, portdef, dbdef = m.groups()
+                    scheme, userdef, passdef, hostdef, portdef, dbdef2 = m.groups()
                     if portdef is not None:
                         portdef = portdef[1:]
+
+            # Set database name to:
+            # 1) --db-name option if set
+            # 2) existing database value from dburl if present
+            # 3) "esgcet" otherwise
+            if dbdef is None:
+                if dbdef2 is not None:
+                    dbdef = dbdef2
+                else:
+                    dbdef = dbDefault
                 
             if dbuser is not None:
                 esguser = dbuser
