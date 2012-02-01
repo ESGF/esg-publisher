@@ -223,6 +223,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         info("Keeping dataset version = %d"%versionObj.version)
         for var in dset.variables:
             session.delete(var)
+        session.commit()
         versionObj.files.extend(fobjs)
         event = Event(datasetName, versionObj.version, eventFlag)
         dset.events.append(event)

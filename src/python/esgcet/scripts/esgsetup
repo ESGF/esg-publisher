@@ -14,7 +14,7 @@ from esgcet.exceptions import *
 
 usage = """Usage:
     esgsetup --config [--rootid root_identifier]
-    esgsetup --db [--db-admin admin] [--db-host hostname] [--db-port port] [--db-admin-password password] [--db-user-password password]
+    esgsetup --db [--db-admin admin] [--db-host hostname] [--db-port port] [--db-admin-password password] [--db-user-password password] [--db-name name]
     esgsetup --thredds [--thredds-password password]
     esgsetup --publish [--gateway gateway_host]
     esgsetup --handler
@@ -32,12 +32,14 @@ Options:
 
     --db-admin admin: Name of database administrator. Defaults to $PGUSER.
 
-    --db-host hostname: Hostname for database connection. Defaults to $PGHOST, or 'localhost' if not set.
-
-    --db-port port: Port used for database connection. Defaults to $PGPORT, or 5432 if not set.
-
     --db-admin-password password: Password for database administrator. If not specified, the
         value is requested interactively. Only used with the --db option.
+
+    --db-host hostname: Hostname for database connection. Defaults to $PGHOST, or 'localhost' if not set.
+
+    --db-name name: Name of the database to create or access. Defaults to 'esgcet'.
+
+    --db-port port: Port used for database connection. Defaults to $PGPORT, or 5432 if not set.
 
     --db-user user: Name of the (non-administrative) owner of the esgcet database.
     
@@ -328,13 +330,14 @@ def main(argv):
     global minimalSetup
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'db-name=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
     dbadmin = None
+    dbdef = "esgcet"
     dbpass = None
     dbuser = None
     esgusepass = None
@@ -360,6 +363,8 @@ def main(argv):
             dbadmin = arg
         elif flag=='--db-admin-password':
             dbpass = arg
+        elif flag=='--db-name':
+            dbdef = arg
         elif flag=='--db-user':
             dbuser = arg
         elif flag=='--db-user-password':
@@ -502,7 +507,6 @@ def main(argv):
             passdef = ""
             hostdef = host
             portdef = port
-            dbdef = "esgcet"
             if initdburl is not None:
                 m = re.match(urlpat, initdburl)
                 if m is not None:

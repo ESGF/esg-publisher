@@ -88,10 +88,13 @@ def main(argv):
     datasetNames.sort()
 
     # Create a dictionary: (dataset_name, version, basename) => file_version_obj
+    # Create a dictionary: (dataset_name, version) => dataset_version_obj
     dsetdict = {}
+    dsetVersionDict = {}
     for datasetName, version in datasetNames:
         dset = session.query(Dataset).filter_by(name=datasetName).first()
         dsetVersion = dset.getVersionObj(version)
+        dsetVersionDict[(datasetName, version)] = dsetVersion
         filedict = {}
         for fvobj in dsetVersion.files:
             location = fvobj.getLocation()
@@ -108,6 +111,7 @@ def main(argv):
         datasetName, version, location, attrname = key
         basename = os.path.basename(location)
         fvobj = dsetdict[(datasetName, version, basename)]
+        dsetVersionObj = dsetVersionDict[(datasetName, version)]
         if attrname=='checksum':
             try:
                 checksum_type = extraFields[(datasetName, version, location, 'checksum_type')]
@@ -120,6 +124,18 @@ def main(argv):
                 print "Setting checksum=%s, type=%s for dataset=%s, file=%s"%(value, checksum_type, datasetName, basename)
             fvobj.checksum = value
             fvobj.checksum_type = checksum_type
+        elif attrname=='tech_notes':
+            tech_notes_title = extraFields.get((datasetName, version, location, 'tech_notes_title'))
+            if verbose:
+                print "Setting tech_notes=%s, tech_notes_title=%s for dataset=%s, file=%s"%(value, tech_notes_title, datasetName, basename)
+            fvobj.tech_notes = value
+            fvobj.tech_notes_title = tech_notes_title
+        elif attrname=='dataset_tech_notes':
+            dataset_tech_notes_title = extraFields.get((datasetName, version, location, 'dataset_tech_notes_title'))
+            if verbose:
+                print "Setting dataset_tech_notes=%s, dataset_tech_notes_title=%s for dataset=%s"%(value, dataset_tech_notes_title, datasetName)
+            dsetVersionObj.tech_notes = value
+            dsetVersionObj.tech_notes_title = dataset_tech_notes_title
         else:
             continue
 
