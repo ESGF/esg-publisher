@@ -95,7 +95,7 @@ Options:
     --new-version version_number
         Specify the dataset version number, a positive integer. If unspecified, the version number is
         set to 1 for new datasets, and is incremented by 1 for existing datasets. Use this option
-        with caution, as the version number will apply to all datasets processed. See --keep-version.
+        with caution, as the version number will apply to all datasets processed. See --keep-version and --version-list.
 
     --noscan
         Skip the scan phase and just publish. Assumes that the scan has already been done!
@@ -159,7 +159,7 @@ Options:
 
     --replica master_gateway_id
         Flag the dataset(s) as replicated. The argument is the identifier of the gateway where the dataset
-        originated, for example, "ESG-PCMDI" or "ESG-NCAR".
+        originated, for example, "ESG-PCMDI" or "ESG-NCAR". See --version-list.
 
     --service service_name
         Specify a THREDDS service name to associate with an offline dataset. If omitted, the name of the
@@ -193,12 +193,21 @@ Options:
         file, containing one dataset name per line. If the filelist is '-',
         read from standard input.
 
+    --version-list versionlist
+        Use the version indicated in the version list. versionlist is a file, each line of which
+        has the form:
+
+            dataset_id | version
+
+        This option is useful for publishing replica data in bulk, where the datasets must retain
+        the replica version.
+
 """
 
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'las', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'service=', 'summarize-errors', 'thredds', 'update', 'use-existing=', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'las', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'service=', 'summarize-errors', 'thredds', 'update', 'use-existing=', 'use-list=', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -232,6 +241,7 @@ def main(argv):
     testProgress1 = testProgress2 = None
     thredds = False
     version = None
+    versionList = None
     for flag, arg in args:
         if flag=='-a':
             aggregateDimension = arg
@@ -321,14 +331,31 @@ def main(argv):
                 line = line.strip()
                 if line[0]!='#':
                     rescanDatasetName.append(line)
+        elif flag=='--version-list':
+            versionList = arg
 
     # If offline, the project must be specified
     if offline and (projectName is None):
         raise ESGPublishError("Must specify project with --project for offline datasets")
 
     # Must specify version for replications
-    if masterGateway is not None and version is None:
-        raise ESGPublishError("Must specify version with --new-version for replicated datasets")
+    if masterGateway is not None and version is None and versionList is None:
+        raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
+
+    if version is not None and versionList is not None:
+        raise ESGPublishError("Cannot specify both --new-version and --version-list")
+
+    if versionList is not None:
+        version = {}
+        f = open(versionList)
+        lines = f.readlines()
+        f.close()
+        for line in lines:
+            line = line.strip()
+            dsid, vers = line.split('|')
+            dsid = dsid.strip()
+            vers = int(vers.strip())
+            version[dsid] = vers
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_file)

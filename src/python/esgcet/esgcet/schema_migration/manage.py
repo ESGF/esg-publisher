@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from migrate.versioning.shell import main
 
-main(repository='/home/drach1/work/Esgcet/esgcet/esgcet/schema_migration')
+main(repository=os.path.abspath(os.path.dirname(__file__)))

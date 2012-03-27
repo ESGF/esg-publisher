@@ -9,6 +9,7 @@ from esgcet.config import splitLine, splitRecord, getConfig, getThreddsServiceSp
 from esgcet.model import *
 from esgcet.exceptions import *
 from sqlalchemy.orm import join
+from sqlalchemy import desc
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 _nsmap = {
@@ -304,6 +305,13 @@ def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, 
     # Cache the URL for notification
     if fileVersionObj is not None:
         fileVersionObj.url = urlPath
+
+    # Add tech notes documentation if present
+    if fileVersionObj.tech_notes is not None:
+        documentation = SE(dataset, "documentation", type="summary")
+        documentation.set(_XLINK+"href", fileVersionObj.tech_notes)
+        if fileVersionObj.tech_notes_title is not None:
+            documentation.set(_XLINK+"title", fileVersionObj.tech_notes_title)
 
     fileIDProp = SE(dataset, "property", name="file_id", value=fileid)
     fileVersionProp = SE(dataset, "property", name="file_version", value=str(fileVersion))
@@ -833,6 +841,13 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     if threddsRestrictAccess is not None:
         datasetElem.set("restrictAccess", threddsRestrictAccess)
 
+    # Add tech notes documentation if present
+    if dsetVersionObj.tech_notes is not None:
+        documentation = SE(datasetElem, "documentation", type="summary")
+        documentation.set(_XLINK+"href", dsetVersionObj.tech_notes)
+        if dsetVersionObj.tech_notes_title is not None:
+            documentation.set(_XLINK+"title", dsetVersionObj.tech_notes_title)
+
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
     if datasetIdTemplate is not None:
@@ -1158,14 +1173,16 @@ def updateThreddsMasterCatalog(dbSession):
 
     # Get the dataset catalogs. Note: include all dataset versions.
     session = dbSession()
-    for subcatalog in session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).all():
+    for subcatalog in session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).order_by(Catalog.dataset_name, desc(Catalog.version)).all():
+#     for subcatalog in session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).all():
         # Check that an existing catalog rootpath was not removed from the dataset roots list.
         # If so, THREDDS will choke.
         # Note: It's OK if the rootpath is None: that means the associated service is non-THREDDS
         # and doesn't have a rootpath prefix.
         if subcatalog.rootpath is not None and subcatalog.rootpath not in threddsDatasetRootPaths:
             warning("Catalog entry for dataset %s has rootpath = %s. Please add this to thredds_dataset_roots in the configuration file and regenerate the THREDDS catalog."%(subcatalog.dataset_name, subcatalog.rootpath))
-            session.delete(subcatalog)
+            # NOTE! Don't delete the catalog - it may have been generated using a different configuration!
+            # session.delete(subcatalog)
         else:
 
             # print catalog.dataset_name, catalog.location
