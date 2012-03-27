@@ -88,6 +88,7 @@ setup(
                'scripts/esgsetup',
                'scripts/esgpublish',
                'scripts/esgquery_gateway',
+               'scripts/esgquery_index',
                'scripts/esgunpublish',
                'scripts/esgupdate_metadata',
                'scripts/hsils.py',
