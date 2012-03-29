@@ -75,9 +75,6 @@ Options:
         Keep the dataset version number the same for an existing dataset. By default the version number
         is incremented by 1. This option is ignored for new datasets.
 
-    --las
-        Reinitialize the LAS (Live Access Server). The default is not to reinitialize.
-
     --log log_file:
         Name of output log file. Overrides the configuration log_filename option. Default is standard output.
 
@@ -170,7 +167,21 @@ Options:
         Print a summary of errors for each dataset scanned.
 
     --thredds
-        Generate THREDDS files.
+        Generate THREDDS files. Implies --thredds-reinit.
+
+    --thredds-reinit | --no-thredds-reinit
+        Toggle reinitialization of the THREDDS server.
+
+        If --thredds-reinit is specified, the TDS master catalog is regenerated and the THREDDS server is
+        reinitialized to read the catalog hierarchy. This option is implied if --thredds is also specified.
+        So the option is mainly useful to reinitialize the server without generating any new dataset
+        catalogs.
+
+        If --no-thredds-reinit is specified, the THREDDS server is not reinitialized, regardless of
+        whether --thredds is used. This option is useful to generate one or more new dataset catalogs
+        without the overhead of a TDS reinitialization call, followed by a single reinitialization call.
+        Use this option with caution, as it will leave the database and THREDDS catalogs in an inconsistent
+        state.
 
     -u, --update
         If a dataset exists, update (replace or append) listed files
@@ -207,7 +218,7 @@ Options:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'las', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'service=', 'summarize-errors', 'thredds', 'update', 'use-existing=', 'use-list=', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'service=', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -240,6 +251,7 @@ def main(argv):
     summarizeErrors = False
     testProgress1 = testProgress2 = None
     thredds = False
+    threddsReinit = None
     version = None
     versionList = None
     for flag, arg in args:
@@ -266,8 +278,6 @@ def main(argv):
             init_file = arg
         elif flag=='--keep-version':
             keepVersion = True
-        elif flag=='--las':
-            las = True
         elif flag=='--log':
             log_filename = arg
         elif flag=='--map':
@@ -283,6 +293,8 @@ def main(argv):
                     raise ValueError
             except ValueError:
                 raise ESGPublishError("Version number must be a positive integer: %s"%arg)
+        elif flag=='--no-thredds-reinit':
+            threddsReinit = False
         elif flag=='--noscan':
             publishOnly = True
         elif flag=='--offline':
@@ -316,6 +328,8 @@ def main(argv):
             summarizeErrors = True
         elif flag=='--thredds':
             thredds = True
+        elif flag=='--thredds-reinit':
+            threddsReinit = True
         elif flag in ['-u', '--update']:
             publishOp = UPDATE_OP
         elif flag=='--use-existing':
@@ -444,7 +458,7 @@ def main(argv):
     if not publishOnly:
         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles)
 
-    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable)
+    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit)
     # print `result`
 
     if summarizeErrors:

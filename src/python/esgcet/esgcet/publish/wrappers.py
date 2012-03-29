@@ -53,7 +53,7 @@ def esgpublishWrapper(**kw):
     publishOp = kw.get("publishOp", CREATE_OP)
     readFiles = kw.get("readFiles", False)
     readFromCatalog = kw.get("readFromCatalog", False)
-    reinitThredds=kw.get("reinitThredds", True)
+    reinitThredds=kw.get("reinitThredds", None)
     rescan = kw.get("rescan", False)
     rescanDatasetName = kw.get("rescanDatasetName", [])
     resultThreddsDictionary = None
