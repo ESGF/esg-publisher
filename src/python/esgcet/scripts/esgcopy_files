@@ -4,14 +4,20 @@ import sys
 import os
 import getopt
 import shutil
+import stat
+import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from esgcet.publish import multiDirectoryIterator, compareFilesByPath
+from esgcet.publish import multiDirectoryIterator, compareFilesByPath, readDatasetMap
 from esgcet.config import getHandlerByName, registerHandlers, loadConfig, initLogging
 
 usage = """Usage:
     esgcopy_files [options] project directory [directory ...]
+
+    -or-
+
+    esgcopy_files [options] --filelist list project
 
     Copy files from scratch space to the ESG archive.
 
@@ -40,6 +46,11 @@ Options:
 
     --dry-run, -n:
         Dry run. Just echo the command would do.
+
+    --filelist path
+        Copy/move files listed in a filelist. path is the location of a file, each line of which
+        has the form file[|dataset_id]. If the dataset_id is specified, use that to create the mapfile,
+        rather than reading the file metadata.
 
     --filter regular_expression:
         Filter files matching the regular expression. Default is '.*\.nc$'
@@ -74,6 +85,24 @@ Options:
 
 """
 
+def mapfileIterator(datasetMap, filefilt=None, followSymLinks=True, useDiscoveredSize=True):
+    keys = datasetMap.keys()
+    for dataset_id in keys:
+        for path, size in datasetMap[dataset_id]:
+            basename = os.path.basename(path)
+            try:
+                if followSymLinks:
+                    st = os.stat(path)
+                else:
+                    st = os.lstat(path)
+            except os.error:
+                continue
+            if stat.S_ISREG(st.st_mode):
+                if useDiscoveredSize:
+                    size=st.st_size
+                if re.match(filefilt, basename) is not None:
+                    yield (path, (size, st.st_mtime))
+            
 def readDict(path):
     dictmap = {}
     f = open(path)
@@ -117,25 +146,18 @@ def getSubDir(path, sink, handler, size, compare=False):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filter=', 'help', 'ignore-zero-length', 'move', 'output=', 'overwrite', 'replica', 'verbose', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'move', 'output=', 'overwrite', 'replica', 'verbose', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
-
-    if len(lastargs)<2:
-        print 'No project or directory specified'
-        print usage
-        sys.exit(0)
-
-    project = lastargs[0]
-    directories = lastargs[1:]
 
     checksumList = None
     compare = False
     dirformat = None
     dryrun = False
     filefilt = '.*\.nc$'
+    filelist = None
     ignoreZeroLength = False
     mapfile = None
     movefiles = False
@@ -152,6 +174,8 @@ def main(argv):
             dirformat = arg
         elif flag=='--filter':
             filefilt = arg
+        elif flag=='--filelist':
+            filelist = arg
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
@@ -171,6 +195,15 @@ def main(argv):
             overwrite = True
         elif flag in ['--version-list']:
             versionList = arg
+
+    if filelist is None and len(lastargs)<2:
+        print 'No project or directory specified'
+        print usage
+        sys.exit(0)
+
+    project = lastargs[0]
+    if filelist is None:
+        directories = lastargs[1:]
 
     if dirformat is None:
         if replica:
@@ -196,13 +229,23 @@ def main(argv):
     if checksumList is not None:
         checksumMap = readDict(checksumList)
 
-    multiIter = multiDirectoryIterator(directories, filefilt=filefilt)
+    if filelist is None:
+        iter = multiDirectoryIterator(directories, filefilt=filefilt)
+    else:
+        datasetMap = readDatasetMap(filelist)
+        iter = mapfileIterator(datasetMap, filefilt=filefilt)
+        path2dset = {}
+        for key in datasetMap.keys():
+            for path, size in datasetMap[key]:
+                if path in path2dset:
+                    raise RuntimeError("Duplicate basename in mapfile: %s"%path)
+                path2dset[path] = key[0]
 
     # Determine the categories
     handler = getHandlerByName(project, None, Session)
 
     # For each file:
-    for path, sizet in multiIter:
+    for path, sizet in iter:
 
         # Determine the category values
         handler.resetContext()
@@ -221,7 +264,10 @@ def main(argv):
 
         # If writing a mapfile, generate the dataset identifier
         if mapfile is not None:
-            datasetId = handler.generateNameFromContext('dataset_id')
+            if filelist is None:
+                datasetId = handler.generateNameFromContext('dataset_id')
+            else:
+                datasetId = path2dset[path]
             if versionList is not None:
                 if datasetId not in versionMap:
                     print 'Dataset is missing in versionlist: id=%s, file=%s, skipping'%(datasetId, path)
