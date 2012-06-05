@@ -82,6 +82,9 @@ Options:
     -o path
        Save output to a file.
 
+    --offset num
+       Start at the given record number.
+
     -p, --pretty-print
        Align results and print field headers. See --delimiter.
 
@@ -420,7 +423,7 @@ def main(argv):
     global DEFAULT_QUERY_SERVICE
 
     try:
-        args, lastargs = getopt.getopt(argv, "d:ho:pq:t:v", ['count', 'delimiter=', 'facet-query=', 'facets=', 'fields=', 'format=', 'free-text=', 'help', 'limit=', 'pretty-print', 'service-url=', 'type=', 'verbose'])
+        args, lastargs = getopt.getopt(argv, "d:ho:pq:t:v", ['count', 'delimiter=', 'facet-query=', 'facets=', 'fields=', 'format=', 'free-text=', 'help', 'limit=', 'offset=', 'pretty-print', 'service-url=', 'type=', 'verbose'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -482,6 +485,8 @@ def main(argv):
             outpathIsStdout = False
         elif flag in ['-p', '--pretty-print']:
             prettyPrint = True
+        elif flag=='--offset':
+            offset = int(arg)
         elif flag in ['-q', '--facet-query']:
             queries = arg.split(',')
             for q in queries:
@@ -514,7 +519,6 @@ def main(argv):
     moredata = True
     nread = 0
     nleft = userLimit
-    offset = 0
     chunksize = DEFAULT_CHUNKSIZE
     while moredata:
 
