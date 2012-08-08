@@ -305,7 +305,7 @@ def parseHeader(tree):
 # results is a list [(objid, field, value), (objid, field, value), ...], 
 # number_found is the total number of results independent of chunk size,
 # and number_documents is the number of results parsed by this call.
-def parseResponse(tree, includeId):
+def parseResponse(tree, includeId, scoreInFields=False):
     root = tree.getroot()
     result = root[1]
     numFound = int(result.get('numFound'))
@@ -317,6 +317,8 @@ def parseResponse(tree, includeId):
         interResults = []               # [(field, value), (field, value), ...]
         for elem in doc:
             name = elem.get('name')
+            if not scoreInFields and name=='score':
+                continue
             if name=='id':
                 objid = elem.text
                 if includeId:
@@ -536,7 +538,8 @@ def main(argv):
 
         # Parse the response. For facet value searches, parse the response trailer
         if facetValues is None:
-            results, numFound, numResults = parseResponse(chunk, includeId)
+            scoreInFields = ('score' in fields)
+            results, numFound, numResults = parseResponse(chunk, includeId, scoreInFields)
             fullResults.extend(results)
         else:
             numResults = 0
