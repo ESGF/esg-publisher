@@ -11,18 +11,24 @@ from urllib2 import urlopen, HTTPError
 DATASET = 1
 FILE = 2
 MODEL = 3
+AGGREGATION = 4
+
 typeCode = {'d': DATASET,
             'f': FILE,
             'm': MODEL,
+            'a': AGGREGATION,
             }
 typeName = {DATASET:'Dataset',
             FILE:'File',
             MODEL:'Model',
+            AGGREGATION:'Aggregation',
             }
 DEFAULT_FORMAT = "narrow"
 DEFAULT_CHUNKSIZE = 1000
 DEFAULT_QUERY_SERVICE = "http://pcmdi9.llnl.gov/esg-search/search"
+DEFAULT_WGET_SERVICE = "http://pcmdi9.llnl.gov/esg-search/wget"
 MAX_RECORDS = 10000000                  # Maximum number of records
+WGET_MAX_RECORDS = 1000
 
 usage = """Usage:
     esgquery_index [Options]
@@ -36,13 +42,14 @@ usage = """Usage:
     - search for available facet values (--facets)
     - specification of result type (--type)
     - return counts only (--count)
+    - wget scripts (--format wget)
 
     The different search types can be combined in a single query. The script formulates
     an HTTP query to the SOLR query service defined by --service-url. The resulting XML
     document is parsed, and the results are extracted and displayed in the format defined
     by --format.
 
-    By default, all possible metadata fields associated the result objects are displayed.
+    By default, all possible metadata fields associated with the result objects are displayed.
     To limit the output fields, list them with the --fields option. Similarly the --limit
     option specifies the maximum number of results.
 
@@ -62,13 +69,22 @@ Options:
     --fields FIELD,FIELD,...
        Limit output to the listed fields.
 
-    --format narrow | wide
+    --format narrow | wide | wget
        Output format. Default is narrow. Note: Some fields may have multiple values associated with an
        object. For example, datasets may contain multiple variables. In that case the
        wide format will only show one of the values for that field.
 
        narrow (default): Each line is (id, field, value)
        wide: Each line is (id, field1_value, field2_value, ...)
+       wget: A wget script is returned. The script will download all files matching the query. See note.
+
+       NOTE: wget format implies:
+       - The object type is File: --type f
+       - The url field is returned: --fields url
+       - The number of files is the minimum of 1000 and the --limit setting.
+       - --count and --facets options are ignored.
+
+       HINT: To avoid downloading duplicate (replicated) files, include the query 'replica=false'. See Examples.
 
     -h, --help
        Help string.
@@ -101,8 +117,8 @@ Options:
     --free-text TEXT
        Free text query.
 
-    --type f|d
-       List files (f) or datasets (d). Default is dataset.
+    --type f|d|a
+       List files (f), datasets (d), or aggregations (a). Default is dataset.
 
     -v, --verbose
        Echo processing information.
@@ -173,6 +189,14 @@ Examples:
     - List all facet fields
 
       esgquery_index --facets='*' -p
+
+    - Find the aggregations associated with a dataset
+
+      esgquery_index --type a -q dataset_id='obs4MIPs.CNES.AVISO.mon.v1|esg-datanode.jpl.nasa.gov' -p -v --service-url http://esg-datanode.jpl.nasa.gov/esg-search/search --fields id
+
+    - Download a wget script
+
+      esgquery_index -q project=CMIP5,time_frequency=fx,model=MIROC5,experiment=1pctCO2,replica=false,realm=atmos --fields id --format wget
 
 """%(DEFAULT_QUERY_SERVICE,)
 
@@ -281,6 +305,21 @@ def readChunk(service, query):
                 print 'Error:', m.group(1)
             sys.exit(1)
     return tree
+
+def downloadWgetScript(query, outpath, outpathIsStdout):
+    try:
+        u = urlopen(query)
+    except HTTPError as he:
+        errorHtml = he.read()
+        m = re.search(r'message.*?<u>(.*?)</u>', errorHtml)
+        if m is not None:
+            print 'Error:', m.group(1)
+        sys.exit(1)
+    result = u.read()
+    outpath.write(result)
+    u.close()
+    if not outpathIsStdout:
+        outpath.close()
 
 # Parse the response header for available facet values
 # Returns (([valueList],), header), numFound as for parseTrailer
@@ -457,6 +496,7 @@ def main(argv):
     service = DEFAULT_QUERY_SERVICE
     userLimit = MAX_RECORDS
     verbose = False
+    wgetScript = False
     for flag, arg in args:
         if flag=='--count':
             countOnly = True
@@ -471,9 +511,11 @@ def main(argv):
             fieldList = arg.split(',')
             fields = [item.strip() for item in fieldList]
         elif flag=='--format':
-            if arg not in ['narrow', 'wide']:
+            if arg not in ['narrow', 'wide', 'wget']:
                 raise RuntimeError("Invalid format: %s"%arg)
             format = arg
+            if arg=='wget':
+                wgetScript = True
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
@@ -505,6 +547,25 @@ def main(argv):
                 raise RuntimeError("Invalid return type: %s"%arg)
         elif flag in ['-v', '--verbose']:
             verbose = True
+
+    # If a wget script is requested:
+    # - Object type is File
+    # - fields are url
+    # - limit is min(1000, limit)
+    if wgetScript:
+        objtype = FILE
+        fields = ['url']
+        userLimit = min(userLimit, WGET_MAX_RECORDS)
+        countOnly = False
+        allFacets = False
+        facetValues = None
+        if service==DEFAULT_QUERY_SERVICE:
+            service = DEFAULT_WGET_SERVICE
+        query = formulateQuery(facets, fields, format, freetext, objtype, service, offset, userLimit, facetValues=facetValues)
+        if verbose:
+            print >>sys.stderr, 'Query: ', query
+        downloadWgetScript(query, outpath, outpathIsStdout)
+        return
 
     # If returning id only, use wide format
     if fields==['id']:

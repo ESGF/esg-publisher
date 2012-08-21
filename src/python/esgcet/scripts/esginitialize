@@ -133,7 +133,7 @@ def main(argv):
 
     # Upgrade to current version
     if createTables:
-        info("Upgrading schema to latest version.")
+        info("Upgrading schema to latest version. (This may take a while.)")
         upgrade(dburl, repo_path, engine_dict={"echo": echoSql})
 
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
