@@ -113,6 +113,9 @@ Options:
        Query the service at URL. If the esgcet publisher package is present, the value of parameter
        'solr_search_service_url' is used, otherwise the default is %s.
 
+       Similarly, if the return format is wget (--format wget), the value of parameter
+       'solr_wget_service_url' is used, otherwise the default is %s.
+
     -t TEXT
     --free-text TEXT
        Free text query.
@@ -198,7 +201,7 @@ Examples:
 
       esgquery_index -q project=CMIP5,time_frequency=fx,model=MIROC5,experiment=1pctCO2,replica=false,realm=atmos --fields id --format wget
 
-"""%(DEFAULT_QUERY_SERVICE,)
+"""%(DEFAULT_QUERY_SERVICE, DEFAULT_WGET_SERVICE)
 
 def leng(item):
     if item is not None:
@@ -462,6 +465,7 @@ def outputFacetResults(results, header, prettyPrint=False, printHeaders=True, de
 def main(argv):
 
     global DEFAULT_QUERY_SERVICE
+    global DEFAULT_WGET_SERVICE
 
     try:
         args, lastargs = getopt.getopt(argv, "d:ho:pq:t:v", ['count', 'delimiter=', 'facet-query=', 'facets=', 'fields=', 'format=', 'free-text=', 'help', 'limit=', 'offset=', 'pretty-print', 'service-url=', 'type=', 'verbose'])
@@ -476,6 +480,7 @@ def main(argv):
 
         config = loadConfig(None)
         DEFAULT_QUERY_SERVICE = config.get("DEFAULT", "solr_search_service_url", default=DEFAULT_QUERY_SERVICE)
+        DEFAULT_WGET_SERVICE = config.get("DEFAULT", "solr_wget_service_url", default=DEFAULT_WGET_SERVICE)
     except:
         pass
 
@@ -497,6 +502,7 @@ def main(argv):
     userLimit = MAX_RECORDS
     verbose = False
     wgetScript = False
+    wgetService = DEFAULT_WGET_SERVICE
     for flag, arg in args:
         if flag=='--count':
             countOnly = True
@@ -538,6 +544,7 @@ def main(argv):
                 facets.append((f.strip(), v.strip()))
         elif flag=='--service-url':
             service = arg
+            wgetService = arg
         elif flag in ['-t', '--free-text']:
 	    freetext = arg
 	elif flag=='--type':
@@ -559,9 +566,7 @@ def main(argv):
         countOnly = False
         allFacets = False
         facetValues = None
-        if service==DEFAULT_QUERY_SERVICE:
-            service = DEFAULT_WGET_SERVICE
-        query = formulateQuery(facets, fields, format, freetext, objtype, service, offset, userLimit, facetValues=facetValues)
+        query = formulateQuery(facets, fields, format, freetext, objtype, wgetService, offset, userLimit, facetValues=facetValues)
         if verbose:
             print >>sys.stderr, 'Query: ', query
         downloadWgetScript(query, outpath, outpathIsStdout)
