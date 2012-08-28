@@ -69,7 +69,7 @@ Options:
     --fields FIELD,FIELD,...
        Limit output to the listed fields.
 
-    --format narrow | wide | wget
+    --format [narrow | wide | wget | xml]
        Output format. Default is narrow. Note: Some fields may have multiple values associated with an
        object. For example, datasets may contain multiple variables. In that case the
        wide format will only show one of the values for that field.
@@ -77,6 +77,7 @@ Options:
        narrow (default): Each line is (id, field, value)
        wide: Each line is (id, field1_value, field2_value, ...)
        wget: A wget script is returned. The script will download all files matching the query. See note.
+       xml: An XML file is returned, as generated from the SOLR query. At most 1000 results may be requested.
 
        NOTE: wget format implies:
        - The object type is File: --type f
@@ -309,7 +310,7 @@ def readChunk(service, query):
             sys.exit(1)
     return tree
 
-def downloadWgetScript(query, outpath, outpathIsStdout):
+def downloadResult(query, outpath, outpathIsStdout):
     try:
         u = urlopen(query)
     except HTTPError as he:
@@ -517,7 +518,7 @@ def main(argv):
             fieldList = arg.split(',')
             fields = [item.strip() for item in fieldList]
         elif flag=='--format':
-            if arg not in ['narrow', 'wide', 'wget']:
+            if arg not in ['narrow', 'wide', 'wget', 'xml']:
                 raise RuntimeError("Invalid format: %s"%arg)
             format = arg
             if arg=='wget':
@@ -569,7 +570,16 @@ def main(argv):
         query = formulateQuery(facets, fields, format, freetext, objtype, wgetService, offset, userLimit, facetValues=facetValues)
         if verbose:
             print >>sys.stderr, 'Query: ', query
-        downloadWgetScript(query, outpath, outpathIsStdout)
+        downloadResult(query, outpath, outpathIsStdout)
+        return
+
+    # XML output
+    if format=='xml':
+        userLimit = min(userLimit, DEFAULT_CHUNKSIZE)
+        query = formulateQuery(facets, fields, format, freetext, objtype, service, offset, userLimit, facetValues=facetValues)
+        if verbose:
+            print >>sys.stderr, 'Query: ', query
+        downloadResult(query, outpath, outpathIsStdout)
         return
 
     # If returning id only, use wide format
