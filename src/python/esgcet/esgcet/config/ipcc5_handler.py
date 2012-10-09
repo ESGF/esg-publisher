@@ -199,6 +199,9 @@ class IPCC5Handler(BasicHandler):
                 pass
 
         if 'realization' in result and 'initialization_method' in result and 'physics_version' in result:
+            srealization = result['realization']
+            if '.' in srealization:
+                result['realization'] = str(int(float(srealization)))
             ensemble = 'r%si%sp%s'%(result['realization'], result['initialization_method'], result['physics_version'])
             result['ensemble'] = ensemble
             result['run_name'] = ensemble
