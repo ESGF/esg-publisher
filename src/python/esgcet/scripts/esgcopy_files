@@ -280,7 +280,7 @@ def main(argv):
         # Create the directory if needed
         if not os.path.exists(fullsink):
             if verbose:
-                print 'mkdir %s'%fullsink
+                print 'mkdir -p %s'%fullsink
             if not dryrun:
                 os.makedirs(fullsink)
 
