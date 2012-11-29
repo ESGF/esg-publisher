@@ -299,6 +299,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
                     session.delete(versionObj)
                     if isLatest:
                         dset.deleteVariables(session)
+            session.commit()
         
     session.commit()
     session.close()
