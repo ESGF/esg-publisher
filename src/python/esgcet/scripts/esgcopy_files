@@ -4,19 +4,26 @@ import sys
 import os
 import getopt
 import shutil
+import stat
+import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from esgcet.publish import multiDirectoryIterator, compareFilesByPath
+from esgcet.publish import multiDirectoryIterator, compareFilesByPath, readDatasetMap
 from esgcet.config import getHandlerByName, registerHandlers, loadConfig, initLogging
 
 usage = """Usage:
     esgcopy_files [options] project directory [directory ...]
 
+    -or-
+
+    esgcopy_files [options] --filelist list project
+
     Copy files from scratch space to the ESG archive.
 
     *Important:* This script is not an officially supported part of the ESGCET module. It supports
     construction of a disk-based archive based on the directory_format_for_copy pattern defined in esg.ini.
+    If the files are for replicated datasets (--replica) the directory_format_for_replica pattern is used instead.
     
 Arguments:
     project: Project identifier
@@ -24,6 +31,11 @@ Arguments:
     directory: A directory containing files to be copied to the archive.
 
 Options:
+
+    --checksum-list file:
+        If --output is selected, include the checksum field in the generated mapfile.
+        Each line of file has the form 'path|checksum'
+
 
     --compare, -c:
         Compare file contents to determine if they are equal. By default, the file size
@@ -35,12 +47,20 @@ Options:
     --dry-run, -n:
         Dry run. Just echo the command would do.
 
+    --filelist path
+        Copy/move files listed in a filelist. path is the location of a file, each line of which
+        has the form file[|dataset_id]. If the dataset_id is specified, use that to create the mapfile,
+        rather than reading the file metadata.
+
     --filter regular_expression:
         Filter files matching the regular expression. Default is '.*\.nc$'
         Regular expression syntax is defined by the Python re module.
 
     --help, -h:
         Help message.
+
+    --ignore-zero-length:
+        Ignore files with length zero. By default, a warning is printed and the file is skipped.
 
     --move, -m:
         Move the file(s). Default is to copy.
@@ -52,10 +72,53 @@ Options:
         Overwrite files that compare as equal. By default, 'equal' files are not copied.
         Files that are unequal cannot be overwritten.
 
+    --replica, -r:
+        Files belong to replicated datasets. Uses 'directory_format_for_replica' configuration option.
+
     --verbose, -v:
         Verbose.
 
+    --version-list file:
+        Check the version list for dataset names. If --replica and --output are selected, a warning is issued
+        if the generated dataset ID is not contained in the version list. Each line of file
+        has the form: 'dataset_id|version'
+
 """
+
+def mapfileIterator(datasetMap, filefilt=None, followSymLinks=True, useDiscoveredSize=True):
+    keys = datasetMap.keys()
+    for dataset_id in keys:
+        for path, size in datasetMap[dataset_id]:
+            basename = os.path.basename(path)
+            try:
+                if followSymLinks:
+                    st = os.stat(path)
+                else:
+                    st = os.lstat(path)
+            except os.error:
+                continue
+            if stat.S_ISREG(st.st_mode):
+                if useDiscoveredSize:
+                    size=st.st_size
+                if re.match(filefilt, basename) is not None:
+                    yield (path, (size, st.st_mtime))
+            
+def readDict(path):
+    dictmap = {}
+    f = open(path)
+    lines = f.readlines()
+    f.close()
+    for line in lines:
+        line = line.strip()
+        if len(line)==0:
+            continue
+        if line[0]=='#':
+            continue
+        fields = line.split('|')
+        field1 = fields[0].strip()
+        field2 = fields[1].strip()
+        dictmap[field1] = field2
+    return dictmap
 
 def getSubDir(path, sink, handler, size, compare=False):
     """Return (n, exists) where subdirectory 'n' is such that sink/n/path is unique,
@@ -83,48 +146,70 @@ def getSubDir(path, sink, handler, size, compare=False):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "chmno:vw", ['compare', 'dir-format=', 'dry-run', 'filter=', 'help', 'move', 'output=', 'overwrite', 'verbose'])
+        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'move', 'output=', 'overwrite', 'replica', 'verbose', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
-    if len(lastargs)<2:
-        print 'No project or directory specified'
-        print usage
-        sys.exit(0)
-
-    project = lastargs[0]
-    directories = lastargs[1:]
-
+    checksumList = None
     compare = False
-    dirformat = 'directory_format_for_copy'
+    dirformat = None
     dryrun = False
     filefilt = '.*\.nc$'
+    filelist = None
+    ignoreZeroLength = False
     mapfile = None
     movefiles = False
     overwrite = False
+    replica = False
     verbose = False
+    versionList = None
     for flag, arg in args:
-        if flag in ['-c', '--compare']:
+        if flag in ['--checksum-list']:
+            checksumList = arg
+        elif flag in ['-c', '--compare']:
             compare = True
         elif flag=='--dir-format':
             dirformat = arg
         elif flag=='--filter':
             filefilt = arg
+        elif flag=='--filelist':
+            filelist = arg
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
+        elif flag in ['--ignore-zero-length']:
+            ignoreZeroLength = True
         elif flag in ['-m', '--move']:
             movefiles = True
         elif flag in ['-n', '--dry-run']:
             dryrun = True
         elif flag in ['-o', '--output']:
             mapfile = arg
+        elif flag in ['-r', '--replica']:
+            replica = True
         elif flag in ['-v', '--verbose']:
             verbose = True
         elif flag in ['-w', '--overwrite']:
             overwrite = True
+        elif flag in ['--version-list']:
+            versionList = arg
+
+    if filelist is None and len(lastargs)<2:
+        print 'No project or directory specified'
+        print usage
+        sys.exit(0)
+
+    project = lastargs[0]
+    if filelist is None:
+        directories = lastargs[1:]
+
+    if dirformat is None:
+        if replica:
+            dirformat = 'directory_format_for_replica'
+        else:
+            dirformat = 'directory_format_for_copy'
 
     config = loadConfig(None)
     engine = create_engine(config.get('extract', 'dburl'), echo=False, pool_recycle=3600)
@@ -137,25 +222,56 @@ def main(argv):
             fmap = open(mapfile, 'w')
         else:
             fmap = sys.stdout
-    multiIter = multiDirectoryIterator(directories, filefilt=filefilt)
+
+    if versionList is not None:
+        versionMap = readDict(versionList)
+
+    if checksumList is not None:
+        checksumMap = readDict(checksumList)
+
+    if filelist is None:
+        iter = multiDirectoryIterator(directories, filefilt=filefilt)
+    else:
+        datasetMap = readDatasetMap(filelist)
+        iter = mapfileIterator(datasetMap, filefilt=filefilt)
+        path2dset = {}
+        for key in datasetMap.keys():
+            for path, size in datasetMap[key]:
+                if path in path2dset:
+                    raise RuntimeError("Duplicate basename in mapfile: %s"%path)
+                path2dset[path] = key[0]
 
     # Determine the categories
     handler = getHandlerByName(project, None, Session)
 
     # For each file:
-    for path, sizet in multiIter:
+    for path, sizet in iter:
 
         # Determine the category values
         handler.resetContext()
         handler.path = path
-        context = handler.getContext()
+        try:
+            context = handler.getContext()
+        except IOError:
+            if ignoreZeroLength:
+                continue
+            else:
+                print 'Error getting context from path=%s, sizet=%s'%(path, sizet)
+                raise
 
         # Build the correct output path
         sink = handler.generateNameFromContext(dirformat)
 
         # If writing a mapfile, generate the dataset identifier
         if mapfile is not None:
-            datasetId = handler.generateNameFromContext('dataset_id')
+            if filelist is None:
+                datasetId = handler.generateNameFromContext('dataset_id')
+            else:
+                datasetId = path2dset[path]
+            if versionList is not None:
+                if datasetId not in versionMap:
+                    print 'Dataset is missing in versionlist: id=%s, file=%s, skipping'%(datasetId, path)
+                    continue
 
         # Create the subdirectory if necessary
         subsink, exists = getSubDir(path, sink, handler, sizet[0], compare=compare)
@@ -164,7 +280,7 @@ def main(argv):
         # Create the directory if needed
         if not os.path.exists(fullsink):
             if verbose:
-                print 'mkdir %s'%fullsink
+                print 'mkdir -p %s'%fullsink
             if not dryrun:
                 os.makedirs(fullsink)
 
@@ -183,7 +299,14 @@ def main(argv):
             if mapfile is not None:
                 size, modtime = sizet
                 fullpath = os.path.join(fullsink, os.path.basename(path))
-                print >>fmap, "%s | %s | %d | mod_time=%f"%(datasetId, fullpath, size, float(modtime))
+                print >>fmap, "%s | %s | %d | mod_time=%f"%(datasetId, fullpath, size, float(modtime)),
+                if checksumList is not None:
+                    if path in checksumMap:
+                        print >>fmap, " | checksum=%s | checksum_type=MD5"%checksumMap[path]
+                    else:
+                        print >>fmap
+                else:
+                    print >>fmap
 
     if mapfile is not None and mapfile!='-':
         fmap.close()
