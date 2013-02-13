@@ -154,6 +154,10 @@ Examples:
 
       esgquery_index --type f -t 'tracking_id:5d70965b-18c5-4bc1-9e88-ae4cc6b147e5' -q latest=true --fields latest
 
+      or equivalently:
+
+      esgquery_index --type f -q latest=true,tracking_id=5d70965b-18c5-4bc1-9e88-ae4cc6b147e5 --fields latest
+
     - Find all files in a given dataset
 
       esgquery_index --type f -q dataset_id='cmip5.output1.CCCma.CanCM4.decadal2001.mon.atmos.Amon.r9i2p1.v20111022|dap.cccma.uvic.ca' --fields id -p

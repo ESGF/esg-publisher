@@ -11,13 +11,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from esgcet.publish import multiDirectoryIterator, compareFilesByPath, readDatasetMap
 from esgcet.config import getHandlerByName, registerHandlers, loadConfig, initLogging
+from cdms2 import Cdunif
 
 usage = """Usage:
     esgcopy_files [options] project directory [directory ...]
 
     -or-
 
-    esgcopy_files [options] --filelist list project
+    esgcopy_files [options] --filelist input_list project
+
+    -or-
+
+    esgcopy_files [options] --map input_mapfile project
 
     Copy files from scratch space to the ESG archive.
 
@@ -36,7 +41,6 @@ Options:
         If --output is selected, include the checksum field in the generated mapfile.
         Each line of file has the form 'path|checksum'
 
-
     --compare, -c:
         Compare file contents to determine if they are equal. By default, the file size
         and tracking_id attributes are used. Using --compare is slower but more accurate.
@@ -48,9 +52,8 @@ Options:
         Dry run. Just echo the command would do.
 
     --filelist path
-        Copy/move files listed in a filelist. path is the location of a file, each line of which
-        has the form file[|dataset_id]. If the dataset_id is specified, use that to create the mapfile,
-        rather than reading the file metadata.
+        Process files in a list. path is a file, each line of which
+        has the form file[|checksum]. Dataset identifiers are determined from the file metadata.
 
     --filter regular_expression:
         Filter files matching the regular expression. Default is '.*\.nc$'
@@ -61,6 +64,10 @@ Options:
 
     --ignore-zero-length:
         Ignore files with length zero. By default, a warning is printed and the file is skipped.
+
+    --map mapfile
+        Process the list of files in mapfile. Each line has the form
+        dataset_id | path | size4 [| mod_time=... | checksum=... | checksum_type=MD5]
 
     --move, -m:
         Move the file(s). Default is to copy.
@@ -74,6 +81,12 @@ Options:
 
     --replica, -r:
         Files belong to replicated datasets. Uses 'directory_format_for_replica' configuration option.
+        By default, set the product to 'output1'
+
+    --sync-db
+        Synchronize file copying with the replica database:
+        - If the tracking_id is not in table utd_files, the file is skipped;
+        - When the file is copied, the path is updated in the corresponding entry of utd_files.
 
     --verbose, -v:
         Verbose.
@@ -84,6 +97,72 @@ Options:
         has the form: 'dataset_id|version'
 
 """
+
+def canonicalPath(dirname, basename):
+    """Generate a canonical path:
+
+    path           canonical_path 
+    ---------------------------
+    /css02-cmip5   /cmip5_css02
+    /cmip5         /cmip5
+    """
+    if dirname[0:12]=="/css02-cmip5":
+        canondirname = "/cmip5_css02"+dirname[12:]
+    else:
+        canondirname = dirname
+    result = os.path.join(canondirname, basename)
+    return result
+
+def getInput(filelist):
+    fileCount = 0
+    while True:
+
+        fileCount += 1
+
+        line = filelist.readline()
+        if not line:
+            break
+        line = line.strip()
+        if len(line)>0 and line[0]!='#':
+            yield line, fileCount
+
+def getIdentInfo(filelist):
+    for line, fileCount in getInput(filelist):
+
+        fields = line.split('|')
+        if len(fields)==1:
+            path = line
+            checksum = None
+        elif len(fields)==2:
+            path = fields[0].strip()
+            checksum = fields[1].strip()
+        else:
+            print 'Invalid input line: %s'%line
+            sys.exit(0)
+
+        # size
+        try:
+            stats = os.stat(path)
+        except Exception as e:
+            print '[%6d] Error opening %s: %s'%(fileCount, path, e)
+            continue
+        size = stats.st_size
+        mtime = stats.st_mtime
+        if size==0:
+            print '[%6d] Error: size 0 file: %s, skipping'%(fileCount, path)
+            continue
+
+        # Tracking ID and institute
+        try:
+            f = Cdunif.CdunifFile(path)
+        except Exception as e:
+            print '[%6d] Cdunif error opening %s: %s'%(fileCount, path, e)
+            continue
+        tracking_id = f.tracking_id
+        institute_id = f.institute_id
+        f.close()
+
+        yield tracking_id, (size,mtime), path, checksum, fileCount
 
 def mapfileIterator(datasetMap, filefilt=None, followSymLinks=True, useDiscoveredSize=True):
     keys = datasetMap.keys()
@@ -143,10 +222,26 @@ def getSubDir(path, sink, handler, size, compare=False):
     else:
         return '1', False
 
+def inputIterator(filelist, inputmap, directories=None, datasetMap=None, filefilt=None):
+    # Choose an input iterator:
+    # If filelist, iterate over (path, checksum);
+    # If mapfile, iterate over an input mapfile
+    # Otherwise, iterate over directories
+
+    if filelist is not None:
+        for tracking_id, sizet, path, checksum, fileCount in getIdentInfo(filelist):
+            yield path, sizet, tracking_id, checksum
+    elif inputmap is not None:
+        for path, sizet in mapfileIterator(datasetMap, filefilt=filefilt):
+            yield path, sizet, None, None
+    else:
+        for path, sizet in multiDirectoryIterator(directories, filefilt=filefilt):
+            yield path, sizet, None, None
+
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'move', 'output=', 'overwrite', 'replica', 'verbose', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'map', 'move', 'output=', 'overwrite', 'replica', 'sync-db', 'verbose', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -154,15 +249,19 @@ def main(argv):
 
     checksumList = None
     compare = False
+    dbname = "esgcet"
     dirformat = None
     dryrun = False
     filefilt = '.*\.nc$'
     filelist = None
+    inputmap = None
     ignoreZeroLength = False
     mapfile = None
     movefiles = False
     overwrite = False
     replica = False
+    syncdb = False
+    usedirs = True
     verbose = False
     versionList = None
     for flag, arg in args:
@@ -175,12 +274,16 @@ def main(argv):
         elif flag=='--filter':
             filefilt = arg
         elif flag=='--filelist':
-            filelist = arg
+            filelist = open(arg)
+            usedirs = False
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
         elif flag in ['--ignore-zero-length']:
             ignoreZeroLength = True
+        elif flag=='--map':
+            inputmap = arg
+            usedirs = False
         elif flag in ['-m', '--move']:
             movefiles = True
         elif flag in ['-n', '--dry-run']:
@@ -189,6 +292,8 @@ def main(argv):
             mapfile = arg
         elif flag in ['-r', '--replica']:
             replica = True
+        elif flag=='--sync-db':
+            syncdb = True
         elif flag in ['-v', '--verbose']:
             verbose = True
         elif flag in ['-w', '--overwrite']:
@@ -196,14 +301,16 @@ def main(argv):
         elif flag in ['--version-list']:
             versionList = arg
 
-    if filelist is None and len(lastargs)<2:
+    if (usedirs and len(lastargs)<2) or len(lastargs)<1:
         print 'No project or directory specified'
         print usage
         sys.exit(0)
 
     project = lastargs[0]
-    if filelist is None:
+    if usedirs:
         directories = lastargs[1:]
+    else:
+        directories = None
 
     if dirformat is None:
         if replica:
@@ -229,29 +336,34 @@ def main(argv):
     if checksumList is not None:
         checksumMap = readDict(checksumList)
 
-    if filelist is None:
-        iter = multiDirectoryIterator(directories, filefilt=filefilt)
-    else:
-        datasetMap = readDatasetMap(filelist)
-        iter = mapfileIterator(datasetMap, filefilt=filefilt)
+    if syncdb:
+        from esgcet.query import RDBDataStore
+        store = RDBDataStore(dbname)
+
+    if inputmap is not None:
+        datasetMap = readDatasetMap(inputmap)
         path2dset = {}
         for key in datasetMap.keys():
             for path, size in datasetMap[key]:
                 if path in path2dset:
                     raise RuntimeError("Duplicate basename in mapfile: %s"%path)
                 path2dset[path] = key[0]
+    else:
+        datasetMap = None
 
     # Determine the categories
     handler = getHandlerByName(project, None, Session)
 
     # For each file:
-    for path, sizet in iter:
+    for path, sizet, tracking_id, checksum in inputIterator(filelist, inputmap, directories=directories, datasetMap=datasetMap, filefilt=filefilt):
 
         # Determine the category values
         handler.resetContext()
         handler.path = path
         try:
             context = handler.getContext()
+            if replica:
+                context['product'] = 'output1'
         except IOError:
             if ignoreZeroLength:
                 continue
@@ -264,7 +376,7 @@ def main(argv):
 
         # If writing a mapfile, generate the dataset identifier
         if mapfile is not None:
-            if filelist is None:
+            if usedirs or (filelist is not None):
                 datasetId = handler.generateNameFromContext('dataset_id')
             else:
                 datasetId = path2dset[path]
@@ -276,6 +388,15 @@ def main(argv):
         # Create the subdirectory if necessary
         subsink, exists = getSubDir(path, sink, handler, sizet[0], compare=compare)
         fullsink = os.path.join(sink, subsink)
+
+        fullpath = canonicalPath(fullsink, os.path.basename(path))
+        if syncdb:
+            size, modtime = sizet
+            inCache, cachePath = store.isCached(tracking_id, size)
+            if not inCache:
+                if verbose:
+                    print 'File not up-to-date, skipping %s'%path
+                continue
 
         # Create the directory if needed
         if not os.path.exists(fullsink):
@@ -289,18 +410,27 @@ def main(argv):
             if not movefiles:
                 if verbose or dryrun:
                     print 'cp %s %s'%(path, fullsink)
+                    if syncdb:
+                        print "UPDATE esgf_replica.utd_files SET archived=t, path=%s where tracking_id=%s"%(path, tracking_id)
                 if not dryrun:
                     shutil.copy(path, fullsink)
+                    if syncdb:
+                        store.setArchived(tracking_id, fullpath)
             else:
                 if verbose or dryrun:
                     print 'mv %s %s'%(path, fullsink)
+                    if syncdb:
+                        print "UPDATE esgf_replica.utd_files SET archived=t, path=%s where tracking_id=%s"%(path, tracking_id)
                 if not dryrun:
                     shutil.move(path, fullsink)
+                    if syncdb:
+                        store.setArchived(tracking_id, fullpath)
             if mapfile is not None:
                 size, modtime = sizet
-                fullpath = os.path.join(fullsink, os.path.basename(path))
                 print >>fmap, "%s | %s | %d | mod_time=%f"%(datasetId, fullpath, size, float(modtime)),
-                if checksumList is not None:
+                if checksum is not None:
+                    print >>fmap, " | checksum=%s | checksum_type=MD5"%checksum
+                elif checksumList is not None:
                     if path in checksumMap:
                         print >>fmap, " | checksum=%s | checksum_type=MD5"%checksumMap[path]
                     else:
@@ -308,7 +438,9 @@ def main(argv):
                 else:
                     print >>fmap
 
-    if mapfile is not None and mapfile!='-':
+    if filelist is not None:
+        filelist.close()
+    elif mapfile is not None and mapfile!='-':
         fmap.close()
 
 if __name__=='__main__':
