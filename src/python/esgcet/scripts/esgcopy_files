@@ -79,6 +79,9 @@ Options:
         Overwrite files that compare as equal. By default, 'equal' files are not copied.
         Files that are unequal cannot be overwritten.
 
+    --prefix string
+        Prefix input files.
+
     --replica, -r:
         Files belong to replicated datasets. Uses 'directory_format_for_replica' configuration option.
         By default, set the product to 'output1'
@@ -126,7 +129,7 @@ def getInput(filelist):
         if len(line)>0 and line[0]!='#':
             yield line, fileCount
 
-def getIdentInfo(filelist):
+def getIdentInfo(filelist, prefix=None):
     for line, fileCount in getInput(filelist):
 
         fields = line.split('|')
@@ -139,6 +142,9 @@ def getIdentInfo(filelist):
         else:
             print 'Invalid input line: %s'%line
             sys.exit(0)
+
+        if prefix is not None:
+            path = os.path.join(prefix, path)
 
         # size
         try:
@@ -222,14 +228,14 @@ def getSubDir(path, sink, handler, size, compare=False):
     else:
         return '1', False
 
-def inputIterator(filelist, inputmap, directories=None, datasetMap=None, filefilt=None):
+def inputIterator(filelist, inputmap, directories=None, datasetMap=None, filefilt=None, prefix=None):
     # Choose an input iterator:
     # If filelist, iterate over (path, checksum);
     # If mapfile, iterate over an input mapfile
     # Otherwise, iterate over directories
 
     if filelist is not None:
-        for tracking_id, sizet, path, checksum, fileCount in getIdentInfo(filelist):
+        for tracking_id, sizet, path, checksum, fileCount in getIdentInfo(filelist, prefix=prefix):
             yield path, sizet, tracking_id, checksum
     elif inputmap is not None:
         for path, sizet in mapfileIterator(datasetMap, filefilt=filefilt):
@@ -241,7 +247,7 @@ def inputIterator(filelist, inputmap, directories=None, datasetMap=None, filefil
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'map', 'move', 'output=', 'overwrite', 'replica', 'sync-db', 'verbose', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'map', 'move', 'output=', 'overwrite', 'prefix=', 'replica', 'sync-db', 'verbose', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -259,6 +265,7 @@ def main(argv):
     mapfile = None
     movefiles = False
     overwrite = False
+    prefix = None
     replica = False
     syncdb = False
     usedirs = True
@@ -290,6 +297,8 @@ def main(argv):
             dryrun = True
         elif flag in ['-o', '--output']:
             mapfile = arg
+        elif flag=='--prefix':
+            prefix = arg
         elif flag in ['-r', '--replica']:
             replica = True
         elif flag=='--sync-db':
@@ -319,7 +328,7 @@ def main(argv):
             dirformat = 'directory_format_for_copy'
 
     config = loadConfig(None)
-    engine = create_engine(config.get('extract', 'dburl'), echo=False, pool_recycle=3600)
+    engine = create_engine(config.get('extract', 'replica_dburl'), echo=False, pool_recycle=3600)
     initLogging('extract', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
     registerHandlers()
@@ -338,7 +347,8 @@ def main(argv):
 
     if syncdb:
         from esgcet.query import RDBDataStore
-        store = RDBDataStore(dbname)
+        replicaDb = config.get('extract', 'replica_dburl')
+        store = RDBDataStore(replicaDb, dbname=dbname)
 
     if inputmap is not None:
         datasetMap = readDatasetMap(inputmap)
@@ -355,7 +365,7 @@ def main(argv):
     handler = getHandlerByName(project, None, Session)
 
     # For each file:
-    for path, sizet, tracking_id, checksum in inputIterator(filelist, inputmap, directories=directories, datasetMap=datasetMap, filefilt=filefilt):
+    for path, sizet, tracking_id, checksum in inputIterator(filelist, inputmap, directories=directories, datasetMap=datasetMap, filefilt=filefilt, prefix=prefix):
 
         # Determine the category values
         handler.resetContext()
@@ -411,7 +421,7 @@ def main(argv):
                 if verbose or dryrun:
                     print 'cp %s %s'%(path, fullsink)
                     if syncdb:
-                        print "UPDATE esgf_replica.utd_files SET archived=t, path=%s where tracking_id=%s"%(path, tracking_id)
+                        print "UPDATE esgf_replica.utd_files SET archived=t, path=%s where tracking_id=%s"%(fullpath, tracking_id)
                 if not dryrun:
                     shutil.copy(path, fullsink)
                     if syncdb:
@@ -420,7 +430,7 @@ def main(argv):
                 if verbose or dryrun:
                     print 'mv %s %s'%(path, fullsink)
                     if syncdb:
-                        print "UPDATE esgf_replica.utd_files SET archived=t, path=%s where tracking_id=%s"%(path, tracking_id)
+                        print "UPDATE esgf_replica.utd_files SET archived=t, path=%s where tracking_id=%s"%(fullpath, tracking_id)
                 if not dryrun:
                     shutil.move(path, fullsink)
                     if syncdb:

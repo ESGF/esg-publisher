@@ -7,6 +7,7 @@ import re
 from lxml import etree
 from lxml.etree import XMLSyntaxError
 from urllib2 import urlopen, HTTPError
+from urlparse import urlsplit
 
 DEFAULT_CHUNKSIZE = 1000
 DATASET = 1
@@ -117,9 +118,14 @@ class ShelfDataStore(DictionaryDataStore):
 
 class RDBDataStore(DataStore):
 
-    def __init__(self, dbname):
+    def __init__(self, dburl, dbname=None):
         import psycopg2
-        self.connection = psycopg2.connect(database=dbname, user="dbsuper", port=8080)
+        result = urlsplit(dburl)
+        if dbname is None:
+            dbname = result.path
+        if dbname[0]=='/':
+            dbname = dbname[1:]
+        self.connection = psycopg2.connect(database=dbname, user=result.username, host=result.hostname, port=result.port)
         self.cursor = self.connection.cursor()
 
     def isCached(self, tracking_id, size):
