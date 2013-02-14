@@ -6,6 +6,7 @@ import getopt
 import shutil
 import stat
 import re
+import datetime
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -36,6 +37,9 @@ Arguments:
     directory: A directory containing files to be copied to the archive.
 
 Options:
+
+    --batch batch_number
+        Set the integer batch number. The default is YYYYMMDD.
 
     --checksum-list file:
         If --output is selected, include the checksum field in the generated mapfile.
@@ -247,12 +251,13 @@ def inputIterator(filelist, inputmap, directories=None, datasetMap=None, filefil
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'map', 'move', 'output=', 'overwrite', 'prefix=', 'replica', 'sync-db', 'verbose', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "chmno:rvw", ['batch=', 'checksum-list=', 'compare', 'dir-format=', 'dry-run', 'filelist=', 'filter=', 'help', 'ignore-zero-length', 'map', 'move', 'output=', 'overwrite', 'prefix=', 'replica', 'sync-db', 'verbose', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    batch = None
     checksumList = None
     compare = False
     dbname = "esgcet"
@@ -272,6 +277,8 @@ def main(argv):
     verbose = False
     versionList = None
     for flag, arg in args:
+        if flag=='--batch':
+            batch = int(arg)
         if flag in ['--checksum-list']:
             checksumList = arg
         elif flag in ['-c', '--compare']:
@@ -326,6 +333,10 @@ def main(argv):
             dirformat = 'directory_format_for_replica'
         else:
             dirformat = 'directory_format_for_copy'
+
+    if batch is None:
+        now = datetime.datetime.now()
+        batch = int('%4d%02d%02d'%(now.year, now.month, now.day))
 
     config = loadConfig(None)
     engine = create_engine(config.get('extract', 'replica_dburl'), echo=False, pool_recycle=3600)
@@ -400,8 +411,8 @@ def main(argv):
         fullsink = os.path.join(sink, subsink)
 
         fullpath = canonicalPath(fullsink, os.path.basename(path))
+        size, modtime = sizet
         if syncdb:
-            size, modtime = sizet
             inCache, cachePath = store.isCached(tracking_id, size)
             if not inCache:
                 if verbose:
@@ -425,7 +436,7 @@ def main(argv):
                 if not dryrun:
                     shutil.copy(path, fullsink)
                     if syncdb:
-                        store.setArchived(tracking_id, fullpath)
+                        store.setArchived(tracking_id, fullpath, modtime=modtime, batch=batch)
             else:
                 if verbose or dryrun:
                     print 'mv %s %s'%(path, fullsink)
@@ -434,7 +445,7 @@ def main(argv):
                 if not dryrun:
                     shutil.move(path, fullsink)
                     if syncdb:
-                        store.setArchived(tracking_id, fullpath)
+                        store.setArchived(tracking_id, fullpath, modtime=modtime, batch=batch)
             if mapfile is not None:
                 size, modtime = sizet
                 print >>fmap, "%s | %s | %d | mod_time=%f"%(datasetId, fullpath, size, float(modtime)),
