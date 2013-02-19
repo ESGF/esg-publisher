@@ -145,13 +145,13 @@ class RDBDataStore(DataStore):
             if batch is None:
                 self.cursor.execute("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, mod_time=%s, scratch=%s where tracking_id=%s", (archived, path, modtime, 't', tracking_id))
             else:
-                self.cursor.execute("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, mod_time=%s, scratch=%s, batch=%s where tracking_id=%s", (archived, path, modtime, 't', tracking_id, batch))
+                self.cursor.execute("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, mod_time=%s, scratch=%s, batch=%s where tracking_id=%s", (archived, path, modtime, 't', batch, tracking_id))
         else:
             archived = 't'
             if batch is None:
                 self.cursor.execute("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, mod_time=%s where tracking_id=%s", (archived, path, modtime, tracking_id))
             else:
-                self.cursor.execute("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, mod_time=%s, batch=%s where tracking_id=%s", (archived, path, modtime, tracking_id, batch))
+                self.cursor.execute("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, mod_time=%s, batch=%s where tracking_id=%s", (archived, path, modtime, batch, tracking_id))
         self.connection.commit()
 
     def updateUtdFiles(self, datasetFiles, dataset_id, currentTrackingId, currentPath, scratch=False):
