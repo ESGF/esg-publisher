@@ -146,7 +146,7 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
 
     return dset, statusId, state, event.event, status
 
-def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=True, readFromCatalog=False):
+def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False):
     """
     Publish a list of datasets:
 
@@ -189,7 +189,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
       String service name. If omitted, the first online/offline service in the configuration is used.
 
     perVariable
-      Boolean, overrides ``variable_per_file'' config option.
+      Boolean, overrides ``variable_per_file`` config option.
 
     threddsCatalogDictionary
       If not None, just generate catalogs in strings, not the THREDDS directories, and set
@@ -197,6 +197,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
 
     reinitThredds
       Boolean flag. If True, create the TDS master catalog and reinitialize the TDS server.
+      If None, defaults to value of thredds option.
 
     readFromCatalog
       Boolean flag. If True, read the TDS catalog definitions from threddsCatalogDictionary. 
@@ -220,6 +221,10 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             handlers[datasetName] = handler
     else:
         handlers = handlerDictionary
+
+    # reinitThredds defaults to the value of thredds option
+    if reinitThredds is None:
+        reinitThredds = thredds
 
     if thredds:
         for datasetName,versionno in datasetNames:
@@ -269,9 +274,9 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                 threddsCatalogDictionary[(datasetName,versionno)] = threddsOutput.getvalue()
                 threddsOutput.close()
 
-        if reinitThredds:
-            updateThreddsMasterCatalog(Session)
-            result = reinitializeThredds()
+    if reinitThredds:
+        updateThreddsMasterCatalog(Session)
+        result = reinitializeThredds()
 
     if las:    
         try:

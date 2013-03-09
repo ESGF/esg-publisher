@@ -14,6 +14,9 @@
       <!-- Java.net Public Maven 2 repository -->
       <include url="${ivy.default.root.url}/ivysettings-javanet.xml"/>
 
+      <!-- Spring repository -->
+      <include url="${ivy.default.root.url}/ivysettings-spring.xml"/>
+
       <!-- Public Maven 2 repository -->
       <include url="${ivy.default.root.url}/ivysettings-public.xml"/>
       

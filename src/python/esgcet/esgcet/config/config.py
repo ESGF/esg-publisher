@@ -239,10 +239,10 @@ def loadConfig1(configFile):
             else:
                 try:
                     from pkg_resources import resource_stream
+                    fp = resource_stream('esgcet.config.etc', 'esg.ini')
                 except:
-                    raise ESGPublishError("No configuration file specified.")
+                    raise ESGPublishError("No configuration file specified, try setting $ESGINI.")
 
-                fp = resource_stream('esgcet.config.etc', 'esg.ini')
                 config1 = SaneConfigParser(`fp`)
                 config1.readfp(fp)
     else:    
@@ -251,6 +251,31 @@ def loadConfig1(configFile):
         config1 = SaneConfigParser(configFile, defaults={'here':os.getcwd()})
         config1.read(configFile)
     return config1
+
+def loadConfig2(configFile=None):
+    
+        # First check the environment variable ESGINI
+        configFile = os.environ.get('ESGINI')
+        if configFile is not None:
+            if not os.path.exists(configFile):
+                raise ESGPublishError("Cannot find configuration file (specified in $ESGINI): %s"%configFile)
+            else:
+                config1 = SaneConfigParser(configFile)
+                config1.read(configFile)
+        else:
+            
+            # Then look in $HOME/.esgcet/esg.ini
+            home = os.environ.get('HOME')
+            if home is not None:
+                configFile = os.path.join(home, '.esgcet', 'esg.ini')
+            if configFile is not None and os.path.exists(configFile):
+                config1 = SaneConfigParser(configFile)
+                config1.read(configFile)
+
+            # If not found, look in the Python installation directory
+            
+    
+        return configFile
 
 def loadConfig(configFile):
     """
@@ -336,7 +361,11 @@ def loadStandardNameTable(path):
     standardNames = {}
     for node in root:
         if node.tag=='entry':
-            name = node.attrib['id'].strip()[:MAX_STANDARD_NAME_LENGTH]
+            name = node.attrib['id'].strip()
+            if len(name) > MAX_STANDARD_NAME_LENGTH:
+                warning("Standard_name is too long.  Schema requires standard_name to be <= %d characters\n  %s"%(MAX_STANDARD_NAME_LENGTH, name))
+                continue
+
             units = amip = grib = description = ''
             for subnode in node:
                 if subnode.tag=='canonical_units':
@@ -558,9 +587,14 @@ def getThreddsServiceSpecs(config, section, option):
         else:
             raise ESGPublishError("Invalid configuration option %s: %s"%(option, `item`))
         serviceBase = item[1].strip()
+        serviceType = item[0].strip()
 
-        # Ensure that service base has a trailing slash
-        if serviceBase[-1]!=os.sep:
+        # Ensure that LAS service base does NOT have a trailing slash ...
+        if serviceType=='LAS':
+            if serviceBase[-1]==os.sep:
+                item[1] = serviceBase[:-1]
+        # ... and that a non-LAS service base has a trailing slash
+        elif serviceBase[-1]!=os.sep:
             serviceBase += os.sep
             item[1] = serviceBase
 

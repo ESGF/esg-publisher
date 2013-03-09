@@ -263,7 +263,7 @@ class dataset_widgets:
       self.lw_file.component('hull').configure(relief='sunken', borderwidth=2)
       self.lw_file.pack(side='top', expand = 1, fill = 'both', padx=10, pady=10)
       self.cw_file = Tkinter.Button(self.lw_file.interior(),
-                    text='File',
+                    text='Map File',
                     font = bnFont,
                     background = "lightblue",
                     foreground='black',
@@ -409,7 +409,7 @@ class dataset_widgets:
        self.generating_file_list_flg = 0
 
     #----------------------------------------------------------------------------------------
-    # From a file, generate the dynamic list of files and thier sizes
+    # From a file, generate the dynamic list of files and their sizes
     #----------------------------------------------------------------------------------------
     def open_text_file( self, dirfilename, lock ):
        import time
@@ -497,10 +497,9 @@ class dataset_widgets:
        self.parent.parent.hold_offline[selected_page] = onoff_flag
        self.parent.parent.main_frame.projectName[selected_page] = self.project_dataset.get()
 
-    def fill_in_data_information_directory( self, dirp, onoff_line = "online" ):
+    def fill_in_data_information_directory( self, dirp, readFiles, onoff_line = "online" ):
        from esgcet.publish import multiDirectoryIterator
        from esgcet.config import getHandler, getHandlerByName
-
        if onoff_line == "online":
           self.parent.parent.filefilt = ".*\\" + self.parent.parent.extension[0][1:] + "$"
 
@@ -527,7 +526,12 @@ class dataset_widgets:
           properties = {}
           props = properties.copy()
           props.update(initcontext)
-          holdDirectoryMap = handler.generateDirectoryMap(lastargs, self.parent.parent.filefilt, initContext=props)
+          
+          if not readFiles:
+            holdDirectoryMap = handler.generateDirectoryMap(lastargs, self.parent.parent.filefilt, initContext=props)
+          else:  
+            holdDirectoryMap = handler.generateDirectoryMapFromFiles(lastargs, self.parent.parent.filefilt, initContext=props)
+          
           self.parent.parent.datasetNames = [(item,-1) for item in holdDirectoryMap.keys()]
           self.parent.parent.datasetNames.sort()
           tab_name= "Collection %i" % self.parent.parent.top_ct
@@ -675,6 +679,7 @@ class dataset_widgets:
 
     #-----------------------------------------------------------------
     # event functions to popup the directory selection window
+    # --project cmip5 --read-files
     #-----------------------------------------------------------------
     def evt_popup_directory_window( self ):
        # Reset the button colors
@@ -687,71 +692,79 @@ class dataset_widgets:
        self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
        pub_busy.busyStart( self.parent.parent )
 
+       try:
        # if true, then the dataset is not directly readable and on tertiary storage
-       if self.parent.parent.offline == True:
-          onoff_line = "offline"
-          dirfilename = None
+          if self.parent.parent.offline == True:
+             onoff_line = "offline"
+             dirfilename = None
 	  # Create the dialog to prompt for the entry input
-	  self.dialog = Pmw.Dialog(self.parent.control_frame2,
-	    title = 'Working off-line',
-	    buttons = ('OK', 'Cancel'),
-	    defaultbutton = 'OK',
-	    command = pub_controls.Command( self.evt_work_off_line_directory, ),
-            )
+	     self.dialog = Pmw.Dialog(self.parent.control_frame2,
+	       title = 'Working off-line',
+	       buttons = ('OK', 'Cancel'),
+	       defaultbutton = 'OK',
+	       command = pub_controls.Command( self.evt_work_off_line_directory, ),
+               )
 
-          self.entry1 = Pmw.EntryField(self.dialog.interior(),
-		labelpos = 'w',
-		label_text = 'Directory:',
+             self.entry1 = Pmw.EntryField(self.dialog.interior(),
+		   labelpos = 'w',
+		   label_text = 'Directory:',
                 entry_width =  75,
                 entry_background = 'aliceblue',
                 entry_foreground = 'black',
-		)
-          self.entry1.pack(side='top', fill='x', expand=1, padx=10, pady=5)
-          self.entry2 = Pmw.EntryField(self.dialog.interior(),
-		labelpos = 'w',
-		label_text = 'Dataset Name:',
+		   )
+             self.entry1.pack(side='top', fill='x', expand=1, padx=10, pady=5)
+             self.entry2 = Pmw.EntryField(self.dialog.interior(),
+		   labelpos = 'w',
+		   label_text = 'Dataset Name:',
                 entry_width =  75,
                 entry_background = 'aliceblue',
                 entry_foreground = 'black',
-		)
-          self.entry2.pack(side='top', fill='x', expand=1, padx=10, pady=5)
+		   )
+             self.entry2.pack(side='top', fill='x', expand=1, padx=10, pady=5)
 
-          Pmw.alignlabels((self.entry1, self.entry2))
+             Pmw.alignlabels((self.entry1, self.entry2))
 
-          parent_geom = self.parent.parent.geometry()
-          geom = string.split(parent_geom, '+')
-          d1 = string.atoi( geom[1] )
-          d2 = string.atoi( geom[2] )
-          p1=string.atoi(geom[0].split('x')[0])*0.3
-          p2=string.atoi(geom[0].split('x')[1])*0.3
-          self.dialog.activate(geometry= "+%d+%d" % (p1+d1, p2+d2) )
-          if self.parent.parent.offline_directories != "Cancel":
+             parent_geom = self.parent.parent.geometry()
+             geom = string.split(parent_geom, '+')
+             d1 = string.atoi( geom[1] )
+             d2 = string.atoi( geom[2] )
+             p1=string.atoi(geom[0].split('x')[0])*0.3
+             p2=string.atoi(geom[0].split('x')[1])*0.3
+             self.dialog.activate(geometry= "+%d+%d" % (p1+d1, p2+d2) )
+             if self.parent.parent.offline_directories != "Cancel":
              # Load up the data information from data extraction
-             self.fill_in_data_information_directory( dirfilename, onoff_line = onoff_line )
-       else:
-          onoff_line = "online"
-          if self.generating_file_list_flg == 1: return
-          dialog_icon = tkFileDialog.Directory(master=self.parent.control_frame2,
+                self.fill_in_data_information_directory( dirfilename, True, onoff_line = onoff_line )
+          else:
+             onoff_line = "online"
+             if self.generating_file_list_flg == 1: return
+             dialog_icon = tkFileDialog.Directory(master=self.parent.control_frame2,
                          title = 'Directory and File Selection')
-          dirfilename=dialog_icon.show(initialdir=os.getcwd())
-          if dirfilename in [(), '']:
-             pub_busy.busyEnd( self.parent.parent )
-             return
+             dirfilename=dialog_icon.show(initialdir=os.getcwd())
+             if dirfilename in [(), '']:
+                pub_busy.busyEnd( self.parent.parent )
+                return
 
-          self.stop_listing_flg = 0
+             self.stop_listing_flg = 0
 
-          self.parent.parent.extension = []
-          self.parent.parent.extension.append( (self.data_filter._entryfield.get().split()[-1]) )
+             self.parent.parent.extension = []
+             self.parent.parent.extension.append( (self.data_filter._entryfield.get().split()[-1]) )
 
           # Load up the data information from data extraction
-          self.fill_in_data_information_directory( dirfilename, onoff_line = onoff_line )
+             self.fill_in_data_information_directory( dirfilename, True, onoff_line = onoff_line )
 
        # Change the color of the selected button
-       bcolorbg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.25 )
-       bcolorfg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.85 )
-       self.cw_dir.configure( background=bcolorbg, foreground=bcolorfg )
+          bcolorbg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.25 )
+          bcolorfg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.85 )
+          self.cw_dir.configure( background=bcolorbg, foreground=bcolorfg )
 
-       pub_busy.busyEnd( self.parent.parent )
+#
+       except:
+            pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+       finally:
+           pub_busy.busyEnd( self.parent.parent )
+#
+#       pub_busy.busyEnd( self.parent.parent )
 
        # Disable the "Data Publication" button
        self.parent.parent.pub_buttonexpansion.ControlButton3.configure( state = 'disabled' )
@@ -781,15 +794,21 @@ class dataset_widgets:
        self.parent.parent.busyCursor = 'watch'
        self.parent.parent.busyWidgets = [self.parent.parent.pane2.pane( 'EditPaneTop' ), self.parent.parent.pane2.pane( 'EditPaneBottom' ), self.parent.parent.pane2.pane( 'EditPaneStatus' ), self.parent.parent.pane.pane( 'ControlPane' )]
        pub_busy.busyStart( self.parent.parent )
-
+       try:
        # Change the color of the selected button
-       bcolorbg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.25 )
-       bcolorfg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.85 )
-       self.cw_file.configure( background=bcolorbg, foreground=bcolorfg )
+          bcolorbg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.25 )
+          bcolorfg = Pmw.Color.changebrightness(self.parent.parent, 'aliceblue', 0.85 )
+          self.cw_file.configure( background=bcolorbg, foreground=bcolorfg )
 
        # Load up the data information from data extraction. This must be done outside the start of the Thread.
-       self.fill_in_data_information_file( dirfilename, onoff_line = onoff_line )
-       pub_busy.busyEnd( self.parent.parent )
+          self.fill_in_data_information_file( dirfilename, onoff_line = onoff_line )
+ 
+       except:
+            pub_busy.busyEnd( self.parent.parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+       finally:
+           pub_busy.busyEnd( self.parent.parent )      
+#       pub_busy.busyEnd( self.parent.parent )
 
        # Disable the "Data Publication" button
        self.parent.parent.pub_buttonexpansion.ControlButton3.configure( state = 'disabled' )

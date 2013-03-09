@@ -160,7 +160,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     gatewayOperation
       An enumeration. If:
       - publish.DELETE: Remove all metadata from the gateway database.
-      - publish.UNPUBLISH: (Defauult) Remove metadata that allows dataset discovery from the gateway.
+      - publish.UNPUBLISH: (Default) Remove metadata that allows dataset discovery from the gateway.
       - publish.NO_OPERATION: No gateway delete/retract operation is called.
 
     thredds
@@ -299,6 +299,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
                     session.delete(versionObj)
                     if isLatest:
                         dset.deleteVariables(session)
+            session.commit()
         
     session.commit()
     session.close()

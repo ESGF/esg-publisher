@@ -9,7 +9,9 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from esgcet.exceptions import *
 
 MAX_FILENAME_DUPLICATES = 1000          # Maximum number of duplicate file basenames in a dataset
-MAX_STANDARD_NAME_LENGTH = 128
+MAX_STANDARD_NAME_LENGTH = 255
+MAX_COORD_RANGE_LENGTH = 32
+MAX_ABS_COORD_RANGE = 9.9999e+19        # Warning if abs(coord) is larger
 
 # Set _database to "postgres", "mysql", or "sqllite" to avoid reading the config file twice
 _database = "postgres"
@@ -128,6 +130,14 @@ def getNextDatasetVersion(current, bydate):
         result = int(today.strftime("%Y%m%d"))
     return result
 
+def isValidCoordinateRange(val1, val2):
+    return not (max(abs(val1), abs(val2)) > MAX_ABS_COORD_RANGE)
+
+def genCoordinateRange(val1, val2):
+    result = '%f:%f'%(val1, val2)
+    if len(result)>MAX_COORD_RANGE_LENGTH:
+        result = '%.7e:%.7e'%(val1, val2)
+    return result
 
 metadata = MetaData()
 
@@ -177,6 +187,8 @@ datasetVersionTable = Table('dataset_version', metadata,
                             Column('name', types.String(255), unique=True),
                             Column('creation_time', types.DateTime),
                             Column('comment', types.Text),
+                            Column('tech_notes', types.String(255)),
+                            Column('tech_notes_title', types.String(255)),
                             mysql_engine='InnoDB',
                             )
 
@@ -221,6 +233,8 @@ fileVersionTable = Table('file_version', metadata,
                          Column('tracking_id', types.String(64)),
                          Column('mod_time', MyDouble),
                          Column('url', types.String(255)),
+                         Column('tech_notes', types.String(255)),
+                         Column('tech_notes_title', types.String(255)),
                          mysql_engine='InnoDB',
                          )
 
@@ -240,7 +254,7 @@ fileVariableTable = Table('file_variable', metadata,
                           Column('aggdim_first', MyDouble),
                           Column('aggdim_last', MyDouble),
                           Column('aggdim_units', types.String(64)),
-                          Column('coord_range', types.String(32)),
+                          Column('coord_range', types.String(MAX_COORD_RANGE_LENGTH)),
                           Column('coord_type', types.String(8)),
                           Column('coord_values', types.Text), # String representation for Z coordinate variable
                           mysql_engine='InnoDB',
@@ -713,25 +727,27 @@ class Dataset(object):
     def __repr__(self):
         return "<Dataset, id=%s, name=%s, project=%s, model=%s, experiment=%s, run_name=%s>"%(`self.id`, self.name, `self.project`, `self.model`, `self.experiment`, self.run_name)
     
-def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, bydate=False):
+def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, bydate=False):
     if version is None:
         current = dset.getVersion()
         version = getNextDatasetVersion(current, bydate)
     if name is None:
         name = dset.generateVersionName(version)
-    dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment)
+    dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment, tech_notes=tech_notes, tech_notes_title=tech_notes_title)
     dset.versions.append(dsetVersion)
     return dsetVersion
 
 class DatasetVersion(object):
 
-    def __init__(self, version, name, creation_time=None, comment=None):
+    def __init__(self, version, name, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None):
         self.version = version
         self.name = name
         if creation_time is None:
             creation_time = datetime.datetime.now()
         self.creation_time = creation_time
         self.comment = comment
+        self.tech_notes = tech_notes
+        self.tech_notes_title = tech_notes_title
 
     def reset(self, creation_time=None, comment=None):
         "Reset the creation_time and comment, but keep name and version."
@@ -904,18 +920,18 @@ class File(object):
     def __repr__(self):
         return "<File, id=%s, dataset_id=%s, base=%s, format=%s"%(`self.id`, `self.dataset_id`, self.base, self.format)
 
-def FileVersionFactory(fileObj, path, session, size, mod_time=None, checksum=None, checksum_type=None, version=None):
+def FileVersionFactory(fileObj, path, session, size, mod_time=None, checksum=None, checksum_type=None, tech_notes=None, tech_notes_title=None, version=None):
     if version==None:
         newVersion = fileObj.getVersion() + 1
     else:
         newVersion = version
-    fileVersionObj = FileVersion(newVersion, path, size, checksum=checksum, checksum_type=checksum_type, mod_time=mod_time)
+    fileVersionObj = FileVersion(newVersion, path, size, checksum=checksum, checksum_type=checksum_type, tech_notes=tech_notes, tech_notes_title=tech_notes_title, mod_time=mod_time)
     fileObj.versions.append(fileVersionObj)
     return fileVersionObj
 
 class FileVersion(object):
 
-    def __init__(self, version, location, size, checksum=None, checksum_type=None, publication_time=None, tracking_id=None, mod_time=None, url=None):
+    def __init__(self, version, location, size, checksum=None, checksum_type=None, publication_time=None, tracking_id=None, mod_time=None, url=None, tech_notes=None, tech_notes_title=None):
         if version>0:
             self.version = version
         else:
@@ -930,6 +946,8 @@ class FileVersion(object):
         self.tracking_id = tracking_id
         self.mod_time = mod_time        # Floating point seconds since epoch
         self.url = url
+        self.tech_notes = tech_notes
+        self.tech_notes_title = tech_notes_title
 
     def deleteChildren(self, sess):
         sess.execute("delete from dataset_file_version where dataset_file_version.file_version_id=%s"%self.id)
@@ -960,6 +978,9 @@ class FileVersion(object):
 
     def getChecksumType(self):
         return self.checksum_type
+
+    def getTechNotes(self):
+        return (self.tech_notes, self.tech_notes_title)
 
     def getDeletionTime(self):
         return self.parent.deletion_time

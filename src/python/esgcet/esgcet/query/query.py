@@ -171,6 +171,8 @@ def getDerived(dset, dsetVersion, derivedHeaders, handler):
                 value = ''
         elif attname=='version_name':
             value = dsetVersion.name
+        elif attname=='comment':
+            value = dsetVersion.comment
         result.append(value)
     return result
 
@@ -211,7 +213,7 @@ def getQueryFields(handler, return_list=True):
     
     basicHeaders = ['id', 'name', 'project', 'model', 'experiment', 'run_name', 'offline', 'master_gateway']
     eventHeaders = ['publish_time', 'publish_status']
-    derivedHeaders = ['parent', 'version', 'version_name']
+    derivedHeaders = ['parent', 'version', 'version_name', 'comment']
     categories = handler.getFieldNames()
     if return_list:
         allProperties = list(set(basicHeaders+categories+eventHeaders+derivedHeaders))

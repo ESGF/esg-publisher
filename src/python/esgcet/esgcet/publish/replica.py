@@ -119,6 +119,6 @@ def publishCatalogs(threddsCatalogDictionary, parentDatasetIdDictionary, thredds
     registerHandlers()
 
     datasetNames = threddsCatalogDictionary.keys()
-    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parentDatasetIdDictionary, threddsCatalogDictionary=threddsCatalogDictionary, reinitThredds=True, readFromCatalog=True)
+    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parentDatasetIdDictionary, threddsCatalogDictionary=threddsCatalogDictionary, reinitThredds=None, readFromCatalog=True)
     return result
 

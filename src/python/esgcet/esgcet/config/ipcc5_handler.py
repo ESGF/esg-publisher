@@ -41,6 +41,18 @@ cmorTables = ['3hr', '6hrLev', '6hrPlev', 'Amon', 'LImon', 'Lmon', 'OImon', 'Ocl
 
 cmorArrayAttributes = ['initialization_method', 'physics_version', 'realization', 'run_name']
 
+drsInvalidValues = re.compile(r'[^a-zA-Z0-9-]+')
+drsFields = {
+    'cmor_table' : 1,
+    'ensemble' : 1,
+    'experiment' : 1,
+    'institute' : 1,
+    'model' : 1,
+    'product' : 1,
+    'realm' : 1,
+    'time_frequency' : 1,
+    }
+
 def mapToComp(date_str):
     try:
         m = re.match(r'(\d{4})(\d{2})?(\d{2})?(\d{2})?', date_str)
@@ -59,6 +71,30 @@ def intOrNone(x):
     else:
         return int(x)
     
+def isDRSField(field):
+    return (field in drsFields)
+
+def validateDRSFieldValues(context, cdfile):
+    """DRS fields must be formed from characters a-z,A-Z,0-9,-
+    
+    context: dictionary of context values to be validated
+    cdfile: CdunifFormatHandler instance
+
+    Returns the context with any sequence of invalid characters (for a DRS field) mapped to '-'.
+    
+    For example, 'NOAA  GFDL' is mapped to 'NOAA-GFDL'.
+    """
+
+    for key in context.keys():
+        if isDRSField(key):
+            value = context[key]
+            if drsInvalidValues.search(value) is not None:
+                result = drsInvalidValues.sub('-', value)
+                info('Mapped invalid %s value: %s to %s, file: %s'%(key, value, result, cdfile.path))
+                context[key] = result
+
+    return context
+
 class IPCC5Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
@@ -163,6 +199,9 @@ class IPCC5Handler(BasicHandler):
                 pass
 
         if 'realization' in result and 'initialization_method' in result and 'physics_version' in result:
+            srealization = result['realization']
+            if '.' in srealization:
+                result['realization'] = str(int(float(srealization)))
             ensemble = 'r%si%sp%s'%(result['realization'], result['initialization_method'], result['physics_version'])
             result['ensemble'] = ensemble
             result['run_name'] = ensemble
@@ -213,13 +252,17 @@ class IPCC5Handler(BasicHandler):
                 year2 = year1
             result['product'] = getProduct(cmor_table, variable, experiment, year1, year2)
 
+        validateDRSFieldValues(result, cdfile)
+
+        return result
+
+    def generateDerivedContext(self):
+
         # Cache a 'drs_id' attribute for DRS-style dataset lookups
+        result = self.context
         if 'product' in result and 'institute' in result and 'model' in result and 'experiment' in result and 'time_frequency' in result and 'realm' in result and 'cmor_table' in result and 'ensemble' in result:
             drsid = 'cmip5.%s.%s.%s.%s.%s.%s.%s.%s'%(result['product'], result['institute'], result['model'], result['experiment'], result['time_frequency'], result['realm'], result['cmor_table'], result['ensemble'])
             result['drs_id'] = drsid
-            
-
-        return result
 
     def threddsIsValidVariableFilePair(self, variable, fileobj):
         """Returns True iff the variable and file should be published

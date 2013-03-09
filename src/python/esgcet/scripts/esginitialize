@@ -16,7 +16,6 @@ from esgcet.model import *
 from esgcet.config import loadConfig, splitLine, splitRecord, loadStandardNameTable, textTableIter, initLogging, loadModelsTable, initializeExperiments, SaneConfigParser
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from migrate.versioning.api import version_control, upgrade, db_version, downgrade
-from migrate.versioning.exceptions import *
 
 usage = """Usage:
     esginitialize [Options]
@@ -134,7 +133,7 @@ def main(argv):
 
     # Upgrade to current version
     if createTables:
-        info("Upgrading schema to latest version.")
+        info("Upgrading schema to latest version. (This may take a while.)")
         upgrade(dburl, repo_path, engine_dict={"echo": echoSql})
 
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)

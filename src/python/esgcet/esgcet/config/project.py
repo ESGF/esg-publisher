@@ -395,6 +395,8 @@ class ProjectHandler(object):
         for key, value in context.items():
             self.context[key] = value
 
+        self.generateDerivedContext()
+
         self.contextCached = True
         return self.context
 
@@ -809,7 +811,7 @@ class ProjectHandler(object):
                 if context.has_key(key) and value!=context[key]:
                     warning("Dataset ID=%s, but %s=%s"%(datasetName, key, context[key]))
                 else:
-                    context[key] = value
+                    context[str(key)] = value
             break
 
         if not formatMatched:
@@ -842,6 +844,13 @@ class ProjectHandler(object):
 
         """
         raise ESGMethodNotImplemented
+
+    def generateDerivedContext(self):
+        """Generate properties based on existing context values.
+
+        self.context is modified as a side effect.
+        """
+        pass
 
     def resetContext(self):
         """Reset the context to an empty dictionary.

@@ -120,9 +120,9 @@ class CFHandler(MetadataHandler):
 
         Return (equivalent, firstTime, lastTime, lastEstimated) where:
           - equivalent is a Boolean, True iff the two representations are equivalent
-          - firstTime is a cdtime ``comptime'' value representing the first timepoint
-          - lastTime is a cdtime ``comptime'' value representing the last timepoint
-          - lastEstimated is a cdtime ``comptime'' value representing the last timepoint, based on
+          - firstTime is a :meth:`cdtime.comptime`value representing the first timepoint
+          - lastTime is a :meth:`cdtime.comptime`value representing the last timepoint
+          - lastEstimated is a :meth:`cdtime.comptime`value representing the last timepoint, based on
             the (firstValue, deltaValue, npoints) representation. If the representations
             are not equivalent, it will differ from lastValue.
 

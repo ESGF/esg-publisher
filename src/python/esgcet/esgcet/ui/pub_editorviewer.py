@@ -110,7 +110,7 @@ def show_field( parent, gui_parent, field_name, field_options, field_value, isMa
            # Create and pack the EntryFields.
            if field_value == None: field_value = ""
            width = 1
-           if field_name.lower() == 'id': field_value = field_value[:-1]
+ #          if field_name.lower() == 'id': field_value = field_value[:-1]  # GANZ this is where id gets clipped!  
            if for_query == False: width = 50
            state = "normal"
            if for_query == False: state = "readonly"
@@ -285,6 +285,8 @@ class create_publisher_editor_viewer:
         # View the dataset fields in the page
         #--------------------------------------------------------------------------------
         for i in range(len(return_fields)):
+            #print " ganz dataset test %s", return_fields[i]
+            #print values[0][i]
             value = values[0][i]
             try:
                 self.field_list[return_fields[i]] = show_field( self.parent, self.dataset_frame, return_fields[i].capitalize(), options[ return_fields[i] ], value, mandatory[i], validate[i] )

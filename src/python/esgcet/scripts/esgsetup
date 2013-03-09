@@ -14,12 +14,12 @@ from esgcet.exceptions import *
 
 usage = """Usage:
     esgsetup --config [--rootid root_identifier]
-    esgsetup --db
-    esgsetup --thredds
+    esgsetup --db [--db-admin admin] [--db-host hostname] [--db-port port] [--db-admin-password password] [--db-user-password password] [--db-name name]
+    esgsetup --thredds [--thredds-password password]
     esgsetup --publish [--gateway gateway_host]
     esgsetup --handler
 
-    Setup the ESG node software.
+    Setup the ESG publication configuration.
 
 Options:
 
@@ -30,6 +30,23 @@ Options:
 
     --db: Initialize the database.
 
+    --db-admin admin: Name of database administrator. Defaults to $PGUSER.
+
+    --db-admin-password password: Password for database administrator. If not specified, the
+        value is requested interactively. Only used with the --db option.
+
+    --db-host hostname: Hostname for database connection. Defaults to $PGHOST, or 'localhost' if not set.
+
+    --db-name name: Name of the database to create or access. Defaults to 'esgcet'.
+
+    --db-port port: Port used for database connection. Defaults to $PGPORT, or 5432 if not set.
+
+    --db-user user: Name of the (non-administrative) owner of the esgcet database.
+    
+    --db-user-password password: Password for non-administrative database user, that owns the
+        esgcet database. If not specified, the value is requested interactively. Only used
+        with the --db option.
+
     --gateway gateway_host:
         Gateway host name. Used to set default gateway service endpoints for publishing.
         If not set, the user is prompted for service endpoints.
@@ -38,14 +55,19 @@ Options:
         from the environment variable.
 
     --handler
-        Create customized handlers.
+        Create customized handlers. Turns off minimal setup.
 
     --publish: Initialize publication-related configuration options.
 
-    --thredds: Initialize the THREDDS server.
-
     --rootid root_identifier:
         Initialize the ESG root identifier during the --config phase.
+
+    --minimal-setup: Ask the minimum number of questions. May be used with any other options.
+
+    --thredds: Initialize the THREDDS server.
+
+    --thredds-password password: Password for TDS reinitialization. If not specified, the
+        value is requested interactively. Only used with the --thredds option.
 
 """
     
@@ -53,9 +75,13 @@ PUBLISH_SERVICE = "remote/secure/client-cert/hessian/publishingService"
 METADATA_SERVICE = "remote/hessian/guest/remoteMetadataService"
 REPOS = "http://www-pcmdi.llnl.gov/svn/repository/externals"
 SERVICE_ROOT = "pcmdi3.llnl.gov/esgcet" # Override by setting ESG_GATEWAY_SVC_ROOT env variable
+DEFAULT_COMPOUND_FILE_SERVICE = 'fileservice'
 urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
+minimalSetup = False                   # If True, ask the minimum number of questions
 
 def askyn(question, default='y'):
+    if minimalSetup:
+        return (default=='y')
     answer = raw_input("%s [%s]: "%(question, default))
     if answer=='':
         result = default
@@ -63,15 +89,18 @@ def askyn(question, default='y'):
         result = answer[0].lower()
     return (result=='y')
 
-def askfor(question, default=None, env=None, silent=False):
+def askfor(question, default=None, env=None, silent=False, ignore_minimal=False):
     """
     question: String prompt
     default: String to return if a blank string is returned
     env: Get the default from the environment.
     silent: Don't echo (for passwords)
+    ignore_minimal: ask even if minimal setup is set
     """
     if default is None and env is not None:
         default = os.environ.get(env)
+    if minimalSetup and (not ignore_minimal) and default is not None:
+        return default
     if not silent:
         asker = raw_input
     else:
@@ -109,9 +138,19 @@ def tell(info):
     print info
 
 def getconfignames():
-    home = os.environ['HOME']
-    configdir = os.path.join(home, '.esgcet')
-    configname = os.path.join(configdir, 'esg.ini')
+    """Create esg.ini as:
+    (1) $ESGINI if it exists
+    (2) $HOME/.esgcet/esg.ini otherwise
+    """
+    configname = os.environ.get('ESGINI')
+    if configname is not None:
+        if os.path.exists(configname) and not os.path.isfile(configname):
+            raise RuntimeError("$ESGINI = %s, is not a file"%configname)
+        configdir = os.path.dirname(configname)
+    else:
+        home = os.environ['HOME']
+        configdir = os.path.join(home, '.esgcet')
+        configname = os.path.join(configdir, 'esg.ini')
     return configdir, configname
 
 def updateconfig(updates, currentConfig=None):
@@ -134,25 +173,29 @@ def setupconfig():
     Create initial configuration file:
 
     esg.ini is a text file that configures ESG publication
-    software. This file will be created in
-    $HOME/.esgcet/esg.ini, if it does not already exist.
+    software. This file will be created as
+
+    (a) the value of environment variable $ESGINI if set, or
+    (b) $HOME/.esgcet/esg.ini
+
+    if it does not already exist.
 
     """)
 
     # Create .esgcet directory.
     configdir, configname = getconfignames()
     if not os.path.exists(configdir):
-        tell("Creating $HOME/.esgcet")
+        tell("Creating %s"%configdir)
         os.mkdir(configdir, 0755)
 
     # Does $HOME/.esgcet/esg.ini exist? If so, ask to proceed.
     templatename = os.path.join(configdir, 'template.ini')
     if os.path.exists(configname):
-        if not askyn("Configuration file %s exists, replace?"%configname):
-            raise RuntimeError
+        if not askyn("Configuration file %s exists, replace?"%configname, default='n'):
+            return
 
     # Copy template.ini.
-    tell("Copying template.ini to $HOME/.esgcet/esg.ini")
+    tell("Copying template.ini to %s"%configname)
     from pkg_resources import resource_string, cleanup_resources
     templatestring = resource_string('esgcet.config.etc', 'template.ini')
     esgini = open(configname, 'w')
@@ -166,7 +209,7 @@ def setupconfig():
     # Copy model initialization file
     modelInitName = os.path.join(configdir, 'esgcet_models_table.txt')
     if not os.path.exists(modelInitName):
-        tell("Copying esgcet_models_table to $HOME/.esgcet")
+        tell("Copying esgcet_models_table to %s"%configdir)
         modelinitstring = resource_string('esgcet.config.etc', 'esgcet_models_table.txt')
         modelini = open(modelInitName, 'w')
         modelini.write(modelinitstring)
@@ -175,7 +218,7 @@ def setupconfig():
     # Copy standard name table
     standardNameInitName = os.path.join(configdir, 'cf-standard-name-table.xml')
     if not os.path.exists(standardNameInitName):
-        tell("Copying cf-standard-name-table.xml to $HOME/.esgcet")
+        tell("Copying cf-standard-name-table.xml to %s"%configdir)
         standard_nameinitstring = resource_string('esgcet.config.etc', 'cf-standard-name-table.xml')
         standard_nameini = open(standardNameInitName, 'w')
         standard_nameini.write(standard_nameinitstring)
@@ -284,13 +327,23 @@ class SaneConfigParser(SafeConfigParser):
 
 def main(argv):
 
+    global minimalSetup
+
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'thredds'])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'db-name=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
+    dbadmin = None
+    dbdef = None
+    dbDefault = "esgcet"
+    dbpass = None
+    dbuser = None
+    esgusepass = None
+    host = None
+    port = None
     gatewayHost = None
     generateHandler = False
     initconfig = False
@@ -298,6 +351,7 @@ def main(argv):
     initthredds = False
     initpublish = False
     initroot = False
+    threddsPassword = None
     for flag, arg in args:
         if flag in ['-h', '--help']:
             print usage
@@ -306,14 +360,32 @@ def main(argv):
             initconfig = True
         elif flag=='--db':
             initdb = True
+        elif flag=='--db-admin':
+            dbadmin = arg
+        elif flag=='--db-admin-password':
+            dbpass = arg
+        elif flag=='--db-name':
+            dbdef = arg
+        elif flag=='--db-user':
+            dbuser = arg
+        elif flag=='--db-user-password':
+            esgusepass = arg
+        elif flag=='--db-host':
+            host = arg
+        elif flag=='--db-port':
+            port = arg
         elif flag=='--gateway':
             gatewayHost = arg
         elif flag=='--handler':
             generateHandler = True
+        elif flag=='--minimal-setup':
+            minimalSetup = True
         elif flag=='--publish':
             initpublish = True
         elif flag=='--thredds':
             initthredds = True
+        elif flag=='--thredds-password':
+            threddsPassword = arg
         elif flag=='--rootid':
             initroot = True
             rootid = arg
@@ -323,12 +395,12 @@ def main(argv):
         print usage
         sys.exit(0)
 
+    if generateHandler:
+        minimalSetup = False
+
     # Config file initialization
     if initconfig:
-        try:
-            setupconfig()
-        except RuntimeError:
-            tell("Script aborted.")
+        setupconfig()
 
         if initroot:
             updateconfig([('DEFAULT', 'root_id', rootid)])
@@ -397,10 +469,15 @@ def main(argv):
                 """%(`e`,REPOS))
                 sys.exit(1)
                 
-            dbadmin = askfor("Database administrator name", env='PGUSER')
-            dbpass = askfor("Administrator password", silent=True)
-            host = askfor("Host name", default="localhost", env='PGHOST')
-            port = askfor("Database port", default="5432", env='PGPORT')
+            if dbadmin is None:
+                dbadmin = askfor("Database administrator name", env='PGUSER')
+            if dbpass is None:
+                dbpass = askfor("Administrator password", silent=True)
+            if host is None:
+                host = askfor("Host name", default="localhost", env='PGHOST')
+            if port is None:
+                port = askfor("Database port", default="5432", env='PGPORT')
+
             connectString = "dbname='postgres' user='%s' password='%s' host='%s' port='%s'"%(dbadmin, dbpass, host, port)
             echoConnectString = "dbname='postgres' user='%s' password='...' host='%s' port='%s'"%(dbadmin, host, port)
 
@@ -431,15 +508,28 @@ def main(argv):
             passdef = ""
             hostdef = host
             portdef = port
-            dbdef = "esgcet"
+            dbdef2 = None               # Existing database 
             if initdburl is not None:
                 m = re.match(urlpat, initdburl)
                 if m is not None:
-                    scheme, userdef, passdef, hostdef, portdef, dbdef = m.groups()
+                    scheme, userdef, passdef, hostdef, portdef, dbdef2 = m.groups()
                     if portdef is not None:
                         portdef = portdef[1:]
+
+            # Set database name to:
+            # 1) --db-name option if set
+            # 2) existing database value from dburl if present
+            # 3) "esgcet" otherwise
+            if dbdef is None:
+                if dbdef2 is not None:
+                    dbdef = dbdef2
+                else:
+                    dbdef = dbDefault
                 
-            esguser = askfor("esgcet database user", default=userdef)
+            if dbuser is not None:
+                esguser = dbuser
+            else:
+                esguser = askfor("esgcet database user", default=userdef)
 
             # Does this user exist?
             cur.execute("select usename, usesuper, usecreatedb from pg_user where usename='%s'"%esguser)
@@ -455,11 +545,13 @@ def main(argv):
                 createuser = False
 
             # Create the user if necessary
-            esgusepass = askfor("esgcet user password", silent=True)
-            esgusepassagain = askfor("Confirm esgcet user password", silent=True)
-            if esgusepass!=esgusepassagain:
-                tell("Passwords do not match")
-                raise RuntimeError
+            if esgusepass is None:
+                esgusepass = askfor("esgcet user password", silent=True)
+                esgusepassagain = askfor("Confirm esgcet user password", silent=True)
+                if esgusepass!=esgusepassagain:
+                    tell("Passwords do not match")
+                    raise RuntimeError
+
             if createuser:
                 tell("Creating new database user %s"%esguser)
                 cur.execute("create user %s with encrypted password '%s'"%(esguser, esgusepass))
@@ -539,7 +631,6 @@ def main(argv):
 
             try:
                 from migrate.versioning.api import version_control, db_version, downgrade
-                from migrate.versioning.exceptions import DatabaseAlreadyControlledError
             except ImportError, e:
                 tell("""
 
@@ -550,9 +641,16 @@ def main(argv):
                 The sqlalchemy_migrate package has not been installed. It should have been built when
                 the esgcet package was installed.
 
-                Run 'easy_install sqlalchemy_migrate' and ensure that the package built correctly.
+                Run 'easy_install SQLAlchemy-migrate' and ensure that the package built correctly.
                 """%`e`)
                 raise RuntimeError
+            
+            try:
+                # >=0.6.1
+                from migrate import DatabaseAlreadyControlledError
+            except:
+                # <=0.6.0
+                from migrate.versioning.exceptions import DatabaseAlreadyControlledError
 
             # ... If the database was just created, then just initialize version control with version=0
             if createdb:
@@ -614,7 +712,8 @@ def main(argv):
                 raise OSError("Cannot run esginitialize: %s. Is $CDAT_HOME/bin in the path?"%`e`)
                 
         except RuntimeError:
-            tell("Script aborted.")
+            tell("Script exited.")
+            sys.exit(1)
 
     # THREDDS initialization
     if initthredds:
@@ -638,6 +737,7 @@ def main(argv):
         - Create a top-level ESG catalog, and add a link to the top TDS catalog.
         - Test TDS reinitialization. This makes the data visible
           through TDS without restarting the server.
+        - Setup TDS service definitions. Examples of services are http, GridFTP, etc.  
         - Save TDS configuration options to esg.ini
 
         One of the TDS configuration options is thredds_dataset_roots. This is a list
@@ -722,7 +822,7 @@ def main(argv):
             defaultThreddsTopURL = urlparse.urlunparse(urlfields)
             threddsTopURL = askfor("URL of TDS root directory (this should include the full hostname or IP address, NOT localhost)", default=defaultThreddsTopURL)
             threddsURL = os.path.join(threddsTopURL, "esgcet")
-            threddsMasterCatalog = askfor("Title of ESG master catalog (thredds_master_catalog_name)", default=config.get('DEFAULT', 'thredds_master_catalog_name'))
+            threddsMasterCatalog = askfor("Title of ESG master catalog (thredds_master_catalog_name)", default=config.get('DEFAULT', 'thredds_master_catalog_name', default="PCMDI Earth System Grid catalog"))
             threddsRootCatalog = askfor("Title of ESG root catalog (thredds_root_catalog_name)", default=config.get('DEFAULT', 'thredds_root_catalog_name', default="PCMDI Earth System Root catalog"))
 
             # Create ESG catalog directory
@@ -742,7 +842,7 @@ def main(argv):
             # Create initial ESG catalog
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
-            from esgcet.config import loadConfig, initLogging
+            from esgcet.config import loadConfig, initLogging, getThreddsServiceSpecs
             from esgcet.publish import updateThreddsMasterCatalog, updateThreddsRootCatalog, reinitializeThredds
             from esgcet.exceptions import ESGPublishError
 
@@ -760,22 +860,45 @@ def main(argv):
             threddsReinitURL = askfor("URL for TDS reinitialization [Note: the correct value differs between THREDDS V3 and V4] (thredds_reinit_url)", default=config.get('DEFAULT', 'thredds_reinit_url'))
             threddsErrorURL = askfor("URL of TDS error log [Note: the correct value differs between THREDDS V3 and V4] (thredds_reinit_error_url)", default=config.get('DEFAULT', 'thredds_reinit_error_url'))
             threddsUser = askfor("TDS username (thredds_username)", default=config.get('DEFAULT', 'thredds_username'))
-            threddsPassword = askfor("TDS password", silent=True)
-            threddsPassword2 = askfor("Confirm TDS password", silent=True)
-            if threddsPassword!=threddsPassword2:
-                tell("Passwords do not match")
-                raise RuntimeError
+            if threddsPassword is None:
+                threddsPassword = askfor("TDS password", silent=True)
+                threddsPassword2 = askfor("Confirm TDS password", silent=True)
+                if threddsPassword!=threddsPassword2:
+                    tell("Passwords do not match")
+                    raise RuntimeError
 
             # Get the document roots
             currentRoots =  config.get('DEFAULT', 'thredds_dataset_roots')
             threddsDatasetRoots = askForMultiple("THREDDS dataset root directories (option=thredds_dataset_roots)\nEach entry has the form 'path_identifier | absolute_directory_path'", displayCurrent=currentRoots)
             
+            # Get the gridFTP URL. If multiple file services are defined, create a compound service.
+            threddsServiceSpecs = getThreddsServiceSpecs(config, 'DEFAULT', 'thredds_file_services')
+            isCompound = (len(threddsServiceSpecs)>1)
+            if isCompound:
+                servTypes = [item[0] for item in threddsServiceSpecs]
+                defaultCompoundName = DEFAULT_COMPOUND_FILE_SERVICE
+                for servtype, servurl, servname, compoundName in threddsServiceSpecs:
+                    if compoundName is not None:
+                        defaultCompoundName = compoundName
+                        break
+                compoundName = askfor("Compound file service name (includes the services: %s)"%`servTypes`, default=defaultCompoundName)
+            threddsFileSpecs = ''
+            for servtype, servurl, servname, compName in threddsServiceSpecs:
+                if servtype=='GridFTP':
+                    servurl = askfor("THREDDS GridFTP service URL", default=servurl)
+                    servname = askfor("THREDDS GridFTP service name", default=servname)
+                if isCompound:
+                    threddsFileSpecs += '\n%s | %s | %s | %s'%(servtype, servurl, servname, compoundName)
+                else:
+                    threddsFileSpecs += '\n%s | %s | %s'%(servtype, servurl, servname)
+
             # Set ESG configuration options
             updateconfig([('DEFAULT', 'thredds_reinit_url', threddsReinitURL),
                           ('DEFAULT', 'thredds_reinit_error_url', threddsErrorURL),
                           ('DEFAULT', 'thredds_username', threddsUser),
                           ('DEFAULT', 'thredds_password', threddsPassword),
                           ('DEFAULT', 'thredds_dataset_roots', threddsDatasetRoots),
+                          ('DEFAULT', 'thredds_file_services', threddsFileSpecs),
                           ], currentConfig=config)
             
             try:
@@ -785,7 +908,8 @@ def main(argv):
                 raise RuntimeError
 
         except RuntimeError:
-            tell("Script aborted.")
+            tell("Script exited.")
+            sys.exit(1)
 
     # remote publication initialization
     if initpublish:
@@ -864,7 +988,8 @@ def main(argv):
                           ], currentConfig=config)
             
         except RuntimeError:
-            tell("Script aborted.")
+            tell("Script exited.")
+            sys.exit(1)
 
     # Customized handler setup
     if generateHandler:

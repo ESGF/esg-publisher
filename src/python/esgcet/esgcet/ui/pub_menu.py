@@ -16,19 +16,56 @@
 #                                                                             #
 ###############################################################################
 #
+from Tkinter import *
 import Tkinter, Pmw, tkFont
 import os, string
 import gui_support
 import pub_controls
 import logging
 import pub_busy
+import pub_expand_deletion_control_gui
+from help_ScrolledText import Help
+from help_HTML import helpHTML
+from help_File_HTML import LocalHelpHTML
 from esgcet.messaging import warning
 from esgcet.publish import deleteDatasetList, DELETE, UNPUBLISH, publishDatasetList
 from pkg_resources import resource_filename
+from esgcet.publish.utility import generateDatasetVersionId
+from esgcet.config import *
+
 
 on_icon  = resource_filename('esgcet.ui', 'on.gif')
 off_icon = resource_filename('esgcet.ui', 'off.gif')
+validate_st_names = True
 
+def getConfigFile(configFile=None):
+          
+    
+        # First check the environment variable ESGINI
+        configFile = os.environ.get('ESGINI')
+        if configFile is not None:
+            if not os.path.exists(configFile):
+                raise ESGPublishError("Cannot find configuration file (specified in $ESGINI): %s"%configFile)
+            else:
+                return configFile               
+        else:
+            
+            # Then look in $HOME/.esgcet/esg.ini
+            home = os.environ.get('HOME')
+            if home is not None:
+                configFile = os.path.join(home, '.esgcet', 'esg.ini')
+            if configFile is not None and os.path.exists(configFile):
+                return configFile
+
+            # If not found, look in the Python installation directory
+            
+        if (configFile == None):
+              msg = 'The esg.ini file cannot be found in $HOME/.esgcet'
+              msg = msg + '\nPlease copy it there and retry command.'
+              showwarning('Warning',msg)
+              raise(msg)
+        #return configFile
+ 
 #----------------------------------------------------------------------------------------
 # Function to change the color of a widget
 #----------------------------------------------------------------------------------------
@@ -40,13 +77,32 @@ def evt_change_color( widget, parent, event ):
 # Read esg.ini file and pull out the log filename
 #----------------------------------------------------------------------------------------
 def return_log_file_name( parent ):
-   fp = open(parent.init_file, 'r')
+#   fp = open(parent.init_file, 'r') 
+   from tkMessageBox import showinfo, showwarning, showerror
+   configFile = getConfigFile()
+   found = False
+   fp = open(configFile, 'r')
    for x in fp.xreadlines():
       if x.find("# log_filename") != -1: 
+          found = True
           break
    fp.close()
+ 
+   config = loadConfig(None)
+   section =  'extract'
+   log_filename = config.get(section, 'log_filename', default=None)
+   if (log_filename != None): 
+       print log_filename
+       return log_filename
+ 
+   if (found == False):    
+       msg = 'The esg.ini file does not specify a log file. '
+       msg = msg + '\nPlease add one, e.g. # log_filename,  and retry command.'
+       showwarning('Warning',msg)
+       raise(msg)
+     
    return x
-
+    
 #----------------------------------------------------------------------------------------
 # Read esg.ini file and pull out the log level for each configuration
 #----------------------------------------------------------------------------------------
@@ -60,42 +116,80 @@ def return_log_settings_from_ini_file( parent ):
    proj_spec_invoke='Warning'
    md_extract_invoke='Warning'
 
-   fp = open(parent.init_file, 'r')
-   for x in fp.xreadlines():
-      if x.find("# Shared options") != -1: 
+   from functools import partial as pto
+   from Tkinter import Tk, Button, X
+   from tkMessageBox import showinfo, showwarning, showerror
+   import os.path
+    
+ 
+   try:   
+       configFile = getConfigFile()
+   except :
+       print "Error getting config file ", sys.exc_info()
+       
+     
+   
+   if (configFile == None):
+       return
+   try:
+      #fp = open(parent.init_file, 'r')
+      fp = open(configFile, 'r')
+      for x in fp.xreadlines():
+         if x.find("# Shared options") != -1: 
           shared_opt_flg = True
           db_init_flg = False
           proj_spec_flg = False
           md_extract_flg = False
-      if x.find("# Database initialization") != -1:
+         if x.find("# Database initialization") != -1:
           shared_opt_flg = False
           db_init_flg = True
           proj_spec_flg = False
           md_extract_flg = False
-      if x.find("# Project-specific configuration") != -1:
+         if x.find("# Project-specific configuration") != -1:
           shared_opt_flg = False
           db_init_flg = False
           proj_spec_flg = True
           md_extract_flg = False
-      if x.find("# Metadata extraction") != -1:
+         if x.find("# Metadata extraction") != -1:
           shared_opt_flg = False
           db_init_flg = False
           proj_spec_flg = False
           md_extract_flg = True
-      if ( (x.find("log_level") != -1) and shared_opt_flg ):
+         if ( (x.find("log_level") != -1) and shared_opt_flg ):
            shared_opt_flg = False
            shared_opt_invoke =  x[(x.find("=")+1):].strip().capitalize()
-      if ( (x.find("log_level") != -1) and db_init_flg ):
+         if ( (x.find("log_level") != -1) and db_init_flg ):
            db_init_flg = False
            db_init_invoke =  x[(x.find("=")+1):].strip().capitalize()
-      if ( (x.find("log_level") != -1) and proj_spec_flg ):
+         if ( (x.find("log_level") != -1) and proj_spec_flg ):
            proj_spec_flg = False
            proj_spec_invoke =  x[(x.find("=")+1):].strip().capitalize()
-      if ( (x.find("log_level") != -1) and md_extract_flg ):
+         if ( (x.find("log_level") != -1) and md_extract_flg ):
            md_extract_flg = False
            md_extract_invoke =  x[(x.find("=")+1):].strip().capitalize()
-   fp.close()
+      fp.close()
 
+   except:
+       pass
+   
+   #print "Preferences for logging: "
+   """
+   if shared_opt_flg == True:
+       print "shared_opt_flg log level is ON "
+   if db_init_flg == True:
+       print "db_init_flg log level is ON "
+   if proj_spec_flg == True:
+       print "proj_spec_flg log level is ON "      
+   if md_extract_flg == True:
+       print "md_extract_flg log level is ON "  
+   
+   print "shared_opt_invoke log level is set to  ", shared_opt_invoke
+   print "db_init_invoke log level is set to  ", db_init_invoke
+   print "proj_spec_invoke log level is set to  ", proj_spec_invoke
+   print "md_extract_invoke log level is set to  ", md_extract_invoke
+   """
+  
+   
    return shared_opt_invoke, db_init_invoke, proj_spec_invoke, md_extract_invoke
 
 #----------------------------------------------------------------------------------------
@@ -224,11 +318,13 @@ class create_file_menu:
    def __init__( self, main_menu, parent, tear_it ):
       file_name = 'Publisher'
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
+      
       main_menu.addmenu(file_name, 'Publisher Preferences and Options', font = mnFont, tearoff = tear_it)
       #---------------------------------------------------------------------------------
       # Create the "Preferences" menu item
       #---------------------------------------------------------------------------------
       self.evt_preferences_flg = False
+      #""" ganz to remove preferences option....
       main_menu.addmenuitem(file_name, 'command', 'Set Publisher Preferences',
                          label = 'Preferences...',
                          font = mnFont,
@@ -238,6 +334,7 @@ class create_file_menu:
       # Create the cascade "Exit" menu and its items
       #---------------------------------------------------------------------------------
       main_menu.addmenuitem(file_name, 'separator')
+      #"""
       main_menu.addmenuitem(file_name, 'command', 'Close Publisher',
                           label = "Exit Publisher",
                           font = mnFont,
@@ -274,13 +371,21 @@ class create_file_menu:
         #---------------------------------------------------------------------------------
         # Add the "Appearance" page to the notebook
         #---------------------------------------------------------------------------------
-        page = notebook.add('General')
-        self.general_settings = set_general( page, parent )
-        notebook.tab('General').focus_set()
+        # ganz disable General tab, this info is not useful, at this time. 3/29/11
+        #page = notebook.add('General')
+        #self.general_settings = set_general( page, parent )
+        #notebook.tab('General').focus_set()
 
         page = notebook.add('Log Level')
-        self.log_settings = set_log_preferences( page, parent )
-
+        # ganz added this code 1/20/11
+        try:
+            self.log_settings = set_log_preferences( page, parent )
+        
+        
+          
+        except:
+          print "set_log_preferences call failed...", sys.exc_info()
+          return
 
         notebook.setnaturalsize()
 
@@ -310,12 +415,16 @@ class create_file_menu:
                parent.log_dirname = newlog
             parent.aggregateDimension = self.general_settings.aggr_dim.getvalue() 
             parent.engine.echo = eval( parent.echoSql )
+            parent.validateStandardName=self.general_settings.validate_std_name.getvalue()
             self.pref_dialog.destroy()
 
 class set_general:
    """
-   Set up the General Preference tab page. Allows the user to set the initialization file, aggregation dimension, and validate standard names.
+   Set up the General Preference tab page. Allows the user to set the initialization file, 
+   aggregation dimension, and validate standard names.
    """
+   
+   
    def __init__( self, page, parent ):
 
         frame = Tkinter.Frame( page )
@@ -323,12 +432,13 @@ class set_general:
         #---------------------------------------------------------------------------------
 	# Create and pack the EntryFields to show the initialization file
         #---------------------------------------------------------------------------------
+        configFile = getConfigFile()
 	self.init_file = Pmw.EntryField(frame,
 		labelpos = 'w',
 		label_text = 'Initialization File: ',
                 entry_background = "aliceblue",
                 entry_width =  60,
-                value = parent.init_file,
+                value = configFile,
                 )
         self.init_file.pack(side = 'top', expand = 1, fill = 'x', pady = 5 )
         self.init_file.component('entry').bind('<KeyPress>', pub_controls.Command(evt_change_color, self.init_file, parent ))
@@ -367,15 +477,17 @@ class set_general:
         #---------------------------------------------------------------------------------
         for text in ('True', 'False'):
             self.validate_std_name.add(text)
-        self.validate_std_name.setvalue(str(True))
+        self.validate_std_name.setvalue(str(parent.validateStandardName))
 
         entries = ( self.init_file, self.aggr_dim, self.validate_std_name )
         Pmw.alignlabels(entries)
+        
 
 class set_log_preferences:
    """
    Set up the Log Preference tab page -- shows the "Output" log filename and toggle to indicate whether or not to show Echo SQL Commands.
    """
+   
    def __init__( self, page, parent ):
 
         shared_opt_invoke, db_init_invoke, proj_spec_invoke, md_extract_invoke = return_log_settings_from_ini_file( parent )
@@ -400,12 +512,13 @@ class set_log_preferences:
                 entry_width =  160,
                 )
         self.log_dirname_str.pack(side = 'left', expand = 1, fill = 'x', padx = 5, pady = 5 )
-
+        
         fn = return_log_file_name( parent ).strip()
         if fn[0] != "#":
            fn = fn[fn.find("=")+1:].strip()
            if fn!='':
               parent.log_dirname = fn
+              self.log_dirname_str.setvalue(fn)
 
         frame.pack(side='top', fill='x')
 
@@ -440,7 +553,10 @@ class set_log_preferences:
        dialog_icon = tkFileDialog.SaveAs(master=self.log_dirname_btn,
                          filetypes=[("Text files", "*.txt", "TEXT")], title = 'Save Log Output In...')
        dirfilename=dialog_icon.show(initialdir=os.getcwd())
-       self.log_dirname_str.setvalue( dirfilename )
+       if (dirfilename != None):
+           self.log_dirname_str.setvalue( dirfilename )
+       else:
+           self.log_dirname_str.setvalue( parent.log_dirname )
 
 
 #----------------------------------------------------------------------------------------
@@ -450,13 +566,19 @@ class create_dataset_menu:
    """
    Create the dataset menu and its menu items.
    """
+   
+   #DeleteLocalDB =  None
+   #DeleteGateway =  None
+   #DeleteThredds =  None
+
+   
    def __init__( self, main_menu, parent, tear_it ):
       self.Session = parent.Session
 
       # Set the arrow icons
       self.on  = Tkinter.PhotoImage(file=on_icon)
       self.off = Tkinter.PhotoImage(file=off_icon)
-
+      
       dataset_name = 'Dataset'
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
       main_menu.addmenu(dataset_name, 'Publisher Dataset', side='left', font = mnFont, tearoff = tear_it)
@@ -495,27 +617,45 @@ class create_dataset_menu:
       parent.busyCursor = 'watch'
       parent.busyWidgets = [parent.pane2.pane( 'EditPaneTop' ), parent.pane2.pane( 'EditPaneBottom' ), parent.pane2.pane( 'EditPaneStatus' ), parent.pane.pane( 'ControlPane' )]
       pub_busy.busyStart( parent )
-      selected_page = parent.main_frame.selected_top_page
-      keycolor1 = Pmw.Color.changebrightness(parent, 'aliceblue', 0.6 )
-      if selected_page is not None:
-         for x in parent.main_frame.top_page_id[selected_page]:
-             parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = keycolor1, image=self.on)
+      try:
+         selected_page = parent.main_frame.selected_top_page
+         keycolor1 = Pmw.Color.changebrightness(parent, 'aliceblue', 0.6 )
+         if selected_page is not None:
+            for x in parent.main_frame.top_page_id[selected_page]:
+                parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = keycolor1, image=self.on)
 
-      pub_busy.busyEnd( parent )
+      except:
+            pub_busy.busyEnd( parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+      finally:
+           pub_busy.busyEnd( parent )
+      #pub_busy.busyEnd( parent )
 
    def evt_unselect_all_dataset(self, parent):
       # Start the busy routine to indicate to the users something is happening
       parent.busyCursor = 'watch'
       parent.busyWidgets = [parent.pane2.pane( 'EditPaneTop' ), parent.pane2.pane( 'EditPaneBottom' ), parent.pane2.pane( 'EditPaneStatus' ), parent.pane.pane( 'ControlPane' )]
       pub_busy.busyStart( parent )
+      try:
+         selected_page = parent.main_frame.selected_top_page
+         if selected_page is not None:
+            for x in parent.main_frame.top_page_id[selected_page]:
+                parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image=self.off)
+      except:
+            pub_busy.busyEnd( parent )  # catch here in order to turn off the busy cursor ganz
+            raise
+      finally:
+           pub_busy.busyEnd( parent )
+      #pub_busy.busyEnd( parent )
 
-      selected_page = parent.main_frame.selected_top_page
-      if selected_page is not None:
-         for x in parent.main_frame.top_page_id[selected_page]:
-             parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image=self.off)
+   def warn_On_Removal(self):
 
-      pub_busy.busyEnd( parent )
+       import tkMessageBox
+       return tkMessageBox.askokcancel("Removing Datasets WARNING:", 
+                                       "Removing the local DB could result in dataset orphans on either the gateway or thredds server. \nCancel to Quit or Ok to Proceed")
 
+
+       
    def evt_remove_dataset(self, parent):
       from esgcet.publish import pollDatasetPublicationStatus
 
@@ -526,17 +666,38 @@ class create_dataset_menu:
 
       datasetNames = []
       GUI_line = {}
+      DELETE = 1
+      #UNPUBLISH = 2
+      NO_OPERATION = 3
+      DeleteLocalDB = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox1() #   DeleteLocalDB 
+      DeleteGateway = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox2() #   DeleteGateway
+      DeleteThredds = pub_expand_deletion_control_gui.deletion_widgets.get_CheckBox3() #   DeleteThredds
+
+
       selected_page = parent.main_frame.selected_top_page
       if selected_page is not None:
          tab_name = parent.top_notebook.getcurselection()
          for x in parent.main_frame.top_page_id[selected_page]:
             if parent.main_frame.top_page_id[selected_page][x].cget('bg') != 'salmon' and parent.main_frame.top_page_id2[selected_page][x].cget('bg') != 'salmon':
                 dset_name = parent.main_frame.top_page_id2[selected_page][x].cget('text')
-
+                               
+                #dsetVersionName1 = self.parent.parent.main_frame.top_page_id2v[selected_page][x].cget('text')
+                #query_name, dset_version = parseDatasetVersionId(dsetVersionName1)
+                """ ganz I am modifying this so that if a user selects a dataset without a version then we delete all versions of that dataset"""
+                try:
+                    dset_version = parent.main_frame.version_label[selected_page][x].cget('text')
+                except:
+                    dset_version = -1
+                    #print 'Delete all versions'   
+                #dset_version = 1
+                if (dset_version == 'N/A' or not dset_version):
+                    dset_version = -1
+                    # continue   # not published, yet
                 # Only delete published events
                 status = pollDatasetPublicationStatus(dset_name, self.Session)
-                if status == 3:
-                   datasetNames.append( dset_name )
+                if status == 3  or DeleteGateway or DeleteThredds or DeleteLocalDB:
+                   #datasetNames.append(generateDatasetVersionId((dset_name, dset_version)))   
+                   datasetNames.append([dset_name, dset_version])   # ganz create name/version to delete                 
                 else:
                    parent.main_frame.top_page_id[selected_page][x].configure(relief = 'raised', background = 'salmon', image = self.off)
                 GUI_line[ dset_name ] = x
@@ -546,12 +707,25 @@ class create_dataset_menu:
       else:
          warning("%d: No pages generated for selection. Remove is only used to remove datasets from the Publisher." % logging.WARNING)
 
-      # Remove dataset from the gateway
-      gatewayOp = DELETE
-      thredds = True
-      deleteDset = False
-      testProgress = (parent.parent.statusbar.show, 0, 100)
-      status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, deleteDset, progressCallback=testProgress)
+      # Remove dataset from the gateway, etc.
+      if ((DeleteGateway==0 or DeleteThredds==0) and DeleteLocalDB==1) :
+          ans = self.warn_On_Removal()
+          if (ans == FALSE):
+              return
+      
+      if DeleteGateway==1:
+          gatewayOp = DELETE
+      else:
+          gatewayOp = NO_OPERATION
+    # now decide if there is anything to do
+      if (gatewayOp==1 or DeleteThredds==1 or DeleteLocalDB==1) :   
+          las=False
+          thredds = (DeleteThredds==1)              
+          deleteDset = (DeleteLocalDB==1)
+              
+          testProgress = (parent.parent.statusbar.show, 0, 100)
+          status_dict = deleteDatasetList(datasetNames, self.Session, gatewayOp, thredds, las, deleteDset, progressCallback=testProgress)
+
 
       # Show the published status
       try:
@@ -562,6 +736,9 @@ class create_dataset_menu:
          pass
 
       pub_busy.busyEnd( parent )
+      # ganz refresh [if there were no exceptions] dataset list after deletions 
+      parent.pub_buttonexpansion.query_widgets.parent.parent.ntk.evt_refresh_list_of_datasets(selected_page )
+     
 
 #----------------------------------------------------------------------------------------
 # Create the Login menu and its menu items
@@ -634,21 +811,48 @@ class create_login_menu:
                 raise
 
 
-
 #----------------------------------------------------------------------------------------
 # Create the Help menu and its menu items
 #----------------------------------------------------------------------------------------
 class create_help_menu:
    """
    Show the help menu -- (e.g., Show Balloons).
+
    """
+   def evt_helpHTML(self, parent):
+
+       widget = helpHTML(self)
+     #  widget = LocalHelpHTML(self)
+
+
+   def evt_help(self, parent):
+       title = 'Help DIALOG'
+       root = Tkinter.Tk()
+       Pmw.initialise(root)
+       root.title(title)
+
+       exitButton = Tkinter.Button(root, text = 'Close', command = root.destroy)
+       exitButton.pack(side = 'bottom')
+       widget = Help(root)
+       root.mainloop()
+
    def __init__( self, main_menu, parent, tear_it):
       H_name = 'Help'
+
+
       mnFont=tkFont.Font(parent, family = pub_controls.menu_font_type, size=pub_controls.menu_font_size, weight=pub_controls.mnfont_weight)
       main_menu.addmenu(H_name, 'Publisher Help', side='right', font = mnFont, tearoff = tear_it)
       gui_support.add_balloon_help(main_menu, H_name, font=mnFont)
-      main_menu.addmenuitem(H_name, 'separator')
-
+   #   main_menu.addmenuitem(H_name, 'separator')
+      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+                         label = 'Help HTML',
+                         font = mnFont,
+                         command = pub_controls.Command(self.evt_helpHTML, parent))
+#      self.help = main_menu.addmenuitem(H_name, 'command', 'Show Help Package',
+#                         label = 'Help TEXT',
+#                         font = mnFont,
+#                         command = pub_controls.Command(self.evt_help, parent))
+ 
 
 #---------------------------------------------------------------------
 # End of File
