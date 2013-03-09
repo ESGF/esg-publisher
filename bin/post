@@ -66,6 +66,11 @@ devel=${devel:-0}
 verbose=${verbose:-0}
 noop=${noop:-0}
 
+__on_mac=$(uname -a | grep -q Darwin && echo 1 || echo 0)
+__md5sum_() {
+    ((__on_mac)) && md5 $@ | sed -n 's/MD5 (\([^)]*\))[ ]*=[ ]*\(.*\)/\2 \1/p' || md5sum $@
+}
+
 while [ -n "$1" ]; do 
     case $1 in
         --devel)
@@ -122,7 +127,7 @@ while read file dest_dir; do
     #echo "[$file] >> [$dest_dir]"
     
     ((verbose)) && echo -n "pushing $file ---> ${esg_dist_url}/${dest_dir} " || echo -n "*"
-    ((!noop))  && md5sum $file > ${file}.md5
+    ((!noop))  && __md5sum_ $file > ${file}.md5
     ((!noop))  && rsync -c ${file}.md5 ${esg_dist_url}/${dest_dir}/${file##*/}.md5 >& /dev/null
     echo -n "-"
     ((!noop))  && rsync -c ${file} ${esg_dist_url}/${dest_dir}/${file##*/} >& /dev/null
