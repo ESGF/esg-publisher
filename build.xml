@@ -101,6 +101,7 @@ Builds the project via ant (obviously).
   <property file="${basedir}/etc/${module}.ant.properties"/> 
   <echo message="user property file ${basedir}/etc/${module}.ant.properties"/>
 
+  <property name="ivy_retrieve_type" value="jar, bundle"/>
   <property name="filter" value="false"/>
 
   <!-- **static defines** -->
@@ -217,6 +218,7 @@ Builds the project via ant (obviously).
   
   <target name="deps" depends="init-ivy" description="(Sets up library dependencies: Ivy)">
     <mkdir dir="${lib_fetched_dir}"/>
+    <ivy:resolve type="${ivy_retrieve_type}"/>
     <ivy:retrieve sync="true"/>
     <path id="main_classpath">
       <fileset dir="${lib_dir}">
