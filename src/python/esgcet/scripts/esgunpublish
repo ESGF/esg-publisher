@@ -22,6 +22,10 @@ usage = """Usage:
 
     esgunpublish [options] --map dataset_map
 
+    -or-
+
+    esgunpublish [options] --rest-api 'dataset_name|data_node' ['dataset_name|data_node' ...]
+
     Delete or retract dataset(s) or specific versions of dataset(s) in this order:
 
       - Remove the dataset from the gateway (see --skip-gateway)
@@ -72,6 +76,13 @@ Options:
       if this option is not set, and the latest dataset version is deleted, the most recent version will be
       rescanned and republished.
 
+    --rest-api
+        Publish using the RESTful publication services. The configuration file option ``rest_service_url''
+        defines the service location. If it is undefined, the service location is
+        https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
+
+        Note: With this option, the dataset_name should have the form 'dataset_id|data_node'.
+
     --skip-gateway: Perform local (node) operations, skip gateway dataset delete. Ignore --gateway-retract option.
 
     --skip-thredds: Do not remove associated THREDDS catalogs, or reinitialize the TDS server.
@@ -100,7 +111,7 @@ def cleanupCatalogs(arg, dirname, names):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'gateway-retract', 'map=', 'no-republish', 'skip-gateway', 'las', 'log=', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'gateway-retract', 'map=', 'no-republish', 'skip-gateway', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -116,6 +127,7 @@ def main(argv):
     las = False
     log_filename = None
     republish = True
+    restApi = None
     thredds = True
     syncThredds = False
     useList = False
@@ -145,6 +157,8 @@ def main(argv):
             log_filename = arg
         elif flag=='--no-republish':
             republish = False
+        elif flag=='--rest-api':
+            restApi = True
         elif flag=='--skip-thredds':
             thredds = False
         elif flag=='--sync-thredds':
@@ -166,6 +180,10 @@ def main(argv):
         raise ESGPublishError("No configuration file found.")
     threddsRoot = config.get('DEFAULT', 'thredds_root')
 
+    # Get the default publication interface (REST or Hessian)
+    if restApi is None:
+        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
+
     if datasetMap is None:
         if not useList:
             datasetNames = [parseDatasetVersionId(item) for item in lastargs]
@@ -181,7 +199,7 @@ def main(argv):
     else:
         datasetNames = datasetMap.keys()
         datasetNames.sort()
-    result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish)
+    result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, restInterface=restApi)
 
     # Republish previous versions as needed. This will happen if the latest version
     # was deleted from the database, and is not

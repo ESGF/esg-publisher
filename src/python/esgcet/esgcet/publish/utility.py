@@ -409,6 +409,13 @@ def issueCallback(callbackTuple, i, n, subi, subj, stopEvent=None):
         raise ESGStopPublication("Publication stopped")
     
 def parseDatasetVersionId(datasetVersionId):
+    """Parse a dataset ID into master_id and version.
+
+    datasetVersionId has the form master_id#version or just master_id. If no version is found,
+    version=-1 is returned.
+
+    Returns (master_id, version).
+    """
     fields = datasetVersionId.split('#')
     if len(fields)==1:
         result = (datasetVersionId, -1)
@@ -417,6 +424,32 @@ def parseDatasetVersionId(datasetVersionId):
     else:
         raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
     return result
+
+def parseSolrDatasetId(datasetId):
+    """Parse a SOLR dataset ID into master_id and version.
+
+    datasetId has the form 'master_id.version|data_node'
+
+    Returns (master_id, version, data_node)
+
+    """
+    fields = datasetId.split('|')
+    if len(fields)==1:
+        datasetVersionId = datasetId
+        dataNode = None
+    else:
+        datasetVersionId, dataNode = fields[:2]
+    dfields = datasetVersionId.split('.')
+    masterId = '.'.join(dfields[:-1])
+    sversion = dfields[-1]
+    if sversion[0] in ('v', 'V'):
+        sversion = sversion[1:]
+    try:
+        version = string.atoi(sversion)
+    except:
+        version = -1
+        masterId = datasetVersionId
+    return (masterId, version, dataNode)
 
 def generateDatasetVersionId(versionTuple):
     result = "%s#%d"%versionTuple
@@ -917,4 +950,17 @@ def getHessianServiceURL():
         if serviceHost!=envServiceHost:
             warning("hessian_service_url=%s but environment variable ESG_GATEWAY_SVC_ROOT=%s, please reconcile these values"%(serviceURL, gatewayServiceRoot))
 
+    return serviceURL
+
+def getRestServiceURL():
+    """Get the configured value of rest_service_url. If not set,
+    derive host from hessian_service_url and use '/esg-search/ws' as the path.
+    """
+
+    config = getConfig()
+    serviceURL = config.get('DEFAULT', 'rest_service_url', default=None)
+    if serviceURL is None:
+        hessianServiceURL = config.get('DEFAULT', 'hessian_service_url')
+        host = urlparse.urlparse(hessianServiceURL).netloc
+        serviceURL = urlparse.urlunparse(('https', host, '/esg-search/ws', '', '', ''))
     return serviceURL

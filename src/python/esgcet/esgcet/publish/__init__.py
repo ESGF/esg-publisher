@@ -7,3 +7,4 @@ from thredds import generateThredds, reinitializeThredds, generateThreddsOutputP
 from hessianlib import Hessian, RemoteCallException
 from unpublish import deleteDatasetList, DELETE, UNPUBLISH, NO_OPERATION
 from replica import scanDirectory, generateReplicaThreddsCatalog, publishCatalogs
+from rest import RestPublicationService

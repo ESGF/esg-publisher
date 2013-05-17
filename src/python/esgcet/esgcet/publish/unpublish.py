@@ -8,14 +8,15 @@ from publish import PublicationState, PublicationStatus
 from time import sleep
 from thredds import updateThreddsMasterCatalog, reinitializeThredds
 from las import reinitializeLAS
-from utility import issueCallback, getHessianServiceURL
+from utility import issueCallback, getHessianServiceURL, getRestServiceURL, parseSolrDatasetId
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from rest import RestPublicationService
 
 # When the gateway catches up to versioned catalogs, set this to False so that individual versions
 # with the same dataset name can be deleted.
 DELETE_AT_DATASET_LEVEL = True
 
-def datasetOrVersionName(name, version, session, deleteAll=False):
+def datasetOrVersionName(name, version, session, deleteAll=False, restInterface=False):
     """
     Determine if the name refers to a dataset or dataset version.
 
@@ -38,7 +39,13 @@ def datasetOrVersionName(name, version, session, deleteAll=False):
     deleteAll
       Boolean, if True delete all versions of the dataset(s).
 
+    restInterface
+      Boolean, if True then name has the form 'master_id.version|data_node'.
+
     """
+
+    # Parse a SOLR dataset ID if the RESTful interface is used
+    name, version, data_node = parseSolrDatasetId(name)
 
     # Lookup the dataset
     dset = session.query(Dataset).filter_by(name=name).first()
@@ -137,7 +144,7 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
 DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
-def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False):
+def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False, restInterface=False):
     """
     Delete or retract a list of datasets:
 
@@ -181,6 +188,9 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     republish
       Boolean, if True return (statusDictionary, republishList), where republishList is a list of datasets to be republished.
 
+    restInterface
+      Boolean flag. If True, publish datasets with the RESTful publication services.
+
     """
 
     if gatewayOperation not in (DELETE, UNPUBLISH, NO_OPERATION):
@@ -195,7 +205,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     # Check the dataset names and cache the results for the gateway, thredds, and database phases
     nameDict = {}
     for datasetName,version in datasetNames:
-        isDataset, dset, versionObjs, isLatest = datasetOrVersionName(datasetName, version, session, deleteAll=deleteAll)
+        isDataset, dset, versionObjs, isLatest = datasetOrVersionName(datasetName, version, session, deleteAll=deleteAll, restInterface=restInterface)
         if dset is None:
             warning("Dataset not found in node database: %s"%datasetName)
         nameDict[datasetName] = (isDataset, dset, versionObjs, isLatest)
@@ -204,13 +214,18 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     if operation:
 
         # Create the web service proxy
-        serviceURL = getHessianServiceURL()
-        servicePort = config.getint('DEFAULT','hessian_service_port')
-        serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
+        threddsRootURL = config.get('DEFAULT', 'thredds_url')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        threddsRootURL = config.get('DEFAULT', 'thredds_url')
-        service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
+        if not restInterface:
+            serviceURL = getHessianServiceURL()
+            servicePort = config.getint('DEFAULT','hessian_service_port')
+            serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
+            service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
+        else:
+            serviceURL = getRestServiceURL()
+            serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
+            service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
 
         for datasetName,version in datasetNames:
             isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
@@ -229,7 +244,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
                     info("  Result: %s"%stateName)
                     resultDict[datasetName] = eventName
             else:                       # Nothing in the node database, but still try to delete on the gateway
-                if DELETE_AT_DATASET_LEVEL and (dset is not None):
+                if DELETE_AT_DATASET_LEVEL and (dset is not None) and (not restInterface):
                     datasetName = dset.name
                 try:
                     eventName, stateName = deleteGatewayDatasetVersion(datasetName, gatewayOperation, service, session, dset=dset)

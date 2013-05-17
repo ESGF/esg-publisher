@@ -8,8 +8,9 @@ from thredds import generateThredds, generateThreddsOutputPath, updateThreddsMas
 from las import reinitializeLAS
 from hessianlib import Hessian
 from esgcet.exceptions import *
-from utility import issueCallback, getHessianServiceURL
+from utility import issueCallback, getHessianServiceURL, getRestServiceURL
 from esgcet import messaging
+from rest import RestPublicationService
 
 class PublicationState(object):
 
@@ -146,7 +147,7 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
 
     return dset, statusId, state, event.event, status
 
-def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False):
+def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False, restInterface=False):
     """
     Publish a list of datasets:
 
@@ -202,6 +203,9 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
     readFromCatalog
       Boolean flag. If True, read the TDS catalog definitions from threddsCatalogDictionary. 
       threddsCatalogDictionary must also be set.
+
+    restInterface
+      Boolean flag. If True, publish datasets with the RESTful publication services.
 
     """
 
@@ -288,15 +292,21 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
 
         # Create the web service proxy
         config = getConfig()
-        serviceURL = getHessianServiceURL()
-        servicePort = config.getint('DEFAULT','hessian_service_port')
-        serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
+        threddsRootURL = config.get('DEFAULT', 'thredds_url')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        servicePollingDelay = config.getfloat('DEFAULT','hessian_service_polling_delay')
-        spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
-        threddsRootURL = config.get('DEFAULT', 'thredds_url')
-        service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
+        if not restInterface:
+            serviceURL = getHessianServiceURL()
+            servicePort = config.getint('DEFAULT','hessian_service_port')
+            serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
+            servicePollingDelay = config.getfloat('DEFAULT','hessian_service_polling_delay')
+            spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
+            service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
+        else:                   # REST service
+            spi = 1
+            serviceURL = getRestServiceURL()
+            serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
+            service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
 
         results = []
         lenresults = len(datasetNames)

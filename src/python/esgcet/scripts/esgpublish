@@ -158,6 +158,11 @@ Options:
         Flag the dataset(s) as replicated. The argument is the identifier of the gateway where the dataset
         originated, for example, "ESG-PCMDI" or "ESG-NCAR". See --version-list.
 
+    --rest-api
+        Publish using the RESTful publication services. The configuration file option ``rest_service_url''
+        defines the service location. If it is undefined, the service location is
+        https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
+
     --service service_name
         Specify a THREDDS service name to associate with an offline dataset. If omitted, the name of the
         first offline service in the configuration ''thredds_offline_services'' is used. This determines
@@ -218,7 +223,7 @@ Options:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'service=', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -247,6 +252,7 @@ def main(argv):
     readFiles = False
     rescan = False
     rescanDatasetName = []
+    restApi = None
     service = None
     summarizeErrors = False
     testProgress1 = testProgress2 = None
@@ -322,6 +328,8 @@ def main(argv):
             publishOp = REPLACE_OP
         elif flag=='--replica':
             masterGateway = arg
+        elif flag=='--rest-api':
+            restApi = True
         elif flag=='--service':
             service = arg
         elif flag=='--summarize-errors':
@@ -391,6 +399,10 @@ def main(argv):
                 warning("Environment variable ESG_GATEWAY_NAME=%s, but master gateway=%s"%(os.environ['ESG_GATEWAY_NAME'], masterGateway))
 
 
+    # Get the default publication interface (REST or Hessian)
+    if restApi is None:
+        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
+
     # If the dataset map is input, just read it ...
     dmap = None
     directoryMap = None
@@ -458,7 +470,7 @@ def main(argv):
     if not publishOnly:
         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles)
 
-    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit)
+    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi)
     # print `result`
 
     if summarizeErrors:
