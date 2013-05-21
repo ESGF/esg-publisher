@@ -45,7 +45,11 @@ def datasetOrVersionName(name, version, session, deleteAll=False, restInterface=
     """
 
     # Parse a SOLR dataset ID if the RESTful interface is used
-    name, version, data_node = parseSolrDatasetId(name)
+    if restInterface:
+        saveName = name
+        name, version, data_node = parseSolrDatasetId(name)
+        if data_node is None:
+            warning("Dataset: %s, REST interface dataset identifiers should have the form dataset_id|data_node"%saveName)
 
     # Lookup the dataset
     dset = session.query(Dataset).filter_by(name=name).first()

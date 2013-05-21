@@ -319,7 +319,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                 parentIdent = parentId[datasetName]
             else:
                 parentIdent = parentId
-            messaging.info("Publishing: %s, parent = %s"%(datasetName, parentIdent))
+            messaging.info("Publishing: %s"%datasetName)
             dset, statusId, state, evname, status = publishDataset(datasetName, parentIdent, service, threddsRootURL, session)
             messaging.info("  Result: %s"%status.getStateItem())
             results.append((dset, statusId, state))

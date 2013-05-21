@@ -773,7 +773,7 @@ class ProjectHandler(object):
         section = 'project:'+self.name
         datasetIdFormatList = config.get(section, 'dataset_id', raw=True, default=None)
         if datasetIdFormatList is None:
-            warning("No dataset_id option found for project %s"%self.name)
+            # warning("No dataset_id option found for project %s"%self.name)
             return context
         datasetIdFormats = splitLine(datasetIdFormatList)
 
@@ -820,7 +820,8 @@ class ProjectHandler(object):
         return context
 
     def getParentId(self, datasetName):
-        """Get the parent ID of a dataset.
+        """Get the parent ID of a dataset. This is a no-op, since the P2P system
+        does not support hierarchical datasets.
 
         Returns the string parent identifier.
 
@@ -828,12 +829,7 @@ class ProjectHandler(object):
           String dataset identifier.
         """
 
-        config = getConfig()
-        section = 'project:'+self.name
-        context = self.parseDatasetName(datasetName, {})
-        parent_id_format = config.get(section, 'parent_id', raw=True)
-        idfields = re.findall(_patpat, parent_id_format)
-        parentId = self.generateDatasetId('parent_id', idfields, context)
+        parentId = 'ROOT'
         return parentId
 
     def readContext(self, sdfile, **kw):

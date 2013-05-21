@@ -41,6 +41,12 @@ usage = """Usage:
     By default esgunpublish deletes all versions of the dataset. To unpublish a specific version n, specify
     the dataset as dataset_name#n.
 
+    IMPORTANT: Note the difference in the way datasets are identified when the --rest-api option is used.
+    With --rest-api, dataset IDs have the form 'dataset_name|data_node' where dataset_name includes
+    the version number, for example, 'pcmdi.test.v1|pcmdi9.llnl.gov'. Using the other (non-RESTful) options,
+    datasets do not include the data_node portion, for example 'pcmdi.test' or 'pcmdi.test#1'. If the wrong
+    form is used, the dataset may not be deleted from the SOLR index correctly.
+
 Arguments:
     dataset_name: The string name of the dataset(s) to be unpublished. To indicate a specific version,
     use the syntax dataset_name#n. If no version is indicated, the latest version is deleted.
@@ -53,11 +59,6 @@ Options:
     --database-only: Short for --skip-gateway --skip-thredds --database-delete
 
     --echo-sql: Echo SQL commands
-
-    --gateway-retract: Retract gateway metadata about the dataset. The default is to 
-      delete the dataset, which removes all metadata. In contrast, retracting makes
-      the dataset undiscoverable from the portal, but leaves metrics and versioning information intact.
-      Use --skip-gateway to suppress gateway metadata deletion.
 
     -h, --help: Print a help message.
 
@@ -83,7 +84,7 @@ Options:
 
         Note: With this option, the dataset_name should have the form 'dataset_id|data_node'.
 
-    --skip-gateway: Perform local (node) operations, skip gateway dataset delete. Ignore --gateway-retract option.
+    --skip-index: Perform local (node) operations, skip SOLR index dataset delete.
 
     --skip-thredds: Do not remove associated THREDDS catalogs, or reinitialize the TDS server.
       By default, THREDDS catalogs are removed.
@@ -111,7 +112,7 @@ def cleanupCatalogs(arg, dirname, names):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'gateway-retract', 'map=', 'no-republish', 'skip-gateway', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'map=', 'no-republish', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -140,8 +141,6 @@ def main(argv):
             deleteDset = True
         elif flag=='--echo-sql':
             echoSql = True
-        elif flag=='--gateway-retract':
-            unpublishOnGateway = True
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
@@ -150,6 +149,8 @@ def main(argv):
         elif flag=='--map':
             datasetMap = readDatasetMap(arg)
         elif flag=='--skip-gateway':
+            gatewayOp = NO_OPERATION
+        elif flag=='--skip-index':
             gatewayOp = NO_OPERATION
         elif flag=='--las':
             las = True

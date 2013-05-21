@@ -16,7 +16,7 @@ usage = """Usage:
     esgsetup --config [--rootid root_identifier]
     esgsetup --db [--db-admin admin] [--db-host hostname] [--db-port port] [--db-admin-password password] [--db-user-password password] [--db-name name]
     esgsetup --thredds [--thredds-password password]
-    esgsetup --publish [--gateway gateway_host]
+    esgsetup --publish [--index index_node_host]
     esgsetup --handler
 
     Setup the ESG publication configuration.
@@ -47,15 +47,15 @@ Options:
         esgcet database. If not specified, the value is requested interactively. Only used
         with the --db option.
 
-    --gateway gateway_host:
-        Gateway host name. Used to set default gateway service endpoints for publishing.
+    --handler
+        Create customized handlers. Turns off minimal setup.
+
+    --index index_node_host:
+        Index node host name. Used to set default publication service endpoints.
         If not set, the user is prompted for service endpoints.
         Note: if environment variable ESG_GATEWAY_SVC_ROOT is set to the gateway
         service root, and this option is not used, the host name will be derived
         from the environment variable.
-
-    --handler
-        Create customized handlers. Turns off minimal setup.
 
     --publish: Initialize publication-related configuration options.
 
@@ -72,9 +72,11 @@ Options:
 """
     
 PUBLISH_SERVICE = "remote/secure/client-cert/hessian/publishingService"
+REST_WEB_SERVICE = "ws"
+SOLR_SEARCH_SERVICE = "search"
 METADATA_SERVICE = "remote/hessian/guest/remoteMetadataService"
 REPOS = "http://www-pcmdi.llnl.gov/svn/repository/externals"
-SERVICE_ROOT = "pcmdi3.llnl.gov/esgcet" # Override by setting ESG_GATEWAY_SVC_ROOT env variable
+SERVICE_ROOT = "pcmdi9.llnl.gov/esg-search" # Override by setting ESG_GATEWAY_SVC_ROOT env variable
 DEFAULT_COMPOUND_FILE_SERVICE = 'fileservice'
 urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
 minimalSetup = False                   # If True, ask the minimum number of questions
@@ -330,7 +332,7 @@ def main(argv):
     global minimalSetup
 
     try:
-        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'db-name=', 'gateway=', 'handler', 'help', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
+        args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'db-name=', 'gateway=', 'handler', 'help', 'index=', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -378,6 +380,8 @@ def main(argv):
             gatewayHost = arg
         elif flag=='--handler':
             generateHandler = True
+        elif flag=='--index':
+            gatewayHost = arg
         elif flag=='--minimal-setup':
             minimalSetup = True
         elif flag=='--publish':
@@ -746,9 +750,9 @@ def main(argv):
 
         - A file not contained in any dataset root or subdirectory is not accessible (cannot be downloaded).
         - All published files under a dataset root or subdirectory are accessible and visible
-          through THREDDS and the gateway portal.
+          through THREDDS and the web portal.
         - All unpublished files contained in a dataset root or its subdirectories are potentially accessible,
-          but not visible in THREDDS or the gateway portal.
+          but not visible in THREDDS or the web portal.
         - The dataset root should not have any symbolic links to directories outside the dataset root.
 
         Before proceeding, ensure that:
@@ -775,7 +779,7 @@ def main(argv):
                     tell("""
 
                     The Python SSL module was not found. SSL is need to
-                    communicate securely with TDS and the gateway:
+                    communicate securely with TDS and the index node:
                     - Install OpenSSL on your system and rebuild Python.
                     - Rerun 'easy_install -f %s esgcet'.
 
@@ -918,9 +922,9 @@ def main(argv):
 
         Setup the publication interface to the gateway:
 
-        The publisher makes remote service calls to the gateway. In this section you will set:
+        The publisher makes remote service calls to the index node. In this section you will set:
         
-        - Service endpoints on the gateway,
+        - Service endpoints on the index node,
         - SSL port,
         - X509 certificate location.
 
@@ -969,7 +973,8 @@ def main(argv):
             gatewayURL = askfor("Gateway home URL", default=defaultGatewayURL)
             URLtuple = urlparse.urlparse(gatewayURL)
             hessianServiceURL = urlparse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], PUBLISH_SERVICE), '', '', ''))
-            hessianRemoteMetadataURL = urlparse.urlunparse(("http", URLtuple[1], os.path.join(URLtuple[2], METADATA_SERVICE), '', '', ''))
+            restServiceURL = urlparse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], REST_WEB_SERVICE), '', '', ''))
+            solrSearchServiceURL = urlparse.urlunparse(("http", URLtuple[1], os.path.join(URLtuple[2], SOLR_SEARCH_SERVICE), '', '', ''))
             gatewaySSLPort = askfor("Gateway https port number", default=defaultGatewaySSLPort)
             proxyCertificate = askfor("Proxy certificate path (Hint: the '-o' argument to myproxy-logon)", default=defaultProxyCertificate)
             hessianDebug = askyn("Should protocol debugging be turned on? (This generates a lot of output)", default=defaultHessianDebug)
@@ -980,11 +985,12 @@ def main(argv):
 
             # Set ESG configuration options
             updateconfig([('DEFAULT', 'hessian_service_url', hessianServiceURL),
-                          ('DEFAULT', 'hessian_service_remote_metadata_url', hessianRemoteMetadataURL),
                           ('DEFAULT', 'hessian_service_port', gatewaySSLPort),
                           ('DEFAULT', 'hessian_service_debug', hessianServiceDebug),
                           ('DEFAULT', 'hessian_service_certfile', proxyCertificate),
                           ('DEFAULT', 'hessian_service_keyfile', proxyCertificate),
+                          ('DEFAULT', 'rest_service_url', restServiceURL),
+                          ('DEFAULT', 'solr_search_service_url', solrSearchServiceURL),
                           ], currentConfig=config)
             
         except RuntimeError:

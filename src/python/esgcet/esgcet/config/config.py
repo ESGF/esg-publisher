@@ -492,7 +492,7 @@ def initializeExperiments(config, projectName, session):
                 session.add(experiment)
                 session.commit()
     except ValueError:
-        raise ESGPublishError('Invalid input: %s %s %s'%( projectId, experimentName, experimentDesc))
+        raise ESGPublishError('experiment_options is misconfigured in section %s: %s'%( projectSection, experimentOption))
     
 def getOfflineLister(config, section, service=None):
     """Get the offline lister section for a service.
