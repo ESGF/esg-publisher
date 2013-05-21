@@ -79,13 +79,6 @@ def esgpublishWrapper(**kw):
     # Register project handlers
     registerHandlers()
 
-    # Check master_gateway
-    if masterGateway is not None:
-        gatewayOptions = config.get("DEFAULT", "gateway_options", default="ESG-PCMDI, ESG-NCAR")
-        gatewayList = splitLine(gatewayOptions, sep=",")
-        if masterGateway not in gatewayList:
-            raise ESGPublishError("--replica argument must be in %s, see gateway_options in esg.ini"%`gatewayList`)
-
     # If the dataset map is input, just read it ...
     dmap = None
     directoryMap = None
