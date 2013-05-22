@@ -1,2 +1,2 @@
 "ESG-CET publishing modules"
-__version__ = '2.11.2'
+__version__ = '2.12.0'
