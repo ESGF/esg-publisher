@@ -70,7 +70,7 @@ class PublicationStatus(object):
     def getStateItem(self):
         return self.state
 
-def publishDataset(datasetName, parentId, service, threddsRootURL, session):
+def publishDataset(datasetName, parentId, service, threddsRootURL, session, schema=None):
     """
     Publish a dataset.
 
@@ -96,6 +96,9 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
     session
       A database Session **instance**.
 
+    schema
+      (Optional) String name of schema to validate against, for RESTful publication calls.
+
     """
     
     # Lookup the dataset
@@ -116,7 +119,10 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
     # Publish
     try:
         # messaging.info("  Call createDataset ...")
-        statusId = service.createDataset(parentId, threddsURL, -1, "Published")
+        if schema is not None:
+            statusId = service.createDataset(parentId, threddsURL, -1, "Published", schema=schema)
+        else:
+            statusId = service.createDataset(parentId, threddsURL, -1, "Published")
         # messaging.info("  Call complete.")
     except socket.error, e:
         raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
@@ -147,7 +153,7 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session):
 
     return dset, statusId, state, event.event, status
 
-def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False, restInterface=False):
+def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False, restInterface=False, schema=None):
     """
     Publish a list of datasets:
 
@@ -206,6 +212,9 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
 
     restInterface
       Boolean flag. If True, publish datasets with the RESTful publication services.
+
+    schema
+      (Optional) String name of the schema to validate against, for RESTful publication calls.
 
     """
 
@@ -320,7 +329,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             else:
                 parentIdent = parentId
             messaging.info("Publishing: %s"%datasetName)
-            dset, statusId, state, evname, status = publishDataset(datasetName, parentIdent, service, threddsRootURL, session)
+            dset, statusId, state, evname, status = publishDataset(datasetName, parentIdent, service, threddsRootURL, session, schema=schema)
             messaging.info("  Result: %s"%status.getStateItem())
             results.append((dset, statusId, state))
             resultDict[(datasetName,versionno)] = evname

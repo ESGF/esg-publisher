@@ -46,7 +46,7 @@ class RestPublicationService(object):
         self.status = 0
         self.message = ''
 
-    def createDataset(self, parentId, threddsURL, resursionLevel, status):
+    def createDataset(self, parentId, threddsURL, resursionLevel, status, schema=None):
         """
         Legacy dataset creation.
 
@@ -64,8 +64,11 @@ class RestPublicationService(object):
         status
           String status (ignored).
 
+        schema
+          (Optional) String name of schema to validate against. Example: 'cmip5'.
+
         """
-        status, message = self.harvest(threddsURL, 'THREDDS')
+        status, message = self.harvest(threddsURL, 'THREDDS', schema=schema)
         if status==200:
             result = 'SUCCESSFUL'
         else:

@@ -32,6 +32,12 @@ Options:
         String name of the dataset. If specified, all files will belong to the specified dataset,
         regardless of path. See Notes for the behavior if omitted.
 
+    --dataset-tech-notes url
+        URL of the technical notes to be associated with each dataset.
+
+    --dataset-tech-notes-title title
+        Tech notes title for display.
+
     --filter regular_expression:
         Filter files matching the regular expression. Default is '.*\.nc$'
         Regular expression syntax is defined by the Python re module.
@@ -116,7 +122,7 @@ Notes:
 
 def main(argv):
     try:
-        args, lastargs = getopt.getopt(argv, "a:ehi:o:p:", ['dataset=', 'filter=', 'help', 'offline', 'output=', 'project=', 'property=', 'read-directories', 'read-files', 'service='])
+        args, lastargs = getopt.getopt(argv, "a:ehi:o:p:", ['dataset=', 'dataset-tech-notes=', 'dataset-tech-notes-title=', 'filter=', 'help', 'offline', 'output=', 'project=', 'property=', 'read-directories', 'read-files', 'service='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -129,6 +135,8 @@ def main(argv):
 
     appendMap = None
     datasetName = None
+    datasetTechNotesURL = None
+    datasetTechNotesTitle = None
     filefilt = '.*\.nc$'
     init_file = None
     offline = False
@@ -144,8 +152,12 @@ def main(argv):
             else:
                 appendMap = {}
             output = open(arg, 'a')
-        if flag=='--dataset':
+        elif flag=='--dataset':
             datasetName = arg
+        elif flag=='--dataset-tech-notes':
+            datasetTechNotesURL = arg
+        elif flag=='--dataset-tech-notes-title':
+            datasetTechNotesTitle = arg
         elif flag=='--filter':
             filefilt = arg
         elif flag in ['-h', '--help']:
@@ -225,6 +237,11 @@ def main(argv):
                     if checksumClient is not None:
                         csum = checksum(filepath, checksumClient)
                         extraStuff += " | checksum=%s | checksum_type=%s"%(csum, checksumType)
+
+                    if datasetTechNotesURL is not None:
+                        extraStuff += " | dataset_tech_notes=%s"%datasetTechNotesURL
+                        if datasetTechNotesURL is not None:
+                            extraStuff += " | dataset_tech_notes_title=%s"%datasetTechNotesTitle
 
                     # Print the map entry if:
                     # - The map is being created, not appended, or

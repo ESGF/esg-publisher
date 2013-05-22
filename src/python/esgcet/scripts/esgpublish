@@ -213,6 +213,10 @@ Options:
         file, containing one dataset name per line. If the filelist is '-',
         read from standard input.
 
+    --validate schema_name
+        Validate the published catalog against a schema, on the server side. Implies --rest-api.
+        By default no schema-specific validation is performed. The schema_name for CMIP5 is 'cmip5'.
+
     --version-list versionlist
         Use the version indicated in the version list. versionlist is a file, each line of which
         has the form:
@@ -222,12 +226,30 @@ Options:
         This option is useful for publishing replica data in bulk, where the datasets must retain
         the replica version.
 
+Examples:
+
+    Publish data in directory /foo/bar, for project test. Obtain metadata by opening and reading the files,
+    instead of matching directory names:
+
+        esgpublish --read-files --project test --thredds --publish /foo/bar
+
+    Create a mapfile, and run the scan, thredds, and publish phases separately:
+
+        esgscan_directory --project test --read-files -o test.map /esg/data/test
+        esgpublish --map test.map --read-files --project test
+        esgpublish --map test.map --project test --noscan --thredds
+        esgpublish --map test.map --project test --noscan --publish
+
+    Publish using the RESTful publication API, and validate against the CMIP5 schema.
+
+        esgpublish --read-files --project test --thredds --publish --rest-api --validate cmip5 /foo/bar
+
 """
 
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -257,6 +279,7 @@ def main(argv):
     rescan = False
     rescanDatasetName = []
     restApi = None
+    schema = None
     service = None
     summarizeErrors = False
     testProgress1 = testProgress2 = None
@@ -360,6 +383,9 @@ def main(argv):
                 line = line.strip()
                 if line[0]!='#':
                     rescanDatasetName.append(line)
+        elif flag=='--validate':
+            schema = arg
+            restApi = True
         elif flag=='--version-list':
             versionList = arg
 
@@ -466,7 +492,7 @@ def main(argv):
     if not publishOnly:
         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles)
 
-    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi)
+    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
     # print `result`
 
     if summarizeErrors:
