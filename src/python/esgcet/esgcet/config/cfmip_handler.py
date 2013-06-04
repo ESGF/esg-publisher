@@ -6,6 +6,11 @@ from esgcet.exceptions import *
 from esgcet.config import ProjectHandler, getConfig, splitLine, ENUM, STRING, FIXED
 from esgcet.model import Model, Experiment
 # from Scientific.IO import NetCDF
+try:
+    import cdat_info
+    cdat_info.ping = False
+except:
+    pass
 from cdms2 import Cdunif
 from ipcc4_handler import IPCC4Handler
 

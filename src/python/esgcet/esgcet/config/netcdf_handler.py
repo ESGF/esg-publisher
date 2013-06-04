@@ -3,6 +3,11 @@
 from esgcet.model import cleanup_time_units
 from esgcet.exceptions import *
 from esgcet.config import ProjectHandler, FormatHandler
+try:
+    import cdat_info
+    cdat_info.ping = False
+except:
+    pass
 from cdms2 import Cdunif
 
 import datetime

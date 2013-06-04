@@ -1,5 +1,10 @@
 "Handle CF metadata and time value logic"
 
+try:
+    import cdat_info
+    cdat_info.ping = False
+except:
+    pass
 import cdtime
 
 from metadata import MetadataHandler

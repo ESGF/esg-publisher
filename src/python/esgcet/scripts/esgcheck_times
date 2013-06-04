@@ -4,6 +4,11 @@
 # Find where the bogus time values are
 # Usage esgcheck_times [-c catenate_list] [-f filelist] nc-file
 
+try:
+    import cdat_info
+    cdat_info.ping = False
+except:
+    pass
 import sys, cdms2 as cdms, numpy.oldnumeric as Numeric, getopt, glob, string
 
 usage = """Usage:
