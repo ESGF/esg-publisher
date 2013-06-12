@@ -92,6 +92,7 @@ setup(
                'scripts/esgunpublish',
                'scripts/esgupdate_metadata',
                'scripts/hsils.py',
+               'scripts/ls.py',
                'scripts/msls.py',
                'scripts/srmls.py',
                ],
