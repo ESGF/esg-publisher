@@ -540,7 +540,19 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
             continue
 
         # Check the variable/file combination for project conformance
-        filelist = [(filevar.file.getLocation(), filevar.file.getSize(), filevar.file) for filevar in variable.file_variables if handler.threddsIsValidVariableFilePair(variable, filevar.file)]
+
+        # The property variable.file_variables will return FileVariables for 
+        # all versions of this variable.  We need to filter those FileVariables 
+        # by the files we know are part of the version we want.
+        ds_fileVersions = set(datasetVersionObj.getFileVersions())
+        filelist = []
+        for filevar in variable.file_variables:
+            if not handler.threddsIsValidVariableFilePair(variable, filevar.file):
+                continue
+            for var_fileVersion in filevar.file.versions:
+                if var_fileVersion in ds_fileVersions:
+                    filelist.append((filevar.file.getLocation(), filevar.file.getSize(), filevar.file))
+
         if len(filelist)==0:
             if variable.short_name in variableElemDict:
                 variablesElem.remove(variableElemDict[variable.short_name])
@@ -699,6 +711,7 @@ def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance
 
     # Lookup the dataset
     if datasetInstance is None:
+        #!FIXME: this call doesn't use versionNumber
         dset = session.query(Dataset).filter_by(name=datasetName).first()
     else:
         dset = datasetInstance
