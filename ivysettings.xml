@@ -1,5 +1,5 @@
 <ivysettings>
-      <property name="ivy.default.root.url" value="http://esgf.org/ivy" override="false"/>
+      <property name="ivy.default.root.url" value="https://raw.github.com/ESGF/esgf-artifacts/master/ivy" override="false"/>
       <settings defaultResolver="default-chain"/>
       
       <!-- ESGF Devel repository -->
