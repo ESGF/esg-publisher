@@ -11,6 +11,9 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 
 import numpy
 
+
+WARN = True
+
 resolutionTable = {
     '3hr': '3 hour',
     '6hr': '6 hour',
@@ -141,7 +144,10 @@ class IPCC5Handler(BasicHandler):
             result =  (project_id[:5]=="CMIP5")
             message = "project_id should be 'CMIP5'"
         if not result:
-            raise ESGInvalidMetadataFormat(message)
+            if (WARN) :
+                warning(message)
+            else:
+                raise ESGInvalidMetadataFormat(message)
 
     def getResolution(self):
         resolution = None

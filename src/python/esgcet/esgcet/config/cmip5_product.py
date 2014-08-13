@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 from cmip5_tables import cmor_variables, requested_time
+from esgcet.messaging import debug, info, warning, error, critical, exception
+
+WARN=True
 
 def getProduct(cmor_table, variable, experiment, year1, year2):
     """Get the DRS product value associated with the file.
@@ -14,18 +17,23 @@ def getProduct(cmor_table, variable, experiment, year1, year2):
 
     # decadal1960, decadal1980, decadal2005 => decadal_30
     # Other decadal experiments => decadal_10
-    if experiment[0:7]=='decadal':
-        fullexperiment = experiment
-        if experiment in ['decadal1960', 'decadal1980', 'decadal2005']:
-            experiment = 'decadal_30'
-        else:
-            experiment = 'decadal_10'
-        try:
-            base_year = int(fullexperiment[7:11])
-        except:
-            base_year = 0
-    else:
+
+    if experiment is None and WARN:
+        warning("Found empty experiment field")
         base_year = None
+    else:
+        if experiment[0:7]=='decadal':
+            fullexperiment = experiment
+            if experiment in ['decadal1960', 'decadal1980', 'decadal2005']:
+                experiment = 'decadal_30'
+            else:
+                experiment = 'decadal_10'
+            try:
+                base_year = int(fullexperiment[7:11])
+            except:
+                base_year = 0
+        else:
+            base_year = None
 
     # If the variable is not in the request list, => output2
     vardict = cmor_variables.get(cmor_table, None)
