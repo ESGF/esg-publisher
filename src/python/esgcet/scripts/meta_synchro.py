@@ -4,7 +4,7 @@
 import logging
 import sys, os, time, datetime, getopt, stat, string
 import xml.dom, lxml
-import solr
+import esgcet.query.solr
 
 from sqlalchemy import create_engine, func, and_
 from sqlalchemy.orm import sessionmaker
@@ -96,6 +96,13 @@ TDS_Dict = {}
 rprt_fl = None
 
 HOST = os.environ.get("HOST")
+
+if HOST is None or len(HOST) ==0:
+
+	print "Need to set HOST environment variable for solr hostname."
+	exit(1)
+
+
 SOLR_HTTP = "http://" + HOST + ":8983/solr"
 
 
