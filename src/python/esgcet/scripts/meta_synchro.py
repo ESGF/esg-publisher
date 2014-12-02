@@ -39,7 +39,7 @@ all other aspects of metadata saved in theses three servers though some integrit
 checked. 
 
 The tool works in environment where esgpublish script does (machine, user, directory) without any 
-additional setup needs.
+additional setup needs (except solr python module).
 
 COMPARISON
 
@@ -135,7 +135,15 @@ def getTDSDatasetDict(config, constr):
 			if k.endswith("href"):
 				k_href = k
 				break
-		ref_xml_name = ch.get(k_href)	
+		ref_xml_name = ch.get(k_href)
+		ref_xml_name_full_pth = thredd_catalog_path + "/" + ref_xml_name
+		#print "from getTDSDatasetDict(): ", ref_xml_name_full_pth
+		
+		if not os.path.isfile(ref_xml_name_full_pth) or os.stat(ref_xml_name_full_pth)[6]==0:
+			print "WARNING! THREDDS XML reference catalog " + ref_xml_name_full_pth + " does not exist or empty;"
+			print "dataset =", ch.get("name").strip(), " is excluded from validation."
+			continue
+			
 		if k_href in TDS_Dict.keys() and TDS_Dict_Redund[k_href]!=ref_xml_name:
 			TDS_Dict_Redund.append((k_href,ref_xml_name))
 			continue
@@ -1047,9 +1055,9 @@ def constrImposeTDS(dataset_name, constr):
 		
 
 def filter_TDS_dataset_name(dataset_name, constr, config):
-# check constraints in datasets based on datset_id format from esg.ini; 
-#it's suggested that 1st field in dataset is project and if datset_id format contains only one facet (project) 
-# then all constraints except project areignored.
+# check constraints in datasets based on dataset_id format from esg.ini; 
+#it's suggested that 1st field in dataset is project and if dataset_id format contains only one facet (project) 
+# then all constraints except project are ignored.
 
 	dataset_name_tkns = dataset_name.split(".")
 
@@ -1253,7 +1261,7 @@ def main(argv):
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 	print "\n",st
-	rprt_fl.write(st)
+	rprt_fl.write("\n"+st)
 	rprt_fl.close()
 	session.close()
 	
