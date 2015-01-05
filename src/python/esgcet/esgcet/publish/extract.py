@@ -22,7 +22,7 @@ REPLACE_OP=5
 # When translating numpy arrays (e.g., dimension values) to strings, don't include newlines
 numpy.set_printoptions(threshold=numpy.inf, linewidth=numpy.inf)
 
-def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, useVersion=-1, forceRescan=False, **context):
+def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, **context):
     """
     Extract metadata from a dataset represented by a list of files, add to a database. Populates the database tables:
 
@@ -154,7 +154,13 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
     createTime = datetime.datetime.now() # DatasetVersion creation_time
     fobjs = None
     pathlist = [item for item in fileIterator]
-    if operation==CREATE_OP:
+    if (nodbwrite): 
+        dset = Dataset(datasetName, context.get('project', None), context.get('model', None), context.get('experiment', None), context.get('run_name', None), offline=offline, masterGateway=masterGateway)
+        addNewVersion, fobjs = createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, **context)
+        info("dataset scan complete, not writing to database")
+        return dset
+       
+    elif operation==CREATE_OP:
         # Create a new dataset
         info("Creating dataset: %s"%datasetName)
         dset = Dataset(datasetName, context.get('project', None), context.get('model', None), context.get('experiment', None), context.get('run_name', None), offline=offline, masterGateway=masterGateway)

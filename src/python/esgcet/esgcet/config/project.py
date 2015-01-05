@@ -748,12 +748,15 @@ class ProjectHandler(object):
                         missingFields = list((set(allfields)-set(groupdict.keys()))-set(config.options(section)))
                         raise ESGPublishError("Cannot generate a value for dataset_id. One of the following fields could not be determined from the directory structure: %s\nDirectory = %s"%(`missingFields`, nodepath))
                 else:
+                    warning("Empty dataset name.  Check that directory hierarchy format matches the configured format string in esg.ini")
                     datasetId = datasetName
                 if datasetMap.has_key(datasetId):
                     datasetMap[datasetId].append((nodepath, filepath))
                 else:
                     datasetMap[datasetId] = [(nodepath, filepath)]
 
+        if (len(datasetMap) == 0 ):
+            warning("Empty datasetMap.  Check that directory hierarchy format matches the configured format string in esg.ini")
         return datasetMap
 
     def parseDatasetName(self, datasetName, context):
