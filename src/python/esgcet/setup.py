@@ -90,6 +90,7 @@ setup(
                'scripts/esgquery_index',
                'scripts/esgunpublish',
                'scripts/esgupdate_metadata',
+               'scripts/meta_synchro.py',
                'scripts/hsils.py',
                'scripts/ls.py',
                'scripts/msls.py',

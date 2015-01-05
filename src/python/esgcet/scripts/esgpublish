@@ -96,6 +96,9 @@ Options:
         set to 1 for new datasets, and is incremented by 1 for existing datasets. Use this option
         with caution, as the version number will apply to all datasets processed. See --keep-version and --version-list.
 
+    --nodbwrite
+         Scan the files, but do not write the dataset to the postgres database.  This option should not be used with --noscan, --thredds, --publish, as it is intended for "dry-runs" to validate metadata.
+
     --noscan
         Skip the scan phase and just publish. Assumes that the scan has already been done!
 

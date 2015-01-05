@@ -12,7 +12,7 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 import numpy
 
 
-WARN = True
+# WARN = True
 
 resolutionTable = {
     '3hr': '3 hour',
