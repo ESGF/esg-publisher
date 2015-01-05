@@ -1,5 +1,6 @@
 import sys
 
+
 usage = """this is a utility script for creating a version map from a esgpublisher
 'map' file, where the version number is indicated in the 12th level subdirectory, as used by cmip5 naming conventions.
 
@@ -14,6 +15,7 @@ if len(sys.argv) < 2:
 
 
     exit(1)
+
 
 
 
