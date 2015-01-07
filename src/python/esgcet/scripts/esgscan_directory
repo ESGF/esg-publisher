@@ -9,6 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from esgcet.publish import multiDirectoryIterator, directoryIterator, processIterator, readDatasetMap, processNodeMatchIterator, checksum, fnIterator
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, getOfflineLister, splitLine
 from esgcet.exceptions import *
+from esgcet.messaging import debug, info, warning, error, critical, exception
+
 
 usage = """Usage:
     esgscan_directory [options] directory [directory ...]
@@ -202,6 +204,7 @@ def main(argv):
         if projectName is not None:
             handler = getHandlerByName(projectName, None, Session)
         else:
+            warning("No project name specified!")
             multiIter = multiDirectoryIterator(lastargs, filefilt=filefilt)
             firstFile, size = multiIter.next()
             handler = getHandler(firstFile, Session, validate=True)
