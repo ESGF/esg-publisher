@@ -91,6 +91,7 @@ setup(
                'scripts/esgunpublish',
                'scripts/esgupdate_metadata',
                'scripts/meta_synchro.py',
+               'scripts/gen_versions.py',
                'scripts/hsils.py',
                'scripts/ls.py',
                'scripts/msls.py',
@@ -107,3 +108,6 @@ setup(
       handler = esgcet.config:CFHandler
       """,
 )
+
+os.system("cp scripts/add_checksums_to_map.sh /usr/local/bin")
+
