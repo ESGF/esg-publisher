@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/uvcdat/1.5.0/bin/python
 
 import sys
 import logging
@@ -497,6 +497,7 @@ def main(argv):
     if len(datasetNames)==0:
         warning("No datasets found.")
 
+
     # Iterate over datasets
     if not publishOnly:
 
@@ -505,8 +506,8 @@ def main(argv):
         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
 
 
-        if (not nodbwrite):
-            result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
+    if (not nodbwrite):
+        result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
     # print `result`
 
     if summarizeErrors:
