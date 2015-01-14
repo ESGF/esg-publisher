@@ -11,3 +11,15 @@
 
 README:
 
+ESGF Publisher
+
+What's new:
+
+14 January 2015 - version 2.12.2
+
+ * Warning message for esgscan_directory failues
+ * --nodbwrite flag to enable "dry run" for fileO validation without writing to postgreSQL database
+ * Additional utility scripts: 
+      meta_synchro.py - metadata syncronization checks for PGSQL, Thredds and SOLR
+     gen_versions.py, add_checksums_to_map.sh  - used for replica publication (at LLNL/PCMDI)
+    
