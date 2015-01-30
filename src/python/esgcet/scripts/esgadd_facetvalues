@@ -15,7 +15,7 @@ from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging,
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.model import Dataset
-from esgcet.query import queryDatasetMap
+from esgcet.query import queryDatasetMap, updateDatasetFromContext
 
 # import pdb
 
@@ -269,7 +269,7 @@ def getDatasetUpdate(filename, session):
             ddict[kv[0]] = kv[1]
         updateDatasetFromContext(ddict, datasetName, session)
         
-        datasetList.append(datasetName)
+        datasetList.append((datasetName, -1))
 
 
     return datasetList
@@ -458,7 +458,7 @@ def main(argv):
     # ... otherwise generate the directory map.
 #        pdb.set_trace()
 
-    datasetNames = getDatasetUpdate(datasetMapfile, session)
+    datasetNames = getDatasetUpdate(datasetMapfile, Session)
     datasetNames.sort()
 
     if len(datasetNames)==0:
