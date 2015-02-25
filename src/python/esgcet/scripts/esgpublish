@@ -1,4 +1,4 @@
-#!/usr/local/uvcdat/1.5.0/bin/python
+#!/usr/local/env python
 
 import sys
 import logging
