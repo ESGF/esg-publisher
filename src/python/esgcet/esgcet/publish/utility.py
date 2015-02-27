@@ -572,7 +572,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
             mtime = float(mtime)
         yield (path, (size, mtime))
 
-def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False):
+def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -758,9 +758,12 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
               testProgress1[2] = (100./ct)*iloop + (50./ct)
            else:
               testProgress1[2] = (100./ct)*iloop + (100./ct)
-        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, useVersion=versionno, forceRescan=forceAggregate, **context)
+
+
+        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, useVersion=versionno, forceRescan=forceAggregate, nodbwrite=nodbwrite, **context)
 
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
+
         runAggregate = (not offline)
         if hasattr(dataset, 'reaggregate'):
             runAggregate = (runAggregate and dataset.reaggregate)
@@ -769,14 +772,15 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         if testProgress2 is not None:
            testProgress2[1] = (100./ct)*iloop + 50./ct
            testProgress2[2] = (100./ct)*(iloop + 1)
-        if runAggregate:
+        if runAggregate and (not nodbwrite):
             aggregateVariables(datasetName, Session, aggregateDimensionName=aggregateDimension, cfHandler=cfHandler, progressCallback=testProgress2, datasetInstance=dataset)
         elif testProgress2 is not None:
             # Just finish the progress GUI
             issueCallback(testProgress2, 1, 1, 0.0, 1.0)
             
         # Save the context with the dataset, so that it can be searched later
-        handler.saveContext(datasetName, Session)
+        if (not nodbwrite):
+            handler.saveContext(datasetName, Session)
         datasets.append(dataset)
 
     return datasets

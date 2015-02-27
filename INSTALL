@@ -11,3 +11,13 @@
 #*****************************************************************
 
 INSTALL:
+
+This installer for the esgf publisher is intended to run on an existing esgf data node. The meta_synchro.py script has the additional dependency of the pysolr library.  
+
+1) source /etc/esg.env  - needed to run commands using the correct version of python for esgf.
+
+2) as root: 
+  cd src/python/esgcet
+  ./setup.py install
+
+3) [optional]: easy_install pysolr 

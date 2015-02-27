@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/env python
 
 import sys
 import logging
@@ -16,6 +16,8 @@ from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.model import Dataset
 from esgcet.query import queryDatasetMap
+
+# import pdb
 
 usage = """Usage:
     esgpublish [operation] [options] directory [directory ...]
@@ -93,6 +95,9 @@ Options:
         Specify the dataset version number, a positive integer. If unspecified, the version number is
         set to 1 for new datasets, and is incremented by 1 for existing datasets. Use this option
         with caution, as the version number will apply to all datasets processed. See --keep-version and --version-list.
+
+    --nodbwrite
+         Scan the files, but do not write the dataset to the postgres database.  This option should not be used with --noscan, --thredds, --publish, as it is intended for "dry-runs" to validate metadata.
 
     --noscan
         Skip the scan phase and just publish. Assumes that the scan has already been done!
@@ -249,7 +254,7 @@ Examples:
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list='])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -287,6 +292,8 @@ def main(argv):
     threddsReinit = None
     version = None
     versionList = None
+    nodbwrite = False
+
     for flag, arg in args:
         if flag=='-a':
             aggregateDimension = arg
@@ -319,6 +326,8 @@ def main(argv):
             message = arg
         elif flag=='--model':
             initcontext['model'] = arg
+        elif flag=='--nodbwrite':
+            nodbwrite = True
         elif flag=='--new-version':
             try:
                 version = string.atoi(arg)
@@ -488,11 +497,17 @@ def main(argv):
     if len(datasetNames)==0:
         warning("No datasets found.")
 
+
     # Iterate over datasets
     if not publishOnly:
-        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles)
 
-    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
+#        pdb.set_trace()
+
+        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
+
+
+    if (not nodbwrite):
+        result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
     # print `result`
 
     if summarizeErrors:
