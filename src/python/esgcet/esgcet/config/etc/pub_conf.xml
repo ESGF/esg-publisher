@@ -1,0 +1,32 @@
+<ESG_Publisher_Config>
+    <Facet name="activity" value="bio">
+        <Facet name="data_type" value="epidemology">
+            <Facet name="project" value="tycho"/></Facet>
+    </Facet>
+    <Facet name="project" value="ACME" thredds_exclude_variables="a,b,a_bnds,b_bnds" version_by_date="false" variable_per_file="false">
+        <OptionalFacet name="institute" value="ORNL,LBNL,LLNL,ANL,PNNL,LANL"/>
+        <Facet name="data_type" value="h,h0">
+            <Facet name="experiment" value="B1850C5_ne30"  description="experiment ne30 C5">
+                <Facet name="version_num" value="v0_1">
+                    <Facet name="realm" value="atm,lnd,ocn,ice">
+                        <Facet name="regridding" value="fv257x512">
+                            <Facet name="range" value="all"/></Facet>
+                    </Facet>
+                </Facet>
+            </Facet>
+        </Facet>
+        <Facet name="data_type" value="climo">
+            <Facet name="experiment" value="B1850C5_ne30gx1_tuning"  description="experiment ne30">
+                <Facet name="version_num" value="v01">
+                    <Facet name="realm" value="atm">
+                        <Facet name="regridding" value="bilinear">
+                            <Facet name="range" value="2-9,10-19,20-29,30-50,30-39,40-49"/></Facet>
+                    </Facet>
+                </Facet>
+            </Facet>
+        </Facet>
+    </Facet>
+    <Facet name="project" value="CMIP6" version_by_date="true" variable_per_file="true">
+        <Facet name="institute"></Facet>
+    </Facet>
+</ESG_Publisher_Config>
