@@ -691,7 +691,7 @@ class ProjectHandler(object):
         idfields = [re.findall(_patpat, format) for format in dataset_id_formats]
         return idfields, dataset_id_formats
 
-    def generateDirectoryMap(self, directoryList, filefilt, initContext=None, datasetName=None):
+    def generateDirectoryMap(self, directoryList, filefilt, initContext=None, datasetName=None, use_version=False):
         """Generate a directory map. Recursively scan each directory in *directoryList*,
         locating each directory with at least one file matching filefilt.
 
@@ -743,6 +743,11 @@ class ProjectHandler(object):
                 if datasetName is None:
                     try:
                         datasetId = self.generateDatasetId('dataset_id', idfields, groupdict, multiformat=dataset_id_formats)
+                        if use_version and 'version' in groupdict:
+                            drsversion = groupdict['version']
+                            if not re.match('^[0-9]+$', drsversion[0]): # e.g. vYYYYMMDD
+                                drsversion = drsversion[1:]
+                            datasetId += '#%s'%drsversion
                     except:
                         allfields = reduce(lambda x,y: set(x)+set(y), idfields)
                         missingFields = list((set(allfields)-set(groupdict.keys()))-set(config.options(section)))

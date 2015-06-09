@@ -35,6 +35,7 @@ _LAS2CDUnits = {
     "hours" : cdtime.Hour,
     "minutes" : cdtime.Minute,
     "seconds" : cdtime.Second,
+    "season" : cdtime.Season, # needed for CORDEX
     }
 
 class CFHandler(MetadataHandler):

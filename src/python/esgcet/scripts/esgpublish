@@ -1,4 +1,4 @@
-#!/usr/local/env python
+#!/usr/bin/env python
 
 import sys
 import logging
@@ -402,10 +402,6 @@ def main(argv):
     if offline and (projectName is None):
         raise ESGPublishError("Must specify project with --project for offline datasets")
 
-    # Must specify version for replications
-    if masterGateway is not None and version is None and versionList is None:
-        raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
-
     if version is not None and versionList is not None:
         raise ESGPublishError("Cannot specify both --new-version and --version-list")
 
@@ -496,8 +492,14 @@ def main(argv):
     datasetNames.sort()
     if len(datasetNames)==0:
         warning("No datasets found.")
+        min_version = -1
+    else:
+        min_version = sorted(datasetNames, key=lambda x: x[1])[0][1]
 
-
+    # Must specify version for replications
+    if min_version == -1 and masterGateway is not None and version is None and versionList is None:
+        raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
+    
     # Iterate over datasets
     if not publishOnly:
 
