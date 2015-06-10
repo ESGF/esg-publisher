@@ -174,7 +174,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
     elif operation in [UPDATE_OP, REPLACE_OP]:
         if operation==REPLACE_OP:
             versionObj = dset.getVersionObj(-1)
-            if versionObj.version > useVersion:
+            if useVersion > -1 and versionObj.version > useVersion:
                 raise ESGPublishError("Newer version of dataset %s exists - cannot publish older version of the same dataset."%dset.name)
         else:
             versionObj = dset.getVersionObj(useVersion)
