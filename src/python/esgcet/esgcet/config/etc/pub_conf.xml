@@ -1,9 +1,9 @@
 <ESG_Publisher_Config>
-    <Facet name="activity" value="bio">
+    <Facet name="activity" value="bio" directory_prefix="/storage2/data">
         <Facet name="data_type" value="epidemology">
             <Facet name="project" value="tycho"/></Facet>
     </Facet>
-    <Facet name="project" value="ACME" thredds_exclude_variables="a,b,a_bnds,b_bnds" version_by_date="false" variable_per_file="false">
+    <Facet name="project" value="ACME" thredds_exclude_variables="a,b,a_bnds,b_bnds" version_by_date="false" variable_per_file="false" directory_prefix="/storage/data">
         <OptionalFacet name="institute" value="ORNL,LBNL,LLNL,ANL,PNNL,LANL"/>
         <Facet name="data_type" value="h,h0">
             <Facet name="experiment" value="B1850C5_ne30"  description="experiment ne30 C5">
