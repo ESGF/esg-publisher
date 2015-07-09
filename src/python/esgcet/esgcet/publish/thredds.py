@@ -1,6 +1,7 @@
 import os
 import logging
-import urllib2
+import ssl, httplib
+from base64 import b64encode
 import string
 import hashlib
 import urlparse
@@ -1004,30 +1005,29 @@ def readThreddsWithAuthentication(url, config):
     
     """
 
-    threddsAuthenticationRealm = config.get('DEFAULT', 'thredds_authentication_realm')
+#    threddsAuthenticationRealm = config.get('DEFAULT', 'thredds_authentication_realm')
     threddsUsername = config.get('DEFAULT', 'thredds_username')
     threddsPassword = config.get('DEFAULT', 'thredds_password')
 
     # Create an OpenerDirector with support for Basic HTTP Authentication...
-    auth_handler = urllib2.HTTPBasicAuthHandler()
-    auth_handler.add_password(realm=threddsAuthenticationRealm,
-                              uri=url,
-                              user=threddsUsername,
-                              passwd=threddsPassword)
-    opener = urllib2.build_opener(auth_handler)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+
+    user_pass = b64encode(threddsUsername +":"+threddsPassword)
+
+    pd = urlparse.urlparse(url)
+
+    conn = httplib.HTTPSConnection(pd.hostname, port=pd.port, context=ctx)
+
+    req_headers = {'Host': pd.hostname,
+               'Authorization' : 'Basic %s' % user_pass
+               }
     
-    # ...and install it globally so it can be used with urlopen.
-    urllib2.install_opener(opener)
-    try:
-        handle = urllib2.urlopen(url)
-        page = handle.read()
-        handle.close()
-    except Exception, e:
-        msg = `e`
-        if msg.find("maximum recursion depth")!=-1:
-            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
-        error("Error reading url %s: %s"%(url, msg))
-        raise
+    conn.request('GET', url, headers=req_headers)
+
+    res = conn.getresponse()
+
+    page = res.read()
+
     return page
     
 def reinitializeThredds():
@@ -1048,17 +1048,8 @@ def reinitializeThredds():
     threddsFatalErrorPattern = config.get('DEFAULT', 'thredds_fatal_error_pattern')
     info("Reinitializing THREDDS server")
 
-    try:
-        reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
-    except Exception, e:
-        msg = `e`
-        if msg.find("maximum recursion depth")!=-1:
-            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
-        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
-
-    if reinitResult.find(threddsReinitSuccessPattern)==-1:
-        raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%`reinitResult`)
-
+    reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
+    
     errorResult = readThreddsWithAuthentication(threddsReinitErrorUrl, config)
     index = errorResult.rfind(threddsErrorPattern)
     result = errorResult[index:]
