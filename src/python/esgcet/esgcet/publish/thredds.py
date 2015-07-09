@@ -1048,7 +1048,16 @@ def reinitializeThredds():
     threddsFatalErrorPattern = config.get('DEFAULT', 'thredds_fatal_error_pattern')
     info("Reinitializing THREDDS server")
 
-    reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
+    try:
+        reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
+    except Exception, e:
+        msg = `e`
+        if msg.find("maximum recursion depth")!=-1:
+            msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
+        raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
+
+    if reinitResult.find(threddsReinitSuccessPattern)==-1:
+        raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%`reinitResult`)
     
     errorResult = readThreddsWithAuthentication(threddsReinitErrorUrl, config)
     index = errorResult.rfind(threddsErrorPattern)
