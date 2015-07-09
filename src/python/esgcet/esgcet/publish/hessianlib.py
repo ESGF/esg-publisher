@@ -496,7 +496,7 @@ class Hessian:
         #----------------------------------------------------------------------
         # Patch for HTTP proxy support starts here.  Stephen.Pascoe@stfc.ac.uk
         #
-	import httplib, os, urlparse
+	import httplib, os, urlparse, ssl
 
         if self._scheme=="http":
             proxy_url = os.environ.get('http_proxy')
@@ -512,7 +512,8 @@ class Hessian:
             else:
                 h = httplib.HTTPConnection(self._host, port=self._port)
         else:
-            h = httplib.HTTPSConnection(self._host, port=self._port, key_file=self._key_file, cert_file=self._cert_file)
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            h = httplib.HTTPSConnection(self._host, port=self._port, key_file=self._key_file, cert_file=self._cert_file, context=ctx)
 
 
         req_headers = {'Host': self._host,
