@@ -127,12 +127,12 @@ def askForMultiple(prompt, displayCurrent=None):
     if option.lower()[0]=='r':
         result = ''
     print "Enter lines, or <RETURN> to end"
-    while True:
-        answer = raw_input("Add new line: ")
-        if answer!='':
-            result += answer+'\n'
-        else:
-            break
+    #while True:
+    #    answer = raw_input("Add new line: ")
+    #    if answer!='':
+    #        result += answer+'\n'
+    #    else:
+    #        break
     return result
 
 def tell(info):
@@ -874,7 +874,7 @@ def main(argv):
             # Get the document roots
             currentRoots =  config.get('DEFAULT', 'thredds_dataset_roots')
 
-#            threddsDatasetRoots = askForMultiple("THREDDS dataset root directories (option=thredds_dataset_roots)\nEach entry has the form 'path_identifier | absolute_directory_path'", displayCurrent=currentRoots)
+            threddsDatasetRoots = askForMultiple("THREDDS dataset root directories (option=thredds_dataset_roots)\nEach entry has the form 'path_identifier | absolute_directory_path'", displayCurrent=currentRoots)
             
             # Get the gridFTP URL. If multiple file services are defined, create a compound service.
             threddsServiceSpecs = getThreddsServiceSpecs(config, 'DEFAULT', 'thredds_file_services')
