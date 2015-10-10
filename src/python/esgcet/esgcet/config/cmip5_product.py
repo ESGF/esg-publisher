@@ -3,7 +3,7 @@
 from cmip5_tables import cmor_variables, requested_time
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
-# WARN=True
+WARN=False
 
 def getProduct(cmor_table, variable, experiment, year1, year2):
     """Get the DRS product value associated with the file.
