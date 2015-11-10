@@ -17,8 +17,8 @@ import pdb
 
 def gen_test_file(input_path,
                   output_path,
-                  num_lons = 3,
-                  num_lats = 4,
+                  num_lons = 2,
+                  num_lats = 2,
                   first_lon = 60.,
                   first_lat = 30.):
     """
