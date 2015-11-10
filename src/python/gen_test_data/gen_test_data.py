@@ -3,6 +3,10 @@
 """
 Produces a set of test netCDF files for use in ESGF publication, based on some 
 real input data.
+
+For further info on what it does, see gen_test_file.__doc__
+
+For further info on how to use it, see gen_all_test_data.__doc__
 """
 
 import os
@@ -13,7 +17,7 @@ import numpy
 import random
 import uuid
 
-import pdb
+#import pdb
 
 def gen_test_file(input_path,
                   output_path,
@@ -232,11 +236,13 @@ def gen_all_test_data(input_root = '/badc/cmip5/data',
                       **kwargs_for_gen_test_file):
     
     """
-    Generate a set of test files, putting them in the same DRS
-    locations as the input paths.  The file specfied in input_list
-    should contain a list of relative paths, and these should reflect
-    the DRS. Specifically, the 3rd and 4th level directories in the
-    relative path will be taken to be the institute and the experiment.
+    Generate a set of test files, using the same DRS hierarchy as for
+    the input paths, except that the institute is overwritten, and the
+    model name has a prefix added, as does the filename.  The file
+    specfied in input_list should contain a list of relative paths,
+    and these should reflect the DRS. Specifically, the 3rd and 4th
+    level directories in the relative path will be taken to be the
+    institute and the experiment.
     """
 
     for path_rel in read_list(input_list):
