@@ -2,6 +2,7 @@ import utils.info_classes as ic
 import utils.datasets as datasets
 
 def get_pub_base_dir(dsid):
+    pass
     return
 
 def get_file_list(dsid):
@@ -48,19 +49,19 @@ def verify_dataset_published(dsid, publication_levels=None):
 
 def verify_files_on_disk(dsid, file_list):
     # Checks files are on disk
-    return True
+    pass
 
 def verify_published_to_db(dsid, file_list):
     # Checks database has dataset record with related file records matching file_list
-    return True
+    pass
 
 def verify_published_to_tds(dsid, file_list):
     # Checks TDS has dataset record with related file records matching file_list
-    return True
+    pass
 
 def verify_published_to_solr(dsid, file_list):
     # Checks SOLR has dataset record with related file records matching file_list
-    return True
+    pass
 
 def verify_dataset_unpublished(dsid):
 
@@ -117,15 +118,18 @@ def verify_empty():
 
 def verify_db_empty():
     empty = True
+    pass
     if not empty:
         raise ic.ESGFPublicationTestError("Test DB is not empty!")
 
 def verify_tds_empty():
     empty = True
+    pass
     if not empty:
         raise ic.ESGFPublicationTestError("Test TDS is not empty!")
 
 def verify_solr_empty():
     empty = True
+    pass
     if not empty:
         raise ic.ESGFPublicationTestError("Test SOLR system is not empty!")
