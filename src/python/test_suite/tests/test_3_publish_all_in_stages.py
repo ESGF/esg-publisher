@@ -14,47 +14,42 @@ class Test3VerifyPublishAllInStages(test_0_verify_empty.Test0VerifyEmpty):
 
     all_datasets = (ds1, ds2)
 
-    def test_301_put_files_on_disk_all(self):
-        for ds in self.all_datasets:
-            self.tlog("Putting files on disk: %s" % ds.id)
-            publisher.put_files_on_disk(ds.id, ds.files)
-
-    def test_302_verify_files_on_disk_all(self):
+    def test_301_verify_files_on_disk_all(self):
         for ds in self.all_datasets:
             self.tlog("Verifying files on disk: %s" % ds.id)
             verify.verify_files_on_disk(ds.id, ds.files)
         
-    def test_303_publish_to_db_all(self):
+    def test_302_publish_to_db_all(self):
         for ds in self.all_datasets:
             self.tlog("Publishing to db: %s" % ds.id)
             publisher.publish_to_db(ds.id, ds.files)
 
-    def test_304_verify_published_to_db_all(self):
+    def test_303_verify_published_to_db_all(self):
         for ds in self.all_datasets:
-            self.tlog("Verifying files on disk: %s" % ds.id)
+            self.tlog("Verifying files published to DB: %s" % ds.id)
             verify.verify_published_to_db(ds.id, ds.files)
 
-    def test_305_publish_to_tds_all(self):
+    def test_304_publish_to_tds_all(self):
         for ds in self.all_datasets:
             self.tlog("Publishing to TDS: %s" % ds.id)
             publisher.publish_to_tds(ds.id, ds.files)
 
-    def test_306_verify_published_to_tds_all(self):
+    def test_305_verify_published_to_tds_all(self):
         for ds in self.all_datasets:
             self.tlog("Verifying published to TDS: %s" % ds.id)
             verify.verify_published_to_tds(ds.id, ds.files)
 
-    def test_307_publish_to_tds_all(self):
+    def test_306_publish_to_tds_all(self):
         for ds in self.all_datasets:
             self.tlog("Publishing to SOLR: %s" % ds.id)
             publisher.publish_to_solr(ds.id, ds.files)
 
-    def test_308_verify_published_to_solr_all(self):
+    def test_307_verify_published_to_solr_all(self):
         for ds in self.all_datasets:
             self.tlog("Verifying published to SOLR: %s" % ds.id)
             verify.verify_published_to_solr(ds.id, ds.files)
 
-    def test_309_verify_published_all(self):
+    def test_308_verify_published_all(self):
         for ds in self.all_datasets:
             self.tlog("Verifying published to all: %s" % ds.id)
             verify.verify_dataset_published(ds.id)

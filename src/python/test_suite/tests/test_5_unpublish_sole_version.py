@@ -35,15 +35,7 @@ class Test5VerifyUnpublishSoleVersion(test_1_publish_d1v1.Test1VerifyPublishSing
         self.tlog("Verifying unpublished from db: %s" % ds1.id)
         verify.verify_unpublished_from_db(ds1.id, ds1.files)
 
-    def test_507_put_files_on_disk_d1v1(self):
-        self.tlog("Removing files from disk: %s" % ds1.id)
-        publisher.put_files_on_disk(ds1.id, ds1.files)
-
-    def test_508_verify_files_on_disk_d1v1(self):
-        self.tlog("Verifying files removed from disk: %s" % ds1.id)
-        verify.verify_unpublished_from_solr(ds1.id, ds1.files)
-
-    def test_509_verify_unpublished_d1v1(self):
+    def test_507_verify_unpublished_d1v1(self):
         self.tlog("Verifying unpublished from all: %s" % ds1.id)
         verify.verify_dataset_unpublished(ds1.id)
 

@@ -6,9 +6,6 @@
 def publish(dsid, file_list):
     pass
 
-def put_files_on_disk(dsid, file_list):
-    pass
-
 def publish_to_db(dsid, file_list):
     pass
 
@@ -19,9 +16,6 @@ def publish_to_solr(dsid, file_list):
     pass
 
 def unpublish(dsid, file_list):
-    pass
-
-def remove_files_from_disk(dsid, file_list):
     pass
 
 def unpublish_from_db(dsid, file_list):
