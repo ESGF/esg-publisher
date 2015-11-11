@@ -11,6 +11,8 @@ Runs all tests for ESGF publisher suite.
 import unittest
 import re
 import os
+import sys
+import string
 
 from tests import *
 from utils import config
@@ -34,9 +36,28 @@ def run_suite():
     test_classes = gather_tests()
     print test_classes
 
+    failures = ""
     for test_class in test_classes:
         suite = unittest.TestLoader().loadTestsFromTestCase(test_class)
-        unittest.TextTestRunner(verbosity=2).run(suite)
+        rv = unittest.TextTestRunner(verbosity=2).run(suite)
+        if not rv.wasSuccessful():
+            failures += string.join(["In %s:\n\n   %s\n\n" % 
+                                     (e[0], e[1].replace("\n", "\n   "))
+                                     for e in (rv.errors + rv.failures)])
+    if failures:
+        print """
+
+===============================================
+  Collated errors/failures from above tests
+===============================================
+
+"""
+        print failures
+        print "Some test(s) failed - see above"
+        sys.exit(1)
+    else:
+        print "All tests successful"
+        sys.exit(0)
 
 if __name__ == "__main__":
 
