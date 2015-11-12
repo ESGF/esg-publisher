@@ -23,8 +23,10 @@ def gen_test_file(input_path,
                   output_path,
                   num_lons = 2,
                   num_lats = 2,
-                  first_lon = 60.,
-                  first_lat = 30.):
+                  num_other_axis = 2,
+                  first_lon_val = 60.,
+                  first_lat_val = 30.,
+                  first_other_axis_index = 0):
     """
     Generate a subsetted file with number of lons and lats specified,
     given the coords of the first lon and lat (uses nearest gridpoint).
@@ -49,9 +51,11 @@ def gen_test_file(input_path,
         if overwrite_this_variable(varname, dsin):
             overwritten_vars.append(varname)
 
-    value = ("For test purposes, subsetted in lon and lat " +
-             "and overwrote the following variables with random data: %s." % 
-             string.join(overwritten_vars, ", "))
+    value = "For test purposes, subsetted in lon and lat"
+
+    if overwritten_vars:
+        value += (" and overwrote the following vars with random data: %s." % 
+                  string.join(overwritten_vars, ", "))
     try:
         history = "%s %s" % (dsin.history, value)
     except AttributeError:
@@ -59,17 +63,27 @@ def gen_test_file(input_path,
     dsout.history = history
     dsout.comment = "DUMMY DATA. See history."
 
-    lon_coords = find_coords(dsin, "longitude")
-    lat_coords = find_coords(dsin, "latitude")
+    subsetting = { "longitude": (get_nearest_index, first_lon_val, num_lons),
+                   "latitude": (get_nearest_index, first_lat_val, num_lats),
+                   "time": None,
+                   "default": (None, first_other_axis_index, num_other_axis) }
 
-    subsets = get_subsets(lon_coords, first_lon, num_lons)
-    subsets.update(get_subsets(lat_coords, first_lat, num_lats))
+    coords = find_coords(dsin)
+    subsets = get_subsets(coords, subsetting)
 
+    print "Subsetting:"
+    for dimname, (first, num) in subsets.iteritems():
+        print "  %s: first index %s, length %s" % (dimname, first, num)
+
+    print "Variables:"
     copy_dims(dsin, dsout, subsets)
     for varname in dsin.variables:
         overwrite = (varname in overwritten_vars)
         copy_var(varname, dsin, dsout, subsets, overwrite)
-
+        if overwrite:
+            print "  write fake %s" % varname
+        else:
+            print "  copy %s" % varname
     dsout.close()
     dsin.close()
 
@@ -132,9 +146,10 @@ def overwrite_this_variable(name, ds):
     return True
 
 
-def get_subsets(coords, first_val, num_vals):
+def get_subsets(coords, subsetting):
     """
-    Given coordinate and required first axis value and number of axis values,
+    Given coordinate and dictionary looking up from standard name to 
+    required first axis value and number of axis values,
     returns dictionary of dim_name -> (offset, count)
     
     (num_vals is not used for calculations, and is just copied into count)
@@ -142,8 +157,16 @@ def get_subsets(coords, first_val, num_vals):
     subsets = {}
     for coord in coords:
         name, dim, var = coord
-        index = get_nearest_index(var, first_val)
-        subsets[name] = (index, num_vals)
+        try:
+            indices = subsetting[var.standard_name]
+        except (KeyError, AttributeError):
+            indices = subsetting["default"]
+        if not indices:
+            continue
+        func, first_val, num_vals = indices
+        if func:
+            first_val = func(var, first_val)
+        subsets[name] = (first_val, num_vals)
     return subsets
 
 
@@ -156,20 +179,17 @@ def get_nearest_index(var, value):
     
 
 
-def find_coords(ds, stdname):
+def find_coords(ds):
     """
-    Find the coordinate variable whose standard name is supplied.
+    Find all the coordinate variables
     Returns a list of (name, dim, var) tuples
     """
     coords = []
-    for name in ds.dimensions:
-        try:
-            this_stdname = ds.variables[name].standard_name
-        except:
-            pass
-        else:
-            if this_stdname == stdname:
-               coords.append((name, ds.dimensions[name], ds.variables[name]))
+    for name, dim in ds.dimensions.iteritems():
+        if name in ds.variables:
+            var = ds.variables[name]
+            if var.dimensions == (name,):
+                coords.append((name, dim, var))
     return coords
     
 
@@ -248,7 +268,7 @@ def gen_all_test_data(input_root = '/badc/cmip5/data',
     for path_rel in read_list(input_list):
         path_in = os.path.join(input_root, path_rel)
         if not os.path.exists(path_in):
-            print "Input file %s does not exist - skipping"
+            print "Input file %s does not exist - skipping" % path_in
             continue
 
         assert("//" not in path_rel)
@@ -265,9 +285,13 @@ def gen_all_test_data(input_root = '/badc/cmip5/data',
             print "could not create containing directory for %s" % path_out
             continue
 
-        print "Converting %s -> %s" % (path_in, path_out)
+        print "Converting %s" % path_in
         gen_test_file(path_in, path_out, **kwargs_for_gen_test_file)
-
+        print "Wrote %s" % path_out
+        print
 
 if __name__ == '__main__':
     gen_all_test_data()
+    #gen_all_test_data(input_root = 'swiftbrowser.dkrz.de/out/',
+    #                  input_list = 'kb_files')
+                      
