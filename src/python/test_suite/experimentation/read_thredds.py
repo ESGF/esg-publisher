@@ -1,7 +1,6 @@
 import urllib2
 import os
 import xml.etree.ElementTree as ET
-import socket
 
 from publication_objects import Dataset, File
 
@@ -12,13 +11,10 @@ class NotFound(Exception):
 
 class ReadThredds(object):
 
-    def __init__(self, local_root = "/esg/content/thredds/esgcet/", url_root = None):
+    def __init__(self, conf):
 
-        self.local_root = local_root
-        if url_root:
-            self.url_root = url_root
-        else:
-            self.url_root = "https://%s/thredds/catalog/esgcet/" % socket.gethostname()
+        self.local_root = conf.get_thredds_root()
+        self.url_root = conf.get_thredds_url_root()
 
     def local_path(self, catalog_location):
         return os.path.join(self.local_root, catalog_location)
@@ -83,11 +79,11 @@ class ReadThredds(object):
         for ch in self.get_children_by_tag(el, "dataset"):
             props = self.get_properties(ch)
             if "file_id" in props:
-                name = props["file_id"]
+                url = ch.get("urlPath")
                 tracking_id = props["tracking_id"]
                 checksum = props["checksum"]
                 size = props["size"]
-                ds.add_file(File(name, size, checksum, tracking_id))
+                ds.add_file(File(url, size, checksum, tracking_id))
         return ds
 
     def get_properties(self, el):
@@ -101,11 +97,17 @@ class ReadThredds(object):
 
 if __name__ == '__main__':
 
-    rt = ReadThredds()
+    import read_esg_config
+
+    conf = read_esg_config.Config()
+    rt = ReadThredds(conf)
     catalog = "30/cmip5.output1.CSIRO-QCCCE.CSIRO-Mk3-6-0.historical.mon.land.Lmon.r5i1p1.v1.xml"
 
     url_path = rt.url_path(catalog)
     local_path = rt.local_path(catalog)
+
+    print url_path
+    print local_path
 
     ds_served = rt.parse_catalog(url_path)
     ds_local = rt.parse_catalog(local_path)

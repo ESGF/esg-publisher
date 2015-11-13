@@ -36,9 +36,9 @@ class Dataset(object):
 
 class File(object):
 
-    def __init__(self, name, size, checksum, tracking_id):
-        self.name = name
-        self.size = size
+    def __init__(self, url, size, checksum, tracking_id):
+        self.url = url
+        self.size = int(size)
         self.checksum = checksum
         self.tracking_id = tracking_id
 
@@ -46,9 +46,10 @@ class File(object):
         return cmp(self.tracking_id, other.tracking_id)
 
     def __eq__(self, other):
-        if self.name != other.name:
+        if self.url != other.url:
             return False
         if self.size != other.size:
+            print self.size, other.size
             return False
         if self.checksum != other.checksum:
             return False
@@ -60,11 +61,11 @@ class File(object):
         return not (self == other)
 
     def __str__(self):
-        return """<File: name: %s 
+        return """<File: url: %s 
        size %s 
        checksum %s 
        tracking_id %s
->""" % (self.name, self.size, self.checksum, self.tracking_id)
+>""" % (self.url, self.size, self.checksum, self.tracking_id)
        
 
 if __name__ == '__main__':

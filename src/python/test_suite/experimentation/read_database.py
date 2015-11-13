@@ -1,5 +1,5 @@
-import os
 import psycopg2
+import urlparse
 import string
 
 from publication_objects import Dataset, File
@@ -9,21 +9,32 @@ class NotFound(Exception):
     pass
 
 
-class TalkToDB(object):
+class ReadDB(object):
 
-    def __init__(self, 
-                 db_name = 'esgcet', 
-                 db_user = 'esgcet',
-                 db_host = None, 
-                 db_port = None):
+    def __init__(self, conf):
 
-        self.con = psycopg2.connect(database=db_name, 
-                                    user=db_user, 
-                                    host=db_host, 
-                                    port=db_port)
+        self.db_url = conf.get_db_url()
+        self.con = None
+
+    def ensure_connected(self):
+        if self.con and not self.con.closed:
+            return
+        result = urlparse.urlparse(self.db_url)
+        username = result.username
+        password = result.password
+        database = result.path[1:]
+        hostname = result.hostname
+        self.con = psycopg2.connect(
+            database = database,
+            user = username,
+            password = password,
+            host = hostname
+            )
         self.cur = self.con.cursor()
+        
 
     def get_output(self, command):
+        self.ensure_connected()
         self.cur.execute(command)
         return self.cur.fetchall()
 
@@ -105,20 +116,22 @@ class TalkToDB(object):
                             where = "dataset_version_id = %s" % dsvid)
 
         for fvid in fvids:
-            location, size, cksum, tracking_id = \
-                self.select(('location', 'size', 'checksum', 'tracking_id'), 
+            url, size, cksum, tracking_id = \
+                self.select(('url', 'size', 'checksum', 'tracking_id'), 
                             'file_version',
                             where = "id = %s" % fvid,
                             exactly_one_row = True)
-            name = os.path.basename(location)
-            ds.add_file(File(name, size, cksum, tracking_id))
+            ds.add_file(File(url, size, cksum, tracking_id))
 
         return ds, catalog_location
 
 
 if __name__ == '__main__':
+
+    import read_esg_config
+
     name = 'cmip5.output1.CSIRO-QCCCE.CSIRO-Mk3-6-0.historical.mon.land.Lmon.r5i1p1'
     version = 1
-    ds, catalog_location = TalkToDB().get_dset(name, version)
+    ds, catalog_location = ReadDB(conf).get_dset(name, version)
     print ds
     print catalog_location

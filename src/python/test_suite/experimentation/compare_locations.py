@@ -1,13 +1,15 @@
+import read_esg_config
 import read_filesystem
 import read_database
 import read_thredds
 
 
-db = read_database.TalkToDB()
-
 mapfile_path = "/badc/cmip5/metadata/mapfiles/by_name/cmip5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/cmip5.output1.CSIRO-QCCCE.CSIRO-Mk3-6-0.historical.mon.land.Lmon.r5i1p1.v1"
 
-ds_fs = read_filesystem.dset_from_mapfile(mapfile_path)
+conf = read_esg_config.Config()
+rf = read_filesystem.ReadFilesystem(conf)
+
+ds_fs = rf.dset_from_mapfile(mapfile_path)
 
 name = ds_fs.name
 version = ds_fs.version
@@ -16,13 +18,14 @@ print "As seen on filesystem:"
 print ds_fs
 
 
+db = read_database.ReadDB(conf)
 ds_db, catalog_loc = db.get_dset(name, version)
 print "As seen in database:"
 print ds_db
 
 assert ds_db == ds_fs
 
-rt = read_thredds.ReadThredds()
+rt = read_thredds.ReadThredds(conf)
 url_path = rt.url_path(catalog_loc)
 local_path = rt.local_path(catalog_loc)
 print local_path
