@@ -39,4 +39,5 @@ print "fixme: ds3 in datasets.py"
 d3v1 = None
 
 
-all_datasets = (d1v1, d1v2, d2v1, d2v2, d3v1)
+#all_datasets = (d1v1, d1v2, d2v1, d2v2, d3v1)
+all_datasets = (d1v1, d1v2, d2v1, d2v2)

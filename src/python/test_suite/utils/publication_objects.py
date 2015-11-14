@@ -11,7 +11,7 @@ class Dataset(object):
     def __init__(self, name, version, files = None):
         self.name = name
         self.version = int(version)
-        self.id = "%s.v%d" % (name, version)
+        self.id = "%s.v%d" % (name, self.version)
         if files:
             self.files = files
             self.files.sort(File.cmp_by_id)

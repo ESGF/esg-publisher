@@ -90,6 +90,24 @@ class ReadDB(object):
             return output
 
 
+    def get_file(self, tracking_id):
+        """
+        Gets a File object by its tracking ID.  Raises NotFound if absent.
+        Raises some other exception if it is duplicated.
+        """
+        
+        result = self.select(('url', 'size', 'checksum',), 
+                             'file_version',
+                             where = "tracking_id = '%s'" % tracking_id,
+                             max_one_row = True)
+        if result == None:
+            raise NotFound
+
+        url, size, cksum = result
+        
+        return File(url, size, cksum, tracking_id)
+
+
     def get_dset(self, dataset_id, version):
         """
         returns a 2-tuple Dataset object, catalog_location
@@ -128,10 +146,22 @@ class ReadDB(object):
 
 if __name__ == '__main__':
 
-    import read_esg_config
+    import esg_config
 
     name = 'cmip5.output1.CSIRO-QCCCE.CSIRO-Mk3-6-0.historical.mon.land.Lmon.r5i1p1'
     version = 1
-    ds, catalog_location = ReadDB(conf).get_dset(name, version)
+    conf = esg_config.Config()
+    db = ReadDB(conf)
+    ds, catalog_location = db.get_dset(name, version)
     print ds
     print catalog_location
+
+    for f in ds.files:
+        assert f == db.get_file(f.tracking_id)
+
+    try:
+        print db.get_file("blah")
+    except NotFound:
+        pass
+    else:
+        raise Exception("'blah' should not have been found")
