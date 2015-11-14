@@ -1,6 +1,5 @@
 class PublicationLevels(object):
 
-    disk = "disk"
     db = "db"
     tds = "tds"
     solr = "solr"
@@ -9,7 +8,7 @@ class PublicationLevels(object):
     def all():
         "Return a tuple of the publication levels in order."
         pl = PublicationLevels
-        return (pl.disk, pl.db, pl.tds, pl.solr)
+        return (pl.db, pl.tds, pl.solr)
 
 class ESGFPublicationVerificationError(Exception): pass
 

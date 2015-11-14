@@ -9,10 +9,7 @@ def get_all_verify_funcs(publication_levels=None):
         if pub_level not in ic.PublicationLevels.all():
             raise ic.ESGFPublicationTestError("Publication level not known: %s" % pub_level)
 
-        if pub_level == "disk":
-            func_name = "verify_files_on_disk"
-        else:
-            func_name = "verify_published_to_%s" % pub_level
+        func_name = "verify_published_to_%s" % pub_level
 
         verify_funcs.append(eval(func_name))
 
@@ -33,10 +30,6 @@ def verify_dataset_published(ds, publication_levels=None):
                 "DSID: %s, Level: %s" % (ds, verify_func.func_name.split("_")[-1]))
 
     return True
-
-def verify_files_on_disk(ds):
-    # Checks files are on disk
-    pass
 
 def verify_published_to_db(ds):
     # Checks database has dataset record with 
