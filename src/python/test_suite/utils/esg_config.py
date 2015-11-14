@@ -8,9 +8,11 @@ Class to read the relevant parts of esg.ini
 """
 
 
+default_config_path = '/esg/config/esgcet/esg.ini'
+
 class Config(object):
     
-    def __init__(self, path = '/esg/config/esgcet/esg.ini'):
+    def __init__(self, path = default_config_path):
         self.path = path
         self.cp = ConfigParser()
         assert self.cp.read(path)

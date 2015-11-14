@@ -8,10 +8,15 @@ between datasets when validating publication in the test suite.
 
 class Dataset(object):
 
-    def __init__(self, name, version):
+    def __init__(self, name, version, files = None):
         self.name = name
         self.version = int(version)
-        self.files = []
+        self.id = "%s.v%d" % (name, version)
+        if files:
+            self.files = files
+            self.files.sort(File.cmp_by_id)
+        else:
+            self.files = []
 
     def add_file(self, f):
         self.files.append(f)
@@ -32,6 +37,11 @@ class Dataset(object):
 >""" % (self.name, self.version, 
        string.join(["  " + str(f).replace("\n", "\n  ") for f in self.files],
                    "\n"))
+    
+    def __repr__(self):
+        return "Dataset('%s', %d, files=[%s])" % (
+            self.name, self.version, 
+            string.join([f.__repr__() for f in self.files], ", "))
     
 
 class File(object):
@@ -65,6 +75,10 @@ class File(object):
        checksum %s 
        tracking_id %s
 >""" % (self.url, self.size, self.checksum, self.tracking_id)
+
+    def __repr__(self):
+        return "File('%s', %d, '%s', '%s')" % (
+            self.url, self.size, self.checksum, self.tracking_id)
        
 
 if __name__ == '__main__':
@@ -105,6 +119,8 @@ if __name__ == '__main__':
 
     for f in (f1, f2):
         ds1.add_file(f)
+
+    print repr(ds1)
 
 
     # matching dataset

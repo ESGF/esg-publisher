@@ -1,10 +1,10 @@
 import os
 import re
+
 import cdms2
-import hashlib
 
 from publication_objects import Dataset, File
-
+from cksum import get_cksum
 
 class ReadFilesystem(object):
 
@@ -16,7 +16,7 @@ class ReadFilesystem(object):
             if path.startswith(root):
                 pos = len(root)
                 return key + "/" + path[pos :]
-        raise ValueError("%s not in any dataset roots" % path)
+        raise ValueError("%s not in any dataset roots (see esg.ini[DEFAULT]thredds_dataset_roots)" % path)
 
     def dset_from_mapfile(self,
                           path, ds_version=None,
@@ -49,7 +49,7 @@ class ReadFilesystem(object):
                 assert size == self.get_size(file_path)
             if verify_checksums:
                 cksum_type = kwitems['checksum_type']
-                assert cksum == self.get_cksum(file_path, cksum_type)
+                assert cksum == get_cksum(file_path, cksum_type)
             dsets[dsid].add_file(File(url, size, cksum, tracking_id))
         fh.close()
         dslist = dsets.values()
@@ -61,18 +61,6 @@ class ReadFilesystem(object):
 
     def get_size(self, path):
         return os.stat(path).st_size
-
-    def get_cksum(self, path, cksum_type):
-        func = getattr(hashlib, cksum_type.lower())  # hashlib.md5 or hashlib.sha256
-        h = func()
-        f = open(path)
-        while True:
-            data = f.read(10240)
-            if not data:
-                break
-            h.update(data)
-        f.close()
-        return h.hexdigest()
 
     def get_tracking_id(self, path):
         """

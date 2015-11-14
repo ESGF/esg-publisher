@@ -1,36 +1,42 @@
-# datasets.py - defines the test dataset ids and their files
+# datasets.py - defines the test dataset ids, by reference to the mapfiles
+# The list of files in them are read from the mapfiles.
 
-class DatasetForTests(object):
+import os
 
-    def __init__(self, id, files):
-        self.id = id
-        self.files = files
+import test_suite_config
+import esg_config
+from read_filesystem import ReadFilesystem
+
+
+_conf = esg_config.Config()
+_rf = ReadFilesystem(_conf)
+_mf_dir = test_suite_config.get_mapfile_dir()
+
+
+def _get_ds(dsid, nfiles = None):
+
+    mapfile_path = os.path.join(_mf_dir, dsid)
+
+    ds = _rf.dset_from_mapfile(mapfile_path)
+
+    if nfiles != None:
+        # check expected number of files
+        assert len(ds.files) == nfiles
+
+    return ds
 
 
 # Dataset 1, versions 1 & 2
-### THIS IS A BAD EXAMPLE - we need a small dataset with only one or two variables in it.
-### And maybe we need a CORDEX example
-d1v1 = DatasetForTests("cmip5.output1.MOHC.HadGEM2-ES.abrupt4xCO2.day.atmos.cfDay.r1i1p1.v20120114", (
-        "rsds_cfDay_HadGEM2-ES_abrupt4xCO2_r1i1p1_18791201-18791230.nc",
-        "rsds_cfDay_HadGEM2-ES_abrupt4xCO2_r1i1p1_19991201-19991230.nc",
-    ))
-
-d1v2 = DatasetForTests("foo.baa", (
-        "baa_foo_2015.nc",
-    ))
+d1v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-LR.esmFixClim1.mon.ocean.Omon.r1i1p1.v20111006', 2)
+d1v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-LR.esmFixClim1.mon.ocean.Omon.r1i1p1.v20120625', 2)
 
 # Dataset 2, versions 1 & 2
-d2v1 = DatasetForTests("foo.baa", (
-        "baa_foo_2015.nc",
-    ))
-
-d2v2 = DatasetForTests("foo.baa", (
-        "baa_foo_2015.nc",
-    ))
+d2v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20111028', 4)
+d2v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20120625', 5)
 
 # Dataset 3 contains BAD Files
-d3v1 = DatasetForTests("foo.bad", (
-        "bad_file_2015.nc",
-    ))
+print "fixme: ds3 in datasets.py"
+d3v1 = None
+
 
 all_datasets = (d1v1, d1v2, d2v1, d2v2, d3v1)

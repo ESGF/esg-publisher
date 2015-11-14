@@ -1,16 +1,6 @@
-import utils.info_classes as ic
-import utils.datasets as datasets
+import info_classes as ic
+from datasets import all_datasets
 
-def get_pub_base_dir(dsid):
-    pass
-    return
-
-def get_file_list(dsid):
-    for dataset in datasets.all_datasets:
-        if dataset.id == dsid:
-            return dataset.files
-
-    raise ic.ESGFPublicationTestError("Cannot find files for dataset id: %s" % dsid)
 
 def get_all_verify_funcs(publication_levels=None):
     verify_funcs = []
@@ -28,60 +18,57 @@ def get_all_verify_funcs(publication_levels=None):
 
     return verify_funcs
 
-def verify_dataset_published(dsid, publication_levels=None):
+def verify_dataset_published(ds, publication_levels=None):
 
     if not publication_levels:
         publication_levels = ic.PublicationLevels.all()
 
     verify_funcs = get_all_verify_funcs(publication_levels=publication_levels)
 
-    file_list = get_file_list(dsid)
-    assert file_list # Check exists
-
     for verify_func in verify_funcs:
         try:
-            verify_func(dsid, file_list)
+            verify_func(ds)
         except:
             raise ic.ESGFPublicationVerificationError("Cannot verify that dataset was published. "
-                "DSID: %s, Level: %s" % (dsid, verify_func.func_name.split("_")[-1]))
+                "DSID: %s, Level: %s" % (ds, verify_func.func_name.split("_")[-1]))
 
     return True
 
-def verify_files_on_disk(dsid, file_list):
+def verify_files_on_disk(ds):
     # Checks files are on disk
     pass
 
-def verify_published_to_db(dsid, file_list):
-    # Checks database has dataset record with related file records matching file_list
+def verify_published_to_db(ds):
+    # Checks database has dataset record with 
+    # related file records matching those referenced inside ds object
     pass
 
-def verify_published_to_tds(dsid, file_list):
-    # Checks TDS has dataset record with related file records matching file_list
+def verify_published_to_tds(ds):
+    # Checks TDS has dataset record with 
+    # related file records matching those referenced inside ds object
     pass
 
-def verify_published_to_solr(dsid, file_list):
-    # Checks SOLR has dataset record with related file records matching file_list
+def verify_published_to_solr(ds):
+    # Checks SOLR has dataset record with 
+    # related file records matching those referenced inside ds object
     pass
 
-def verify_dataset_unpublished(dsid):
+def verify_dataset_unpublished(ds):
 
     verify_funcs = (verify_unpublished_from_solr,
                     verify_unpublished_from_db,
                     verify_unpublished_from_tds)
 
-    file_list = get_file_list(dsid)
-    assert file_list # Check exists
-
     for verify_func in verify_funcs:
         try:
-            verify_func(dsid, file_list)
+            verify_func(ds)
         except:
             raise ic.ESGFPublicationVerificationError("Cannot verify that dataset was unpublished. "
-                "DSID: %s, Level: %s" % (dsid, verify_func.func_name.split("_")[-1]))
+                "DSID: %s, Level: %s" % (ds, verify_func.func_name.split("_")[-1]))
 
     return True
 
-def verify_unpublished_from_db(dsid, file_list):
+def verify_unpublished_from_db(ds):
     # NOTE: this is not simply "not verify_published_to_db()"
     # We want to verify ALL content is not there
     # Any partial match should raise an Exception
@@ -91,7 +78,7 @@ def verify_unpublished_from_db(dsid, file_list):
     # - assert no files from file_list have records in the DB that are connected to dataset id
     pass
 
-def verify_unpublished_from_tds(dsid, file_list):
+def verify_unpublished_from_tds(ds):
     # NOTE: this is not simply "not verify_published_to_tds()"
     # We want to verify ALL content is not there
     # Any partial match should raise an Exception
@@ -101,7 +88,7 @@ def verify_unpublished_from_tds(dsid, file_list):
     # - assert no file XML records exist in TDS from file_list that are connected to dataset id
     pass
 
-def verify_unpublished_from_solr(dsid, file_list):
+def verify_unpublished_from_solr(ds):
     # NOTE: this is not simply "not verify_published_to_solr()"
     # We want to verify ALL content is not there
     # Any partial match should raise an Exception
@@ -111,25 +98,8 @@ def verify_unpublished_from_solr(dsid, file_list):
     # - assert no files from file_list are in solr with connections to dataset id
     pass
 
-def verify_empty():
-    verify_db_empty()
-    verify_tds_empty()
-    verify_solr_empty()
-
-def verify_db_empty():
-    empty = True
-    pass
-    if not empty:
-        raise ic.ESGFPublicationTestError("Test DB is not empty!")
-
-def verify_tds_empty():
-    empty = True
-    pass
-    if not empty:
-        raise ic.ESGFPublicationTestError("Test TDS is not empty!")
-
-def verify_solr_empty():
-    empty = True
-    pass
-    if not empty:
-        raise ic.ESGFPublicationTestError("Test SOLR system is not empty!")
+def verify_empty_of_test_data():
+    for ds in all_datasets:
+        verify_unpublished_from_db(ds)
+        verify_unpublished_from_tds(ds)
+        verify_unpublished_from_solr(ds)
