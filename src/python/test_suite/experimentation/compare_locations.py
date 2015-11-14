@@ -2,7 +2,7 @@ import read_esg_config
 import read_filesystem
 import read_database
 import read_thredds
-
+import read_index
 
 mapfile_path = "/badc/cmip5/metadata/mapfiles/by_name/cmip5/output1/CSIRO-QCCCE/CSIRO-Mk3-6-0/historical/cmip5.output1.CSIRO-QCCCE.CSIRO-Mk3-6-0.historical.mon.land.Lmon.r5i1p1.v1"
 
@@ -41,3 +41,11 @@ print "As seen in THREDDS (http from server):"
 print ds_thredds_served
 
 assert ds_thredds_served == ds_fs
+
+ri = read_index.ReadIndex(conf)
+ds_index = ri.get_dset(name, version)
+
+print "As seen in index:"
+print ds_index
+
+assert ds_index == ds_fs

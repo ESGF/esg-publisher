@@ -49,7 +49,6 @@ class File(object):
         if self.url != other.url:
             return False
         if self.size != other.size:
-            print self.size, other.size
             return False
         if self.checksum != other.checksum:
             return False

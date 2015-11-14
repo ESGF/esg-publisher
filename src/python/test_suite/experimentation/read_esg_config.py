@@ -1,4 +1,5 @@
 import re
+import urlparse
 
 from ConfigParser import ConfigParser
 
@@ -30,6 +31,16 @@ class Config(object):
                     dirpath = dirpath[:-1]
                 roots.append((key, dirpath + "/"))
         return roots
+
+    def hostname_from_url(self, url):
+        return urlparse.urlparse(url).hostname
+
+    def get_data_node(self):
+        return self.hostname_from_url(self.get_thredds_url_root())
+
+    def get_index_node(self):
+        return self.hostname_from_url(self.cp.get("DEFAULT", 
+                                                  "hessian_service_url"))
 
     def get_thredds_root(self):
         return self.cp.get("DEFAULT", "thredds_root")
