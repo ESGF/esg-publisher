@@ -1,6 +1,7 @@
 import info_classes as ic
 from datasets import all_datasets
 
+from . import config
 import esg_config
 import read_database
 import read_thredds
@@ -41,6 +42,9 @@ def verify_dataset_published(ds, publication_levels=None):
     return True
 
 def verify_published_to_db(ds):
+
+    if config.is_set("devel_skip_verify_published_to_db"): return
+
     # Checks database has dataset record with 
     # related file records matching those referenced inside ds object
     ds_db, catalog_loc = _db.get_dset(ds.name, ds.version)
@@ -49,32 +53,42 @@ def verify_published_to_db(ds):
     # 
     # For good measure, look up files by tracking ID.  The above comparison 
     # has already included files, so really, it only checks that tracking IDs are 
-    # not duplicated.  The get_file() is really more relevant in verify_unpublished_from_db
-    # below.
+    # not duplicated.  The get_file() is really more relevant in
+    # verify_unpublished_from_db below.
     for f in ds.files:
         assert f == _db.get_file(f.tracking_id)
 
 def verify_published_to_tds(ds):
+
+    if config.is_set("devel_skip_verify_published_to_tds"): return
+
     # Checks TDS has dataset record with 
     # related file records matching those referenced inside ds object
     try:
         catalog_loc = ds.catalog_loc
     except AttributeError:
-        raise Exception("verify_published_to_tds() must not be called until after verify_published_to_db()")
+        raise Exception("verify_published_to_tds() called without first finding catalog location in db via verify_published_to_db()")
+
+    check_catalog_xml = not config.is_set("devel_skip_catalog_xml")
 
     local_path = _tds.local_path(catalog_loc)
     ds_thredds_local = _tds.parse_catalog(local_path)
     assert ds == ds_tds_local  # check local THREDDS catalog has correct info
 
-    assert catalog_log == _tds.get_catalog_location_via_local(ds.id) # check listed in local catalog.xml
+    if check_catalog_xml:
+        assert catalog_log == _tds.get_catalog_location_via_local(ds.id) # check listed in local catalog.xml
 
     url_path = _tds.url_path(catalog_loc)
     ds_tds_served = _tds.parse_catalog(url_path)
     assert ds == ds_tds_served  #  check THREDDS catalog as served over http has correct info
 
-    assert catalog_log == _tds.get_catalog_location_via_http(ds.id)  # check listed in catalog.xml as served over http
+    if check_catalog_xml:
+        assert catalog_log == _tds.get_catalog_location_via_http(ds.id)  # check listed in catalog.xml as served over http
 
 def verify_published_to_solr(ds):
+
+    if config.is_set("devel_skip_verify_published_to_solr"): return
+
     # Checks SOLR has dataset record with 
     # related file records matching those referenced inside ds object
     ds_index = _index.get_dset(ds.name, ds.version)
@@ -96,6 +110,9 @@ def verify_dataset_unpublished(ds):
     return True
 
 def verify_unpublished_from_db(ds):
+
+    if config.is_set("devel_skip_verify_unpublished_from_db"): return
+
     # NOTE: this is not simply "not verify_published_to_db()"
     # We want to verify ALL content is not there
     # Any partial match should raise an Exception
@@ -123,6 +140,9 @@ def verify_unpublished_from_db(ds):
                 
 
 def verify_unpublished_from_tds(ds, check_known_location=True):
+
+    if config.is_set("devel_skip_verify_unpublished_from_tds"): return
+
     # NOTE: this is not simply "not verify_published_to_tds()"
     # We want to verify ALL content is not there
     # Any partial match should raise an Exception
@@ -138,8 +158,8 @@ def verify_unpublished_from_tds(ds, check_known_location=True):
     # unpublished from the previous known location, call with 
     # 'check_known_location=False' to suppress this check.
     #
-    # Additionally, unconditionally, a check is made whether the 
-    # dataset exists in the top-level catalog.
+    # Additionally, a check is made whether the dataset exists in the
+    # top-level catalog.
     
     if check_known_location:
         try:
@@ -156,23 +176,27 @@ def verify_unpublished_from_tds(ds, check_known_location=True):
             else:
                 raise Exception("%s should have been unpublished" % local_path)
 
-    try:
-        _tds.get_catalog_location_via_local(ds.id)
-    except read_thredds.NotFound:
-        pass
-    else:
-        raise Exception("%s still found in catalog.xml (locally)" % ds.id)
+    if not config.is_set("devel_skip_catalog_xml"):
 
-    try:
-        _tds.get_catalog_location_via_http(ds.id)
-    except read_thredds.NotFound:
-        pass
-    else:
-        raise Exception("%s still found in catalog.xml (via http)" % ds.id)
-    
+        try:
+            _tds.get_catalog_location_via_local(ds.id)
+        except read_thredds.NotFound:
+            pass
+        else:
+            raise Exception("%s still found in catalog.xml (locally)" % ds.id)
+
+        try:
+            _tds.get_catalog_location_via_http(ds.id)
+        except read_thredds.NotFound:
+            pass
+        else:
+            raise Exception("%s still found in catalog.xml (via http)" % ds.id)
 
 
 def verify_unpublished_from_solr(ds):
+
+    if config.is_set("devel_skip_verify_unpublished_from_solr"): return
+
     # NOTE: this is not simply "not verify_published_to_solr()"
     # We want to verify ALL content is not there
     # Any partial match should raise an Exception
@@ -180,7 +204,9 @@ def verify_unpublished_from_solr(ds):
     # TODO:
     # - assert dataset id is not in solr
     # - assert no files from file_list are in solr with connections to dataset id
+    print "FIXME: code needed here"
     pass
+
 
 def verify_empty_of_test_data():
     for ds in all_datasets:

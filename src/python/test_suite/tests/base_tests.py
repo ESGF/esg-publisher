@@ -18,7 +18,7 @@ class PublishBaseTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.log = logging.getLogger(self.__class__.__name__)
-        self.log.setLevel(getattr(logging, config["log_level"]))
+        self.log.setLevel(getattr(logging, config.get("log_level")))
         self.tlog("Setting up...", "INFO")
         publisher.delete_all()
 

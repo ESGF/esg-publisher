@@ -19,7 +19,7 @@ from utils import config
 
 def gather_tests():
     "Returns a list of tests to run."
-    tests_dir = os.path.join(config["test_base_dir"], "tests")
+    tests_dir = os.path.join(config.get("test_base_dir"), "tests")
     test_mods = [test_mod.split(".")[0] for test_mod in os.listdir(tests_dir) if re.match("test_\d", test_mod)]
     test_classes = set()
 
@@ -33,6 +33,7 @@ def gather_tests():
     return test_classes
 
 def run_suite():
+
     test_classes = gather_tests()
     print test_classes
 
@@ -57,6 +58,12 @@ def run_suite():
         sys.exit(1)
     else:
         print "All tests successful"
+        if config.devel_options_used:
+            print "\nHowever, failing overall test because the following 'devel_' options were used:"
+            for opt in config.devel_options_used:
+                print "   %s" % opt
+            print "\nFor test to succeed, unset devel_ options in the config and try again.\n"
+            sys.exit(1)
         sys.exit(0)
 
 if __name__ == "__main__":

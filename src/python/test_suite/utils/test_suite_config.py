@@ -8,6 +8,7 @@ class Config(object):
     def __init__(self, filename = "test_suite.ini"):
         self.top_dir = self._get_top_dir()
         self.d = self._parse_test_config(filename)
+        self.devel_options_used = set()
         
     def _get_top_dir(self):
         p = os.path
@@ -63,6 +64,8 @@ class Config(object):
     def is_set(self, key, default=False):
         value = self.get_with_default(key, default)
         if value in self._true_vals:
+            if key.startswith("devel_"):
+                self.devel_options_used.add(key)
             return True
         if value in self._false_vals:
             return False
