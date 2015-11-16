@@ -3,14 +3,14 @@
 
 import os
 
-import test_suite_config
+from . import config
 import esg_config
 from read_filesystem import ReadFilesystem
 
 
 _conf = esg_config.Config()
 _rf = ReadFilesystem(_conf)
-_mf_dir = test_suite_config.get_mapfile_dir()
+_mf_dir = config.get('test_mapfile_dir')
 
 
 def _get_ds(dsid, nfiles = None):

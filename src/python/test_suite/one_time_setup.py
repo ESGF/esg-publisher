@@ -1,9 +1,9 @@
-import utils.test_suite_config as conf
+from utils import config
 from utils.esg_config import default_config_path as esgini
 from one_time_setup.simple_mapfile_gen import gen_all_mapfiles
 
-mapfile_dir = conf.get_mapfile_dir()
-data_root = conf.get_data_root()
+mapfile_dir = config.get('test_mapfile_dir')
+data_root = config.get('test_data_dir')
 
 gen_all_mapfiles(data_root, mapfile_dir)
 
