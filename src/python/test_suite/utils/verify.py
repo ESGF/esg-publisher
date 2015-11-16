@@ -37,7 +37,7 @@ def verify_dataset_published(ds, publication_levels=None):
             verify_func(ds)
         except:
             raise ic.ESGFPublicationVerificationError("Cannot verify that dataset was published. "
-                "DSID: %s, Level: %s" % (ds, verify_func.func_name.split("_")[-1]))
+                "DSID: %s, Level: %s" % (ds.id, verify_func.func_name.split("_")[-1]))
 
     return True
 
