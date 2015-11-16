@@ -16,6 +16,7 @@ import string
 
 from tests import *
 from utils import config
+from utils import set_esg_environment
 
 def gather_tests():
     "Returns a list of tests to run."
@@ -33,6 +34,8 @@ def gather_tests():
     return test_classes
 
 def run_suite():
+    
+    set_esg_environment.set_esg_env()
 
     test_classes = gather_tests()
     print test_classes

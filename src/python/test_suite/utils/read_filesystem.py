@@ -41,7 +41,7 @@ class ReadFilesystem(object):
             (dsid, file_path, size), kwitems = self.parse_mapfile_line(line)
             size = int(size)
             if dsid not in dsets:
-                dsets[dsid] = Dataset(dsid, ds_version)
+                dsets[dsid] = Dataset(dsid, ds_version, mapfile_path=path)
             cksum = kwitems['checksum']
             tracking_id = self.get_tracking_id(file_path)
             url = self.path_to_url(file_path)

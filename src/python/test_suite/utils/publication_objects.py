@@ -8,10 +8,11 @@ between datasets when validating publication in the test suite.
 
 class Dataset(object):
 
-    def __init__(self, name, version, files = None):
+    def __init__(self, name, version, files = None, mapfile_path = None):
         self.name = name
         self.version = int(version)
         self.id = "%s.v%d" % (name, self.version)
+        self.mapfile_path = mapfile_path
         if files:
             self.files = files
             self.files.sort(File.cmp_by_id)
@@ -23,6 +24,18 @@ class Dataset(object):
         self.files.sort(File.cmp_by_id)
 
     def __eq__(self, other):
+        """
+        Equality test between two Dataset objects obtained from
+        different locations (filesystem / db / TDS / Solr), intended
+        for use in validating whether a dataset was published
+        correctly.
+
+        The mapfile_path that is optionally contained in the dataset
+        is not used in the comparison: Dataset objects instantiated by
+        querying published locations, rather than via
+        read_filesystem.py, will probably not have this set, but this
+        does not affect their validity.
+        """
         return (self.name == other.name and self.version == other.version 
                 and self.files == other.files)
 
