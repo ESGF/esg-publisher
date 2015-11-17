@@ -27,12 +27,12 @@ def _get_ds(dsid, nfiles = None):
 
 
 # Dataset 1, versions 1 & 2
-d1v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-LR.esmFixClim1.mon.ocean.Omon.r1i1p1.v20111006', 2)
-d1v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-LR.esmFixClim1.mon.ocean.Omon.r1i1p1.v20120625', 2)
+d1v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-LR.esmFixClim1.mon.ocean.Omon.r1i1p1.v20111006', 2)
+d1v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-LR.esmFixClim1.mon.ocean.Omon.r1i1p1.v20120625', 2)
 
 # Dataset 2, versions 1 & 2
-d2v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20111028', 4)
-d2v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.DUMMY_MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20120625', 5)
+d2v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20111028', 4)
+d2v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20120625', 5)
 
 # Dataset 3 contains BAD Files
 print "fixme: ds3 in datasets.py"

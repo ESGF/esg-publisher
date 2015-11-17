@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from utils import config
 from utils.esg_config import default_config_path as esgini
 from one_time_setup.simple_mapfile_gen import gen_all_mapfiles
@@ -13,12 +15,21 @@ Mapfiles for test publication are set up.
 
 You also need to:
 
-(1) ensure that the following directory is listed in 
-    in %s under thredds_dataset_roots:
+(1) in %s:
 
-      %s
+  (a) ensure that the following directory is listed in 
+      under thredds_dataset_roots:
 
-    (For example, modify esg_testroot, or add esg_testroot2.)
+         %s
+
+      (For example, modify esg_testroot, or add esg_testroot2.)
+
+  (b) Ensure that the fake institute 'ESGF-PWT-TEST' is added under 
+      [project:cmip5] institute_options, as the publications are 
+      done under ESGF-PWT-TEST.
+
+  and then run 'esginitialize -c'
+
 
 (2) Obtain a certificate (required for publication to the
     index node) and store at ~/.globus/certificate_file

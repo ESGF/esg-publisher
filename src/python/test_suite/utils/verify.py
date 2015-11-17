@@ -1,3 +1,5 @@
+import sys
+import traceback
 import logging
 
 import info_classes as ic
@@ -59,6 +61,10 @@ class VerifyFuncs(object):
             try:
                 verify_func(ds)
             except:
+                e, msg, tb = sys.exc_info()
+                self.logger.debug(msg)
+                for line in traceback.format_tb(tb):
+                    self.logger.debug(line)
                 raise ic.ESGFPublicationVerificationError("Cannot verify that dataset was %s. "
                     "DSID: %s, Level: %s" % (descrip, ds.id, verify_func.func_name.split("_")[-1]))
         self.logger.info("Verified that dataset was %s: DSID: %s, Levels: %s" % 

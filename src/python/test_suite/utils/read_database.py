@@ -77,11 +77,13 @@ class ReadDB(object):
             output = [row[0] for row in output]
 
         if exactly_one_row:
-            assert len(output) == 1
+            if len(output) != 1:
+                raise Exception("expected 1 match from '%s' - got %s" % (command, len(output)))
             return output[0]
 
         elif max_one_row:
-            assert len(output) <= 1
+            if len(output) > 1:
+                raise Exception("expected <=1 match from '%s' - got %s" % (command, len(output)))
             if output:
                 return output[0]
             else:

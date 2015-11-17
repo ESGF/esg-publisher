@@ -32,17 +32,21 @@ class PublisherTests(unittest.TestCase):
         self.verify = verify.VerifyFuncs(self.logger)
         self.publisher = publisher.PublishFuncs(self.logger)
 
-        self.tlog("Setting up...", "INFO")
-        self.publisher.delete_all()
-
     @classmethod
     def tearDownClass(self):
         self.tlog("Removing all content after running tests.")
-        self.publisher.delete_all()
+        self.ensure_empty()
 
-    def verify_empty(self):
+    def ensure_empty(self):
         self.tlog("Verifying no test data published before we begin")
-        self.verify.verify_empty_of_test_data()        
+        try:
+            self.verify.verify_empty_of_test_data()
+            self.tlog("test data was already unpublished")
+        except:
+            self.tlog("some test data found - deleting all")
+            self.publisher.delete_all()
+            self.tlog("re-testing that no test data published")
+            self.verify.verify_empty_of_test_data()
 
     def publish_and_verify(self, dsets):
 
@@ -126,47 +130,48 @@ class PublisherTests(unittest.TestCase):
         caller_name = st[1][3]
         self.tlog("\n\n=== starting %s ===\n" % caller_name)
 
-    def test_0_verify_empty(self):
-        self.log_starting_test()
-        self.verify_empty()
+    # separate test0 no longer needed - all tests start with call to ensure_empty()
+    #def test_0_ensure_empty(self):
+    #    self.log_starting_test()
+    #    self.ensure_empty()
 
     def test_1_verify_publish_single_dataset_single_version(self):
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.publish_and_verify(ds1)
         
     def test_2_verify_publish_single_dataset_two_versions(self):
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.publish_and_verify(ds1)
         self.publish_and_verify(ds2)
         self.verify_published(ds1)
     
     def test_3_verify_publish_all_in_stages(self):
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.publish_and_verify([ds1, ds2])
     
     def test_4_verify_publish_all_in_reverse(self):   
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.publish_and_verify([ds2, ds1])
         
     def test_5_verify_unpublish_sole_version(self):
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.unpublish_and_verify(ds1)
 
     def test_6_verify_unpublish_latest_of_multi_versions(self):
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.publish_and_verify([ds1, ds2])
         self.unpublish_and_verify(ds2)
         self.verify_published(ds1)
 
     def test_7_verify_unpublish_earliest_of_multi_versions(self):
         self.log_starting_test()
-        self.verify_empty()
+        self.ensure_empty()
         self.publish_and_verify([ds1, ds2])
         self.unpublish_and_verify(ds1)
         self.verify_published(ds2)

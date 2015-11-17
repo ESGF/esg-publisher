@@ -1,6 +1,7 @@
 from datasets import all_datasets
 
-import subprocess
+import string
+import subprocess as sp
 
 class PublishFuncs(object):
 
@@ -93,4 +94,19 @@ class PublishFuncs(object):
         return "%s#%s" % (ds.name, ds.version)
 
     def run_command(self, *command):
-        print "FIXME: insert code to actually run ", command
+        self.logger.debug("running command: %s" % string.join(command, " "))
+        proc = sp.Popen(command, stdout=sp.PIPE, stderr=sp.PIPE)
+        data = proc.communicate()
+        output = data[0] + data[1]  # stdout, stderr
+        status = proc.returncode
+        #
+        # If it appears to fail, do not give an exception (instead, rely on
+        # the publication tests to detect that it did not work), but do warn.
+        #
+        if status != 0:
+            self.logger.warn("exit status of %s command was %s" % 
+                             (command[0], status))
+            self.logger.warn("output was:\n %s\n------" % output)
+        else:
+            self.logger.debug("output of successful command:\n %s\n------" % output)
+        return status
