@@ -82,9 +82,11 @@ class VerifyFuncs(object):
         
         # Checks database has dataset record with 
         # related file records matching those referenced inside ds object
-        ds_db, catalog_loc = _db.get_dset(ds.name, ds.version)
-        ds.catalog_loc = catalog_loc  # for subsequent verify_published_to_tds
-        assert ds == ds_db   #  check database has correct info
+        ds_db = _db.get_dset(ds.name, ds.version)
+        if ds != ds_db:
+            self.logger.debug("from fs: %s" % ds)
+            self.logger.debug("from db: %s" % ds_db)
+            raise Exception("database has wrong info")
         # 
         # For good measure, look up files by tracking ID.  The above comparison 
         # has already included files, so really, it only checks that tracking IDs are 
@@ -106,10 +108,10 @@ class VerifyFuncs(object):
 
         # Checks TDS has dataset record with 
         # related file records matching those referenced inside ds object
-        try:
-            catalog_loc = ds.catalog_loc
-        except AttributeError:
-            raise Exception("verify_published_to_tds() called without first finding catalog location in db via verify_published_to_db()")
+        if not ds.catalog_loc:
+            self.logger.info("rechecking DB to get THREDDS catalog location")
+            _db.get_catalog_location(ds)
+        self.logger.debug("catalog location: %s" % ds.catalog_loc)
 
         check_catalog_xml = not config.is_set("devel_skip_catalog_xml")
 

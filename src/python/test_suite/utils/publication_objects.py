@@ -13,6 +13,7 @@ class Dataset(object):
         self.version = int(version)
         self.id = "%s.v%d" % (name, self.version)
         self.mapfile_path = mapfile_path
+        self.catalog_location = None
         if files:
             self.files = files
             self.files.sort(File.cmp_by_id)

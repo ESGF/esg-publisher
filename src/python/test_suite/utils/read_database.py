@@ -110,9 +110,28 @@ class ReadDB(object):
         return File(url, size, cksum, tracking_id)
 
 
+    def get_catalog_location(self, ds, missing_okay=False):
+        """
+        get thredds catalog location for a dataset object, and 
+        store it in the object
+        """
+        if missing_okay:
+            kwargs = {'max_one_row': True}
+        else:
+            kwargs = {'exactly_one_row': True}
+        
+        catalog_location = self.select('location', 'catalog', 
+                                       where = "dataset_name = '%s' and version = %s" % 
+                                       (ds.name, ds.version),
+                                       **kwargs)
+        if catalog_location:
+            ds.catalog_loc = catalog_location
+        else:
+            ds.catalog_loc = False
+
     def get_dset(self, dataset_id, version):
         """
-        returns a 2-tuple Dataset object, catalog_location
+        returns a Dataset object
         corresponding to the dataset in the DB.
 
         Raises NotFound if it isn't there
@@ -126,12 +145,8 @@ class ReadDB(object):
 
         ds = Dataset(dataset_id, version)
 
-        catalog_location = \
-            self.select('location', 'catalog', 
-                        where = "dataset_name = '%s' and version = %s" % 
-                        (dataset_id, version),
-                        exactly_one_row = True)
-            
+        self.get_catalog_location(ds, missing_okay=True)
+
         fvids = self.select('file_version_id', 'dataset_file_version',
                             where = "dataset_version_id = %s" % dsvid)
 
@@ -143,7 +158,7 @@ class ReadDB(object):
                             exactly_one_row = True)
             ds.add_file(File(url, size, cksum, tracking_id))
 
-        return ds, catalog_location
+        return ds
 
 
 if __name__ == '__main__':
@@ -154,9 +169,9 @@ if __name__ == '__main__':
     version = 1
     conf = esg_config.Config()
     db = ReadDB(conf)
-    ds, catalog_location = db.get_dset(name, version)
+    ds = db.get_dset(name, version)
     print ds
-    print catalog_location
+    print ds.catalog_loc
 
     for f in ds.files:
         assert f == db.get_file(f.tracking_id)
