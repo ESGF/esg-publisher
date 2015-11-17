@@ -152,12 +152,12 @@ class VerifyFuncs(object):
         # We want to verify ALL content is not there
         # Any partial match should raise an Exception
 
-        # TODO:
         # - assert dataset id is not in database
         # - assert no files from file_list have records in the DB
-        #   (any such records could not be connected to dataset as this would violate foreign key
-        #   constraint on dataset_file_version, but they could be orphaned, so look for them by
-        #   their tracking ID)
+        #   (any such records could not be connected to dataset as
+        #   this would violate foreign key constraint on
+        #   dataset_file_version, but they could be orphaned, so look
+        #   for them by their tracking ID)
         try:
             _db.get_dset(ds.name, ds.version)
         except read_database.NotFound:
@@ -186,7 +186,7 @@ class VerifyFuncs(object):
         # NOTE: this is not simply "not verify_published_to_tds()"
         # We want to verify ALL content is not there
         # Any partial match should raise an Exception
-        # TODO:
+        #
         # - assert there is not a TDS XML record for dataset id
         #
         # By default, it will check the known catalog location that has
@@ -247,11 +247,20 @@ class VerifyFuncs(object):
         # We want to verify ALL content is not there
         # Any partial match should raise an Exception
 
-        # TODO:
-        # - assert dataset id is not in solr
-        # - assert no files from file_list are in solr with connections to dataset id
-        print "FIXME: code needed here"
-        pass
+        # - assert dataset id is not in solr (The check below is for
+        # the dataset, but as implemented in read_index.py, the actual
+        # request will check for files with that dataset ID ("any"
+        # files, rather than asking about known files).  If there are
+        # none, it is taken that the dataset ID does not exist in
+        # Solr.  At present, I don't know of a way if an 'empty'
+        # dataset can exist in Solr or how this would be checked.)
+
+        try:
+            _index.get_dset(ds.name, ds.version)
+        except read_index.NotFound:
+            pass
+        else:
+            raise Exception("could not verify %s unpublished" % ds.id)
 
         self.logger.debug("done verify_unpublished_from_solr: %s" % ds.id)    
 
