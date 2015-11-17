@@ -2,70 +2,95 @@ from datasets import all_datasets
 
 import subprocess
 
-def publish(ds):
-    publish_to_db(ds)
-    publish_to_tds(ds)
-    publish_to_solr(ds)
+class PublishFuncs(object):
 
-def publish_to_db(ds):
-    run_command("esgpublish",
-                "--new-version", str(ds.version),
-                "--project", ds.id.split(".")[0],
-                "--map", ds.mapfile_path)
+    def __init__(self, logger=None):
+        if logger == None:
+            logger = logging.getLogger()
+        self.logger = logger
 
-def publish_to_tds(ds):
-    run_command("esgpublish", 
-                "--new-version", str(ds.version),
-                "--noscan",
-                "--thredds",
-                "--service", "fileservice",
-                "--use-existing", format_name(ds))
+    def publish(self, ds):
+        self.logger.debug("doing publish: %s" % ds.id)
+        self.publish_to_db(ds)
+        self.publish_to_tds(ds)
+        self.publish_to_solr(ds)
+        self.logger.debug("done publish: %s" % ds.id)
 
-def publish_to_solr(ds):
-    run_command("esgpublish", 
-                "--new-version", str(ds.version),
-                "--noscan",
-                "--publish",
-                "--use-existing", "%s#%s" % format_name(ds))
+    def publish_to_db(self, ds):
+        self.logger.debug("doing publish_to_db: %s" % ds.id)
+        self.run_command("esgpublish",
+                         "--new-version", str(ds.version),
+                         "--project", ds.id.split(".")[0],
+                         "--map", ds.mapfile_path)
+        self.logger.debug("done publish_to_db: %s" % ds.id)
 
-def unpublish(ds):
-    try:
-        verify_unpublished_from_solr(ds)
-    except:
-        unpublish_from_solr(ds)
-    try:
-        verify_unpublished_from_tds(ds)
-    except:
-        unpublish_from_tds(ds)
-    try:
-        verify_unpublished_from_db(ds)
-    except:
-        unpublish_from_db(ds)
+    def publish_to_tds(self, ds):
+        self.logger.debug("doing publish_to_tds: %s" % ds.id)
+        self.run_command("esgpublish", 
+                         "--new-version", str(ds.version),
+                         "--noscan",
+                         "--thredds",
+                         "--service", "fileservice",
+                         "--use-existing", self.format_name(ds))
+        self.logger.debug("done publish_to_tds: %s" % ds.id)
 
-def unpublish_from_db(ds):
-    run_command("esgunpublish",
-                "--database-only",
-                "--no-republish",
-                format_name(ds))
+    def publish_to_solr(self, ds):
+        self.logger.debug("doing publish_to_solr: %s" % ds.id)
+        self.run_command("esgpublish", 
+                         "--new-version", str(ds.version),
+                         "--noscan",
+                         "--publish",
+                         "--use-existing", "%s#%s" % self.format_name(ds))
+        self.logger.debug("done publish_to_solr: %s" % ds.id)
 
-def unpublish_from_tds(ds):
-    run_command("esgunpublish",
-                "--skip-index",
-                "--no-republish",
-                format_name(ds))
-                
-def unpublish_from_solr(ds):
-    run_command("esgunpublish",
-                "--skip-thredds",
-                "--no-republish",
-                format_name(ds))
-                
-def delete_all():
-    for ds in all_datasets:
-        unpublish(ds)
+    def unpublish(self, ds):
+        self.logger.debug("doing unpublish: %s" % ds.id)
+        try:
+            self.verify_unpublished_from_solr(ds)
+        except:
+            self.unpublish_from_solr(ds)
+        try:
+            self.verify_unpublished_from_tds(ds)
+        except:
+            self.unpublish_from_tds(ds)
+        try:
+            self.verify_unpublished_from_db(ds)
+        except:
+            self.unpublish_from_db(ds)
+        self.logger.debug("done unpublish: %s" % ds.id)
 
-def format_name(ds):
-    return "%s#%s" % (ds.name, ds.version)
+    def unpublish_from_db(self, ds):
+        self.logger.debug("doing unpublish_from_db: %s" % ds.id)
+        self.run_command("esgunpublish",
+                         "--database-only",
+                         "--no-republish",
+                         self.format_name(ds))
+        self.logger.debug("done unpublish_from_db: %s" % ds.id)
 
-def run_command(*command):
-    print "FIXME: insert code to actually run ", command
+    def unpublish_from_tds(self, ds):
+        self.logger.debug("doing unpublish_from_tds: %s" % ds.id)
+        self.run_command("esgunpublish",
+                         "--skip-index",
+                         "--no-republish",
+                         self.format_name(ds))
+        self.logger.debug("done unpublish_from_tds: %s" % ds.id)
+
+    def unpublish_from_solr(self, ds):
+        self.logger.debug("doing unpublish_from_solr: %s" % ds.id)
+        self.run_command("esgunpublish",
+                         "--skip-thredds",
+                         "--no-republish",
+                         self.format_name(ds))
+        self.logger.debug("done unpublish_from_solr: %s" % ds.id)
+
+    def delete_all(self):
+        self.logger.debug("doing delete_all")
+        for ds in all_datasets:
+            self.unpublish(ds)
+        self.logger.debug("done delete_all")
+
+    def format_name(self, ds):
+        return "%s#%s" % (ds.name, ds.version)
+
+    def run_command(self, *command):
+        print "FIXME: insert code to actually run ", command

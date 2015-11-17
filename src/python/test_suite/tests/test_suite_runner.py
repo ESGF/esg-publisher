@@ -14,49 +14,19 @@ import os
 import sys
 import string
 
-from tests import *
+from all_tests import PublisherTests
 from utils import config
 from utils import set_esg_environment
 
-def gather_tests():
-    "Returns a list of tests to run."
-    tests_dir = os.path.join(config.get("test_base_dir"), "tests")
-    test_mods = [test_mod.split(".")[0] for test_mod in os.listdir(tests_dir) if re.match("test_\d", test_mod)]
-    test_classes = set()
-
-    for test_mod in test_mods:
-        test_number = test_mod.split("_")[1]
-        mod = __import__(test_mod)
-        test_class = [getattr(mod, x) for x in dir(mod) if x.find("Test%s" % test_number) == 0][0]
-        test_classes.add(test_class)
-
-    test_classes = sorted(list(test_classes))
-    return test_classes
 
 def run_suite():
     
     set_esg_environment.set_esg_env()
 
-    test_classes = gather_tests()
-    print test_classes
+    suite = unittest.TestLoader().loadTestsFromTestCase(PublisherTests)
+    rv = unittest.TextTestRunner(verbosity=2).run(suite)
 
-    failures = ""
-    for test_class in test_classes:
-        suite = unittest.TestLoader().loadTestsFromTestCase(test_class)
-        rv = unittest.TextTestRunner(verbosity=2).run(suite)
-        if not rv.wasSuccessful():
-            failures += string.join(["In %s:\n\n   %s\n\n" % 
-                                     (e[0], e[1].replace("\n", "\n   "))
-                                     for e in (rv.errors + rv.failures)])
-    if failures:
-        print """
-
-===============================================
-  Collated errors/failures from above tests
-===============================================
-
-"""
-        print failures
+    if not rv.wasSuccessful():
         print "Some test(s) failed - see above"
         sys.exit(1)
     else:

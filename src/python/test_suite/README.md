@@ -236,6 +236,5 @@ To run the test suite:
 
  2. Run the "test_suite_runner.py" script: 
 
-    $ python tests/test_suite_runner.py 
+    $ ./run_tests.py
 
-Alternatively you can run any of the individual test modules that follow the naming convention "test_*.py".
