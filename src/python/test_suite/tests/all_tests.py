@@ -160,6 +160,7 @@ class PublisherTests(unittest.TestCase):
     def test_5_verify_unpublish_sole_version(self):
         self.log_starting_test()
         self.ensure_empty()
+        self.publish_and_verify(ds1)
         self.unpublish_and_verify(ds1)
 
     def test_6_verify_unpublish_latest_of_multi_versions(self):
