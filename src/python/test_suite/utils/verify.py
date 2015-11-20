@@ -35,17 +35,38 @@ class VerifyFuncs(object):
             else:
                 func_name = "self.verify_published_to_%s" % pub_level
 
-            verify_funcs.append(eval(func_name))
+            verify_funcs.append((pub_level, eval(func_name)))
 
         return verify_funcs
 
-    def verify_published(self, ds, publication_levels=None):
-        return self._verify_dataset_status(ds, False, publication_levels)
+    def verify_published(self, ds, publication_levels=None, **kwargs):
+        """
+        Verify that a dataset is published to the specified publication levels.
 
-    def verify_unpublished(self, ds, publication_levels=None):
-        return self._verify_dataset_status(ds, True, publication_levels)
+        any keyword arguments for particular levels should be passed in with the 
+        level name and an underscore prepended, e.g. send in 
+        db_suppress_file_url_checks=... for the arg suppress_file_url_checks=... on 
+        verify_published_to_db
+        """
+        return self._verify_dataset_status(ds, False, publication_levels, **kwargs)
 
-    def _verify_dataset_status(self, ds, verify_unpublish, publication_levels):
+    def verify_unpublished(self, ds, publication_levels=None, **kwargs):
+        return self._verify_dataset_status(ds, True, publication_levels, **kwargs)
+
+    def subset_dict(self, d, prefix):
+        """
+        subset a dictionary to those keys that are strings beginning with specified prefix, 
+        removing the prefix in the output dictionary
+        """
+        dout = {}
+        pos = len(prefix)
+        for k in d:
+            if isinstance(k, basestring) and len(k) > pos:
+                if k.startswith(prefix):
+                    dout[k[pos:]] = d[k]
+        return dout
+
+    def _verify_dataset_status(self, ds, verify_unpublish, publication_levels, **kwargs):
 
         if not publication_levels:
             publication_levels = ic.PublicationLevels.all()
@@ -57,9 +78,11 @@ class VerifyFuncs(object):
         else:
             descrip = "published"
 
-        for verify_func in verify_funcs:
+        for pub_level, verify_func in verify_funcs:
+            kwargs_this_level = self.subset_dict(kwargs, "%s_" % pub_level)
             try:
-                verify_func(ds)
+                self.logger.debug("func=%s, ds=%s kwargs=%s" % (verify_func.__name__, ds, kwargs_this_level))
+                verify_func(ds, **kwargs_this_level)
             except:
                 e, msg, tb = sys.exc_info()
                 self.logger.debug(msg)
@@ -72,7 +95,7 @@ class VerifyFuncs(object):
         return True
 
 
-    def verify_published_to_db(self, ds):
+    def verify_published_to_db(self, ds, suppress_file_url_checks=False):
 
         if config.is_set("devel_skip_verify_published_to_db"): 
             self.logger.warn("skipping verify_published_to_db")
@@ -82,18 +105,20 @@ class VerifyFuncs(object):
         
         # Checks database has dataset record with 
         # related file records matching those referenced inside ds object
-        ds_db = _db.get_dset(ds.name, ds.version)
+        ds_db = _db.get_dset(ds.name, ds.version, 
+                             suppress_file_url_checks = suppress_file_url_checks)
         if ds != ds_db:
             self.logger.debug("from fs: %s" % ds)
             self.logger.debug("from db: %s" % ds_db)
             raise Exception("database has wrong info")
         # 
-        # For good measure, look up files by tracking ID.  The above comparison 
-        # has already included files, so really, it only checks that tracking IDs are 
-        # not duplicated.  The get_file() is really more relevant in
-        # verify_unpublished_from_db below.
+        # For good measure, look up files by tracking ID.  The above
+        # comparison has already included files, so really, it only
+        # checks that tracking IDs are not duplicated.  The get_file()
+        # is really more relevant in verify_unpublished_from_db below.
         for f in ds.files:
-            assert f == _db.get_file(f.tracking_id)
+            assert f == _db.get_file(f.tracking_id,
+                                     suppress_url_checks = suppress_file_url_checks)
 
         self.logger.debug("done verify_published_to_db: %s" % ds.id)
 
@@ -108,26 +133,26 @@ class VerifyFuncs(object):
 
         # Checks TDS has dataset record with 
         # related file records matching those referenced inside ds object
-        if not ds.catalog_loc:
+        if not ds.catalog_location:
             self.logger.info("rechecking DB to get THREDDS catalog location")
             _db.get_catalog_location(ds)
-        self.logger.debug("catalog location: %s" % ds.catalog_loc)
+        self.logger.debug("catalog location: %s" % ds.catalog_location)
 
         check_catalog_xml = not config.is_set("devel_skip_catalog_xml")
 
-        local_path = _tds.local_path(catalog_loc)
-        ds_thredds_local = _tds.parse_catalog(local_path)
+        local_path = _tds.local_path(ds.catalog_location)
+        ds_tds_local = _tds.parse_catalog(local_path)
         assert ds == ds_tds_local  # check local THREDDS catalog has correct info
 
         if check_catalog_xml:
-            assert catalog_log == _tds.get_catalog_location_via_local(ds.id) # check listed in local catalog.xml
+            assert catalog_location == _tds.get_catalog_location_via_local(ds.id) # check listed in local catalog.xml
 
-        url_path = _tds.url_path(catalog_loc)
+        url_path = _tds.url_path(ds.catalog_location)
         ds_tds_served = _tds.parse_catalog(url_path)
         assert ds == ds_tds_served  #  check THREDDS catalog as served over http has correct info
 
         if check_catalog_xml:
-            assert catalog_log == _tds.get_catalog_location_via_http(ds.id)  # check listed in catalog.xml as served over http
+            assert catalog_location == _tds.get_catalog_location_via_http(ds.id)  # check listed in catalog.xml as served over http
 
         self.logger.debug("done verify_published_to_tds: %s" % ds.id)
 
@@ -211,12 +236,12 @@ class VerifyFuncs(object):
 
         if check_known_location:
             try:
-                catalog_loc = ds.catalog_loc
+                catalog_location = ds.catalog_location
             except AttributeError:
                 raise Exception("catalog location has not been stored")
 
-            for path in [_tds.local_path(catalog_loc),
-                         _tds.url_path(catalog_loc)]:
+            for path in [_tds.local_path(catalog_location),
+                         _tds.url_path(catalog_location)]:
                 try:
                     _tds.parse_catalog(path)
                 except read_thredds.NotFound:

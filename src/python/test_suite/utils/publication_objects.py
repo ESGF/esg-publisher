@@ -60,18 +60,32 @@ class Dataset(object):
 
 class File(object):
 
-    def __init__(self, url, size, checksum, tracking_id):
+    def __init__(self, url, size, checksum, tracking_id,
+                 suppress_url_checks=False):
+
+        """
+        Instantiate a File object with basic info that can be checked against
+        another File object.
+        
+        If suppress_url_checks = True, then return a File object which, 
+        when later compared against another File object, will skip this 
+        test.  This can be used to allow url entries in the database to 
+        be incomplete until after publication to THREDDS, while still doing  
+        basic checks immediately after publication to db.
+        """
         self.url = url
         self.size = int(size)
         self.checksum = checksum
         self.tracking_id = tracking_id
+        self._compare_urls = not suppress_url_checks
 
     def cmp_by_id(self, other):
         return cmp(self.tracking_id, other.tracking_id)
 
     def __eq__(self, other):
-        if self.url != other.url:
-            return False
+        if self._compare_urls and other._compare_urls:
+            if self.url != other.url:
+                return False
         if self.size != other.size:
             return False
         if self.checksum != other.checksum:

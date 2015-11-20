@@ -92,7 +92,8 @@ class ReadDB(object):
             return output
 
 
-    def get_file(self, tracking_id):
+    def get_file(self, tracking_id,
+                 suppress_url_checks=False):
         """
         Gets a File object by its tracking ID.  Raises NotFound if absent.
         Raises some other exception if it is duplicated.
@@ -107,7 +108,8 @@ class ReadDB(object):
 
         url, size, cksum = result
         
-        return File(url, size, cksum, tracking_id)
+        return File(url, size, cksum, tracking_id,
+                    suppress_url_checks=suppress_url_checks)
 
 
     def get_catalog_location(self, ds, missing_okay=False):
@@ -125,11 +127,11 @@ class ReadDB(object):
                                        (ds.name, ds.version),
                                        **kwargs)
         if catalog_location:
-            ds.catalog_loc = catalog_location
+            ds.catalog_location = catalog_location
         else:
-            ds.catalog_loc = False
+            ds.catalog_location = False
 
-    def get_dset(self, dataset_id, version):
+    def get_dset(self, dataset_id, version, suppress_file_url_checks=False):
         """
         returns a Dataset object
         corresponding to the dataset in the DB.
@@ -156,7 +158,8 @@ class ReadDB(object):
                             'file_version',
                             where = "id = %s" % fvid,
                             exactly_one_row = True)
-            ds.add_file(File(url, size, cksum, tracking_id))
+            ds.add_file(File(url, size, cksum, tracking_id,
+                             suppress_url_checks=suppress_file_url_checks))
 
         return ds
 
@@ -171,7 +174,7 @@ if __name__ == '__main__':
     db = ReadDB(conf)
     ds = db.get_dset(name, version)
     print ds
-    print ds.catalog_loc
+    print ds.catalog_location
 
     for f in ds.files:
         assert f == db.get_file(f.tracking_id)

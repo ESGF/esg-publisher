@@ -59,7 +59,8 @@ class PublisherTests(unittest.TestCase):
 
         for ds in dsets:
             self.tlog("Verifying published to DB: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.db])
+            self.verify.verify_published(ds, [pl.db],
+                                         db_suppress_file_url_checks = True)
 
         for ds in dsets:
             self.tlog("Publishing to TDS: %s" % ds.id)
