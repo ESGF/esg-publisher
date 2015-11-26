@@ -238,3 +238,12 @@ To run the test suite:
 
     $ ./run_tests.py
 
+To run particular tests only:
+
+    $ ./run_tests.py <regexp>
+
+the regexp is applied (with re.search) to the method names, for example,
+
+    $ ./run_test.py '^test_[123]_'
+
+    $ ./run_test.py 'parallel'

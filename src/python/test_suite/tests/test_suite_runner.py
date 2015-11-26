@@ -10,20 +10,38 @@ Runs all tests for ESGF publisher suite.
 # Standard library imports
 import unittest
 import re
-import os
 import sys
-import string
 
 from all_tests import PublisherTests
 from utils import config
 from utils import set_esg_environment
 
 
-def run_suite():
+def get_tests_by_regexp(testclass, regexp):
+    all_test_names = [x for x in dir(testclass) 
+                      if x.startswith("test")]
+    all_test_names.sort()
+    re_matches = re.compile(regexp).search
+    
+    return [testclass(name) for name in all_test_names
+            if re_matches(name)]
+
+
+def run_suite(regexp=None):
     
     set_esg_environment.set_esg_env()
 
-    suite = unittest.TestLoader().loadTestsFromTestCase(PublisherTests)
+    if not regexp:
+        suite = unittest.TestLoader().loadTestsFromTestCase(PublisherTests)
+    else:
+        suite = unittest.TestSuite()
+        tests = get_tests_by_regexp(PublisherTests, regexp)
+        suite.addTests(tests)
+        print "Tests that will be run:"
+        for t in tests:
+            print "  ", t
+        print
+
     rv = unittest.TextTestRunner(verbosity=2).run(suite)
 
     if not rv.wasSuccessful():
