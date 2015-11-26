@@ -1,6 +1,7 @@
 import sys
 import traceback
 import logging
+import time
 
 import info_classes as ic
 from datasets import all_datasets
@@ -156,8 +157,21 @@ class VerifyFuncs(object):
 
         self.logger.debug("done verify_published_to_tds: %s" % ds.id)
 
+    def _get_solr_retry_times(self, 
+                              default_max_time=120, 
+                              default_sleep_time=5):
+        
+        max_time = float(config.get_with_default('solr_verify_max_time',
+                                                 default_max_time))
 
-    def verify_published_to_solr(self, ds):
+        sleep_time = float(config.get_with_default('solr_verify_sleep_time',
+                                                   default_sleep_time))
+
+        end_time = time.time() + max_time
+
+        return end_time, sleep_time
+
+    def verify_published_to_solr(self, ds, retry=True):
 
         self.logger.debug("doing verify_published_to_solr: %s" % ds.id)
 
@@ -167,7 +181,22 @@ class VerifyFuncs(object):
 
         # Checks SOLR has dataset record with 
         # related file records matching those referenced inside ds object
-        ds_index = _index.get_dset(ds.name, ds.version)
+
+        end_time, sleep_time = self._get_solr_retry_times()
+        while True:
+            check_start_time = time.time()
+            self.logger.debug("looking for dataset in SOLR")
+            try:
+                ds_index = _index.get_dset(ds.name, ds.version)
+            except read_index.NotFound:
+                pass
+            else:
+                break
+            if check_start_time > end_time or not retry:
+                self.logger.debug("giving up looking for dataset in SOLR")
+                raise read_index.NotFound
+            time.sleep(sleep_time)
+
         assert ds == ds_index  # check data in SOLR has correct info
 
         self.logger.debug("done verify_published_to_solr: %s" % ds.id)
@@ -268,7 +297,7 @@ class VerifyFuncs(object):
         self.logger.debug("done verify_unpublished_from_tds: %s" % ds.id)
 
 
-    def verify_unpublished_from_solr(self, ds):
+    def verify_unpublished_from_solr(self, ds, retry=True):
 
         if config.is_set("devel_skip_verify_unpublished_from_solr"): 
             self.logger.warn("skipping verify_unpublished_from_solr")
@@ -288,12 +317,18 @@ class VerifyFuncs(object):
         # Solr.  At present, I don't know of a way if an 'empty'
         # dataset can exist in Solr or how this would be checked.)
 
-        try:
-            _index.get_dset(ds.name, ds.version)
-        except read_index.NotFound:
-            pass
-        else:
-            raise Exception("could not verify %s unpublished" % ds.id)
+        end_time, sleep_time = self._get_solr_retry_times()
+        while True:
+            check_start_time = time.time()
+            self.logger.debug("looking for (absence of) dataset in SOLR")
+            try:
+                _index.get_dset(ds.name, ds.version)
+            except read_index.NotFound:
+                break
+            if check_start_time > end_time or not retry:
+                self.logger.debug("giving up looking for (absence of) dataset in SOLR")
+                raise Exception("could not verify %s unpublished" % ds.id)
+            time.sleep(sleep_time)
 
         self.logger.debug("done verify_unpublished_from_solr: %s" % ds.id)    
 
