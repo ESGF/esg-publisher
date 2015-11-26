@@ -16,37 +16,38 @@ ds2 = datasets.d1v2
 class PublisherTests(unittest.TestCase):
 
     @classmethod
-    def tlog(self, msg, log_level="info", show_method = False):
+    def tlog(cls, msg, log_level="info", show_method = False):
         if show_method:
             meth_name = inspect.stack()[1][0].f_code.co_name
             msg = "%s: %s" % (meth_name, msg)
-        self.logger.log(getattr(logging, log_level.upper()), msg)
+        cls.logger.log(getattr(logging, log_level.upper()), msg)
 
     @classmethod
-    def setUpClass(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(getattr(logging, config.get("log_level")))
+    def setUpClass(cls):
+        cls.logger = logging.getLogger(cls.__class__.__name__)
+        cls.logger.setLevel(getattr(logging, config.get("log_level")))
         stream_handler = logging.StreamHandler(sys.stdout)
-        self.logger.addHandler(stream_handler)
+        cls.logger.addHandler(stream_handler)
 
-        self.verify = verify.VerifyFuncs(self.logger)
-        self.publisher = publisher.PublishFuncs(self.logger)
+        cls.verify = verify.VerifyFuncs(cls.logger)
+        cls.publisher = publisher.PublishFuncs(cls.logger)
 
     @classmethod
-    def tearDownClass(self):
-        self.tlog("Removing all content after running tests.")
-        self.ensure_empty()
+    def tearDownClass(cls):
+        cls.tlog("Removing all content after running tests.")
+        cls.ensure_empty()
 
-    def ensure_empty(self):
-        self.tlog("Verifying no test data published before we begin")
+    @classmethod
+    def ensure_empty(cls):
+        cls.tlog("Verifying no test data published before we begin")
         try:
-            self.verify.verify_empty_of_test_data()
-            self.tlog("test data was already unpublished")
+            cls.verify.verify_empty_of_test_data()
+            cls.tlog("test data was already unpublished")
         except:
-            self.tlog("some test data found - deleting all")
-            self.publisher.delete_all()
-            self.tlog("re-testing that no test data published")
-            self.verify.verify_empty_of_test_data()
+            cls.tlog("some test data found - deleting all")
+            cls.publisher.delete_all()
+            cls.tlog("re-testing that no test data published")
+            cls.verify.verify_empty_of_test_data()
 
     def publish_and_verify(self, dsets):
 
