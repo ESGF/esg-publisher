@@ -251,8 +251,7 @@ def gen_all_test_data(input_root = '/badc/cmip5/data',
                       input_list = 'input_files',
                       output_root = 'out',
                       fake_institute_name = 'ESGF-PWT-TEST',
-                      model_prefix = 'DUMMY_',
-                      file_prefix = 'DUMMY_',
+                      file_suffix = '_DUMMY',
                       **kwargs_for_gen_test_file):
     
     """
@@ -274,8 +273,16 @@ def gen_all_test_data(input_root = '/badc/cmip5/data',
         assert("//" not in path_rel)
         elements = path_rel.split("/")
         elements[2] = fake_institute_name
-        elements[3] = model_prefix + elements[3]
-        elements[-1] = file_prefix + elements[-1]
+
+        # the file suffix goes before the .nc extension
+        filename = elements[-1]        
+        try:
+            pos = filename.rindex(".")
+        except ValueError:
+            fname_new = filename + file_suffix
+        else:
+            fname_new = filename[:pos] + file_suffix + filename[pos:]
+        elements[-1] = fname_new
 
         path_out = os.path.join(output_root, *elements)
        
