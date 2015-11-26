@@ -1,7 +1,8 @@
-from datasets import all_datasets
-
 import string
 import subprocess as sp
+
+from datasets import all_datasets
+import verify
 
 class PublishFuncs(object):
 
@@ -9,6 +10,7 @@ class PublishFuncs(object):
         if logger == None:
             logger = logging.getLogger()
         self.logger = logger
+        self.verifier = verify.VerifyFuncs(logger)
 
     def publish(self, ds):
         self.logger.debug("doing publish: %s" % ds.id)
@@ -41,21 +43,25 @@ class PublishFuncs(object):
                          "--new-version", str(ds.version),
                          "--noscan",
                          "--publish",
-                         "--use-existing", "%s#%s" % self.format_name(ds))
+                         "--use-existing", self.format_name(ds))
         self.logger.debug("done publish_to_solr: %s" % ds.id)
 
     def unpublish(self, ds):
         self.logger.debug("doing unpublish: %s" % ds.id)
         try:
-            self.verify_unpublished_from_solr(ds)
+            # this check is just to save time doing an unnecessary
+            # (slowish) unpublish, rather than to verify success of a
+            # previous unpublish, so do not retry if it seems to be
+            # published
+            self.verifier.verify_unpublished_from_solr(ds, retry=False)
         except:
             self.unpublish_from_solr(ds)
         try:
-            self.verify_unpublished_from_tds(ds)
+            self.verifier.verify_unpublished_from_tds(ds)
         except:
             self.unpublish_from_tds(ds)
         try:
-            self.verify_unpublished_from_db(ds)
+            self.verifier.verify_unpublished_from_db(ds)
         except:
             self.unpublish_from_db(ds)
         self.logger.debug("done unpublish: %s" % ds.id)
