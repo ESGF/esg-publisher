@@ -233,6 +233,11 @@ class VerifyFuncs(object):
         #   the entries in table 'file_version' cannot remain because
         #   file_version(file_id) references file(id).
         #
+        #   However, this argument relies on the entry in table 'dataset'
+        #   actually being got rid of when the last version is unpublished.
+        #   It *is* possible for an orphaned 'dataset' entry to exist in the 
+        #   database (no entries in table 'dataset_version' that refer to it).
+        #   So instead, test that that is not the case.
         #
         # (In any case, a previous test at this point in the code 
         # used tracking_id as a unique handle.  This is not valid, 
@@ -246,6 +251,29 @@ class VerifyFuncs(object):
             pass
         else:
             raise Exception("could not verify %s unpublished" % ds.id)
+
+        try:
+            versions = _db.get_ds_versions(ds.name)
+        except read_database.NotFound:
+            # That's okay, the dataset has been fully unpublished
+            self.logger.debug("no versions of %s exist in DB" % ds.name)
+            pass
+        else:
+            self.logger.debug("%s exists with versions %s" % (ds.name, versions))
+
+            # If the dataset is still there with but no versions then this is a problem.
+            # And it could also mean (per long comment above), that files could also exist, 
+            # which would violate foreign key constraints if the dataset was removed.
+            if not versions:
+                raise Exception("orphaned entry for %s in table 'dataset'" % ds.name)
+
+            # The following test is for good measure only - it is based on 
+            # column 'version' of table dataset_version, but the above test 
+            # using get_dset(), which is based on column 'name', should already
+            # have detected if it still exists.
+            if ds.version in versions:
+                raise Exception("%s not unpublished properly" % ds.id)
+               
 
         self.logger.debug("done verify_unpublished_from_db: %s" % ds.id)
 

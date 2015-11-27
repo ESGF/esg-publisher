@@ -105,11 +105,28 @@ class ReadDB(object):
                              max_one_row = True)
         if result == None:
             raise NotFound
-
+    
         url, size, cksum = result
         
         return File(url, size, cksum, tracking_id,
                     suppress_url_checks=suppress_url_checks)
+
+
+    def get_ds_versions(self, ds_name):
+        """
+        Get a list of versions for a given dataset name.
+        Raises NotFound if dataset does not exist, but returns 
+        empty list if it exists but is orphaned.
+        """
+        dsid = self.select('id', 'dataset', 
+                           where = "name = '%s'" % ds_name,
+                           max_one_row = True)
+
+        if dsid == None:
+            raise NotFound
+        
+        return self.select('version', 'dataset_version', 
+                           where = "dataset_id = %d" % dsid)
 
 
     def get_catalog_location(self, ds, missing_okay=False):
@@ -185,3 +202,14 @@ if __name__ == '__main__':
         pass
     else:
         raise Exception("'blah' should not have been found")
+
+    print db.get_ds_versions(name)
+    print db.get_ds_versions("cmip5.output1.MOHC.HadGEM2-ES.rcp85.day.atmos.day.r2i1p1")
+    try:
+        print db.get_ds_versions("blah")
+    except NotFound:
+        print "blah not found, good"
+    else:
+        raise Exception("'blah' should not have been found")
+
+    
