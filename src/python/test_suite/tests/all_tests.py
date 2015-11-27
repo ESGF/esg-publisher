@@ -47,7 +47,8 @@ class PublisherTests(unittest.TestCase):
             cls.tlog("some test data found - deleting all")
             cls.publisher.delete_all()
             cls.tlog("re-testing that no test data published")
-            cls.verify.verify_empty_of_test_data()
+            # when testing, allow SOLR time to update
+            cls.verify.verify_empty_of_test_data(solr_retry=True)
 
     def publish_and_verify(self, dsets):
 
@@ -77,7 +78,7 @@ class PublisherTests(unittest.TestCase):
         
         for ds in dsets:
             self.tlog("Verifying published to SOLR: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.solr])
+            self.verify.verify_published(ds, [pl.solr], solr_retry=True)
 
         for ds in dsets:
             self.tlog("Verifying published to all: %s" % ds.id)
@@ -121,7 +122,7 @@ class PublisherTests(unittest.TestCase):
 
         for ds in dsets:
             self.tlog("Verifying unpublished from db: %s" % ds.id)
-            self.verify.verify_unpublished(ds, [pl.db])
+            self.verify.verify_unpublished(ds, [pl.db], solr_retry=True)
 
         for ds in dsets:
             self.tlog("Verifying unpublished from all: %s" % ds.id)

@@ -171,7 +171,7 @@ class VerifyFuncs(object):
 
         return end_time, sleep_time
 
-    def verify_published_to_solr(self, ds, retry=True):
+    def verify_published_to_solr(self, ds, retry=False):
 
         self.logger.debug("doing verify_published_to_solr: %s" % ds.id)
 
@@ -185,7 +185,6 @@ class VerifyFuncs(object):
         end_time, sleep_time = self._get_solr_retry_times()
         while True:
             check_start_time = time.time()
-            self.logger.debug("looking for dataset in SOLR")
             try:
                 ds_index = _index.get_dset(ds.name, ds.version)
             except read_index.NotFound:
@@ -193,8 +192,10 @@ class VerifyFuncs(object):
             else:
                 break
             if check_start_time > end_time or not retry:
-                self.logger.debug("giving up looking for dataset in SOLR")
+                if retry:
+                    self.logger.debug("retries max time reached in verify_published_to_solr")
                 raise read_index.NotFound
+            self.logger.debug("waiting for retry in verify_published_to_solr")
             time.sleep(sleep_time)
 
         assert ds == ds_index  # check data in SOLR has correct info
@@ -297,7 +298,7 @@ class VerifyFuncs(object):
         self.logger.debug("done verify_unpublished_from_tds: %s" % ds.id)
 
 
-    def verify_unpublished_from_solr(self, ds, retry=True):
+    def verify_unpublished_from_solr(self, ds, retry=False):
 
         if config.is_set("devel_skip_verify_unpublished_from_solr"): 
             self.logger.warn("skipping verify_unpublished_from_solr")
@@ -320,24 +321,25 @@ class VerifyFuncs(object):
         end_time, sleep_time = self._get_solr_retry_times()
         while True:
             check_start_time = time.time()
-            self.logger.debug("looking for (absence of) dataset in SOLR")
             try:
                 _index.get_dset(ds.name, ds.version)
             except read_index.NotFound:
                 break
             if check_start_time > end_time or not retry:
-                self.logger.debug("giving up looking for (absence of) dataset in SOLR")
+                if retry:
+                    self.logger.debug("retries max time reached in verify_unpublished_from_solr")
                 raise Exception("could not verify %s unpublished" % ds.id)
+            self.logger.debug("waiting for retry in verify_unpublished_from_solr")
             time.sleep(sleep_time)
 
         self.logger.debug("done verify_unpublished_from_solr: %s" % ds.id)    
 
 
-    def verify_empty_of_test_data(self):
+    def verify_empty_of_test_data(self, solr_retry=False):
 
         self.logger.debug("doing verify_empty_of_test_data")
         for ds in all_datasets:
             self.verify_unpublished_from_db(ds)
             self.verify_unpublished_from_tds(ds, check_known_location = False)
-            self.verify_unpublished_from_solr(ds)
+            self.verify_unpublished_from_solr(ds, retry=solr_retry)
         self.logger.debug("done verify_empty_of_test_data")

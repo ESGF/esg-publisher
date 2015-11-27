@@ -52,7 +52,7 @@ class PublishFuncs(object):
             # this check is just to save time doing an unnecessary
             # (slowish) unpublish, rather than to verify success of a
             # previous unpublish, so do not retry if it seems to be
-            # published
+            # published (in fact retry=False is now the default anyway)
             self.verifier.verify_unpublished_from_solr(ds, retry=False)
         except:
             self.unpublish_from_solr(ds)
