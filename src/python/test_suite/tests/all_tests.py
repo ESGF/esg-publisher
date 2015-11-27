@@ -106,10 +106,10 @@ class PublisherTests(unittest.TestCase):
 
         for ds in dsets:
             self.tlog("Verifying unpublished from SOLR: %s" % ds.id)
-            self.verify.verify_unpublished(ds, [pl.solr])
+            self.verify.verify_unpublished(ds, [pl.solr], solr_retry=True)
 
         for ds in dsets:
-            self.tlog("Unpublished from TDS: %s" % ds.id)
+            self.tlog("Unpublishing from TDS: %s" % ds.id)
             self.publisher.unpublish_from_tds(ds)
 
         for ds in dsets:
@@ -117,12 +117,12 @@ class PublisherTests(unittest.TestCase):
             self.verify.verify_unpublished(ds, [pl.tds])
 
         for ds in dsets:
-            self.tlog("Unpublished from db: %s" % ds.id)
+            self.tlog("Unpublishing from db: %s" % ds.id)
             self.publisher.unpublish_from_db(ds)
 
         for ds in dsets:
             self.tlog("Verifying unpublished from db: %s" % ds.id)
-            self.verify.verify_unpublished(ds, [pl.db], solr_retry=True)
+            self.verify.verify_unpublished(ds, [pl.db])
 
         for ds in dsets:
             self.tlog("Verifying unpublished from all: %s" % ds.id)
@@ -169,14 +169,18 @@ class PublisherTests(unittest.TestCase):
     def test_6_verify_unpublish_latest_of_multi_versions(self):
         self.log_starting_test()
         self.ensure_empty()
-        self.publish_and_verify([ds1, ds2])
+        self.publish_and_verify(ds1)
+        self.publish_and_verify(ds2)
+        # self.publish_and_verify([ds1, ds2])
         self.unpublish_and_verify(ds2)
         self.verify_published(ds1)
 
     def test_7_verify_unpublish_earliest_of_multi_versions(self):
         self.log_starting_test()
         self.ensure_empty()
-        self.publish_and_verify([ds1, ds2])
+        # self.publish_and_verify([ds1, ds2])
+        self.publish_and_verify(ds1)
+        self.publish_and_verify(ds2)
         self.unpublish_and_verify(ds1)
         self.verify_published(ds2)
 
