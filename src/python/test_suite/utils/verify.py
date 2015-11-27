@@ -214,26 +214,38 @@ class VerifyFuncs(object):
         # NOTE: this is not simply "not verify_published_to_db()"
         # We want to verify ALL content is not there
         # Any partial match should raise an Exception
-
-        # - assert dataset id is not in database
-        # - assert no files from file_list have records in the DB
-        #   (any such records could not be connected to dataset as
-        #   this would violate foreign key constraint on
-        #   dataset_file_version, but they could be orphaned, so look
-        #   for them by their tracking ID)
+        #
+        # - Assert dataset id is not in database.
+        #
+        # - No test is necessary to assert no that files from
+        #   file_list have records in the DB.  Indeed, as esgunpublish
+        #   currently stands (Nov 2015), they *will* still exist in
+        #   the DB after unpublication of a single dataset version
+        #   while other versions of the same dataset are still
+        #   published, and instead, esgunpublish will remove files
+        #   when removing the last version of a dataset.  It is not
+        #   necessary for the publisher to behave like this, but the
+        #   test suite should tolerate this, because we know that once
+        #   all versions of a dataset are unpublished it will not be
+        #   possible for the entries in table 'file' to remain,
+        #   because this would violate the foreign key constraint
+        #   where file(dataset_id) references dataset(id), and in turn
+        #   the entries in table 'file_version' cannot remain because
+        #   file_version(file_id) references file(id).
+        #
+        #
+        # (In any case, a previous test at this point in the code 
+        # used tracking_id as a unique handle.  This is not valid, 
+        # as the same file can be referenced at different paths (via 
+        # symlinks).  Any test would have to use the primary key from 
+        # the DB.)
+        #
         try:
             _db.get_dset(ds.name, ds.version)
         except read_database.NotFound:
             pass
         else:
             raise Exception("could not verify %s unpublished" % ds.id)
-        for f in ds.files:
-            try:
-                _db.get_file(f.tracking_id)
-            except read_database.NotFound:
-                pass
-            else:
-                raise Exception("could not verify %s (contained in %s) unpublished" % (f.url, ds.id))
 
         self.logger.debug("done verify_unpublished_from_db: %s" % ds.id)
 
