@@ -18,29 +18,15 @@ class Config(object):
 
     def _parse_test_config(self, filename):
         """
-        Parse config file into dictionary and do variable substitutions
+        Parse config file into dictionary, after pre-setting the "topdir" entry
         """
-        conf = ConfigParser.ConfigParser()
+        conf = ConfigParser.SafeConfigParser()
         conf.read(os.path.join(self.top_dir, filename))
-
+        
+        conf.set("DEFAULT", "topdir", self.top_dir)
         d = {}
         for item in conf.defaults():
-            value = conf.get("DEFAULT", item)
-            while True:
-                m = self._var_re.search(value)
-                if not m:
-                    break
-                varname = m.group(1)
-                if varname == 'topdir':
-                    subs_value = self.top_dir
-                else:
-                    try:
-                        subs_value = d[varname]
-                    except IndexError:
-                        raise Exception("substitution ${%s} failed in '%s' in %s" %
-                                        (varname, item, filename))
-                value = value[ : m.start()] + subs_value + value[m.end() : ]
-            d[item] = value
+            d[item] = conf.get("DEFAULT", item)
         return d
 
     def get(self, key):
