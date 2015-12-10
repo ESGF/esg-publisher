@@ -9,8 +9,12 @@ import utils.verify as verify
 import utils.datasets as datasets
 import utils.wrap_esgf_publisher as publisher
 
+from utils.parallel_procs import PoolWrapper
+
 ds1 = datasets.d1v1
 ds2 = datasets.d1v2
+
+ds_parallel = datasets.all_datasets
 
 
 class PublisherTests(unittest.TestCase):
@@ -185,5 +189,8 @@ class PublisherTests(unittest.TestCase):
         self.verify_published(ds2)
 
     def test_8_parallel_publication(self):
-        print "FIXME: implement parallel test"
-        pass
+        self.log_starting_test()
+        self.ensure_empty()
+        pool = PoolWrapper(config.get("parallel_pool_size"),
+                           log_func = self.tlog)
+        pool.run(self.publish_and_verify, ds_parallel)
