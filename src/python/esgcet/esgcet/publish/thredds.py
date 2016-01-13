@@ -31,6 +31,7 @@ DEFAULT_THREDDS_SERVICE_APPLICATIONS = {
     'OpenDAP':['Web Browser'],
     'SRM':[],
     'LAS':['Web Browser'],
+    'basej':['Web Browser'],
     }
 DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     GRIDFTP_SERVICE_TYPE:'true',
@@ -38,6 +39,7 @@ DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     'OpenDAP':'false',
     'SRM':'false',
     'LAS':'false',
+    'basej':'false',
     }
 DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     GRIDFTP_SERVICE_TYPE:'GridFTP',
@@ -45,6 +47,7 @@ DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     'OpenDAP':'OpenDAP',
     'SRM':'SRM',
     'LAS':'Live Access Server',
+    'basej':'BASE Jumper HPSS access Server',
     }
 
 ThreddsBases = ['/thredds/fileServer', '/thredds/dodsC', '/thredds/wcs', '/thredds/ncServer']
