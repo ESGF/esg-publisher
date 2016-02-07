@@ -1,6 +1,8 @@
-import urllib2
 import json
 import re
+
+import urlopen
+
 
 from publication_objects import Dataset, File
 
@@ -9,19 +11,21 @@ class NotFound(Exception):
 
 class ReadIndex(object):
     
-    def __init__(self, conf):
-        index_node = conf.get_index_node()
-        data_node = conf.get_data_node()
+    def __init__(self, esg_conf, conf=None):
+        index_node = esg_conf.get_index_node()
+        data_node = esg_conf.get_data_node()
 
         self.url_format = "https://%s/search_files/%%s.v%%d|%s/%s/" % (
             index_node, data_node, index_node)
+
+        self.conf = conf
 
     def get_dset(self, dataset_id, version):
         """
         returns a Dataset object corresponding to the requested ID
         """
-        query_url = self.url_format % (dataset_id, version)
-        response = urllib2.urlopen(query_url)
+        query_url = self.url_format % (dataset_id, version)        
+        response = urlopen.urlopen(query_url, self.conf)
         js = json.load(response)
 
         assert js.has_key("responseHeader")

@@ -1,9 +1,8 @@
-import urllib2
 import os
 import xml.etree.ElementTree as ET
 
 from publication_objects import Dataset, File
-
+import urlopen
 
 class NotFound(Exception):
     pass
@@ -11,10 +10,16 @@ class NotFound(Exception):
 
 class ReadThredds(object):
 
-    def __init__(self, conf):
+    def __init__(self, esg_conf, conf=None):
 
-        self.local_root = conf.get_thredds_root()
-        self.url_root = conf.get_thredds_url_root()
+        # esg_conf is the esg.ini interface, used for the THREDDS paths
+
+        # conf is the test suite config, optionally used to tell the URL
+        # opener where to find SSL host keys
+        
+        self.local_root = esg_conf.get_thredds_root()
+        self.url_root = esg_conf.get_thredds_url_root()
+        self.conf = conf
 
     def local_path(self, catalog_location):
         return os.path.join(self.local_root, catalog_location)
@@ -45,8 +50,8 @@ class ReadThredds(object):
     def _path_to_catalog(self, path):
         if path.startswith("http://") or path.startswith("https://"):
             try:
-                fh = urllib2.urlopen(path)
-            except urllib2.HTTPError:
+                fh = urlopen.urlopen(path, self.conf)
+            except urlopen.HTTPError:
                 raise NotFound
             tree = ET.parse(fh)
             fh.close()

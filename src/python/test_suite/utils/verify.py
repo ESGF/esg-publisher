@@ -14,8 +14,8 @@ import read_index
 
 _esg_conf = esg_config.Config()
 _db = read_database.ReadDB(_esg_conf)
-_tds = read_thredds.ReadThredds(_esg_conf)
-_index = read_index.ReadIndex(_esg_conf)
+_tds = read_thredds.ReadThredds(_esg_conf, config)
+_index = read_index.ReadIndex(_esg_conf, config)
 
 class VerifyFuncs(object):
 
