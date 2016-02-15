@@ -153,7 +153,7 @@ def main(argv):
     datasetName = None
     datasetTechNotesURL = None
     datasetTechNotesTitle = None
-    filefilt = '.*'
+    filefilt = '.*\.nc$'
     init_file = None
     offline = False
     output = sys.stdout
