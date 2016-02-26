@@ -1,4 +1,4 @@
-#!/usr/local/uvcdat/1.5.0/bin/python
+#!/usr/bin/env python
 
 import sys
 import logging
@@ -72,7 +72,10 @@ Options:
 
     -h, --help: Print a help message.
 
-    -i init_file: Initialization file. If not specified, the default installed init file is read.
+    -i init_dir:
+        Directory containing all initialization files.
+        Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
+        If not specified, the default installed init files are read.
 
     --keep-version:
         Keep the dataset version number the same for an existing dataset. By default the version number
@@ -288,7 +291,7 @@ def main(argv):
     datasetName = None
     echoSql = False
     filefilt = '.*\.nc$'
-    init_file = None
+    init_dir = '/esg/config/esgcet/'
     initcontext = {}
     keepVersion = True
 
@@ -342,7 +345,7 @@ def main(argv):
             print usage
             sys.exit(0)
         elif flag=='-i':
-            init_file = arg
+            init_dir = arg
         elif flag=='--keep-version':
             keepVersion = True
         elif flag=='--log':
@@ -435,7 +438,7 @@ def main(argv):
 
 
     # Load the configuration and set up a database connection
-    config = loadConfig(init_file)
+    config = loadConfig(init_dir)
     engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
     initLogging('extract', override_sa=engine, log_filename=log_filename)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)

@@ -50,7 +50,7 @@ class SaneConfigParser(SafeConfigParser):
         vars['pythonbin'] = pythonbin
 
         try:
-            if option=='dburl':
+            if option == 'dburl':
                 value = self.getdburl(section, raw=raw, vars=vars)
             else:
                 value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
@@ -141,7 +141,7 @@ def splitRecord(option, sep='|'):
         creator_options =
           Contact_1 | foo | http://bar
           Contact_2 | boz@bat.net | 
-    
+
     then the code::
 
         lines = config.get(section, 'creator_options')
@@ -154,7 +154,7 @@ def splitRecord(option, sep='|'):
     """
     result = []
     for record in option.split('\n'):
-        if record=='':
+        if record == '':
             continue
         fields = map(string.strip, record.split(sep))
         result.append(fields)
@@ -181,14 +181,14 @@ def splitMap(option, sep='|'):
     nto = len(tocat)
     result = {}
     for record in lines[1:]:
-        if record=='':
+        if record == '':
             continue
         fields = map(string.strip, record.split(sep))
         fromfields = tuple(fields[0:nfrom])
         tofields = tuple(fields[nfrom:])
         if result.has_key(fromfields):
             raise ESGPublishError("Duplicate 'from' fields in map entry: %s"%record)
-        if len(fromfields)!=nfrom or len(tofields)!=nto:
+        if len(fromfields) != nfrom or len(tofields) != nto:
             raise ESGPublishError("Map entry does not match header: %s"%record)
         result[fromfields] = tofields
 
@@ -214,79 +214,66 @@ def splitLine(line, sep='|'):
     fields = map(string.strip, line.split(sep))
     return fields
 
-def loadConfig1(configFile):
-    if configFile is None:
+def loadConfig1(init_dir, project):
 
-        # First check the environment variable ESGINI
-        configFile = os.environ.get('ESGINI')
-        if configFile is not None:
-            if not os.path.exists(configFile):
-                raise ESGPublishError("Cannot find configuration file (specified in $ESGINI): %s"%configFile)
-            else:
-                config1 = SaneConfigParser(configFile)
-                config1.read(configFile)
-        else:
-            
-            # Then look in $HOME/.esgcet/esg.ini
-            home = os.environ.get('HOME')
-            if home is not None:
-                configFile = os.path.join(home, '.esgcet', 'esg.ini')
-            if configFile is not None and os.path.exists(configFile):
-                config1 = SaneConfigParser(configFile)
-                config1.read(configFile)
+    configFile = getConfigFile(init_dir)
+    config1 = SaneConfigParser(configFile)
+    config1.read(configFile)
 
-            # If not found, look in the Python installation directory
-            else:
-                try:
-                    from pkg_resources import resource_stream
-                    fp = resource_stream('esgcet.config.etc', 'esg.ini')
-                except:
-                    raise ESGPublishError("No configuration file specified, try setting $ESGINI.")
+    default_sections = config1.sections()
 
-                config1 = SaneConfigParser(`fp`)
-                config1.readfp(fp)
-    else:    
-        if not os.path.exists(configFile):
-            raise ESGPublishError("Cannot find configuration file: %s"%configFile)
-        config1 = SaneConfigParser(configFile, defaults={'here':os.getcwd()})
+    if project and 'project:%s'%project not in default_sections:
+        configFile = getConfigFile(init_dir, project)
         config1.read(configFile)
+
+    # read all project ini files
+    else:
+        projectOption = config1.get('initialize', 'project_options')
+        projectSpecs = splitRecord(projectOption)
+
+        for project, projectDesc, search_order in projectSpecs:
+            if 'project:%s'%project not in default_sections:
+                configFile = getConfigFile(init_dir, project)
+                config1.read(configFile)
+
+        if not config1:
+            raise ESGPublishError('Configuration file parsing failed')
+
     return config1
 
-def loadConfig2(configFile=None):
-    
-        # First check the environment variable ESGINI
-        configFile = os.environ.get('ESGINI')
-        if configFile is not None:
-            if not os.path.exists(configFile):
-                raise ESGPublishError("Cannot find configuration file (specified in $ESGINI): %s"%configFile)
-            else:
-                config1 = SaneConfigParser(configFile)
-                config1.read(configFile)
+def getConfigFile(init_dir, project=None):
+    if project:
+        default_filename = 'esg.%s.ini'%project
+        default_envname = 'ESG%sINI'%str.upper(project)
+    else:
+        default_filename = 'esg.ini'
+        default_envname = 'ESGINI'
+
+    # first check environment varibale for ESGINI
+    configFile = os.environ.get(default_envname)
+    if configFile is None:
+        # if env not found check default location of esg.<project>.ini
+        if os.path.isfile(os.path.join(os.path.normpath(init_dir), default_filename)):
+            configFile = os.path.join(os.path.normpath(init_dir), default_filename)
         else:
-            
-            # Then look in $HOME/.esgcet/esg.ini
-            home = os.environ.get('HOME')
-            if home is not None:
-                configFile = os.path.join(home, '.esgcet', 'esg.ini')
-            if configFile is not None and os.path.exists(configFile):
-                config1 = SaneConfigParser(configFile)
-                config1.read(configFile)
+            raise ESGPublishError("No project configuration file specified, try setting '%s"%default_envname)
+    elif (configFile is None) or (not os.path.exists(configFile)):
+        raise ESGPublishError("Cannot find configuration file (specified in $%s)"%default_envname)
 
-            # If not found, look in the Python installation directory
-            
-    
-        return configFile
+    return configFile
 
-def loadConfig(configFile):
+def loadConfig(init_dir, project=None):
     """
     Load the 'ini' style configuration file.
 
-    Returns a ConfigParser.SafeConfigParser object with the file preloaded. If the configuration has already been read, the existing parser is returned. The configuration file is located as follows:
+    Returns a ConfigParser.SafeConfigParser object with the file preloaded.
+    If the configuration has already been read, the existing parser is returned. The configuration file is located as follows:
 
     - If configFile is None, use the first existing file::
 
       - Use $HOME/.esgcet/esg.ini
-      - The system-wide default esg.ini, in the Python site-packages/esgcet/config/etc/esg.ini. Note this file may be inside a .egg file. The init file can be extracted with unzip.
+      - The system-wide default esg.ini, in the Python site-packages/esgcet/config/etc/esg.ini.
+        Note this file may be inside a .egg file. The init file can be extracted with unzip.
 
     - otherwise use configFile if it exists
     - else look in the current directory.
@@ -297,12 +284,13 @@ def loadConfig(configFile):
     global config
 
     if config is None:
-        config = loadConfig1(configFile)
+        config = loadConfig1(init_dir, project)
     return config
 
 def initLogging(section, override_sa=None, log_filename=None):
     """
-    Initialize logging based on specs in the config file section. If override_sa is set to an engine, sqlalchemy logging uses the specs as well.
+    Initialize logging based on specs in the config file section.
+    If override_sa is set to an engine, sqlalchemy logging uses the specs as well.
 
     The logger hierarchy is::
 
@@ -315,7 +303,7 @@ def initLogging(section, override_sa=None, log_filename=None):
 
     override_sa
       SQLAlchemy engine instance. If set:
-      
+
       - Only the root logger handles output. This allows SQLAlchemy output to be redirected with the log_filename parameter.
     log_filename
       String value of the output log filename. Overrides configuration log_filename parameter.
@@ -338,7 +326,7 @@ def initLogging(section, override_sa=None, log_filename=None):
     # Remove sqlalchemy handler. Then only the root logger handles output.
     if override_sa is not None:
         saLogger = logging.getLogger('sqlalchemy')
-        if len(saLogger.handlers)>0:
+        if len(saLogger.handlers) > 0:
             saLogger.removeHandler(saLogger.handlers[0])
 
 def loadStandardNameTable(path):
@@ -360,7 +348,7 @@ def loadStandardNameTable(path):
     root = tree.getroot()
     standardNames = {}
     for node in root:
-        if node.tag=='entry':
+        if node.tag == 'entry':
             name = node.attrib['id'].strip()
             if len(name) > MAX_STANDARD_NAME_LENGTH:
                 warning("Standard_name is too long.  Schema requires standard_name to be <= %d characters\n  %s"%(MAX_STANDARD_NAME_LENGTH, name))
@@ -368,26 +356,26 @@ def loadStandardNameTable(path):
 
             units = amip = grib = description = ''
             for subnode in node:
-                if subnode.tag=='canonical_units':
+                if subnode.tag == 'canonical_units':
                     units = subnode.text.strip()
-                elif subnode.tag=='amip':
+                elif subnode.tag == 'amip':
                     amip = subnode.text
-                elif subnode.tag=='grib':
+                elif subnode.tag == 'grib':
                     grib = subnode.text
-                elif subnode.tag=='description':
+                elif subnode.tag == 'description':
                     description = subnode.text
                 else:
                     raise ESGPublishError("Invalid standard name table tag: %s"%subnode.tag)
 
             standardName = StandardName(name, units, amip=amip, grib=grib, description=description)
             standardNames[name] = standardName
-            
+
     for node in root:
-        if node.tag=='alias':
+        if node.tag == 'alias':
             name = node.attrib['id'].strip()
             units = amip = grib = description = ''
             for subnode in node:
-                if subnode.tag=='entry_id':
+                if subnode.tag == 'entry_id':
                     try:
                         entry = standardNames[subnode.text.strip()]
                     except:
@@ -399,7 +387,7 @@ def loadStandardNameTable(path):
             standardNames[name] = standardName
 
     result = standardNames.values()
-    result.sort(lambda x,y: cmp(x.name, y.name))
+    result.sort(lambda x, y: cmp(x.name, y.name))
     return result
 
 def loadModelsTable(path):
@@ -419,13 +407,14 @@ def textTableIter(path, sep='|', splitter=splitLine):
     while line:
         lineno += 1
         line = line.strip()
-        if len(line)>0 and line[0]!='#':
+        if len(line) > 0 and line[0] != '#':
             yield lineno, splitter(line)
         line = f.readline()
     return
 
-def registerHandlers():
+def registerHandlers(project=None):
     """Read the project handlers from the init file handler parameters, and add to the registry."""
+
     # Get the project names
     projectOption = config.get('initialize', 'project_options')
     projectSpecs = splitRecord(projectOption)
@@ -433,12 +422,16 @@ def registerHandlers():
     formatRegistry = getRegistry(ESGCET_FORMAT_HANDLER_GROUP)
     metadataRegistry = getRegistry(ESGCET_METADATA_HANDLER_GROUP)
     threddsRegistry = getRegistry(ESGCET_THREDDS_CATALOG_HOOK_GROUP)
+
     for projectName, projectDesc, search_order in projectSpecs:
+        # process only the given project
+        if (project is not None) and (projectName != project):
+            continue
 
         # For each project: get the handler
         handler = config.get('project:'+projectName, HANDLER_OPTION, default=None)
         handlerName = config.get('project:'+projectName, PROJECT_NAME_OPTION, default=None)
-        
+
         # Get the handler class and register it
         if handlerName is not None:
             registerHandlerName(projectRegistry, projectName, handlerName)
@@ -477,7 +470,7 @@ def initializeExperiments(config, projectName, session):
     experimentSpecs = splitRecord(experimentOption)
     try:
         for projectId, experimentName, experimentDesc in experimentSpecs:
-            if projectId!=projectName:
+            if projectId != projectName:
                 continue
 
             # Check if the experiment exists
@@ -492,8 +485,8 @@ def initializeExperiments(config, projectName, session):
                 session.add(experiment)
                 session.commit()
     except ValueError:
-        raise ESGPublishError('experiment_options is misconfigured in section %s: %s'%( projectSection, experimentOption))
-    
+        raise ESGPublishError('experiment_options is misconfigured in section %s: %s'%(projectSection, experimentOption))
+
 def getOfflineLister(config, section, service=None):
     """Get the offline lister section for a service.
 
@@ -511,7 +504,7 @@ def getOfflineLister(config, section, service=None):
     offlineListerOption = config.get('DEFAULT', 'offline_lister')
     offlineListerSpecs = splitRecord(offlineListerOption)
 
-    if len(offlineListerSpecs)==1:
+    if len(offlineListerSpecs) == 1:
         result = offlineListerSpecs[0][1]
     else:
         # If no service specified, just get the first one
@@ -521,7 +514,7 @@ def getOfflineLister(config, section, service=None):
 
         # Find the lister for the named service
         for serviceName, lister in offlineListerSpecs:
-            if service==serviceName:
+            if service == serviceName:
                 result = lister
                 break
         else:
@@ -550,7 +543,7 @@ def getThreddsAuxiliaryServiceSpecs(config, section, option, multiValue=False):
     threddsOption = config.get(section, option, default=None)
     if threddsOption is None:
         return None
-    
+
     threddsSpecs = splitRecord(threddsOption)
     result = {}
     for serviceName, value in threddsSpecs:
@@ -579,24 +572,23 @@ def getThreddsServiceSpecs(config, section, option):
     threddsOption = config.get(section, option)
     threddsSpecs = splitRecord(threddsOption)
     for item in threddsSpecs:
-        if len(item)==3:
+        if len(item) == 3:
             item.append(None)
-        elif len(item)==4:
-            if item[3].strip()=='':
-                item[3]==None
+        elif len(item) == 4:
+            if item[3].strip() == '':
+                item[3] == None
         else:
             raise ESGPublishError("Invalid configuration option %s: %s"%(option, `item`))
         serviceBase = item[1].strip()
         serviceType = item[0].strip()
 
         # Ensure that LAS service base does NOT have a trailing slash ...
-        if serviceType=='LAS':
-            if serviceBase[-1]==os.sep:
+        if serviceType == 'LAS':
+            if serviceBase[-1] == os.sep:
                 item[1] = serviceBase[:-1]
         # ... and that a non-LAS service base has a trailing slash
-        elif serviceBase[-1]!=os.sep:
+        elif serviceBase[-1] != os.sep:
             serviceBase += os.sep
             item[1] = serviceBase
 
     return threddsSpecs
-    
