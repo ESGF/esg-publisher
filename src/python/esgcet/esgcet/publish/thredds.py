@@ -32,6 +32,7 @@ DEFAULT_THREDDS_SERVICE_APPLICATIONS = {
     'SRM':[],
     'LAS':['Web Browser'],
     'basej':['Web Browser'],
+    'GlobusOnline':['Web Browser']
     }
 DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     GRIDFTP_SERVICE_TYPE:'true',
@@ -40,6 +41,7 @@ DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     'SRM':'false',
     'LAS':'false',
     'basej':'false',
+    'GlobusOnline':'false',
     }
 DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     GRIDFTP_SERVICE_TYPE:'GridFTP',
@@ -48,6 +50,7 @@ DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     'SRM':'SRM',
     'LAS':'Live Access Server',
     'basej':'BASE Jumper HPSS access Server',
+    'GlobusOnline':'Globus Online Download Service',
     }
 
 ThreddsBases = ['/thredds/fileServer', '/thredds/dodsC', '/thredds/wcs', '/thredds/ncServer']
