@@ -12,10 +12,6 @@ from utility import issueCallback, getHessianServiceURL, getRestServiceURL, pars
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from rest import RestPublicationService
 
-# When the gateway catches up to versioned catalogs, set this to False so that individual versions
-# with the same dataset name can be deleted.
-DELETE_AT_DATASET_LEVEL = True
-
 def datasetOrVersionName(name, version, session, deleteAll=False, restInterface=False):
     """
     Determine if the name refers to a dataset or dataset version.
@@ -232,36 +228,23 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
 
         for datasetName,version in datasetNames:
+            if version > -1:
+                datasetToUnpublish = '%s.v%s'%(datasetName, version)
+            else:
+                datasetToUnpublish = datasetName
             isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
-            if (not DELETE_AT_DATASET_LEVEL) and (dset is not None):
-                for versionObj in versionObjs:
-                    try:
-                        eventName, stateName = deleteGatewayDatasetVersion(versionObj.name, gatewayOperation, service, session, dset=dset)
-                    except RemoteCallException, e:
-                        fields = `e`.split('\n')
-                        error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[0:2], '\n')))
-                        continue
-                    except ESGPublishError, e:
-                        fields = `e`.split('\n')
-                        error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[-2:], '\n')))
-                        continue
-                    info("  Result: %s"%stateName)
-                    resultDict[datasetName] = eventName
-            else:                       # Nothing in the node database, but still try to delete on the gateway
-                if DELETE_AT_DATASET_LEVEL and (dset is not None) and (not restInterface):
-                    datasetName = dset.name
-                try:
-                    eventName, stateName = deleteGatewayDatasetVersion(datasetName, gatewayOperation, service, session, dset=dset)
-                except RemoteCallException, e:
-                    fields = `e`.split('\n')
-                    error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[0:2], '\n')))
-                    continue
-                except ESGPublishError, e:
-                    fields = `e`.split('\n')
-                    error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetName, string.join(fields[-2:], '\n')))
-                    continue
-                info("  Result: %s"%stateName)
-                resultDict[datasetName] = eventName
+            try:
+                eventName, stateName = deleteGatewayDatasetVersion(datasetToUnpublish, gatewayOperation, service, session, dset=dset)
+            except RemoteCallException, e:
+                fields = `e`.split('\n')
+                error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[0:2], '\n')))
+                continue
+            except ESGPublishError, e:
+                fields = `e`.split('\n')
+                error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[-2:], '\n')))
+                continue
+            info("  Result: %s"%stateName)
+            resultDict[datasetName] = eventName
 
     # Reinitialize the LAS server.
     if las:
