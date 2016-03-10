@@ -873,10 +873,19 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     for name in handler.getFieldNames():
         if handler.isThreddsProperty(name):
-            try:
-                property = SE(datasetElem, "property", name=name, value=handler.getField(name))
-            except TypeError:
-                raise ESGPublishError("Invalid value for field %s: %s"%(name, handler.getField(name)))
+
+            # delimited-values here
+            if config.get(section, name + "_delimiter", default="no") == "space":
+                vals_lst = handler.getField(name).split(' ')
+                for value in vals_lst:
+                    # TODO need a try/except?
+                    property = SE(datasetElem, "property", name=name, value=value)    
+            else:
+                try:
+
+                    property = SE(datasetElem, "property", name=name, value=handler.getField(name))
+                except TypeError:
+                    raise ESGPublishError("Invalid value for field %s: %s"%(name, handler.getField(name)))
 
     if description=='':
         description = dsetVersionObj.comment
