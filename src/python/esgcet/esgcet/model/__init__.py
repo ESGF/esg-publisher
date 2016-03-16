@@ -690,6 +690,18 @@ class Dataset(object):
             session.close()
         return result
 
+    def getVersionList(self, Session=None):
+        if Session is not None:
+            session = Session()
+            session.add(self)
+        if len(self.versions)>0:
+            result = [version_obj.version for version_obj in self.versions]
+        else:
+            result = 0
+        if Session is not None:
+            session.close()
+        return result
+
     def setVersion(self, version):
         self.versions[-1].version = version
 
