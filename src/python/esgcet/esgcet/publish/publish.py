@@ -70,7 +70,7 @@ class PublicationStatus(object):
     def getStateItem(self):
         return self.state
 
-def publishDataset(datasetName, parentId, service, threddsRootURL, session, schema=None):
+def publishDataset(datasetName, parentId, service, threddsRootURL, session, schema=None, version=None):
     """
     Publish a dataset.
 
@@ -99,6 +99,8 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session, sche
     schema
       (Optional) String name of schema to validate against, for RESTful publication calls.
 
+    version
+      (Optional) Integer dataset version to publish. Default: publish latest version.
     """
     
     # Lookup the dataset
@@ -110,7 +112,8 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session, sche
     dset.clear_warnings(session, PUBLISH_MODULE)
 
     # Get the catalog associated with the dataset
-    version = dset.getVersion()
+    if not version:
+        version = dset.getVersion()
     catalog = session.query(Catalog).filter_by(dataset_name=datasetName, version=version).first()
     if catalog is None:
         raise ESGPublishError("No THREDDS catalog found for dataset: %s"%datasetName)
@@ -329,7 +332,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             else:
                 parentIdent = parentId
             messaging.info("Publishing: %s"%datasetName)
-            dset, statusId, state, evname, status = publishDataset(datasetName, parentIdent, service, threddsRootURL, session, schema=schema)
+            dset, statusId, state, evname, status = publishDataset(datasetName, parentIdent, service, threddsRootURL, session, schema=schema, version=versionno)
             messaging.info("  Result: %s"%status.getStateItem())
             results.append((dset, statusId, state))
             resultDict[(datasetName,versionno)] = evname
