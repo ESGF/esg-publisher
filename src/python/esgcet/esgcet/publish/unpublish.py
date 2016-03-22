@@ -144,7 +144,7 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
 DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
-def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False, restInterface=False):
+def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False, reinitThredds=True, restInterface=False):
     """
     Delete or retract a list of datasets:
 
@@ -187,6 +187,9 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
 
     republish
       Boolean, if True return (statusDictionary, republishList), where republishList is a list of datasets to be republished.
+
+    reinitThredds
+      Boolean flag. If True, create the TDS master catalog and reinitialize the TDS server.
 
     restInterface
       Boolean flag. If True, publish datasets with the RESTful publication services.
@@ -270,8 +273,9 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
                     session.delete(catalog)
 
         session.commit()
-        updateThreddsMasterCatalog(Session)
-        result = reinitializeThredds()
+        if reinitThredds:
+            updateThreddsMasterCatalog(Session)
+            result = reinitializeThredds()
 
     # Delete the database entry (optional).
     if republish:
@@ -302,7 +306,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
                     if isLatest:
                         dset.deleteVariables(session)
             session.commit()
-        
+
     session.commit()
     session.close()
 
