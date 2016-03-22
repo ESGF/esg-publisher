@@ -77,6 +77,12 @@ Options:
       if this option is not set, and the latest dataset version is deleted, the most recent version will be
       rescanned and republished.
 
+    --no-thredds-reinit
+        The THREDDS server is not reinitialized. This option is useful to remove one or more dataset catalogs
+        without the overhead of a TDS reinitialization call, followed by a single reinitialization call.
+        Use this option with caution, as it will leave the database and THREDDS catalogs in an inconsistent
+        state.
+
     --rest-api
         Publish using the RESTful publication services. The configuration file option ``rest_service_url''
         defines the service location. If it is undefined, the service location is
@@ -90,7 +96,7 @@ Options:
       By default, THREDDS catalogs are removed.
 
     --sync-thredds: Delete all THREDDS catalogs ('orphaned' catalogs) without a corresponding database entry.
-      
+
     --use-list filelist
         Read the list of dataset names from a file, containing one
         dataset name per line. If the filelist is '-', read from
@@ -112,7 +118,7 @@ def cleanupCatalogs(arg, dirname, names):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'map=', 'no-republish', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -132,6 +138,7 @@ def main(argv):
     thredds = True
     syncThredds = False
     useList = False
+    threddsReinit = True
     for flag, arg in args:
         if flag=='--database-delete':
             deleteDset = True
@@ -158,6 +165,8 @@ def main(argv):
             log_filename = arg
         elif flag=='--no-republish':
             republish = False
+        elif flag=='--no-thredds-reinit':
+            threddsReinit = False
         elif flag=='--rest-api':
             restApi = True
         elif flag=='--skip-thredds':
@@ -167,7 +176,7 @@ def main(argv):
         elif flag=='--use-list':
             useList = True
             useListPath = arg
-            
+
     if gatewayOp!=NO_OPERATION and unpublishOnGateway:
         gatewayOp = UNPUBLISH
 
@@ -200,7 +209,7 @@ def main(argv):
     else:
         datasetNames = datasetMap.keys()
         datasetNames.sort()
-    result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, restInterface=restApi)
+    result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=threddsReinit, restInterface=restApi)
 
     # Republish previous versions as needed. This will happen if the latest version
     # was deleted from the database, and is not
