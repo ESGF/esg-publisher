@@ -10,7 +10,9 @@ import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP
+from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
+    multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
+    processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, updateThreddsMasterCatalog
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -414,6 +416,9 @@ def main(argv):
         elif flag=='--version-list':
             versionList = arg
 
+    if threddsReinit is None:
+        threddsReinit = thredds
+
     # The project must be specified
     if projectName is None:
         raise ESGPublishError("Must specify project with --project")
@@ -451,15 +456,19 @@ def main(argv):
     directoryMap = None
     extraFields = None
 
-    # Process all mapfiles in directory
+    # Process all mapfiles in a directory
     if mapfileDir is not None:
         for root, dirs, files in os.walk(mapfileDir, followlinks=True):
             for mapfile in files:
-                dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
+                try:
+                    dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
+                except:
+                    error("Skipping %s: File does not match ESGF mapfile format." %os.path.join(root, mapfile))
+                    continue
                 datasetNames = dmap.keys()
                 datasetNames.sort()
                 if len(datasetNames)==0:
-                    warning("No datasets found.")
+                    warning("No datasets found in File %s." %os.path.join(root, mapfile))
                     min_version = -1
                 else:
                     min_version = sorted(datasetNames, key=lambda x: x[1])[0][1]
@@ -470,13 +479,22 @@ def main(argv):
 
                 # Iterate over datasets
                 if not publishOnly:
-                    datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
+                    datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
+                                                   filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
+                                                   extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
+                                                   nodbwrite=nodbwrite)
 
                 if (not nodbwrite):
-                    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
-
+                    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
+                                                perVariable=perVariable, reinitThredds=False, restInterface=restApi, schema=schema)
                 if summarizeErrors:
                     summarize_errors(Session, datasetNames)
+
+        # reinitialize THREDDS catalog only once after processing all mapfiles
+        if threddsReinit:
+            updateThreddsMasterCatalog(Session)
+            result = reinitializeThredds()
+
     else:
         if datasetMapfile is not None:
             dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)

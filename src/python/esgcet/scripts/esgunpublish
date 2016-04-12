@@ -7,13 +7,15 @@ import logging
 import string
 
 from esgcet.model import *
-from esgcet.publish import deleteDatasetList, updateThreddsMasterCatalog, reinitializeThredds, DELETE, UNPUBLISH, NO_OPERATION, readDatasetMap, parseDatasetVersionId, generateDatasetVersionId, iterateOverDatasets, UPDATE_OP, publishDatasetList
+from esgcet.publish import deleteDatasetList, updateThreddsMasterCatalog, reinitializeThredds, DELETE, UNPUBLISH, NO_OPERATION, readDatasetMap,\
+    parseDatasetVersionId, generateDatasetVersionId, iterateOverDatasets, UPDATE_OP, publishDatasetList, updateThreddsMasterCatalog
 from esgcet.config import loadConfig, initLogging, registerHandlers
 from esgcet.exceptions import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, join
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.query import queryDatasetMap
+
 
 usage = """Usage:
     esgunpublish [options] dataset_name [dataset_name ...]
@@ -82,6 +84,12 @@ Options:
       if this option is not set, and the latest dataset version is deleted, the most recent version will be
       rescanned and republished.
 
+    --no-thredds-reinit
+        The THREDDS server is not reinitialized. This option is useful to remove one or more dataset catalogs
+        without the overhead of a TDS reinitialization call, followed by a single reinitialization call.
+        Use this option with caution, as it will leave the database and THREDDS catalogs in an inconsistent
+        state.
+
     --rest-api
         Publish using the RESTful publication services. The configuration file option ``rest_service_url''
         defines the service location. If it is undefined, the service location is
@@ -114,6 +122,7 @@ def cleanupCatalogs(arg, dirname, names):
                     print "Deleting %s"%fullname
                     os.unlink(fullname)
 
+
 def republishDataset(result, Session, thredds, gatewayOp):
     """
     Republish previous versions as needed. This will happen if the latest version
@@ -135,7 +144,7 @@ def republishDataset(result, Session, thredds, gatewayOp):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'map=', 'mapdir=', 'no-republish', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'map=', 'mapdir=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -156,6 +165,7 @@ def main(argv):
     thredds = True
     syncThredds = False
     useList = False
+    threddsReinit = True
     for flag, arg in args:
         if flag=='--database-delete':
             deleteDset = True
@@ -184,6 +194,8 @@ def main(argv):
             log_filename = arg
         elif flag=='--no-republish':
             republish = False
+        elif flag=='--no-thredds-reinit':
+            threddsReinit = False
         elif flag=='--rest-api':
             restApi = True
         elif flag=='--skip-thredds':
@@ -223,27 +235,36 @@ def main(argv):
             for line in namelist.readlines():
                 versionId = parseDatasetVersionId(line.strip())
                 datasetNames.append(versionId)
-        result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, restInterface=restApi)
+        result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=threddsReinit, restInterface=restApi)
 
     elif mapfileDir is not None:
         for root, dirs, files in os.walk(mapfileDir, followlinks=True):
             for mapfile in files:
-                datasetMap = readDatasetMap(os.path.join(root, mapfile))
+                try:
+                    datasetMap = readDatasetMap(os.path.join(root, mapfile))
+                except:
+                    error("Skipping %s: File does not match ESGF mapfile format." %os.path.join(root, mapfile))
+                    continue
                 datasetNames = datasetMap.keys()
                 datasetNames.sort()
-                result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, restInterface=restApi)
+                result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=False, restInterface=restApi)
 
                 if republish:
                     republishDataset(result, Session, thredds, gatewayOp)
 
+        # reinitialize THREDDS catalog only once after processing all mapfiles
+        if threddsReinit:
+            updateThreddsMasterCatalog(Session)
+            result = reinitializeThredds()
+
     else:
         datasetNames = datasetMap.keys()
         datasetNames.sort()
-        result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, restInterface=restApi)
 
-    if mapfileDir is None and republish:
-        republishDataset(result, Session, thredds, gatewayOp)
+        result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=threddsReinit, restInterface=restApi)
 
+        if republish:
+            republishDataset(result, Session, thredds, gatewayOp)
 
     # Synchronize database and THREDDS catalogs
     if syncThredds:

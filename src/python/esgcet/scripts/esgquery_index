@@ -25,8 +25,8 @@ typeName = {DATASET:'Dataset',
             }
 DEFAULT_FORMAT = "narrow"
 DEFAULT_CHUNKSIZE = 1000
-DEFAULT_QUERY_SERVICE = "http://pcmdi9.llnl.gov/esg-search/search"
-DEFAULT_WGET_SERVICE = "http://pcmdi9.llnl.gov/esg-search/wget"
+DEFAULT_QUERY_SERVICE = "http://pcmdi.llnl.gov/esg-search/search"
+DEFAULT_WGET_SERVICE = "http://pcmdi.llnl.gov/esg-search/wget"
 MAX_RECORDS = 10000000                  # Maximum number of records
 WGET_MAX_RECORDS = 1000
 
@@ -148,7 +148,7 @@ Examples:
 
     - Find all metadata associated with a specific dataset  
 
-      esgquery_index -q id='cmip5.output1.INM.inmcm4.historical.mon.atmos.Amon.r1i1p1.v20111201|pcmdi9.llnl.gov'
+      esgquery_index -q id='cmip5.output1.INM.inmcm4.historical.mon.atmos.Amon.r1i1p1.v20111201|pcmdi.llnl.gov'
 
     - Determine if a file with a specific tracking_id is in the latest version of a dataset
 
