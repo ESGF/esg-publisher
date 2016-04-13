@@ -134,9 +134,9 @@ def republishDataset(result, Session, thredds, gatewayOp):
         registerHandlers() # Register project handlers.
         info("Republishing modified datasets:")
         republishDatasetNames = [generateDatasetVersionId(dsetTuple) for dsetTuple in republishList]
-        dmap, offline = queryDatasetMap(republishDatasetNames, Session)
+        dmap, offline, extraFields = queryDatasetMap(republishDatasetNames, Session, True)
         datasetNames = dmap.keys()
-        datasets = iterateOverDatasets(None, dmap, None, republishList, Session, "time", UPDATE_OP, None, {}, offline, {}, forceAggregate=True)
+        datasets = iterateOverDatasets(None, dmap, None, republishList, Session, "time", UPDATE_OP, None, {}, offline, {}, forceAggregate=True, extraFields=extraFields)
         republishOp = (gatewayOp != NO_OPERATION) # Don't republish if skipping the gateway op
         result = publishDatasetList(datasetNames, Session, publish=republishOp, thredds=thredds)
 
@@ -217,7 +217,6 @@ def main(argv):
 
     if config is None:
         raise ESGPublishError("No configuration file found.")
-    threddsRoot = config.get('DEFAULT', 'thredds_root')
 
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
