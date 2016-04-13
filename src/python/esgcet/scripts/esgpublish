@@ -468,13 +468,11 @@ def main(argv):
                 datasetNames = dmap.keys()
                 datasetNames.sort()
                 if len(datasetNames)==0:
-                    warning("No datasets found in File %s." %os.path.join(root, mapfile))
-                    min_version = -1
-                else:
-                    min_version = sorted(datasetNames, key=lambda x: x[1])[0][1]
+                    error("Skipping %s: File does not contain any datasets." %os.path.join(root, mapfile))
+                    continue
 
                 # Must specify version for replications
-                if min_version == -1 and masterGateway is not None and version is None and versionList is None:
+                if masterGateway is not None and version is None and versionList is None:
                     raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
 
                 # Iterate over datasets
