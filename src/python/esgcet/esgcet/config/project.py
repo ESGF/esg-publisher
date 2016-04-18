@@ -476,8 +476,19 @@ class ProjectHandler(object):
     def isEnumerated(self, field):
         return (self.getFieldType(field) == ENUM)
 
-    def compareEnumeratedValue(self, value, options):
-        return (value in options)
+    def compareEnumeratedValue(self, value, options, delimiter=""):
+
+# TODO:  here we can add additional delimiters (replace space with comma, etc)        
+        if len(delimiter) > 0 and delimiter == "space":
+            arr = value.split(' ')
+            for vv in arr:
+                if not vv in options:
+                    return False
+            
+            return True
+        else:
+                
+            return (value in options)
 
     def mapValidFieldOptions(self, field, options):
         """
@@ -521,18 +532,22 @@ class ProjectHandler(object):
             if isenum:
                 options = self.getFieldOptions(key)
             value = context[key]
+            d_key = key+"_delimiter"
+            delimiter = ""
+            if  d_key in context:
+                delimiter = context[d_key]
             if self.isMandatory(key):
                 if value in ['', None]:
                     if isenum:
                         raise ESGInvalidMandatoryField("Mandatory field '%s' not set, must be one of %s"%(key, `options`))
                     else:
                         raise ESGInvalidMandatoryField("Mandatory field '%s' not set"%key)
-                elif isenum and not self.compareEnumeratedValue(value, options):
+                elif isenum and not self.compareEnumeratedValue(value, options, delimiter):
                     validOptions = self.mapValidFieldOptions(key, options)
                     raise ESGInvalidMandatoryField("Invalid value of mandatory field '%s': %s, must be one of %s"%(key, value, `validOptions`))
             elif isenum:     # non-mandatory field
                 options += ['', None]
-                if not self.compareEnumeratedValue(value, options):
+                if not self.compareEnumeratedValue(value, options, delimiter):
                     validOptions = self.mapValidFieldOptions(key, options)
                     raise ESGPublishError("Invalid value of '%s': %s, must be one of %s"%(key, value, `validOptions`))
 
