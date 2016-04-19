@@ -479,7 +479,10 @@ class ProjectHandler(object):
     def compareEnumeratedValue(self, value, options, delimiter=""):
 
 # TODO:  here we can add additional delimiters (replace space with comma, etc)        
+       
+
         if len(delimiter) > 0 and delimiter == "space":
+
             arr = value.split(' ')
             for vv in arr:
                 if not vv in options:
@@ -532,10 +535,12 @@ class ProjectHandler(object):
             if isenum:
                 options = self.getFieldOptions(key)
             value = context[key]
-            d_key = key+"_delimiter"
+
             delimiter = ""
-            if  d_key in context:
-                delimiter = context[d_key]
+            config = getConfig()
+
+            delimiter = config.get('project:'+self.name, key + "_delimiter", default="")
+        
             if self.isMandatory(key):
                 if value in ['', None]:
                     if isenum:
