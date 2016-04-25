@@ -481,9 +481,15 @@ class ProjectHandler(object):
 # TODO:  here we can add additional delimiters (replace space with comma, etc)        
        
 
-        if len(delimiter) > 0 and delimiter == "space":
+        if len(delimiter) > 0:
+            arr = []
+            if delimiter == 'space':
 
-            arr = value.split(' ')
+                arr = value.split(' ')
+            elif delimiter == 'comma':
+                arr = value.split(',')
+            else:
+                raise ESGPublishError("Unsupported facet delimiter %s", delimiter)
             for vv in arr:
                 if not vv in options:
                     return False

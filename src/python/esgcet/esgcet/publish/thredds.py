@@ -874,9 +874,13 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     for name in handler.getFieldNames():
         if handler.isThreddsProperty(name):
 
+            vals_lst = []
             # delimited-values here
             if config.get(section, name + "_delimiter", default="no") == "space":
                 vals_lst = handler.getField(name).split(' ')
+            elif config.get(section, name + "_delimiter", default="no") == "comma":          
+                vals_lst = handler.getField(name).split(',')
+            if len(vals_lst) > 0:
                 for value in vals_lst:
                     # TODO need a try/except?
                     property = SE(datasetElem, "property", name=name, value=value)    
