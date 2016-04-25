@@ -31,6 +31,8 @@ DEFAULT_THREDDS_SERVICE_APPLICATIONS = {
     'OpenDAP':['Web Browser'],
     'SRM':[],
     'LAS':['Web Browser'],
+    'BaseJumper':['Web Browser'],
+    'Globus':['Web Browser']
     }
 DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     GRIDFTP_SERVICE_TYPE:'true',
@@ -38,6 +40,8 @@ DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     'OpenDAP':'false',
     'SRM':'false',
     'LAS':'false',
+    'BaseJumper':'false',
+    'Globus':'false',
     }
 DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     GRIDFTP_SERVICE_TYPE:'GridFTP',
@@ -45,6 +49,8 @@ DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     'OpenDAP':'OpenDAP',
     'SRM':'SRM',
     'LAS':'Live Access Server',
+    'BaseJumper':'BASE Jumper HPSS access Server',
+    'Globus':'Globus Transfer Service',
     }
 
 ThreddsBases = ['/thredds/fileServer', '/thredds/dodsC', '/thredds/wcs', '/thredds/ncServer']
@@ -361,6 +367,8 @@ def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, 
                     publishPath = path
                 if publishPath[0]!=os.sep:
                     publishPath = os.sep+publishPath
+            elif serviceType == "Globus":
+                publishPath = urlPath
             else:
                 publishPath = path
             if isThreddsFileService:
