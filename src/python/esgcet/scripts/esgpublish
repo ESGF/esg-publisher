@@ -28,7 +28,7 @@ usage = """Usage:
 
     -or-
 
-    esgpublish [operation] [options] --mapdir dataset_map
+    esgpublish [operation] [options] --mapdir mapfile_directory
 
     Extract metadata from a list of directories representing one or more datasets, into a database. The directories should relate to one project only. Generate a THREDDS configuration catalog for each dataset, and publish the catalogs to an index node.
 

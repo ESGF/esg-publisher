@@ -26,6 +26,10 @@ usage = """Usage:
 
     -or-
 
+    esgunpublish [options] --mapdir mapfile_directory
+
+    -or-
+
     esgunpublish [options] --rest-api 'dataset_name|data_node' ['dataset_name|data_node' ...]
 
     Delete or retract dataset(s) or specific versions of dataset(s) in this order:
