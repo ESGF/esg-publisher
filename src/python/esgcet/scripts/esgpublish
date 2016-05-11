@@ -26,6 +26,10 @@ usage = """Usage:
 
     esgpublish [operation] [options] --map dataset_map
 
+    -or-
+
+    esgpublish [operation] [options] --mapdir dataset_map
+
     Extract metadata from a list of directories representing one or more datasets, into a database. The directories should relate to one project only. Generate a THREDDS configuration catalog for each dataset, and publish the catalogs to an index node.
 
 Arguments:
@@ -133,11 +137,7 @@ Options:
         are always written as per time.
 
     --project project_id:
-        Project identifier. If not specified, the project is determined from the dataset map
-        if the --map form is used, otherwise the project is determined from the first file found
-        that matches the file filter (see --filter).
-
-        Note: This option is mandatory for offline datasets.
+        Project identifier. This option is mandatory.
 
     --publish
         Publish the dataset if there are no errors. Implies --thredds.
