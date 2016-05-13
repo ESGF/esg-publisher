@@ -112,7 +112,7 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session, sche
     dset.clear_warnings(session, PUBLISH_MODULE)
 
     # Get the catalog associated with the dataset
-    if not version:
+    if not version or version==-1:
         version = dset.getVersion()
     catalog = session.query(Catalog).filter_by(dataset_name=datasetName, version=version).first()
     if catalog is None:
