@@ -31,6 +31,8 @@ DEFAULT_THREDDS_SERVICE_APPLICATIONS = {
     'OpenDAP':['Web Browser'],
     'SRM':[],
     'LAS':['Web Browser'],
+    'BaseJumper':['Web Browser'],
+    'Globus':['Web Browser']
     }
 DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     GRIDFTP_SERVICE_TYPE:'true',
@@ -38,6 +40,8 @@ DEFAULT_THREDDS_SERVICE_AUTH_REQUIRED = {
     'OpenDAP':'false',
     'SRM':'false',
     'LAS':'false',
+    'BaseJumper':'false',
+    'Globus':'false',
     }
 DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     GRIDFTP_SERVICE_TYPE:'GridFTP',
@@ -45,6 +49,8 @@ DEFAULT_THREDDS_SERVICE_DESCRIPTIONS = {
     'OpenDAP':'OpenDAP',
     'SRM':'SRM',
     'LAS':'Live Access Server',
+    'BaseJumper':'BASE Jumper HPSS access Server',
+    'Globus':'Globus Transfer Service',
     }
 
 ThreddsBases = ['/thredds/fileServer', '/thredds/dodsC', '/thredds/wcs', '/thredds/ncServer']
@@ -361,6 +367,8 @@ def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, 
                     publishPath = path
                 if publishPath[0]!=os.sep:
                     publishPath = os.sep+publishPath
+            elif serviceType == "Globus":
+                publishPath = urlPath
             else:
                 publishPath = path
             if isThreddsFileService:
@@ -873,10 +881,23 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
 
     for name in handler.getFieldNames():
         if handler.isThreddsProperty(name):
-            try:
-                property = SE(datasetElem, "property", name=name, value=handler.getField(name))
-            except TypeError:
-                raise ESGPublishError("Invalid value for field %s: %s"%(name, handler.getField(name)))
+
+            vals_lst = []
+            # delimited-values here
+            if config.get(section, name + "_delimiter", default="no") == "space":
+                vals_lst = handler.getField(name).split(' ')
+            elif config.get(section, name + "_delimiter", default="no") == "comma":          
+                vals_lst = handler.getField(name).split(',')
+            if len(vals_lst) > 0:
+                for value in vals_lst:
+                    # TODO need a try/except?
+                    property = SE(datasetElem, "property", name=name, value=value)    
+            else:
+                try:
+
+                    property = SE(datasetElem, "property", name=name, value=handler.getField(name))
+                except TypeError:
+                    raise ESGPublishError("Invalid value for field %s: %s"%(name, handler.getField(name)))
 
     if description=='':
         description = dsetVersionObj.comment

@@ -151,7 +151,7 @@ class PMIP3Handler(BasicHandler):
             resolution = resolutionTable[freq]
         return resolution
 
-    def compareEnumeratedValue(self, value, options):
+    def compareEnumeratedValue(self, value, options, delimiter=""):
         if hasattr(value, 'lower'):
             lvalue = value.lower()
         else:
