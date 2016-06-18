@@ -159,20 +159,25 @@ class VerifyFuncs(object):
         self.logger.debug("done verify_published_to_tds: %s" % ds.id)
 
     def _get_solr_retry_times(self, 
+                              start_time=None,
                               default_max_time=120, 
                               default_sleep_time=5):
         
+        if start_time == None:
+            start_time = time.time()
+
         max_time = float(config.get_with_default('solr_verify_max_time',
                                                  default_max_time))
 
         sleep_time = float(config.get_with_default('solr_verify_sleep_time',
                                                    default_sleep_time))
 
-        end_time = time.time() + max_time
+        end_time = start_time + max_time
 
         return end_time, sleep_time
 
-    def verify_published_to_solr(self, ds, retry=False):
+    def verify_published_to_solr(self, ds, 
+                                 retry=False, retry_window_start=None):
 
         self.logger.debug("doing verify_published_to_solr: %s" % ds.id)
 
@@ -183,7 +188,7 @@ class VerifyFuncs(object):
         # Checks SOLR has dataset record with 
         # related file records matching those referenced inside ds object
 
-        end_time, sleep_time = self._get_solr_retry_times()
+        end_time, sleep_time = self._get_solr_retry_times(retry_window_start)
         while True:
             check_start_time = time.time()
             try:

@@ -57,7 +57,6 @@ def get_parallel_test_datasets():
     datasets = []
     for version in versions:
         for member in range(int(config.get('partest_ensemble_size'))):
-            print member
             datasets.append(_get_ds(ds_pattern % (member, version)))
     return datasets
 

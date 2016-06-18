@@ -2,6 +2,7 @@ import unittest
 import logging
 import inspect
 import sys
+import time
 
 from utils import config
 from utils.info_classes import PublicationLevels as pl
@@ -73,8 +74,9 @@ class PublisherTests(unittest.TestCase):
             self.verify_published_single_tds(ds)
         for ds in dsets:
             self.publish_single_solr(ds)
+        self.init_solr_retry_window()
         for ds in dsets:
-            self.verify_published_single_solr(ds, retry=True)
+            self.verify_published_single_solr(ds)
 
         for ds in dsets:
             self.tlog("Verifying published to all: %s" % ds.id)
@@ -105,9 +107,27 @@ class PublisherTests(unittest.TestCase):
             self.tlog("Verifying published to TDS: %s" % ds.id)
             self.verify.verify_published(ds, [pl.tds])
 
-    def verify_published_single_solr(self, ds, retry=False):
-            self.tlog("Verifying published to SOLR: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.solr], solr_retry=retry)
+
+    # The methods verify_[un]published_single_solr include retries. Before calling, 
+    # init_solr_retry_window should be called after the last [un]publication event.
+    # The relevant verify function can then be called a number of times, and the 
+    # retry window will run from the time that init_solr_retry_window was called.
+
+    def init_solr_retry_window(self):
+        self.solr_retry_window_start = time.time()
+
+    def verify_published_single_solr(self, ds):
+        self.tlog("Verifying published to SOLR: %s" % ds.id)
+        self.verify.verify_published(ds, [pl.solr], 
+                                     solr_retry=True, 
+                                     solr_retry_window_start = self.solr_retry_window_start)
+
+    def verify_unpublished_single_solr(self, ds):
+        self.tlog("Verifying unpublished from SOLR: %s" % ds.id)
+        self.verify.verify_unpublished(ds, [pl.solr],
+                                       solr_retry=True, 
+                                       solr_retry_window_start = self.solr_retry_window_start)
+
 
     def verify_published(self, dsets):
         
@@ -127,10 +147,12 @@ class PublisherTests(unittest.TestCase):
         for ds in dsets:
             self.tlog("Unpublishing from SOLR: %s" % ds.id)
             self.publisher.unpublish_from_solr(ds)
-
+            
+        t = time.time()
+        self.init_solr_retry_window()
         for ds in dsets:
             self.tlog("Verifying unpublished from SOLR: %s" % ds.id)
-            self.verify.verify_unpublished(ds, [pl.solr], solr_retry=True)
+            self.verify.verify_unpublished_single_solr(ds)
 
         for ds in dsets:
             self.tlog("Unpublishing from TDS: %s" % ds.id)
@@ -161,6 +183,7 @@ class PublisherTests(unittest.TestCase):
             for ds in dsets:
                 verify_single_func(ds)
 
+
     def run_parallel_tests(self, dsets, pool_size, parallel_verify=False):
 
         pool = PoolWrapper(pool_size,
@@ -170,14 +193,22 @@ class PublisherTests(unittest.TestCase):
         if parallel_verify:
             verify_pool = pool
 
+        # DB
         pool.run(self.publish_single_db, dsets)
         self.verify_multi(self.verify_published_single_db, dsets, verify_pool)
         
+        # THREDDS
         # publish all but one in parallel without reinit, then last one 
         # with reinit
         pool.run(self.publish_single_tds_no_reinit, dsets[:-1])
         self.publish_single_tds(dsets[-1])
         self.verify_multi(self.verify_published_single_tds, dsets, verify_pool)
+
+        # SOLR
+        pool.run(self.publish_single_solr, dsets)
+        self.init_solr_retry_window()
+        self.verify_multi(self.verify_published_single_solr, dsets, verify_pool)
+
 
     def log_starting_test(self):
         st = inspect.stack()
@@ -242,13 +273,18 @@ class PublisherTests(unittest.TestCase):
         pool_max = int(config.get('partest_pool_size_max'))
         pool_req = int(config.get('partest_pool_size_required'))
         parallel_verify = config.is_set('partest_parallel_verify')
-        for pool_size in range(pool_step, 1 + pool_max, pool_step):
+        try:
+            for pool_size in range(pool_step, 1 + pool_max, pool_step):
+                self.ensure_empty(dset_list = dsets)
+                self.tlog("Starting parallel test for pool size %s" % pool_size)
+                try:
+                    self.run_parallel_tests(dsets, pool_size, parallel_verify=parallel_verify)
+                    self.tlog("Parallel test succeeded for size %s" % pool_size)
+                except:
+                    self.tlog("Parallel test failed for pool size %s" % pool_size)
+                    if pool_size <= pool_req:
+                        raise
+        finally:
+            # the TearDownClass only removes the basic test data, not all the 
+            # datasets used in the parallel test, so do it here instead.
             self.ensure_empty(dset_list = dsets)
-            self.tlog("Starting parallel test for pool size %s" % pool_size)
-            try:
-                self.run_parallel_tests(dsets, pool_size, parallel_verify=parallel_verify)
-                self.tlog("Parallel test succeeded for size %s" % pool_size)
-            except:
-                self.tlog("Parallel test failed for pool size %s" % pool_size)
-                if pool_size <= pool_req:
-                    raise
