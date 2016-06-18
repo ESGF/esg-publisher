@@ -344,7 +344,7 @@ class VerifyFuncs(object):
         self.logger.debug("done verify_unpublished_from_tds: %s" % ds.id)
 
 
-    def verify_unpublished_from_solr(self, ds, retry=False):
+    def verify_unpublished_from_solr(self, ds, retry=False, retry_window_start=None):
 
         if config.is_set("devel_skip_verify_unpublished_from_solr"): 
             self.logger.warn("skipping verify_unpublished_from_solr")
@@ -364,7 +364,7 @@ class VerifyFuncs(object):
         # Solr.  At present, I don't know of a way if an 'empty'
         # dataset can exist in Solr or how this would be checked.)
 
-        end_time, sleep_time = self._get_solr_retry_times()
+        end_time, sleep_time = self._get_solr_retry_times(retry_window_start)
         while True:
             check_start_time = time.time()
             try:
