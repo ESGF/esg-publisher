@@ -3,6 +3,7 @@ import logging
 import inspect
 import sys
 import time
+import traceback
 
 from utils import config
 from utils.info_classes import PublicationLevels as pl
@@ -195,31 +196,93 @@ class PublisherTests(unittest.TestCase):
                 verify_single_func(ds)
 
 
-    def run_parallel_tests(self, dsets, pool_size, parallel_verify=False):
+    def publish_parallel_and_verify(self, dsets, level, pool):
+        if level == 'db':
+            pool.run(self.publish_single_db, dsets)
+        elif level == 'tds':
+            pool.run(self.publish_single_tds_no_reinit, dsets[:-1])
+            self.publish_single_tds(dsets[-1])
+        elif level == 'solr':
+            pool.run(self.publish_single_solr, dsets)
+            self.init_solr_retry_window()
+        else:
+            raise ValueError
 
-        pool = PoolWrapper(pool_size,
-                           log_func = self.tlog)
+        v_func = getattr(self, 'verify_published_single_' + level)
+        for ds in dsets:
+            v_func(ds)
 
-        verify_pool = None
-        if parallel_verify:
-            verify_pool = pool
 
-        # DB
-        pool.run(self.publish_single_db, dsets)
-        self.verify_multi(self.verify_published_single_db, dsets, verify_pool)
-        
-        # THREDDS
-        # publish all but one in parallel without reinit, then last one 
-        # with reinit
-        pool.run(self.publish_single_tds_no_reinit, dsets[:-1])
-        self.publish_single_tds(dsets[-1])
-        self.verify_multi(self.verify_published_single_tds, dsets, verify_pool)
+    def unpublish_parallel_and_verify(self, dsets, level, pool):
+        if level == 'db':
+            pool.run(self.unpublish_single_db, dsets)
+        elif level == 'tds':
+            self.tlog("TDS parallel unpublish not implemented - using unpublish with use-list")
+            self.publisher.unpublish_from_tds_multi(dsets)
+        elif level == 'solr':
+            pool.run(self.unpublish_single_solr, dsets)
+            self.init_solr_retry_window()
+        else:
+            raise ValueError
 
-        # SOLR
-        pool.run(self.publish_single_solr, dsets)
-        self.init_solr_retry_window()
-        self.verify_multi(self.verify_published_single_solr, dsets, verify_pool)
+        v_func = getattr(self, 'verify_unpublished_single_' + level)
+        for ds in dsets:
+            v_func(ds)
 
+
+    def parallel_publish_unpublish_for_pub_level(self, dsets, level, pool):
+
+        self.tlog("Starting parallel publication test for level %s with pool size %s" % (level, len(pool)))
+
+        t = time.time()
+        self.publish_parallel_and_verify(dsets, level, pool)
+        self.tlog("time to publish all %s dsets to %s with pool size %s: %ss" % (
+                len(dsets), level, len(pool), time.time() - t))
+
+        self.tlog("Starting parallel unpublication test for level %s with pool size %s" % (level, len(pool)))
+        t = time.time()
+        self.unpublish_parallel_and_verify(dsets, level, pool)
+        self.tlog("time to unpublish all %s dsets from %s with pool size %s: %ss" % (
+                len(dsets), level, len(pool), time.time() - t))
+
+    def get_pool(self, pool_size):
+        return PoolWrapper(pool_size, log_func = self.tlog)
+
+    def run_parallel_tests(self, dsets, pool_sizes):
+        """
+        Runs parallel publication and unpublication on a number of datasets. 
+        pool_sizes should be list in increasing order of number of simultaneous processes to try.
+
+        It will publish all to db and test, then unpublish and test, until it breaks or the max 
+        size is reached.  Then it will, if necessary clean up from failure and republish all, using 
+        a conservative pool size, before doing the same for TDS and then Solr.
+
+        Finally unpublishes.
+        """
+        failure_encountered = False
+        for level in 'db', 'tds', 'solr':
+            max_ok = 0  # largest successful pool size
+            for pool_size in pool_sizes:
+                try:
+                    pool = self.get_pool(pool_size)
+                    self.parallel_publish_unpublish_for_pub_level(dsets, level, pool)
+                    max_ok = pool_size
+                except:
+                    exc_info = sys.exc_info()
+                    self.tlog("Parallel test failed for pool size %s: %s %s" % (pool_size, exc_info[1], traceback.format_tb(exc_info[2])))
+                    failure_encountered = True
+                    break
+
+            pool = self.get_pool(max(max_ok / 3, 1))
+            if failure_encountered:
+                self.tlog("Clearing up from %s after failed parallel publication" % level)
+                self.unpublish_parallel_and_verify(dsets, level, pool)
+            self.tlog("Republishing to %s" % level)
+            self.publish_parallel_and_verify(dsets, level, pool)
+
+        pool = self.get_pool(2)
+        for level in 'solr', 'tds', 'db':
+            self.unpublish_parallel_and_verify(dsets, level, pool)
 
     def log_starting_test(self):
         st = inspect.stack()
@@ -282,19 +345,12 @@ class PublisherTests(unittest.TestCase):
         dsets = datasets.get_parallel_test_datasets()
         pool_step = int(config.get('partest_pool_size_increment'))
         pool_max = int(config.get('partest_pool_size_max'))
-        pool_req = int(config.get('partest_pool_size_required'))
-        parallel_verify = config.is_set('partest_parallel_verify')
+
+        pool_sizes = range(pool_step, 1 + pool_max, pool_step)
+
+        self.ensure_empty(dset_list = dsets)
         try:
-            for pool_size in range(pool_step, 1 + pool_max, pool_step):
-                self.ensure_empty(dset_list = dsets)
-                self.tlog("Starting parallel test for pool size %s" % pool_size)
-                try:
-                    self.run_parallel_tests(dsets, pool_size, parallel_verify=parallel_verify)
-                    self.tlog("Parallel test succeeded for size %s" % pool_size)
-                except:
-                    self.tlog("Parallel test failed for pool size %s" % pool_size)
-                    if pool_size <= pool_req:
-                        raise
+            self.run_parallel_tests(dsets, pool_sizes)
         finally:
             # the TearDownClass only removes the basic test data, not all the 
             # datasets used in the parallel test, so do it here instead.

@@ -85,6 +85,18 @@ class PublishFuncs(object):
                          self.format_name(ds))
         self.logger.debug("done unpublish_from_tds: %s" % ds.id)
 
+    def unpublish_from_tds_multi(self, dsets):
+        self.logger.debug("doing unpublish_from_tds: %s" % [ds.id for ds in dsets])
+        cmd_in = ""
+        for ds in dsets:
+            cmd_in += self.format_name(ds) + "\n"
+        self.run_command("esgunpublish",
+                         "--skip-index",
+                         "--no-republish",
+                         "--use-list", "-",
+                         data_in = cmd_in)
+        self.logger.debug("done unpublish_from_tds: %s" % ds.id)
+
     def unpublish_from_solr(self, ds):
         self.logger.debug("doing unpublish_from_solr: %s" % ds.id)
         self.run_command("esgunpublish",
@@ -104,10 +116,14 @@ class PublishFuncs(object):
     def format_name(self, ds):
         return "%s#%s" % (ds.name, ds.version)
 
-    def run_command(self, *command):
+    def run_command(self, *command, **kwargs):
+        try:
+            data_in = kwargs['data_in']
+        except KeyError:
+            data_in = None
         self.logger.debug("running command: %s" % string.join(command, " "))
-        proc = sp.Popen(command, stdout=sp.PIPE, stderr=sp.PIPE)
-        data = proc.communicate()
+        proc = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
+        data = proc.communicate(data_in)
         output = data[0] + data[1]  # stdout, stderr
         status = proc.returncode
         #

@@ -62,6 +62,9 @@ class Pool:
             pass
         return self.statuses
 
+    def __len__(self):
+        return self.max_procs
+
 
 class PoolWrapper:
     """
@@ -168,6 +171,9 @@ class PoolWrapper:
             raise Exception(summary + "\n\n" + all_exc_msgs)
 
         return rvs, all_exc_msgs
+
+    def __len__(self):
+        return len(self.pool)
 
 
 if __name__ == '__main__':
