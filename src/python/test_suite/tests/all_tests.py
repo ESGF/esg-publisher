@@ -14,7 +14,6 @@ from utils.parallel_procs import PoolWrapper
 ds1 = datasets.d1v1
 ds2 = datasets.d1v2
 
-ds_parallel = datasets.all_datasets
 
 
 class PublisherTests(unittest.TestCase):
@@ -42,14 +41,19 @@ class PublisherTests(unittest.TestCase):
         cls.ensure_empty()
 
     @classmethod
-    def ensure_empty(cls):
+    def ensure_empty(cls, dset_list=None):
+        """
+        Verify that no test data is already published. By default, it will use 
+        datasets.all_datasets as the list, but the list of datasets to check
+        can be passed in instead.
+        """
         cls.tlog("Verifying no test data published before we begin")
         try:
-            cls.verify.verify_empty_of_test_data()
+            cls.verify.verify_empty_of_test_data(dset_list=dset_list)
             cls.tlog("test data was already unpublished")
         except:
             cls.tlog("some test data found - deleting all")
-            cls.publisher.delete_all()
+            cls.publisher.delete_all(dset_list=dset_list)
             cls.tlog("re-testing that no test data published")
             # when testing, allow SOLR time to update
             cls.verify.verify_empty_of_test_data(solr_retry=True)
@@ -60,34 +64,50 @@ class PublisherTests(unittest.TestCase):
             dsets = [dsets]
         
         for ds in dsets:
-            self.tlog("Publishing to db: %s" % ds.id)
-            self.publisher.publish_to_db(ds)
-
+            self.publish_single_db(ds)
         for ds in dsets:
-            self.tlog("Verifying published to DB: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.db],
-                                         db_suppress_file_url_checks = True)
-
+            self.verify_published_single_db(ds)
         for ds in dsets:
-            self.tlog("Publishing to TDS: %s" % ds.id)
-            self.publisher.publish_to_tds(ds)
-
+            self.publish_single_tds(ds)
         for ds in dsets:
-            self.tlog("Verifying published to TDS: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.tds])
-
+            self.verify_published_single_tds(ds)
         for ds in dsets:
-            self.tlog("Publishing to SOLR: %s" % ds.id)
-            self.publisher.publish_to_solr(ds)
-        
+            self.publish_single_solr(ds)
         for ds in dsets:
-            self.tlog("Verifying published to SOLR: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.solr], solr_retry=True)
+            self.verify_published_single_solr(ds, retry=True)
 
         for ds in dsets:
             self.tlog("Verifying published to all: %s" % ds.id)
             self.verify.verify_published(ds)
 
+    def publish_single_db(self, ds):
+        self.tlog("Publishing to db: %s" % ds.id)
+        self.publisher.publish_to_db(ds)
+
+    def publish_single_tds(self, ds):
+        self.tlog("Publishing to TDS: %s" % ds.id)
+        self.publisher.publish_to_tds(ds)
+    
+    def publish_single_tds_no_reinit(self, ds):
+        self.tlog("Publishing to TDS: %s" % ds.id)
+        self.publisher.publish_to_tds(ds, thredds_reinit=False)
+    
+    def publish_single_solr(self, ds):
+        self.tlog("Publishing to SOLR: %s" % ds.id)
+        self.publisher.publish_to_solr(ds)
+
+    def verify_published_single_db(self, ds):
+        self.tlog("Verifying published to DB: %s" % ds.id)
+        self.verify.verify_published(ds, [pl.db],
+                                     db_suppress_file_url_checks = True)
+        
+    def verify_published_single_tds(self, ds):
+            self.tlog("Verifying published to TDS: %s" % ds.id)
+            self.verify.verify_published(ds, [pl.tds])
+
+    def verify_published_single_solr(self, ds, retry=False):
+            self.tlog("Verifying published to SOLR: %s" % ds.id)
+            self.verify.verify_published(ds, [pl.solr], solr_retry=retry)
 
     def verify_published(self, dsets):
         
@@ -131,6 +151,33 @@ class PublisherTests(unittest.TestCase):
         for ds in dsets:
             self.tlog("Verifying unpublished from all: %s" % ds.id)
             self.verify.verify_unpublished(ds)
+
+
+    def verify_multi(self, verify_single_func, dsets, pool=None):
+        if pool:
+            self.tlog("Verifying %s datasets in parallel" % len(dsets))
+            pool.run(verify_single_func, dsets)
+        else:
+            for ds in dsets:
+                verify_single_func(ds)
+
+    def run_parallel_tests(self, dsets, pool_size, parallel_verify=False):
+
+        pool = PoolWrapper(pool_size,
+                           log_func = self.tlog)
+
+        verify_pool = None
+        if parallel_verify:
+            verify_pool = pool
+
+        pool.run(self.publish_single_db, dsets)
+        self.verify_multi(self.verify_published_single_db, dsets, verify_pool)
+        
+        # publish all but one in parallel without reinit, then last one 
+        # with reinit
+        pool.run(self.publish_single_tds_no_reinit, dsets[:-1])
+        self.publish_single_tds(dsets[-1])
+        self.verify_multi(self.verify_published_single_tds, dsets, verify_pool)
 
     def log_starting_test(self):
         st = inspect.stack()
@@ -190,7 +237,18 @@ class PublisherTests(unittest.TestCase):
 
     def test_8_parallel_publication(self):
         self.log_starting_test()
-        self.ensure_empty()
-        pool = PoolWrapper(config.get("parallel_pool_size"),
-                           log_func = self.tlog)
-        pool.run(self.publish_and_verify, ds_parallel)
+        dsets = datasets.get_parallel_test_datasets()
+        pool_step = int(config.get('partest_pool_size_increment'))
+        pool_max = int(config.get('partest_pool_size_max'))
+        pool_req = int(config.get('partest_pool_size_required'))
+        parallel_verify = config.is_set('partest_parallel_verify')
+        for pool_size in range(pool_step, 1 + pool_max, pool_step):
+            self.ensure_empty(dset_list = dsets)
+            self.tlog("Starting parallel test for pool size %s" % pool_size)
+            try:
+                self.run_parallel_tests(dsets, pool_size, parallel_verify=parallel_verify)
+                self.tlog("Parallel test succeeded for size %s" % pool_size)
+            except:
+                self.tlog("Parallel test failed for pool size %s" % pool_size)
+                if pool_size <= pool_req:
+                    raise

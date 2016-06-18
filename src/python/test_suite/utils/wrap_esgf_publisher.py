@@ -27,14 +27,17 @@ class PublishFuncs(object):
                          "--map", ds.mapfile_path)
         self.logger.debug("done publish_to_db: %s" % ds.id)
 
-    def publish_to_tds(self, ds):
+    def publish_to_tds(self, ds, thredds_reinit=True):
         self.logger.debug("doing publish_to_tds: %s" % ds.id)
-        self.run_command("esgpublish", 
-                         "--new-version", str(ds.version),
-                         "--noscan",
-                         "--thredds",
-                         "--service", "fileservice",
-                         "--use-existing", self.format_name(ds))
+        command = ["esgpublish", 
+                   "--new-version", str(ds.version),
+                   "--noscan",
+                   "--thredds",
+                   "--service", "fileservice",
+                   "--use-existing", self.format_name(ds)]
+        if not thredds_reinit:
+            command.append("--no-thredds-reinit")
+        self.run_command(*command)
         self.logger.debug("done publish_to_tds: %s" % ds.id)
 
     def publish_to_solr(self, ds):
@@ -90,9 +93,11 @@ class PublishFuncs(object):
                          self.format_name(ds))
         self.logger.debug("done unpublish_from_solr: %s" % ds.id)
 
-    def delete_all(self):
+    def delete_all(self, dset_list = None):
+        if dset_list == None:
+            dset_list = all_datasets
         self.logger.debug("doing delete_all")
-        for ds in all_datasets:
+        for ds in dset_list:
             self.unpublish(ds)
         self.logger.debug("done delete_all")
 

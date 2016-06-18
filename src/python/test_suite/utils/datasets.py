@@ -38,6 +38,26 @@ d2v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0
 print "fixme: ds3 in datasets.py"
 d3v1 = None
 
-
 #all_datasets = (d1v1, d1v2, d2v1, d2v2, d3v1)
 all_datasets = (d1v1, d1v2, d2v1, d2v2)
+
+
+# define a function to get a list of the parallel test datasets, but do not call it on import 
+# as a little slow (has to read all the mapfiles) 0 can be called if actually running the 
+# parallel test.
+def get_parallel_test_datasets():
+
+    ds_pattern = 'cmip5.output1.ESGF-PWT-TEST.MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i99p%s.%s'
+
+    if config.is_set('partest_use_multi_version'):
+        versions = ['v20111028', 'v20120625']
+    else:
+        versions = ['v20111028']
+
+    datasets = []
+    for version in versions:
+        for member in range(int(config.get('partest_ensemble_size'))):
+            print member
+            datasets.append(_get_ds(ds_pattern % (member, version)))
+    return datasets
+

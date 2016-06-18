@@ -143,6 +143,7 @@ class VerifyFuncs(object):
 
         local_path = _tds.local_path(ds.catalog_location)
         ds_tds_local = _tds.parse_catalog(local_path)
+	self.logger.debug("ORIG: %s - TDS LOCAL %s" % (ds, ds_tds_local))
         assert ds == ds_tds_local  # check local THREDDS catalog has correct info
 
         if check_catalog_xml:
@@ -375,10 +376,12 @@ class VerifyFuncs(object):
         self.logger.debug("done verify_unpublished_from_solr: %s" % ds.id)    
 
 
-    def verify_empty_of_test_data(self, solr_retry=False):
+    def verify_empty_of_test_data(self, solr_retry=False, dset_list=None):
 
         self.logger.debug("doing verify_empty_of_test_data")
-        for ds in all_datasets:
+        if dset_list == None:
+            dset_list = all_datasets
+        for ds in dset_list:
             self.verify_unpublished_from_db(ds)
             self.verify_unpublished_from_tds(ds, check_known_location = False)
             self.verify_unpublished_from_solr(ds, retry=solr_retry)
