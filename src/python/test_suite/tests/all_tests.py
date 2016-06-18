@@ -86,9 +86,17 @@ class PublisherTests(unittest.TestCase):
         self.tlog("Publishing to db: %s" % ds.id)
         self.publisher.publish_to_db(ds)
 
+    def unpublish_single_db(self, ds):
+        self.tlog("Unpublishing from db: %s" % ds.id)
+        self.publisher.unpublish_from_db(ds)
+
     def publish_single_tds(self, ds):
         self.tlog("Publishing to TDS: %s" % ds.id)
         self.publisher.publish_to_tds(ds)
+
+    def unpublish_single_tds(self, ds):
+        self.tlog("Unpublishing from TDS: %s" % ds.id)
+        self.publisher.unpublish_from_tds(ds)
     
     def publish_single_tds_no_reinit(self, ds):
         self.tlog("Publishing to TDS: %s" % ds.id)
@@ -98,14 +106,26 @@ class PublisherTests(unittest.TestCase):
         self.tlog("Publishing to SOLR: %s" % ds.id)
         self.publisher.publish_to_solr(ds)
 
+    def unpublish_single_solr(self, ds):
+        self.tlog("Unpublishing from SOLR: %s" % ds.id)
+        self.publisher.unpublish_from_solr(ds)
+
     def verify_published_single_db(self, ds):
         self.tlog("Verifying published to DB: %s" % ds.id)
         self.verify.verify_published(ds, [pl.db],
                                      db_suppress_file_url_checks = True)
         
+    def verify_unpublished_single_db(self, ds):
+        self.tlog("Verifying unpublished from db: %s" % ds.id)
+        self.verify.verify_unpublished(ds, [pl.db])
+
     def verify_published_single_tds(self, ds):
-            self.tlog("Verifying published to TDS: %s" % ds.id)
-            self.verify.verify_published(ds, [pl.tds])
+        self.tlog("Verifying published to TDS: %s" % ds.id)
+        self.verify.verify_published(ds, [pl.tds])
+
+    def verify_unpublished_single_tds(self, ds):
+        self.tlog("Verifying unpublished from TDS: %s" % ds.id)
+        self.verify.verify_unpublished(ds, [pl.tds])
 
 
     # The methods verify_[un]published_single_solr include retries. Before calling, 
@@ -145,35 +165,26 @@ class PublisherTests(unittest.TestCase):
             dsets = [dsets]
         
         for ds in dsets:
-            self.tlog("Unpublishing from SOLR: %s" % ds.id)
-            self.publisher.unpublish_from_solr(ds)
-            
-        t = time.time()
+            self.unpublish_single_solr(ds)
+
         self.init_solr_retry_window()
         for ds in dsets:
-            self.tlog("Verifying unpublished from SOLR: %s" % ds.id)
-            self.verify.verify_unpublished_single_solr(ds)
+            self.verify_unpublished_single_solr(ds)
 
         for ds in dsets:
-            self.tlog("Unpublishing from TDS: %s" % ds.id)
-            self.publisher.unpublish_from_tds(ds)
+            self.unpublish_single_tds(ds)
 
         for ds in dsets:
-            self.tlog("Verifying unpublished from TDS: %s" % ds.id)
-            self.verify.verify_unpublished(ds, [pl.tds])
+            self.verify_unpublished_single_tds(ds)
 
         for ds in dsets:
-            self.tlog("Unpublishing from db: %s" % ds.id)
-            self.publisher.unpublish_from_db(ds)
+            self.unpublish_single_db(ds)
 
         for ds in dsets:
-            self.tlog("Verifying unpublished from db: %s" % ds.id)
-            self.verify.verify_unpublished(ds, [pl.db])
+            self.verify_unpublished_single_db(ds)
 
-        for ds in dsets:
-            self.tlog("Verifying unpublished from all: %s" % ds.id)
-            self.verify.verify_unpublished(ds)
-
+        self.tlog("Verifying unpublished from all: %s" % ds.id)
+        self.verify.verify_unpublished(ds)
 
     def verify_multi(self, verify_single_func, dsets, pool=None):
         if pool:
