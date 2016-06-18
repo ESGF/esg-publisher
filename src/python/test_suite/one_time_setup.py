@@ -3,11 +3,20 @@
 from utils import config
 from utils.esg_config import default_config_path as esgini
 from one_time_setup.simple_mapfile_gen import gen_all_mapfiles
+from one_time_setup.make_dummy_ensemble import MakeDummyEnsemble
 
 mapfile_dir = config.get('test_mapfile_dir')
 data_root = config.get('test_data_dir')
 host_certs_dir = config.get('host_certs_dir')
 
+print "making ensemble for parallel test"
+ensmaker = MakeDummyEnsemble(int(config.get('partest_ensemble_size')),
+                             config.get('partest_ensemble_dir'),
+                             config.get('partest_template_member'),
+                             config.get('partest_member_pattern'))
+ensmaker.make_ensemble()
+
+print "making mapfiles"
 gen_all_mapfiles(data_root, mapfile_dir)
 
 print """
