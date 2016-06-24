@@ -34,11 +34,6 @@ d1v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-LR.esmFixClim1.mon.ocean.Omo
 d2v1 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20111028', 4)
 d2v2 = _get_ds('cmip5.output1.ESGF-PWT-TEST.MPI-ESM-P.abrupt4xCO2.fx.ocean.fx.r0i0p0.v20120625', 5)
 
-# Dataset 3 contains BAD Files
-print "fixme: ds3 in datasets.py"
-d3v1 = None
-
-#all_datasets = (d1v1, d1v2, d2v1, d2v2, d3v1)
 all_datasets = (d1v1, d1v2, d2v1, d2v2)
 
 
