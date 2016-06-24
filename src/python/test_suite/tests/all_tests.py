@@ -4,6 +4,7 @@ import inspect
 import sys
 import time
 import traceback
+import string
 
 from utils import config
 from utils.info_classes import PublicationLevels as pl
@@ -27,6 +28,17 @@ class PublisherTests(unittest.TestCase):
             msg = "%s: %s" % (meth_name, msg)
         cls.logger.log(getattr(logging, log_level.upper()), msg)
 
+    def with_log_threshold(self, level, func, *args, **kwargs):
+        "Run a function, while temporarily setting the logging level to specified value"
+        old = self.logger.level
+        if level:
+            self.logger.setLevel(level)
+        try:
+            rv = func(*args, **kwargs)
+        finally:
+            self.logger.setLevel(old)
+        return rv
+
     @classmethod
     def setUpClass(cls):
         cls.logger = logging.getLogger(cls.__class__.__name__)
@@ -49,7 +61,7 @@ class PublisherTests(unittest.TestCase):
         datasets.all_datasets as the list, but the list of datasets to check
         can be passed in instead.
         """
-        cls.tlog("Verifying no test data published before we begin")
+        cls.tlog("Verifying no test data published")
         try:
             cls.verify.verify_empty_of_test_data(dset_list=dset_list)
             cls.tlog("test data was already unpublished")
@@ -196,7 +208,7 @@ class PublisherTests(unittest.TestCase):
                 verify_single_func(ds)
 
 
-    def publish_parallel_and_verify(self, dsets, level, pool):
+    def _publish_parallel_and_verify(self, dsets, level, pool):
         if level == 'db':
             pool.run(self.publish_single_db, dsets)
         elif level == 'tds':
@@ -212,8 +224,7 @@ class PublisherTests(unittest.TestCase):
         for ds in dsets:
             v_func(ds)
 
-
-    def unpublish_parallel_and_verify(self, dsets, level, pool):
+    def _unpublish_parallel_and_verify(self, dsets, level, pool):
         if level == 'db':
             pool.run(self.unpublish_single_db, dsets)
         elif level == 'tds':
@@ -229,10 +240,17 @@ class PublisherTests(unittest.TestCase):
         for ds in dsets:
             v_func(ds)
 
+    parallel_log_threshold = None
+
+    def publish_parallel_and_verify(self, dsets, level, pool):
+        self.with_log_threshold(self.parallel_log_threshold, self._publish_parallel_and_verify, dsets, level, pool)
+
+    def unpublish_parallel_and_verify(self, dsets, level, pool):
+        self.with_log_threshold(self.parallel_log_threshold, self._unpublish_parallel_and_verify, dsets, level, pool)
 
     def parallel_publish_unpublish_for_pub_level(self, dsets, level, pool):
 
-        self.tlog("Starting parallel publication test for level %s with pool size %s" % (level, len(pool)))
+        self.tlog("Starting parallel publication test for %s datasets at level %s with pool size %s" % (len(dsets), level, len(pool)))
 
         t = time.time()
         self.publish_parallel_and_verify(dsets, level, pool)
@@ -269,7 +287,8 @@ class PublisherTests(unittest.TestCase):
                     max_ok = pool_size
                 except:
                     exc_info = sys.exc_info()
-                    self.tlog("Parallel test failed for pool size %s: %s %s" % (pool_size, exc_info[1], traceback.format_tb(exc_info[2])))
+                    self.tlog("Parallel test failed for pool size %s: %s\n%s" % 
+                              (pool_size, exc_info[1], string.join(traceback.format_tb(exc_info[2]))))
                     failure_encountered = True
                     break
 
@@ -345,6 +364,11 @@ class PublisherTests(unittest.TestCase):
         dsets = datasets.get_parallel_test_datasets()
         pool_step = int(config.get('partest_pool_size_increment'))
         pool_max = int(config.get('partest_pool_size_max'))
+
+        try:
+            self.parallel_log_threshold = getattr(logging, config.get('partest_log_level'))
+        except KeyError:
+            pass
 
         pool_sizes = range(pool_step, 1 + pool_max, pool_step)
 
