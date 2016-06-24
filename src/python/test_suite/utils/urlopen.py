@@ -35,6 +35,6 @@ def urlopen(url, conf, **kwargs):
   Consider copying hostcert.pem to %s 
   in order to use as trusted certificate.
 """ % (url, host_certs_file)
-            raise
+        raise
     
     return fh
