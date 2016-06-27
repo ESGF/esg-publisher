@@ -28,7 +28,7 @@ def with_log_status(func):
             cls.tlog("\n=== %s: SUCCESS ===\n" % caller_name)
             return rv
         except:
-            cls.tlog("\n=== %s: FAIL ===\n" % caller_name)
+            cls.tlog("\n=== %s: FAIL ===\n" % caller_name, log_level="warn")
             raise
     return func_wrapper
 
