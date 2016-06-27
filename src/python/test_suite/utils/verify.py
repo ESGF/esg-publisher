@@ -147,14 +147,14 @@ class VerifyFuncs(object):
         assert ds == ds_tds_local  # check local THREDDS catalog has correct info
 
         if check_catalog_xml:
-            assert catalog_location == _tds.get_catalog_location_via_local(ds.id) # check listed in local catalog.xml
+            assert ds.catalog_location == _tds.get_catalog_location_via_local(ds.id) # check listed in local catalog.xml
 
         url_path = _tds.url_path(ds.catalog_location)
         ds_tds_served = _tds.parse_catalog(url_path)
         assert ds == ds_tds_served  #  check THREDDS catalog as served over http has correct info
 
         if check_catalog_xml:
-            assert catalog_location == _tds.get_catalog_location_via_http(ds.id)  # check listed in catalog.xml as served over http
+            assert ds.catalog_location == _tds.get_catalog_location_via_http(ds.id)  # check listed in catalog.xml as served over http
 
         self.logger.debug("done verify_published_to_tds: %s" % ds.id)
 
