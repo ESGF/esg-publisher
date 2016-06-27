@@ -31,3 +31,4 @@ What's new:
       meta_synchro.py - metadata syncronization checks for PGSQL, Thredds and SOLR
      gen_versions.py, add_checksums_to_map.sh  - used for replica publication (at LLNL/PCMDI)
     
+More coming soon...
