@@ -18,6 +18,20 @@ ds1 = datasets.d1v1
 ds2 = datasets.d1v2
 
 
+def with_log_status(func):
+    def func_wrapper(cls):
+        print func.__name__
+        caller_name = func.__name__
+        cls.tlog("\n=== %s: STARTING ===\n" % caller_name)
+        try:
+            rv = func(cls)
+            cls.tlog("\n=== %s: SUCCESS ===\n" % caller_name)
+            return rv
+        except:
+            cls.tlog("\n=== %s: FAIL ===\n" % caller_name)
+            raise
+    return func_wrapper
+
 
 class PublisherTests(unittest.TestCase):
 
@@ -303,64 +317,52 @@ class PublisherTests(unittest.TestCase):
         for level in 'solr', 'tds', 'db':
             self.unpublish_parallel_and_verify(dsets, level, pool)
 
-    def log_starting_test(self):
-        st = inspect.stack()
-        caller_name = st[1][3]
-        self.tlog("\n\n=== starting %s ===\n" % caller_name)
-
-    # separate test0 no longer needed - all tests start with call to ensure_empty()
-    #def test_0_ensure_empty(self):
-    #    self.log_starting_test()
-    #    self.ensure_empty()
-
+    @with_log_status
     def test_1_verify_publish_single_dataset_single_version(self):
-        self.log_starting_test()
         self.ensure_empty()
         self.publish_and_verify(ds1)
         
+    @with_log_status
     def test_2_verify_publish_single_dataset_two_versions(self):
-        self.log_starting_test()
         self.ensure_empty()
         self.publish_and_verify(ds1)
         self.publish_and_verify(ds2)
         self.verify_published(ds1)
     
+    @with_log_status
     def test_3_verify_publish_all_in_stages(self):
-        self.log_starting_test()
         self.ensure_empty()
         self.publish_and_verify([ds1, ds2])
     
+    @with_log_status
     def test_4_verify_publish_all_in_reverse(self):   
-        self.log_starting_test()
         self.ensure_empty()
         self.publish_and_verify([ds2, ds1])
         
+    @with_log_status
     def test_5_verify_unpublish_sole_version(self):
-        self.log_starting_test()
         self.ensure_empty()
         self.publish_and_verify(ds1)
         self.unpublish_and_verify(ds1)
 
+    @with_log_status
     def test_6_verify_unpublish_latest_of_multi_versions(self):
-        self.log_starting_test()
         self.ensure_empty()
         self.publish_and_verify(ds1)
         self.publish_and_verify(ds2)
-        # self.publish_and_verify([ds1, ds2])
         self.unpublish_and_verify(ds2)
         self.verify_published(ds1)
 
+    @with_log_status
     def test_7_verify_unpublish_earliest_of_multi_versions(self):
-        self.log_starting_test()
         self.ensure_empty()
-        # self.publish_and_verify([ds1, ds2])
         self.publish_and_verify(ds1)
         self.publish_and_verify(ds2)
         self.unpublish_and_verify(ds1)
         self.verify_published(ds2)
 
+    @with_log_status
     def test_8_parallel_publication(self):
-        self.log_starting_test()
         dsets = datasets.get_parallel_test_datasets()
         pool_step = int(config.get('partest_pool_size_increment'))
         pool_max = int(config.get('partest_pool_size_max'))
