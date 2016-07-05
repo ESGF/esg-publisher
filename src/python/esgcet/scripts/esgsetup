@@ -42,7 +42,7 @@ Options:
     --db-port port: Port used for database connection. Defaults to $PGPORT, or 5432 if not set.
 
     --db-user user: Name of the (non-administrative) owner of the esgcet database.
-    
+
     --db-user-password password: Password for non-administrative database user, that owns the
         esgcet database. If not specified, the value is requested interactively. Only used
         with the --db option.
@@ -70,7 +70,7 @@ Options:
         value is requested interactively. Only used with the --thredds option.
 
 """
-    
+
 PUBLISH_SERVICE = "remote/secure/client-cert/hessian/publishingService"
 REST_WEB_SERVICE = "ws"
 SOLR_SEARCH_SERVICE = "search"
@@ -420,7 +420,7 @@ def main(argv):
         # - database server is running
         # - user has database admin access
         # - config file is initialized
-        
+
         tell("""
 
         Create and initialize ESG node database:
@@ -432,9 +432,9 @@ def main(argv):
         - Create the database.
         - Create and initialize the database tables.
         - Update the configuration file.
-        
+
         Before proceeding, make sure that:
-        
+
         - The database server is running, and you know the host and
           port on which it is listening;
 
@@ -458,7 +458,7 @@ def main(argv):
                 The following error occurred:
 
                 - %s
-                
+
                 The module psycopg2 is needed for connection to the
                 database, and was not correctly installed or
                 configured. It should have been installed
@@ -472,7 +472,7 @@ def main(argv):
 
                 """%(`e`,REPOS))
                 sys.exit(1)
-                
+
             if dbadmin is None:
                 dbadmin = askfor("Database administrator name", env='PGUSER')
             if dbpass is None:
@@ -498,7 +498,7 @@ def main(argv):
             configdir, configname = getconfignames()
             if not os.path.exists(configname):
                 setupconfig()
-            
+
             config = SafeConfigParser()
             config.read(configname)
 
@@ -529,7 +529,7 @@ def main(argv):
                     dbdef = dbdef2
                 else:
                     dbdef = dbDefault
-                
+
             if dbuser is not None:
                 esguser = dbuser
             else:
@@ -614,7 +614,7 @@ def main(argv):
                 installed automatically when esgcet was installed.
 
                 Rerun 'easy_install -f %s esgcet' and check that sqlalchemy built correctly.
-                
+
                 """%(`e`,REPOS))
                 raise RuntimeError
 
@@ -648,7 +648,7 @@ def main(argv):
                 Run 'easy_install SQLAlchemy-migrate' and ensure that the package built correctly.
                 """%`e`)
                 raise RuntimeError
-            
+
             try:
                 # >=0.6.1
                 from migrate import DatabaseAlreadyControlledError
@@ -705,6 +705,16 @@ def main(argv):
                         """)
                         sys.exit(0)
 
+            # Fetch new esg.<project>.ini files
+            tell("""
+            Fetching new esg.<project>.ini files from github:
+            Running 'esgprep fetch-ini' -k:
+            """)
+            try:
+                subprocess.call(["esgprep", "fetch-ini", "-k"])
+            except OSError, e:
+                raise OSError("Cannot run esgprep fetch-ini: %s. Is $CDAT_HOME/bin in the path?"%`e`)
+
             # Initialize database tables
             tell("""
             Checking that database %s is up-to-date:
@@ -714,7 +724,7 @@ def main(argv):
                 subprocess.call(["esginitialize", "-c"])
             except OSError, e:
                 raise OSError("Cannot run esginitialize: %s. Is $CDAT_HOME/bin in the path?"%`e`)
-                
+
         except RuntimeError:
             tell("Script exited.")
             sys.exit(1)
@@ -728,7 +738,7 @@ def main(argv):
         # - TDS is setup for digest authentication, https
         # - user has entry and tdsConf role in tomcat-users.xml
         # - thredds.xml file exists for Tomcat V6
-        
+
         tell("""
 
         Setup the interface to the THREDDS Data Server:
@@ -790,7 +800,7 @@ def main(argv):
                 import lxml.etree
             except ImportError:
                 tell("""
-                
+
                 The module lxml is needed for connection to the database, and was not correctly installed.
                 It should have been installed automatically when esgcet was installed.
 
@@ -875,7 +885,7 @@ def main(argv):
             currentRoots =  config.get('DEFAULT', 'thredds_dataset_roots')
 
             threddsDatasetRoots = askForMultiple("THREDDS dataset root directories (option=thredds_dataset_roots)\nEach entry has the form 'path_identifier | absolute_directory_path'", displayCurrent=currentRoots)
-            
+
             # Get the gridFTP URL. If multiple file services are defined, create a compound service.
             threddsServiceSpecs = getThreddsServiceSpecs(config, 'DEFAULT', 'thredds_file_services')
             isCompound = (len(threddsServiceSpecs)>1)
@@ -905,7 +915,7 @@ def main(argv):
                           ('DEFAULT', 'thredds_dataset_roots', threddsDatasetRoots),
                           ('DEFAULT', 'thredds_file_services', threddsFileSpecs),
                           ], currentConfig=config)
-            
+
             try:
                 reinitializeThredds()
             except ESGPublishError, e:
@@ -924,7 +934,7 @@ def main(argv):
         Setup the publication interface to the gateway:
 
         The publisher makes remote service calls to the index node. In this section you will set:
-        
+
         - Service endpoints on the index node,
         - SSL port,
         - X509 certificate location.
@@ -993,7 +1003,7 @@ def main(argv):
                           ('DEFAULT', 'rest_service_url', restServiceURL),
                           ('DEFAULT', 'solr_search_service_url', solrSearchServiceURL),
                           ], currentConfig=config)
-            
+
         except RuntimeError:
             tell("Script exited.")
             sys.exit(1)
@@ -1090,10 +1100,10 @@ def main(argv):
         tell("""
         A skeleton handler package has been created in %s.
         To complete the handler setup:
-        
+
         (1) Edit the following handler files:
         %s
-        
+
         (2) Install the handler package with:
 
         %% cd %s
@@ -1101,7 +1111,7 @@ def main(argv):
 
         (3) Set the following options in esg.ini, in the appropriate project section(s):
         %s
-        
+
         """%(dirName, handlerList, dirName, optionList))
 
 if __name__=='__main__':
