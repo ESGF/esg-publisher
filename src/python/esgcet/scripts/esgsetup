@@ -81,6 +81,7 @@ DEFAULT_COMPOUND_FILE_SERVICE = 'fileservice'
 urlpat = r'(.*)://(.*):(.*)@([^:]*)(:\d+)?/(.*)'
 minimalSetup = False                   # If True, ask the minimum number of questions
 
+
 def askyn(question, default='y'):
     if minimalSetup:
         return (default=='y')
@@ -90,6 +91,7 @@ def askyn(question, default='y'):
     else:
         result = answer[0].lower()
     return (result=='y')
+
 
 def askfor(question, default=None, env=None, silent=False, ignore_minimal=False):
     """
@@ -116,6 +118,7 @@ def askfor(question, default=None, env=None, silent=False, ignore_minimal=False)
             answer = default
         return answer
 
+
 def askForMultiple(prompt, displayCurrent=None):
     print "%s:"%prompt
     if displayCurrent is not None:
@@ -135,9 +138,11 @@ def askForMultiple(prompt, displayCurrent=None):
     #        break
     return result
 
+
 def tell(info):
     info = re.sub(r'\n[\t\r\f\v ]+', '\n   ', info)
     print info
+
 
 def getconfignames():
     """Create esg.ini as:
@@ -154,6 +159,7 @@ def getconfignames():
         configname = os.path.join(configdir, 'esg.ini')
     return configdir, configname
 
+
 def updateconfig(updates, currentConfig=None):
     configdir, configname = getconfignames()
     if currentConfig is None:
@@ -167,6 +173,7 @@ def updateconfig(updates, currentConfig=None):
     esgini = open(configname, 'w+')
     config.write(esgini)
     esgini.close()
+
 
 def setupconfig():
     tell("""
@@ -227,6 +234,11 @@ def setupconfig():
         standard_nameini.write(standard_nameinitstring)
         standard_nameini.close()
 
+    cleanup_resources()
+    return configdir
+
+
+def fetch_project_ini():
     # Fetch new esg.<project>.ini files, do not overwrite existing files
     tell("""
     Fetching new esg.<project>.ini files from github:
@@ -237,9 +249,7 @@ def setupconfig():
     except OSError, e:
         raise OSError("Cannot run esgprep fetch-ini: %s. Is $CDAT_HOME/bin in the path?" % `e`)
 
-    cleanup_resources()
-    return configdir
-            
+
 def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoints, optionList, handlerGroup, handlerClass, handler=None, handlerBasename=None, handlerTemplate=None, handlerOption=None, handlerPath=None):
     from pkg_resources import resource_string
 
@@ -273,6 +283,7 @@ def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoint
     handlerEntryPoints += entryPointSection
     optionList += "\n%s = %s"%(handlerOption, handlerName)
     return handlerList, handlerEntryPoints, optionList
+
 
 # Note: this is duplicated from esgcet.config, but we don't know that it can be
 # imported yet.
@@ -417,6 +428,7 @@ def main(argv):
     # Config file initialization
     if initconfig:
         configdir = setupconfig()
+        fetch_project_ini()
 
         if initroot:
             updateconfig([('DEFAULT', 'root_id', rootid)])
@@ -510,6 +522,7 @@ def main(argv):
             configdir, configname = getconfignames()
             if not os.path.exists(configname):
                 configdir = setupconfig()
+            fetch_project_ini()
 
             config = SafeConfigParser()
             config.read(configname)
