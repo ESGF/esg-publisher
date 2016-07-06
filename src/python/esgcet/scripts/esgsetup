@@ -522,7 +522,6 @@ def main(argv):
             configdir, configname = getconfignames()
             if not os.path.exists(configname):
                 configdir = setupconfig()
-            fetch_project_ini()
 
             config = SafeConfigParser()
             config.read(configname)
