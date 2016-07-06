@@ -191,7 +191,7 @@ def setupconfig():
         tell("Creating %s"%configdir)
         os.mkdir(configdir, 0755)
 
-    # Does $HOME/.esgcet/esg.ini exist? If so, ask to proceed.
+    # Does esg.ini exist? If so, ask to proceed.
     templatename = os.path.join(configdir, 'template.ini')
     if os.path.exists(configname):
         if not askyn("Configuration file %s exists, replace?"%configname, default='n'):
@@ -862,7 +862,7 @@ def main(argv):
             from esgcet.publish import updateThreddsMasterCatalog, updateThreddsRootCatalog, reinitializeThredds
             from esgcet.exceptions import ESGPublishError
 
-            config = loadConfig(configdir)
+            config = loadConfig(configdir, load_projects=False)
             engine = create_engine(config.getdburl('extract'), echo=False, pool_recycle=3600)
             initLogging('extract', override_sa=engine)
             Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)

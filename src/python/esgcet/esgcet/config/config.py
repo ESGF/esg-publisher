@@ -214,7 +214,7 @@ def splitLine(line, sep='|'):
     fields = map(string.strip, line.split(sep))
     return fields
 
-def loadConfig1(init_dir, project):
+def loadConfig1(init_dir, project, load_projects):
 
     configFile = getConfigFile(init_dir)
     config1 = SaneConfigParser(configFile)
@@ -227,7 +227,7 @@ def loadConfig1(init_dir, project):
         config1.read(configFile)
 
     # read all project ini files
-    else:
+    elif load_projects:
         projectOption = config1.get('initialize', 'project_options')
         projectSpecs = splitRecord(projectOption)
 
@@ -262,29 +262,26 @@ def getConfigFile(init_dir, project=None):
 
     return configFile
 
-def loadConfig(init_dir, project=None):
+def loadConfig(init_dir, project=None, load_projects=True):
     """
     Load the 'ini' style configuration file.
 
-    Returns a ConfigParser.SafeConfigParser object with the file preloaded.
-    If the configuration has already been read, the existing parser is returned. The configuration file is located as follows:
+    Returns a ConfigParser.SafeConfigParser object with the configuration file(s) preloaded.
+    If the configuration has already been read, the existing parser is returned.
 
-    - If configFile is None, use the first existing file::
+    Default is to load esg.ini and all esg.<project>.ini files from init_dir.
 
-      - Use $HOME/.esgcet/esg.ini
-      - The system-wide default esg.ini, in the Python site-packages/esgcet/config/etc/esg.ini.
-        Note this file may be inside a .egg file. The init file can be extracted with unzip.
-
-    - otherwise use configFile if it exists
-    - else look in the current directory.
-
-    configFile
-      String pathname of the .ini configuration file. If None, find the configuration file as described above.
+    init_dir
+      String path to all .ini configuration files.
+    project
+        String project name. Load esg.ini and esg.<project>.ini for given project.
+    load_projects
+        Boolean, if false load esg.ini but not esg.<project>.ini files
     """
     global config
 
     if config is None:
-        config = loadConfig1(init_dir, project)
+        config = loadConfig1(init_dir, project, load_projects)
     return config
 
 def initLogging(section, override_sa=None, log_filename=None):
