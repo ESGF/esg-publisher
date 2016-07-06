@@ -142,7 +142,7 @@ def tell(info):
 def getconfignames():
     """Create esg.ini as:
     (1) $ESGINI if it exists
-    (2) $HOME/.esgcet/esg.ini otherwise
+    (2) /esg/config/esgcet/esg.ini otherwise
     """
     configname = os.environ.get('ESGINI')
     if configname is not None:
@@ -150,8 +150,7 @@ def getconfignames():
             raise RuntimeError("$ESGINI = %s, is not a file"%configname)
         configdir = os.path.dirname(configname)
     else:
-        home = os.environ['HOME']
-        configdir = os.path.join(home, '.esgcet')
+        configdir = '/esg/config/esgcet'
         configname = os.path.join(configdir, 'esg.ini')
     return configdir, configname
 
@@ -172,13 +171,15 @@ def updateconfig(updates, currentConfig=None):
 def setupconfig():
     tell("""
 
-    Create initial configuration file:
+    Create initial configuration file and fetch project configuration files:
 
-    esg.ini is a text file that configures ESG publication
-    software. This file will be created as
+    esg.ini is a text file that contains default configuration for ESGF publication
+    esg.<project>.ini files are configuration files to publish individual projects
 
-    (a) the value of environment variable $ESGINI if set, or
-    (b) $HOME/.esgcet/esg.ini
+    The location of those files is set to
+
+    (a) the location of environment variable $ESGINI if set, or
+    (b) /esg/config/esgcet
 
     if it does not already exist.
 
@@ -226,7 +227,18 @@ def setupconfig():
         standard_nameini.write(standard_nameinitstring)
         standard_nameini.close()
 
+    # Fetch new esg.<project>.ini files, do not overwrite existing files
+    tell("""
+    Fetching new esg.<project>.ini files from github:
+    Running 'esgprep fetch-ini' -k:
+    """)
+    try:
+        subprocess.call(["esgprep", "fetch-ini", "-k"])
+    except OSError, e:
+        raise OSError("Cannot run esgprep fetch-ini: %s. Is $CDAT_HOME/bin in the path?" % `e`)
+
     cleanup_resources()
+    return configdir
             
 def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoints, optionList, handlerGroup, handlerClass, handler=None, handlerBasename=None, handlerTemplate=None, handlerOption=None, handlerPath=None):
     from pkg_resources import resource_string
@@ -404,7 +416,7 @@ def main(argv):
 
     # Config file initialization
     if initconfig:
-        setupconfig()
+        configdir = setupconfig()
 
         if initroot:
             updateconfig([('DEFAULT', 'root_id', rootid)])
@@ -497,7 +509,7 @@ def main(argv):
             # Update the configuration
             configdir, configname = getconfignames()
             if not os.path.exists(configname):
-                setupconfig()
+                configdir = setupconfig()
 
             config = SafeConfigParser()
             config.read(configname)
@@ -705,16 +717,6 @@ def main(argv):
                         """)
                         sys.exit(0)
 
-            # Fetch new esg.<project>.ini files
-            tell("""
-            Fetching new esg.<project>.ini files from github:
-            Running 'esgprep fetch-ini' -k:
-            """)
-            try:
-                subprocess.call(["esgprep", "fetch-ini", "-k"])
-            except OSError, e:
-                raise OSError("Cannot run esgprep fetch-ini: %s. Is $CDAT_HOME/bin in the path?"%`e`)
-
             # Initialize database tables
             tell("""
             Checking that database %s is up-to-date:
@@ -860,7 +862,7 @@ def main(argv):
             from esgcet.publish import updateThreddsMasterCatalog, updateThreddsRootCatalog, reinitializeThredds
             from esgcet.exceptions import ESGPublishError
 
-            config = loadConfig(None)
+            config = loadConfig(configdir)
             engine = create_engine(config.getdburl('extract'), echo=False, pool_recycle=3600)
             initLogging('extract', override_sa=engine)
             Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
