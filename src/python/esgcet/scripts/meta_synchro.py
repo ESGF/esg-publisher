@@ -88,7 +88,7 @@ Arguments:
 
 
 VERBOSE = False
-init_file = None
+init_dir = '/esg/config/esgcet/'
 echoSql = False
 
 Ref_XML_Errors = []  # xml files referenced in main TDS catalog but not existing.
@@ -1173,7 +1173,7 @@ def main(argv):
 	rprt_fl = open(rprt_file_name,'w')
 	rprt_fl.write(st)
 
-	config = loadConfig(init_file)
+	config = loadConfig(init_dir)
 	
 	engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
 	Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
