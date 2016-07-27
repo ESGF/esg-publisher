@@ -5,6 +5,7 @@ import os
 import getopt
 import shutil
 import time
+import ConfigParser
 from datetime import datetime
 from subprocess import Popen, PIPE
 from esgcet.exceptions import *
@@ -26,11 +27,14 @@ Options:
 
     -h, --help: Print a help message.
 
-    -i init_file: Initialization file. If not specified, the default installed init file is read.
-    
+    -i init_dir:
+        Directory containing all initialization files.
+        Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
+        If not specified, the default installed init files are read.
+
     --project project_name: Project identifier. Mandatory parameter.
-    
-    -u, --update-init: Updates thredds_exclude_variables in esg.ini (Please note: All comments in esg.ini will be deleted!)
+
+    -u, --update-init: Updates thredds_exclude_variables in esg.<project>.ini (Please note: All comments in esg.ini will be deleted!)
 """
 
 def main(argv):
@@ -47,15 +51,15 @@ def main(argv):
         sys.exit(0)
 
     update = False
-    init_file = None
+    init_dir = '/esg/config/esgcet/'
     project_name = None
-    
+
     for flag, arg in args:
         if flag in ['-h', '--help']:
             print usage
             sys.exit(0)
         elif flag=='-i':
-            init_file = arg
+            init_dir = arg
         elif flag=='--project':
             project_name = arg
         elif flag in ['-u', '--update-init']:
@@ -66,42 +70,42 @@ def main(argv):
         print 'No project_id specified'
         print usage
         sys.exit(0)
-    
-    if not init_file:
-        init_file = os.environ.get('ESGINI')
-    if not init_file:
-        print 'Please set environment variable or use -i to select esg.ini'
-        print usage
-        sys.exit(0)
-        
+
     # Load the configuration file and the DB Session
-    config = loadConfig(init_file)
+    config = loadConfig(init_dir)
     dburl = config.getdburl('extract')
     engine = create_engine(config.getdburl('extract'), echo=False, pool_recycle=3600)
     initLogging('extract', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
-    
+
+    project_init_file = os.path.join(init_dir, 'esg.%s.ini'%project_name)
+    projectConfig = ConfigParser.ConfigParser()
+    projectConfig.read(project_init_file)
+
+    if not projectConfig:
+        raise ESGPublishError('Configuration file parsing failed for esg.%s.ini'%project_name)
+
     # Register project handlers and find handler
     registerHandlers()
     handler = getHandlerByName(project_name, None, Session)
-    
-    if update and not os.access(init_file, os.W_OK): 
-        warning('No write permissions for %s, can not update esg.ini. Will output the list of variables instead.'%init_file)
+
+    if update and not os.access(project_init_file, os.W_OK): 
+        warning('No write permissions for %s, can not update esg.%s.ini. Will output the list of variables instead.'%(project_init_file, project))
         update = False
     # try to backup old esg.ini
     if update:
         try:
-            init_file_bak = init_file + '_' + time.strftime("%Y%m%d") + '.bak'
-            shutil.copy(init_file, init_file_bak)
+            init_file_bak = project_init_file + '_' + time.strftime("%Y%m%d") + '.bak'
+            shutil.copy(project_init_file, init_file_bak)
         except:
             warning('Could not create backup of esg.ini.')
-    
+
     excludes = set()
     all_vars = set()
     var_and_exclude = set()
     cur_exclude_list = set(config.get('project:' + project_name, 'thredds_exclude_variables', default=None).replace(' ' , '').split(','))
     move_vars = False
-    
+
     for root, subdirs, files in os.walk(lastargs[0]):
         if files:
             info("Scanning directory %s"%root)
@@ -113,9 +117,9 @@ def main(argv):
                 var_and_exclude.add(variable)
                 move_vars = True
                 info('Target-Variable %s currently in thredds_exclude_variables, delete from excludes and move to variable_locate.'%variable)
-                
+
             all_vars.add(variable)
-                
+
             # find all variables in file which are not target variable    
             path = os.path.join(root, filename)
             if path.endswith('.nc'):
@@ -129,15 +133,15 @@ def main(argv):
                     warning("Cannot open %s, skipping ..."%path)
             else:
                 info("No *.nc file: %s, skipping ..."%path)
-                
-    # generate new exclude lists and update esg.ini            
+
+    # generate new exclude lists and update esg.ini
     new_vars = excludes.difference(all_vars)-cur_exclude_list
     new_exclude_list = sorted(cur_exclude_list.union(new_vars))
     var_and_exclude.update(set(new_exclude_list).intersection(all_vars))
-    
+
     if not var_and_exclude and not new_vars and not move_vars:
         info('Your thredds_exclude_variables and variable_locate lists are up-to-date :)')
-        
+
     else:
         if var_and_exclude:
             varlocate = config.get('project:' + project_name, 'variable_locate', default=None)
@@ -151,14 +155,14 @@ def main(argv):
             info('Found new set of variable_locate variables: %s'%varlocate)
             if update:
                 config.set('project:' + project_name, 'variable_locate', varlocate)
-                
+
         if new_vars or move_vars:
             info('Found new set of thredds exclude variables: %s'%', '.join(new_exclude_list))
             if update:
                 config.set('project:' + project_name, 'thredds_exclude_variables', ', '.join(new_exclude_list))
-                
+
         if update:
-            with open(init_file, 'wb') as configfile:
+            with open(project_init_file, 'wb') as configfile:
                 info('Updating esg.ini ...')
                 config.write(configfile)
 

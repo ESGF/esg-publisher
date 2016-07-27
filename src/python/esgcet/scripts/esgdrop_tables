@@ -19,7 +19,10 @@ usage = """Usage:
 
 Options:
 
-    -i init_file: Initialization file. If not specified, the default installed init file is read.
+    -i init_dir:
+        Directory containing all initialization files.
+        Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
+        If not specified, the default installed init files are read.
 
 Notes:
 
@@ -39,15 +42,15 @@ def main(argv):
         print usage
         sys.exit(0)
 
-    init_file = None
+    init_dir = '/esg/config/esgcet/'
     for flag, arg in args:
         if flag=='-h':
             print usage
             sys.exit(0)
         elif flag=='-i':
-            init_file = arg
+            init_dir = arg
 
-    config = loadConfig(init_file)
+    config = loadConfig(init_dir)
     dburl = config.getdburl('initialize')
     engine = create_engine(dburl, echo=True, pool_recycle=3600)
 
