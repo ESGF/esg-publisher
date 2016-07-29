@@ -153,6 +153,8 @@ class NetcdfHandler(ProjectHandler):
 
     def getContext(self, **context):
         ProjectHandler.getContext(self, **context)
+
+
         if self.context.get('creation_time', '')=='':
             self.context['creation_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if self.context.get('format', '')=='':
@@ -165,8 +167,6 @@ class NetcdfHandler(ProjectHandler):
     def readContext(self, cdfile):
         "Get a dictionary of key/value pairs from an open file."
         f = cdfile.file
-
-        
 
         result = {}
         if hasattr(f, 'title'):
@@ -183,9 +183,8 @@ class NetcdfHandler(ProjectHandler):
 
         config_key = "extract_global_attrs"
 
-        for key in splitLine(config.get(section, config_key), ','):
-            if hasattr(f, key):
-                result(key) = self.getAttribute(key, None)
+        for key in splitLine(config.get(projectSection, config_key), ','):
+                result[key] = cdfile.getAttribute(key, None)
 
         return result
 
