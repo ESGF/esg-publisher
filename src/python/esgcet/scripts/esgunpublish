@@ -180,7 +180,7 @@ def main(argv):
             init_dir = arg
         elif flag=='--map':
             if os.path.isfile(arg):
-                datasetMap = arg
+                datasetMap = readDatasetMap(arg)
             elif os.path.isdir(arg):
                 mapfileDir = arg
             else:
