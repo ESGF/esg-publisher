@@ -109,7 +109,7 @@ For the above example this will add two datasets and several files in the postgr
 Publish to local Thredds server
 -------------------------------
 
-This will use the local postgres database as input and generate one Thredds catalog per dataset in XML format, added to the default location ``/esg/content/thredds/esgcet``
+The publication of the Thredds catalogs will use the local postgres database as input and generate one catalog per dataset in XML format, added to the default location ``/esg/content/thredds/esgcet``
 It is recommended to set a umask so files are world readable, directories accessible, i.e. ``r-x``.
 Also make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in ``/esg/content/thredds/esgcet/``.
 
@@ -124,7 +124,7 @@ Also make sure the (unix-) user you use for publication has write access to the 
 .. note::
     If you use a mapfile_directory as input the thredds catalog is reinitialized/rechecked only once, after all mapfiles have been processed. If you prefer to pass only one mapfile per
     esgpublish call and you are publishing a series of mapfiles its unnecessary to have THREDDS reinitialize the catalog on each call to ``esgpublish``. Use the additional argument
-    ``--no-thredds-reinit`` to all calls but finish the publication with ``$ esgpublish --thredds-reinit`` to reinitialize/recheck the catalog.
+    ``--no-thredds-reinit`` to all calls and finish the publication with ``$ esgpublish --thredds-reinit`` to reinitialize/recheck the catalog.
 
 Example:
 
@@ -161,7 +161,7 @@ For the above example this will generate two Thredds catalogs and add the catalo
 Publish to index node
 ---------------------
 
-This will read the Thredds catalogs and publish the datasets to Solr using ESGF's `esg-search <https://github.com/ESGF/esg-search>`_.
+The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF's `esg-search <https://github.com/ESGF/esg-search>`_.
 
 ::
 
@@ -228,7 +228,7 @@ Useful options
 
         $ esgpublish --project <project> --map <map> --noscan [--thredds] [--publish]
 
-- Skip the reinitialization/recheck of the Thredds catalogs. This option can be used if run a series of `esgpublish` calls with a single mapfile as input. Finish the publication with ``--thredds-reinit`` to reinitialize/recheck the catalog. This option is not necessary if you pass a mapfile_directory as input, in this case the thredds catalog is reinitialized/rechecked only once, after all mapfiles have been processed.
+- Skip the reinitialization/recheck of the Thredds catalogs. This option can be used if you run a series of `esgpublish` calls with a single mapfile as input. Finish the publication with ``--thredds-reinit`` to reinitialize/recheck the catalog. This option is not necessary if you pass a mapfile_directory as input, in this case the thredds catalog is reinitialized/rechecked only once, after all mapfiles have been processed.
 
     ::
 
@@ -241,7 +241,7 @@ Useful options
 
         $ esgpublish --project <project> --map <map> --publish [--noscan]
 
-- Will set a `replica` flag to the data.
+- Set a `replica` flag to the data.
 
     ::
 
@@ -253,7 +253,7 @@ Useful options
 
         $ esgpublish --project <project> --map <map> --thredds [--noscan]
 
-- Assumes the file information are already in database, can be used to publish a single dataset to Thredds or the index
+- Publish a single dataset to Thredds or the index, assumes the file information are already in database.
 
     ::
 
