@@ -165,6 +165,9 @@ sections. This file will be set up during the ESGF installation process.
 
     If you are defining a new project but using an existing model name, you need to add a new entry to the table file for your new pairing as well.
 
+    .. note::
+        After modifying the models table please run ``$ esginitialize -c``  to update the postgres database.
+
 #. Other sections, e.g. for scanning the files and the offline services
 
     ::

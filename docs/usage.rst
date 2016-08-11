@@ -214,13 +214,13 @@ Useful options
 
     ::
 
-        $ esgpublish --project <project> --map <map> --log log_file
+        $ esgpublish --project <project> --map <map> --log <log_file>
 
 - Specify the version number. This option is only needed if the version is not included in the mapfile (using the ``dataset_name#version`` syntax).
 
     ::
 
-        $ esgpublish --project <project> --map <map> --new-version version_number
+        $ esgpublish --project <project> --map <map> --new-version <version_number>
 
 - This will skip the scan of the files. Assumes that the scan has already been done and all information was added to the database. Use this option only with ``--thredds`` or ``--publish``.
 
@@ -257,19 +257,19 @@ Useful options
 
     ::
 
-        $ esgpublish --project <project> --use-existing dataset_name[#version]
+        $ esgpublish --project <project> --use-existing <dataset_name[#version]>
 
 - Like `use-existing`, but read the list of dataset names from a file, containing one dataset name per line.
 
     ::
 
-        $ esgpublish --project <project> --use-list
+        $ esgpublish --project <project> --use-list <dataset_list>
 
 - Use the version indicated in the version_list. version_list is a file, each line of which has the form: ``dataset_id | version``. Not needed if you use the ``dataset#version`` syntax in the mapfile(s).
 
     ::
 
-        $ esgpublish --project <project> --map <map> --version-list version_list
+        $ esgpublish --project <project> --map <map> --version-list <version_list>
 
 
 
