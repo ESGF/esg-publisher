@@ -193,6 +193,12 @@ Publish to postgres, Thredds and the Index in one step
    $ esgpublish [optional: -i <path_to_ini_files>] --project <project_name> --map <input_mapfile or mapfile_directory> --service fileservice --thredds --publish
 
 
+Adding a Technical Note to a dataset
+------------------------------------
+
+Some projects require to add a Technical Note to the datasets (e.g. obs4MIPs). This can be done by adding the tech note information to the mapfile, see section :ref:`tech_note`.
+The publisher will automatically use the information in the mapfile to publish the Technical Note to the postgres, Thredds and Solr.
+
 
 Useful options
 --------------
