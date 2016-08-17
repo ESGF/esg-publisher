@@ -395,11 +395,18 @@ The project specific config files: esg.<project>.ini
     .. warning::
         If a excludes variable is missing in the ``thredds_exclude_variables`` and ``variable_per_file`` is set to true this might result in publishing the same file multiple times to Thredds.
 
-    If a variable can be `taget` variable **and** `exclude` variable it must be listed in the ``variable_locate``:
+    If a variable can be `taget` variable **and** `exclude` variable it must be listed in the ``variable_locate``.
+    The ``variable_locate`` is a list of variable and begin-of-filename pairs, following the syntax:
 
     ::
 
-        variable_locate = ps, ps_
+        variable_locate = <var1>,<begin_of_filename1> | <var2>,<begin_of_filename2>
+
+    Example:
+
+    ::
+
+        variable_locate = ps,ps_ | basin,basin_
 
 #. Enable and disable the LAS access
 
