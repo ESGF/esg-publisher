@@ -6,10 +6,13 @@ import re
 from cmip5_product import getProduct
 
 from esgcet.exceptions import *
-from esgcet.config import BasicHandler, getConfig
+from esgcet.config import BasicHandler, getConfig, compareLibVersions
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 import numpy
+
+from cmip6_cv.CMIP6Validator import JSONAction, CDMSAction, checkCMIP6
+import argparse
 
 
 WARN = False
@@ -34,12 +37,22 @@ class IPCC5Handler(BasicHandler):
 
     def validateFile(self, fileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
-        BasicHandler.validateFile(fileobj)
-
+        
         f = fileobj.path
 
         config = getConfig()
         projectSection = 'project:'+self.name
+
+        
+        min_cmor_version = config.get(projectSection, "min_cmor_version", defau\
+lt="0.0.0")
+
+        file_cmor_version = fileobj.getAttribute('cmor_version', None)
+        
+        if compareLibVersions(min_cmor_version, file_cmor_version):
+            debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
+            return
+
 
         min_cf_version = config.get(projectSection, "min_cf_version", defaut="")        
 
@@ -62,3 +75,16 @@ class IPCC5Handler(BasicHandler):
         table = self.context.get('cmor_table')
 
         fakeargs = [ table_file ,f]
+
+        parser = argparse.ArgumentParser(prog='esgpublisher')
+        parser.add_argument('cmip6_table', action=JSONAction)
+        parser.add_argument('infile', action=CDMSAction)
+
+        args = parser.parse_args(fakeargs)
+
+        
+        try:
+            process = checkCMIP6(args)
+        except:
+            print "The file is likely not compliant"
+
