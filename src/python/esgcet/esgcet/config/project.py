@@ -31,6 +31,9 @@ _patpat = re.compile(r'%\(([^()]*)\)s') # Matches the %(name)s pattern
 
 def compareLibVersions(v1, v2):
 
+    if v2 is None:
+        return False
+
     p1 = v1.split()
     p2 = v2.split()
 
