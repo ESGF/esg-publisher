@@ -28,7 +28,11 @@ MAX_RECURSION_DEPTH = 10
 
 _patpat = re.compile(r'%\(([^()]*)\)s') # Matches the %(name)s pattern
 
+
 def compareLibVersions(v1, v2):
+
+    if v2 is None:
+        return False
 
     p1 = v1.split()
     p2 = v2.split()
@@ -137,6 +141,7 @@ class ProjectHandler(object):
 
         # Try to open the sample file in a project-specific way
         self.path = path
+
         if not offline and path is not None:
             try:
                 fileobj = self.openPath(path)
@@ -181,10 +186,10 @@ class ProjectHandler(object):
 
         min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
 
-        file_cmor_version = fileobj.getAttribute('cmor_version')
+        file_cmor_version = fileobj.getAttribute('cmor_version', None)
 
         if not compareLibVersions(min_cmor_version, file_cmor_version):
-            raise ESGInvalidMetadataFormat("file " + fileobj.file  + " cmor version = " + file_cmor_version  +  ", running checks - minimum =" + min_cmor_version )
+            raise ESGInvalidMetadataFormat("file " + self.path  + " cmor version = " + file_cmor_version  +  ", running checks - minimum = " + min_cmor_version )
             
 
     def initializeFields(self, Session):

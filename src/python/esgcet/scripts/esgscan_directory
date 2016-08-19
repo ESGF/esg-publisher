@@ -156,7 +156,7 @@ def main(argv):
                 tmp_args.append(dn)
             else:
                 print "Directory " + dn + " not found!"
-        last_args = tmp_args
+        lastargs = tmp_args
     if len(lastargs) == 0:
         print "No valid directory specified"
         sys.exit(0)
