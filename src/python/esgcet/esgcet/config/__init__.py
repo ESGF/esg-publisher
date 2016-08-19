@@ -12,7 +12,8 @@ from metadata import MetadataHandler
 from acme_multi_format_handler import AcmeMultiFormatHandler
 
 from ipcc4_handler import IPCC4Handler
-from cmip6_handler import CMIP65Handler
+from ipcc5_handler import IPCC5Handler
+from cmip6_handler import CMIP6Handler
 from tamip_handler import TAMIPHandler
 from obs4mips_handler import Obs4mipsHandler
 builtinProjectHandlers = {

@@ -20,7 +20,7 @@ WARN = False
 from cfchecker import *
 
 
-class IPCC5Handler(BasicHandler):
+class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
@@ -44,8 +44,7 @@ class IPCC5Handler(BasicHandler):
         projectSection = 'project:'+self.name
 
         
-        min_cmor_version = config.get(projectSection, "min_cmor_version", defau\
-lt="0.0.0")
+        min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
 
         file_cmor_version = fileobj.getAttribute('cmor_version', None)
         
@@ -68,12 +67,25 @@ lt="0.0.0")
 
         rc = CF_Chk_obj.checker(f)
 
-        if (rc < 0):
+        if (rc > 0):
             raise ESGPublishError("File %s fails CF check"%f)
 
         
-        table = self.context.get('cmor_table')
+        try:
+            table = fileobj.getAttribute('table_id', None)
 
+        except:
+            raise ESGPublishError("File %s missing required table_id global attribute"%f)
+
+
+        if table is None:
+            raise ESGPublishError("File %s missing required table_id global att\
+ribute"%f)
+
+
+
+        table_file = '/usr/local/cmip6-cmor-tables/Tables/CMIP6_' + table + '.j\
+son'
         fakeargs = [ table_file ,f]
 
         parser = argparse.ArgumentParser(prog='esgpublisher')
@@ -82,9 +94,10 @@ lt="0.0.0")
 
         args = parser.parse_args(fakeargs)
 
-        
         try:
-            process = checkCMIP6(args)
+                process = checkCMIP6(args)
+            process.ControlVocab()
         except:
-            print "The file is likely not compliant"
+            print "Caught Controlled vocab exception"
+            raise ESGPublishError("File %s failed the CV check"%f)
 
