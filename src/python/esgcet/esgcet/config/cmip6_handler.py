@@ -20,7 +20,7 @@ WARN = False
 from cfchecker import *
 
 
-class IPCC5Handler(BasicHandler):
+class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
@@ -44,8 +44,7 @@ class IPCC5Handler(BasicHandler):
         projectSection = 'project:'+self.name
 
         
-        min_cmor_version = config.get(projectSection, "min_cmor_version", defau\
-lt="0.0.0")
+        min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
 
         file_cmor_version = fileobj.getAttribute('cmor_version', None)
         
@@ -55,6 +54,8 @@ lt="0.0.0")
 
 
         min_cf_version = config.get(projectSection, "min_cf_version", defaut="")        
+
+
 
         if len(min_cf_version) == 0: 
             raise ESGPublishError("Minimum CF version not set in esg.ini")
@@ -68,11 +69,28 @@ lt="0.0.0")
 
         rc = CF_Chk_obj.checker(f)
 
-        if (rc < 0):
+        if (rc > 0):
             raise ESGPublishError("File %s fails CF check"%f)
 
+
+        table = None
+
+        try:
+            table = fileobj.getAttribute('table_id', None)
+
+        except:
+            raise ESGPublishError("File %s missing required table_id global attribute"%f)
+
+        if table is None:
+            raise ESGPublishError("File %s missing required table_id global attribute"%f)
+
+
+        cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
         
-        table = self.context.get('cmor_table')
+        if cmor_table_path == "":
+            raise ESGPublishError("cmor_table_path not set in esg.ini")            
+
+        table_file = cmor_table_path + '/CMIP6_' + table + '.json'
 
         fakeargs = [ table_file ,f]
 
@@ -82,9 +100,16 @@ lt="0.0.0")
 
         args = parser.parse_args(fakeargs)
 
-        
+#        print "About to CV check:", f
+ 
         try:
             process = checkCMIP6(args)
+            if process is None:
+                raise ESGPublishError("File %s failed the CV check - object create failure"%f)
+
+            process.ControlVocab()
+
+
         except:
-            print "The file is likely not compliant"
+            raise ESGPublishError("File %s failed the CV check"%f)
 
