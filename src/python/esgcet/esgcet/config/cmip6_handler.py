@@ -81,16 +81,15 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s missing required table_id global attribute"%f)
 
-        if table is None:
-            raise ESGPublishError("File %s missing required table_id global attribute"%f)
-
 
         cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
         
+
         if cmor_table_path == "":
             raise ESGPublishError("cmor_table_path not set in esg.ini")            
 
         table_file = cmor_table_path + '/CMIP6_' + table + '.json'
+
 
         fakeargs = [ table_file ,f]
 
@@ -99,6 +98,7 @@ class CMIP6Handler(BasicHandler):
         parser.add_argument('infile', action=CDMSAction)
 
         args = parser.parse_args(fakeargs)
+
 
 #        print "About to CV check:", f
  
@@ -111,5 +111,6 @@ class CMIP6Handler(BasicHandler):
 
 
         except:
+
             raise ESGPublishError("File %s failed the CV check"%f)
 
