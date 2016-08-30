@@ -17,7 +17,16 @@ Detailed instructions on publishing are on the ESGF confluence site.  This is ac
 
 https://acme-climate.atlassian.net/wiki/display/ESGF/Guide+to+ESGF+Publishing+and+Best+Practices
 
-03 August 2016 - version 3.0,1
+29 August 2016 - version 3.1.0
+
+* Changes to support CMIP6
+  - Configuration option to extract global attributes
+  - Check for CMOR version in datafiles
+  - CF checker integration
+  - CMIP6-CV check integration (requires CMOR install)
+* Included documentation (requires sphinx, sphinx_rtd_theme)
+
+03 August 2016 - version 3.0.1
 
 * Setup.py inclusion of esgprep utility - see http://esgf-prepare.readthedocs.io/ for more information
 * Use of project-specific esg.ini files read from the default location
