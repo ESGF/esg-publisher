@@ -1,1 +1,0 @@
-"ESGCET Node software."
