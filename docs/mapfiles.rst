@@ -18,7 +18,7 @@ Basic usage of esgprep mapfile
 The `esgprep toolbox <https://github.com/IS-ENES-Data/esgf-prepare>`_ is a standalone tool to generate mapfiles, fetch the project specific configuration files,
 check the vocabulary, etc. It will be installed during the esg-publisher setup.
 
-.. seealso:: The full documentation of esgprep toolbox can be found on ReadTheDocs: http://esgf-prepare.readthedocs.io.
+.. seealso:: The full documentation of esgprep toolbox can be found on github: http://is-enes-data.github.io/esgf-prepare/.
 
 The basic command to generate the mapfile(s):
 
