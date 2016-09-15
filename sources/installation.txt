@@ -14,6 +14,7 @@ Installation from source
 Clone the Github repo and install the esgcet package using setup.py.
 
 ::
+
     $ source /etc/esg.env
     $ git clone https://github.com/ESGF/esg-publisher.git
     $ cd esg-publisher/src/python/esgcet
