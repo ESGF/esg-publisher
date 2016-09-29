@@ -19,6 +19,7 @@
 
 TAGS
 .ant-targets-build.xml
+.idea
 *~
 *.cache
 *.DS_Store
@@ -38,3 +39,7 @@ generated/
 /.cobertura.ser
 /eclipse
 /backup
+
+# sphinx
+docs/_build/
+

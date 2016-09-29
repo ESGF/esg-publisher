@@ -28,6 +28,34 @@ MAX_RECURSION_DEPTH = 10
 
 _patpat = re.compile(r'%\(([^()]*)\)s') # Matches the %(name)s pattern
 
+
+def compareLibVersions(v1, v2):
+
+    if v2 is None:
+        return False
+
+    p1 = v1.split()
+    p2 = v2.split()
+
+
+    diff = len(p1) - len(p2)
+    
+    if (diff > 0):
+        for i in range(diff):
+
+            p2.append("0")
+    
+    for x, y in zip(p1, p2):
+
+        if y < x:
+            return False
+
+    return True
+
+
+
+
+
 def getCategoryType(s):
     sl = s.lower().strip()
     if sl=="enum":
@@ -113,6 +141,7 @@ class ProjectHandler(object):
 
         # Try to open the sample file in a project-specific way
         self.path = path
+
         if not offline and path is not None:
             try:
                 fileobj = self.openPath(path)
@@ -152,7 +181,16 @@ class ProjectHandler(object):
 
     def validateFile(self, fileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
-        pass
+        config = getConfig()
+        projectSection = 'project:'+self.name
+
+        min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
+
+        file_cmor_version = fileobj.getAttribute('cmor_version', None)
+
+        if not compareLibVersions(min_cmor_version, file_cmor_version):
+            raise ESGInvalidMetadataFormat("file " + self.path  + " cmor version = " + file_cmor_version  +  ", running checks - minimum = " + min_cmor_version )
+            
 
     def initializeFields(self, Session):
         """Initialize field names and options based on the configuration file."""
