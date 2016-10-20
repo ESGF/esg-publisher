@@ -183,7 +183,8 @@ class NetcdfHandler(ProjectHandler):
 
         config_key = "extract_global_attrs"
 
-        for key in splitLine(config.get(projectSection, config_key), ','):
+        if config.has_option(projectSection, config_key):
+            for key in splitLine(config.get(projectSection, config_key), ','):
                 result[key] = cdfile.getAttribute(key, None)
 
         return result
