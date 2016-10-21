@@ -737,11 +737,11 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
             else:
                 context[name] = value
 
-        # add version to context to allow it to be a mandatory field
+        # add dataset_version to context to allow version to be a mandatory field
         if versionno > -1:
-            context['version'] = versionno
+            context['dataset_version'] = versionno
         elif newVersion is not None:
-            context['version'] = newVersion
+            context['dataset_version'] = newVersion
 
         # Update the handler context and fill in default values
         handler.updateContext(context, True)
