@@ -436,6 +436,7 @@ The project specific config files: esg.<project>.ini
             monClim | 1 month
             fx      | fixed
 
+.. _policies:
 
 Prepare user and permissions for publication
 ********************************************
@@ -468,6 +469,16 @@ Publish to your own index node
         :linenos:
 
         <policy resource=".*esgf-test.dkrz.de.*" attribute_type="cmip5_publisher" attribute_value="publisher" action="Write"/>
+
+    .. note::
+        Make sure you have the correct permission for both policies files:
+
+        ::
+
+            -rw-r----- 1 tomcat tomcat 5840 Aug  8 10:32 /esg/config/esgf_policies_local.xml
+            -rw-r----- 1 tomcat tomcat 1381 Mar 21  2016 /esg/config/esgf_policies_common.xml
+
+
 
 #. Group, role and permission in the Postgres database:
 

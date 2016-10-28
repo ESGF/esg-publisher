@@ -184,12 +184,13 @@ class ProjectHandler(object):
         config = getConfig()
         projectSection = 'project:'+self.name
 
-        min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
+        if config.has_option(projectSection, 'min_cmor_version'):
+            min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
 
-        file_cmor_version = fileobj.getAttribute('cmor_version', None)
+            file_cmor_version = fileobj.getAttribute('cmor_version', None)
 
-        if not compareLibVersions(min_cmor_version, file_cmor_version):
-            raise ESGInvalidMetadataFormat("file " + self.path  + " cmor version = " + file_cmor_version  +  ", running checks - minimum = " + min_cmor_version )
+            if not compareLibVersions(min_cmor_version, file_cmor_version):
+                raise ESGInvalidMetadataFormat("file " + self.path  + " cmor version = " + file_cmor_version  +  ", running checks - minimum = " + min_cmor_version )
             
 
     def initializeFields(self, Session):
