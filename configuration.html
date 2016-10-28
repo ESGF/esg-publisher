@@ -32,7 +32,7 @@
   
     <link rel="top" title="esg-publisher 3.0.1 documentation" href="index.html"/>
         <link rel="next" title="Mapfile preparation" href="mapfiles.html"/>
-        <link rel="prev" title="Installation" href="installation.html"/> 
+        <link rel="prev" title="Quick guide to test publication" href="testpublication.html"/> 
 
   
   <script src="static/js/modernizr.min.js"></script>
@@ -83,6 +83,7 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testpublication.html">Quick guide to test publication</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prepare-the-configuration-files">Prepare the configuration files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#the-default-config-file-esg-ini">The default config file: esg.ini</a></li>
@@ -99,6 +100,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mapfiles.html">Mapfile preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ and known issues</a></li>
 </ul>
 
             
@@ -556,7 +558,7 @@ The <code class="docutils literal"><span class="pre">variable_locate</span></cod
 </div>
 </div>
 <div class="section" id="prepare-user-and-permissions-for-publication">
-<h2>Prepare user and permissions for publication<a class="headerlink" href="#prepare-user-and-permissions-for-publication" title="Permalink to this headline">¶</a></h2>
+<span id="policies"></span><h2>Prepare user and permissions for publication<a class="headerlink" href="#prepare-user-and-permissions-for-publication" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="publish-to-an-index-node-at-another-side">
 <h3>Publish to an index node at another side<a class="headerlink" href="#publish-to-an-index-node-at-another-side" title="Permalink to this headline">¶</a></h3>
 <p>Please coordinate with that site&#8217;s node administrator.</p>
@@ -577,6 +579,14 @@ and Write action.</p>
 <div class="highlight-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">policy</span> <span class="na">resource</span><span class="o">=</span><span class="s">&quot;.*esgf-test.dkrz.de.*&quot;</span> <span class="na">attribute_type</span><span class="o">=</span><span class="s">&quot;cmip5_publisher&quot;</span> <span class="na">attribute_value</span><span class="o">=</span><span class="s">&quot;publisher&quot;</span> <span class="na">action</span><span class="o">=</span><span class="s">&quot;Write&quot;</span><span class="p">/&gt;</span>
 </pre></div>
 </td></tr></table></div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Make sure you have the correct permission for both policies files:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">5840</span> <span class="n">Aug</span>  <span class="mi">8</span> <span class="mi">10</span><span class="p">:</span><span class="mi">32</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_local</span><span class="o">.</span><span class="n">xml</span>
+<span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">1381</span> <span class="n">Mar</span> <span class="mi">21</span>  <span class="mi">2016</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_common</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+</div>
 </div></blockquote>
 </li>
 <li><p class="first">Group, role and permission in the Postgres database:</p>
@@ -669,7 +679,7 @@ $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512
         <a href="mapfiles.html" class="btn btn-neutral float-right" title="Mapfile preparation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="testpublication.html" class="btn btn-neutral" title="Quick guide to test publication" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

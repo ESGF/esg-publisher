@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Quick guide to test publication &mdash; esg-publisher 3.0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="esg-publisher 3.0.1 documentation" href="index.html"/>
+        <link rel="next" title="Configuration" href="configuration.html"/>
+        <link rel="prev" title="Installation" href="installation.html"/> 
+
+  
+  <script src="static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> esg-publisher
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick guide to test publication</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preliminary">Preliminary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#download-test-file">Download test file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mapfile-generation">Mapfile generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publication">Publication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#publish-to-local-postgres-database">Publish to local postgres database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#publish-to-local-thredds-server">Publish to local Thredds server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#publish-to-index-node">Publish to index node</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#unpublication">Unpublication</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapfiles.html">Mapfile preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ and known issues</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">esg-publisher</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Quick guide to test publication</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="sources/testpublication.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="quick-guide-to-test-publication">
+<span id="testpublication"></span><h1>Quick guide to test publication<a class="headerlink" href="#quick-guide-to-test-publication" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="preliminary">
+<h2>Preliminary<a class="headerlink" href="#preliminary" title="Permalink to this headline">¶</a></h2>
+<p>Set up default environment for scripts:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
+</pre></div>
+</div>
+<p>Generate a valid globus certificate. For publication of test data you could use <code class="docutils literal"><span class="pre">esgf_user</span></code> rootAdmin, this account has preset permissions to publish test data.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ myproxy-logon -s &lt;openid_server&gt; -l &lt;esgf_user&gt; -b -t 72 -o $HOME/.globus/certificate-file
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The configuration file for project test should already be present in the default location: <code class="docutils literal"><span class="pre">/esg/config/esgcet/esg.test.ini</span></code>. In case it is missing fetch it with <code class="docutils literal"><span class="pre">esgprep</span> <span class="pre">fetch-ini</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgprep fetch-ini --project test
+</pre></div>
+</div>
+<p>Make sure you have values for project test in the <code class="docutils literal"><span class="pre">project_options</span></code> and <code class="docutils literal"><span class="pre">thredds_dataset_roots</span></code> in <code class="docutils literal"><span class="pre">/esg/config/esgcet/esg.ini</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
+    <span class="n">cmip5</span> <span class="o">|</span> <span class="n">CMIP5</span>        <span class="o">|</span> <span class="mi">1</span>
+    <span class="n">test</span>  <span class="o">|</span> <span class="n">Test</span> <span class="n">Project</span> <span class="o">|</span> <span class="mi">2</span>
+    <span class="o">...</span>   <span class="o">|</span> <span class="o">...</span>          <span class="o">|</span> <span class="o">...</span>
+
+<span class="n">thredds_dataset_roots</span> <span class="o">=</span>
+    <span class="n">cmip5</span> <span class="o">|</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">cmip5</span>
+    <span class="n">test</span>  <span class="o">|</span>  <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">test</span>
+    <span class="o">...</span>   <span class="o">|</span> <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="download-test-file">
+<h2>Download test file<a class="headerlink" href="#download-test-file" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /esg/data/test
+$ rm sftlf.nc
+$ wget -O sftlf.nc http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals/sftlf.nc
+</pre></div>
+</div>
+</div>
+<div class="section" id="mapfile-generation">
+<h2>Mapfile generation<a class="headerlink" href="#mapfile-generation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgprep mapfile --project test /esg/data/test
+</pre></div>
+</div>
+<p>The above will generate a mapfile <code class="docutils literal"><span class="pre">test.test.map</span></code> in your working directory.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cat test.test.map
+test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2 | checksum_type=SHA256
+</pre></div>
+</div>
+</div>
+<div class="section" id="publication">
+<h2>Publication<a class="headerlink" href="#publication" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="publish-to-local-postgres-database">
+<h3>Publish to local postgres database<a class="headerlink" href="#publish-to-local-postgres-database" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice
+</pre></div>
+</div>
+</div>
+<div class="section" id="publish-to-local-thredds-server">
+<h3>Publish to local Thredds server<a class="headerlink" href="#publish-to-local-thredds-server" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in <code class="docutils literal"><span class="pre">/esg/content/thredds/esgcet/</span></code>.</p>
+</div>
+</div>
+<div class="section" id="publish-to-index-node">
+<h3>Publish to index node<a class="headerlink" href="#publish-to-index-node" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --publish
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you publish to another index please coordinate with that site&#8217;s node administrator.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the above step fails check the publishing permissions, see section <a class="reference internal" href="configuration.html#policies"><span class="std std-ref">Prepare user and permissions for publication</span></a>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="unpublication">
+<h2>Unpublication<a class="headerlink" href="#unpublication" title="Permalink to this headline">¶</a></h2>
+<p>If you are on a production node please make sure to unpublish the test file after successful publication. Test data should not be visible to users.</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map test.test.map
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, ESGF Publication Working Team (PWT).
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'3.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="static/jquery.js"></script>
+      <script type="text/javascript" src="static/underscore.js"></script>
+      <script type="text/javascript" src="static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
