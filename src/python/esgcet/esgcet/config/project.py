@@ -727,13 +727,14 @@ class ProjectHandler(object):
             config.remove_option(section, "_temp_")
         return datasetId
 
-    def getDirectoryFormatFilters(self):
-        """Return a list of regular expression filters associated with the ``directory_format`` option
-        in the configuration file. This can be passed to ``nodeIterator`` and ``processNodeMatchIterator``.
+
+    def getFilters(self, option='directory_format'):
+        """Return a list of regular expression filters associated with the option in the configuration file.
+         This can be passed to ``nodeIterator`` and ``processNodeMatchIterator``.
         """
         config = getConfig()
         section = 'project:'+self.name
-        directory_format = config.get(section, 'directory_format', raw=True)
+        directory_format = config.get(section, option, raw=True)
         formats = splitLine(directory_format)
         filters = []
         for format in formats:
@@ -746,7 +747,8 @@ class ProjectHandler(object):
             filter = '^'+pattern+'$'
             filters.append(filter)
         return filters
-        
+
+
     def getDatasetIdFields(self):
         """Get a list of (lists of) fields associated with the dataset ID. This may be passed to ``generateDatasetId``.
         """
@@ -785,7 +787,7 @@ class ProjectHandler(object):
         
         if datasetName is None:
             # Get the dataset_id and filters
-            filters = self.getDirectoryFormatFilters()
+            filters = self.getFilters()
             config = getConfig()
             section = 'project:'+self.name
             dataset_id_formats = splitLine(config.get(section, 'dataset_id', raw=True))
