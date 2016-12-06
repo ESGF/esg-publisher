@@ -64,7 +64,7 @@ setup(
     author_email = 'webmaster@pcmdi.llnl.gov',
     url = 'http://esg-pcmdi.llnl.gov',
     install_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99", "lxml>=2.0", "sqlalchemy_migrate>=0.6", "requests>=1.2.0", "esgprep>=2.5.2", "cfchecker>=2.0.9"],
-    setup_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99", "lxml>=2.0", "sqlalchemy_migrate>=0.6", "requests>=1.2.0", "esgprep>=2.5.2", "cfchecker>=2.0.9"],
+    setup_requires = ["psycopg2>=2.0", "SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99", "lxml>=2.0", "sqlalchemy_migrate>=0.6", "requests>=1.2.0", "cfchecker>=2.0.9"],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
     # test_suite = 'nose.collector',
