@@ -13,14 +13,14 @@ from acme_multi_format_handler import AcmeMultiFormatHandler
 
 from ipcc4_handler import IPCC4Handler
 from ipcc5_handler import IPCC5Handler
-from cmip6_handler import CMIP6Handler
+# from cmip6_handler import CMIP6Handler  --  should not include by default due to prerequistes deemed optional
 from tamip_handler import TAMIPHandler
 from obs4mips_handler import Obs4mipsHandler
 builtinProjectHandlers = {
     'basic_builtin' : BasicHandler,
     'ipcc4_builtin' : IPCC4Handler,
     'ipcc5_builtin' : IPCC5Handler,
-    'cmip6_builtin' : CMIP6Handler,
+#    'cmip6_builtin' : CMIP6Handler,
     'tamip_builtin' : TAMIPHandler,
     'obs4mips_builtin' : Obs4mipsHandler,
     }
