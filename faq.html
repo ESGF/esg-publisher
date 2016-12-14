@@ -91,6 +91,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#missing-permissions-to-write-catalogs">Missing permissions to write catalogs</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#myproxy-logon-fails">myproxy-logon fails</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tlsv1-alert-unknown-ca">tlsv1 alert unknown ca</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#publication-to-solr-index-fails">Publication to Solr Index fails</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#user-is-not-authorized-to-publish">User is not authorized to publish</a></li>
 </ul>
@@ -149,6 +153,7 @@
 <h3>Missing permissions to write catalogs<a class="headerlink" href="#missing-permissions-to-write-catalogs" title="Permalink to this headline">¶</a></h3>
 <p>If you don&#8217;t have the permissions to write to the THREDDS directory the publisher fails with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
+
 Traceback (most recent call last):
   ...
   File &quot;/usr/local/uvcdat/2.2.0/lib/python2.7/site-packages/esgcet-3.1.0-py2.7.egg/esgcet/publish/publish.py&quot;, line 269, in publishDatasetList
@@ -165,6 +170,26 @@ $ chmod -R g+w /esg/content/thredds/esgcet/
 </pre></div>
 </div>
 </div></blockquote>
+</div>
+</div>
+<div class="section" id="myproxy-logon-fails">
+<h2>myproxy-logon fails<a class="headerlink" href="#myproxy-logon-fails" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="tlsv1-alert-unknown-ca">
+<h3>tlsv1 alert unknown ca<a class="headerlink" href="#tlsv1-alert-unknown-ca" title="Permalink to this headline">¶</a></h3>
+<p>If you run myproxy-logon as (unix-) user root it might fail with the following error:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ myproxy-logon -s esgf-data.dkrz.de -l test_user -b -t 72 -o $HOME/.globus/certificate-file
+
+Error authenticating: GSS Major Status: Authentication Failed
+GSS Minor Status Error Chain:
+globus_gss_assist: Error during context initialization
+globus_gsi_gssapi: Unable to verify remote side&#39;s credentials
+globus_gsi_gssapi: SSLv3 handshake problems: Couldn&#39;t do ssl handshake
+OpenSSL Error: s3_pkt.c:1259: in library: SSL routines, function SSL3_READ_BYTES: tlsv1 alert unknown ca SSL alert number 48
+</pre></div>
+</div>
+<p><strong>Solution:</strong></p>
+<blockquote>
+<div>It is not recommended to publish as (unix-) user root, please use another user for publication. The publication as root might also have a number of other side-effects.</div></blockquote>
 </div>
 </div>
 <div class="section" id="publication-to-solr-index-fails">
