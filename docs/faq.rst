@@ -14,6 +14,7 @@ If you don't have the permissions to write to the THREDDS directory the publishe
 ::
 
     $ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
+
     Traceback (most recent call last):
       ...
       File "/usr/local/uvcdat/2.2.0/lib/python2.7/site-packages/esgcet-3.1.0-py2.7.egg/esgcet/publish/publish.py", line 269, in publishDatasetList
@@ -29,6 +30,30 @@ If you don't have the permissions to write to the THREDDS directory the publishe
 
         $ chgrp -R <group> /esg/content/thredds/esgcet/
         $ chmod -R g+w /esg/content/thredds/esgcet/
+
+
+myproxy-logon fails
+*******************
+
+tlsv1 alert unknown ca
+----------------------
+
+If you run myproxy-logon as (unix-) user root it might fail with the following error:
+
+::
+
+    $ myproxy-logon -s esgf-data.dkrz.de -l test_user -b -t 72 -o $HOME/.globus/certificate-file
+
+    Error authenticating: GSS Major Status: Authentication Failed
+    GSS Minor Status Error Chain:
+    globus_gss_assist: Error during context initialization
+    globus_gsi_gssapi: Unable to verify remote side's credentials
+    globus_gsi_gssapi: SSLv3 handshake problems: Couldn't do ssl handshake
+    OpenSSL Error: s3_pkt.c:1259: in library: SSL routines, function SSL3_READ_BYTES: tlsv1 alert unknown ca SSL alert number 48
+
+**Solution:**
+
+    It is not recommended to publish as (unix-) user root, please use another user for publication. The publication as root might also have a number of other side-effects.
 
 
 Publication to Solr Index fails
