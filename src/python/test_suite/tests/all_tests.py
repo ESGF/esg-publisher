@@ -335,10 +335,17 @@ class PublisherTests(unittest.TestCase):
         self.publish_and_verify([ds1, ds2])
     
     @with_log_status
-    def test_4_verify_publish_all_in_reverse(self):   
+    def test_4a_verify_publish_in_reverse(self):
+        self.ensure_empty()
+        self.publish_and_verify(ds2)
+        self.publish_and_verify(ds1)
+        self.verify_published(ds2)
+        
+    @with_log_status
+    def test_4b_verify_publish_in_reverse_in_stages(self):   
         self.ensure_empty()
         self.publish_and_verify([ds2, ds1])
-        
+
     @with_log_status
     def test_5_verify_unpublish_sole_version(self):
         self.ensure_empty()
