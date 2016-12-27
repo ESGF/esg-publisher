@@ -581,11 +581,26 @@ class ProjectHandler(object):
                 options = self.getFieldOptions(key)
             value = context[key]
 
-            delimiter = ""
             config = getConfig()
 
-            delimiter = config.get('project:'+self.name, key + "_delimiter", default="")
-        
+            project_section = 'project:%s' % self.name
+            delimiter = config.get(project_section, key + "_delimiter", default="")
+
+            if value in ['', None]:
+                # if value not in default context, try to get it from key_pattern or *_map
+                option = '%s_pattern' % key
+                if config.has_option(project_section, option):
+                    value = config.get(project_section, option, False, context)
+                    context[key] = value
+                else:
+                    for map_option in splitLine(config.get(project_section, 'maps', default=''), ','):
+                        from_keys, to_keys, value_dict = splitMap(config.get(project_section, map_option))
+                        if key in to_keys:
+                            from_values = tuple(context[k] for k in from_keys)
+                            to_values = value_dict[from_values]
+                            value = to_values[to_keys.index(key)]
+                            context[key] = value
+
             if self.isMandatory(key):
                 if value in ['', None]:
                     if isenum:
