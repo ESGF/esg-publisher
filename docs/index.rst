@@ -7,7 +7,9 @@ Contents:
    :maxdepth: 3
 
    installation
+   testpublication
    configuration
    mapfiles
    usage
+   faq
 

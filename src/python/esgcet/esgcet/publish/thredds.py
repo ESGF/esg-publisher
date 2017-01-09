@@ -886,7 +886,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
         SE(datasetElem, "property", name="is_replica", value="true")
 
     for name in handler.getFieldNames():
-        if handler.isThreddsProperty(name):
+        if handler.isThreddsProperty(name) and name != "dataset_version":
 
             vals_lst = []
             # delimited-values here

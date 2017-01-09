@@ -483,7 +483,7 @@ def main(argv):
                 # Iterate over datasets
                 if not publishOnly:
                     datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
-                                                   filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
+                                                   filefilt, initcontext, offline, properties, perVariable=perVariable, keepVersion=keepVersion, newVersion=version,
                                                    extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
                                                    nodbwrite=nodbwrite)
 
@@ -567,7 +567,7 @@ def main(argv):
 
         # Iterate over datasets
         if not publishOnly:
-            datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
+            datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, perVariable=perVariable, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
 
         if (not nodbwrite):
             result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)

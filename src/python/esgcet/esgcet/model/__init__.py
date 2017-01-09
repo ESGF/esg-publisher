@@ -257,6 +257,7 @@ fileVariableTable = Table('file_variable', metadata,
                           Column('coord_range', types.String(MAX_COORD_RANGE_LENGTH)),
                           Column('coord_type', types.String(8)),
                           Column('coord_values', types.Text), # String representation for Z coordinate variable
+                          Column('is_target_variable', types.Boolean),
                           mysql_engine='InnoDB',
                           )
 Index('filevar_index', fileVariableTable.c.file_id, fileVariableTable.c.variable_id, unique=True)
@@ -1008,13 +1009,14 @@ class FileVersion(object):
 
 class FileVariable(Variable):
 
-    def __init__(self, short_name, long_name, aggdim_first=None, aggdim_last=None, aggdim_units=None, coord_range=None, coord_type=None, coord_values=None):
+    def __init__(self, short_name, long_name, aggdim_first=None, aggdim_last=None, aggdim_units=None, coord_range=None, coord_type=None, coord_values=None, is_target_variable=True):
         Variable.__init__(self, short_name, long_name, aggdim_first, aggdim_last)
         self.aggdim_units = aggdim_units
         self.coord_range = coord_range
         self.coord_type = coord_type
         self.coord_values = coord_values
-        
+        self.is_target_variable = is_target_variable
+
     def __repr__(self):
         return "<FileVariable, id=%s, file_id=%s, variable_id=%s, short_name=%s, long_name=%s, aggdim_first=%s, aggdim_last=%s>"%(`self.id`, `self.file_id`, `self.variable_id`, `self.short_name`, `self.long_name`, `self.aggdim_first`, `self.aggdim_last`)
 
