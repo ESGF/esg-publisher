@@ -120,7 +120,7 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
             service.deleteDataset(versionName, True, 'Deleting dataset')
         else:
             info("Retracting %s"%versionName)
-            service.retractDataset(versionName, 'Retracting dataset')
+            service.retractDataset(versionName, True, 'Retracting dataset')
     except socket.error, e:
         raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
     except RemoteCallException, e:
