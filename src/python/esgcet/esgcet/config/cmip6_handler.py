@@ -10,21 +10,26 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 import numpy
-
-from cmip6_cv.CMIP6Validator import JSONAction, CDMSAction, checkCMIP6
 import argparse
-
+import imp
 
 WARN = False
 
 from cfchecker import *
 
+PrePARE_PATH = '/usr/local/conda/envs/esgf-pub/bin/PrePARE.py'
 
 class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
+        try:
+            self.validator = imp.load_source(PrePARE_PATH)
+        except:
+            raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
+
+
 
 
     def openPath(self, path):
@@ -38,6 +43,9 @@ class CMIP6Handler(BasicHandler):
     def validateFile(self, fileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
         
+
+        validator = self.validator
+
         f = fileobj.path
 
         config = getConfig()
@@ -82,6 +90,7 @@ class CMIP6Handler(BasicHandler):
             raise ESGPublishError("File %s missing required table_id global attribute"%f)
 
 
+
         cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
         
 
@@ -94,16 +103,17 @@ class CMIP6Handler(BasicHandler):
         fakeargs = [ table_file ,f]
 
         parser = argparse.ArgumentParser(prog='esgpublisher')
-        parser.add_argument('cmip6_table', action=JSONAction)
-        parser.add_argument('infile', action=CDMSAction)
+        parser.add_argument('cmip6_table', action=validator.JSONAction)
+        parser.add_argument('infile', action=validator.CDMSAction)
 
         args = parser.parse_args(fakeargs)
+
 
 
 #        print "About to CV check:", f
  
         try:
-            process = checkCMIP6(args)
+            process = validator.checkCMIP6(args)
             if process is None:
                 raise ESGPublishError("File %s failed the CV check - object create failure"%f)
 
