@@ -405,6 +405,8 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
     timeLengthProp = SE(aggDataset, "property", name="time_length", value="0")
     netcdf = SE(aggDataset, "netcdf", nsmap=nsmap)
     aggElem = SE(netcdf, "aggregation", type="joinExisting", dimName=aggdim_name)
+    if dataset.calendar:
+        calendarProperty = SE(aggDataset, "property", name="calendar", value=dataset.calendar)
 
     # Sort filevars according to aggdim_first normalized to the dataset basetime
     filevars = []
