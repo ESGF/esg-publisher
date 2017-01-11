@@ -335,18 +335,25 @@ class PublisherTests(unittest.TestCase):
         self.publish_and_verify([ds1, ds2])
     
     @with_log_status
-    def test_4_verify_publish_all_in_reverse(self):   
+    def test_4_verify_publish_in_reverse(self):
         self.ensure_empty()
-        self.publish_and_verify([ds2, ds1])
+        self.publish_and_verify(ds2)
+        self.publish_and_verify(ds1)
+        self.verify_published(ds2)
         
     @with_log_status
-    def test_5_verify_unpublish_sole_version(self):
+    def test_5_verify_publish_in_reverse_in_stages(self):   
+        self.ensure_empty()
+        self.publish_and_verify([ds2, ds1])
+
+    @with_log_status
+    def test_6_verify_unpublish_sole_version(self):
         self.ensure_empty()
         self.publish_and_verify(ds1)
         self.unpublish_and_verify(ds1)
 
     @with_log_status
-    def test_6_verify_unpublish_latest_of_multi_versions(self):
+    def test_7_verify_unpublish_latest_of_multi_versions(self):
         self.ensure_empty()
         self.publish_and_verify(ds1)
         self.publish_and_verify(ds2)
@@ -354,7 +361,7 @@ class PublisherTests(unittest.TestCase):
         self.verify_published(ds1)
 
     @with_log_status
-    def test_7_verify_unpublish_earliest_of_multi_versions(self):
+    def test_8_verify_unpublish_earliest_of_multi_versions(self):
         self.ensure_empty()
         self.publish_and_verify(ds1)
         self.publish_and_verify(ds2)
@@ -362,7 +369,7 @@ class PublisherTests(unittest.TestCase):
         self.verify_published(ds2)
 
     @with_log_status
-    def test_8_parallel_publication(self):
+    def test_9_parallel_publication(self):
         dsets = datasets.get_parallel_test_datasets()
         pool_step = int(config.get('partest_pool_size_increment'))
         pool_max = int(config.get('partest_pool_size_max'))

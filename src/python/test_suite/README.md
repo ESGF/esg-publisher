@@ -61,6 +61,7 @@ Verify dv1, dv2 not present in db, TDS, Solr. Other tests below, where not expli
  * Publish dv1 to Solr.
    * Verify dv1 in Solr.
    * Verify consistency of dv1 in Solr, TDS, versioning and file contents.
+* now implemented as `test_1_verify_publish_single_dataset_single_version`
 
 ###Test 2: Publish second version of dataset [Extends: Test 1]
  * Publish dv2 to db.
@@ -77,6 +78,8 @@ Verify dv1, dv2 not present in db, TDS, Solr. Other tests below, where not expli
    * Verify dv1 in Solr.
    * Verify consistency of dv1 in Solr, TDS, versioning and file contents.
 
+* now implemented as `test_2_verify_publish_single_dataset_two_versions`
+
 ###Test 3: Publish “all” datasets in stages
 
 This is a special test in which all datasets are published at each stage. Success in this test requires overcoming a current problem with the ESG Publisher code. The problem was that the publisher was hard-coded to always use the most recent version in the postgres db.
@@ -89,7 +92,17 @@ This is a special test in which all datasets are published at each stage. Succes
    * Verify all datasets and versions in Solr.
    * Verify consistency of all datasets in Solr, TDS, versioning and file contents.
 
-###Test 4: Publish “all” datasets in stages in reverse order
+* now implemented as `test_3_verify_publish_all_in_stages`
+
+
+###Test 4: Publish “all” datasets in reverse order
+
+* as test 2, but with dv1 and dv2 swapped, i.e. publish dv2 (all stages); publish dv1 (all stages); re-verify dv2 (all stages)
+
+* now implemented as `test_4_verify_publish_in_reverse`
+
+
+###Test 5: Publish “all” datasets in stages in reverse order
 
  * Publish all datasets and versions to db in reverse order.
    * Verify all datasets and versions in db.
@@ -99,7 +112,10 @@ This is a special test in which all datasets are published at each stage. Succes
    * Verify all datasets and versions in Solr.
    * Verify consistency of all datasets in Solr, TDS, versioning and file contents.
 
-###Test 5: Unpublish sole version [Extends: Test 1]
+* now implemented as `test_5_verify_publish_in_reverse_in_stages`   
+
+
+###Test 6: Unpublish sole version [Extends: Test 1]
 
 Run test 1.
 
@@ -110,7 +126,11 @@ Run test 1.
  * Unpublish dv1 from db.
    * Verify dv1 removed from db.
 
-###Test 6: Unpublish latest version of multi-version dataset [Extends: Test 2]
+* now implemented as `test_6_verify_unpublish_sole_version`
+
+
+
+###Test 7: Unpublish latest version of multi-version dataset [Extends: Test 2]
 
 Run test 2.
 
@@ -127,7 +147,10 @@ Run test 2.
    * Verify dv1 in db, TDS and Solr.
    * Verify consistency of dv1 in Solr, TDS, versioning and file contents.
 
-###Test 7: Unpublish old version of multi-version dataset [Extends: Test 2]
+* now implemented as `test_7_verify_unpublish_latest_of_multi_versions`
+
+
+###Test 8: Unpublish old version of multi-version dataset [Extends: Test 2]
 
 Run test 2.
 
@@ -144,10 +167,8 @@ Run test 2.
    * Verify dv2 in db, TDS and Solr.
    * Verify consistency of dv2 in Solr, TDS, versioning and file contents.
 
-###Test 8: Generate mapfiles
+* now implemented as `test_8_verify_unpublish_earliest_of_multi_versions`
 
- * Generate mapfiles.
-   * Verify mapfiles exist and are formatted correctly.
 
 ###Test 9: Parallel publication
 
@@ -163,7 +184,18 @@ This test explores whether it is safe to publish in parallel.
    * Verify all datasets and versions in Solr.
    * Verify consistency of all datasets in Solr, TDS, versioning and file contents.
 
-###Test 10: Parallel publication of multi-version dataset
+* now implemented as `test_9_parallel_publication`
+
+
+###Test 10: Generate mapfiles
+
+ * Generate mapfiles.
+   * Verify mapfiles exist and are formatted correctly.
+
+* not currently implemented.
+
+
+###Test 11: Parallel publication of multi-version dataset
 
 This test explores whether it is safe to publish multiple versions of a dataset at the same time. This checks that the code doesn’t get confused when a new version is appearing in the system (e.g. in the db) whilst a process is running.
 
@@ -175,7 +207,10 @@ This test explores whether it is safe to publish multiple versions of a dataset 
    * Verify all versions in Solr.
    * Verify consistency of all versions in Solr, TDS, versioning and file contents.
 
-###Test 11: Stress testing parallel publication
+* not currently implemented.
+
+
+###Test 12: Stress testing parallel publication
 
 Run parallel publication varying the number of parallel processes to determine the maximum number of concurrent processes that it is safe to run.
 
@@ -183,7 +218,10 @@ Run parallel publication varying the number of parallel processes to determine t
  * Maybe need to use a profiler as well.
  * Results should inform recommendations document...
 
-###Test 12: Publish datasets with different “esg.ini” files
+* not currently implemented.
+
+
+###Test 13: Publish datasets with different “esg.ini” files
 
 This test checks whether using multiple “esg.ini” files (one for each project) cause problems in publication. See GitHub issue:
 https://github.com/ESGF/esg-publisher/issues/8
@@ -194,6 +232,9 @@ https://github.com/ESGF/esg-publisher/issues/8
    * Verify dataset is in db, TDS and Solr
  * Unpublish dataset from project X using appropriate esg_x.ini
    * Verify consistency of Solr and TDS metadata related to dataset from project Y
+
+* not currently implemented.
+
 
 ###Test CEDA1: Publication from a non Data Node*** (CEDA ONLY)
 
