@@ -23,12 +23,17 @@ class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
-        BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
+        self.validator = None
+        
         try:
-            self.validator = imp.load_source(PrePARE_PATH)
+            self.validator = imp.load_source('PrePARE', PrePARE_PATH)
         except:
             raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
 
+        if self.validator is None:
+            raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
+
+        BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
 
 
@@ -43,6 +48,8 @@ class CMIP6Handler(BasicHandler):
     def validateFile(self, fileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
         
+        if self.validator is None:
+            raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
 
         validator = self.validator
 
