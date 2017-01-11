@@ -110,9 +110,14 @@ class CMIP6Handler(BasicHandler):
         fakeargs = [ table_file ,f]
 
         parser = argparse.ArgumentParser(prog='esgpublisher')
+        parser.add_argument('--variable')        
         parser.add_argument('cmip6_table', action=validator.JSONAction)
         parser.add_argument('infile', action=validator.CDMSAction)
-
+        parser.add_argument('outfile',
+                nargs='?',
+                help='Output file (default stdout)',
+                type=argparse.FileType('w'),
+                default=sys.stdout)
         args = parser.parse_args(fakeargs)
 
 
