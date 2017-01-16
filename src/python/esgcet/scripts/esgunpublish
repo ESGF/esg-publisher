@@ -15,6 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, join
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.query import queryDatasetMap
+from esgcet.logon import check_cert, logon, get_myproxy_value_from_config
 
 
 usage = """Usage:
@@ -68,6 +69,9 @@ Options:
         Directory containing all initialization files.
         Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
         If not specified, the default installed init files are read.
+
+    --keep-credentials:
+        Do not renew myproxy credentials.
 
     --las: Do not reinitialize the LAS server.
 
@@ -142,7 +146,7 @@ def republishDataset(result, Session, thredds, gatewayOp):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'keep-credentials', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -164,6 +168,8 @@ def main(argv):
     syncThredds = False
     useList = False
     threddsReinit = True
+    keep_credentials = False
+
     for flag, arg in args:
         if flag=='--database-delete':
             deleteDset = True
@@ -178,6 +184,8 @@ def main(argv):
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
+        elif flag == '--keep-credentials':
+            keep_credentials = True
         elif flag=='--map':
             if os.path.isfile(arg):
                 datasetMap = readDatasetMap(arg)
@@ -207,8 +215,6 @@ def main(argv):
             useList = True
             useListPath = arg
 
-    if gatewayOp!=NO_OPERATION and unpublishOnGateway:
-        gatewayOp = UNPUBLISH
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir)
@@ -218,6 +224,19 @@ def main(argv):
 
     if config is None:
         raise ESGPublishError("No configuration file found.")
+
+    if gatewayOp != NO_OPERATION:
+        if not keep_credentials:
+            # check cert and generate a new one, if expired
+            myproxy_username = get_myproxy_value_from_config(config, 'username')
+            myproxy_hostname = get_myproxy_value_from_config(config, 'hostname')
+            myproxy_password = get_myproxy_value_from_config(config, 'password')
+            if not check_cert(config, myproxy_username):
+                info('Invalid myproxy certificate, renewing...')
+                logon(config, myproxy_username, myproxy_password, myproxy_hostname)
+
+        if unpublishOnGateway:
+            gatewayOp = UNPUBLISH
 
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
