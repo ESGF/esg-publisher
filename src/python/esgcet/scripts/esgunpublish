@@ -7,7 +7,7 @@ import logging
 import string
 
 from esgcet.model import *
-from esgcet.publish import deleteDatasetList, updateThreddsMasterCatalog, reinitializeThredds, DELETE, UNPUBLISH, NO_OPERATION, readDatasetMap,\
+from esgcet.publish import deleteDatasetList, updateThreddsMasterCatalog, reinitializeThredds, DELETE, UNPUBLISH, NO_OPERATION, UNINITIALIZED, readDatasetMap,\
     parseDatasetVersionId, generateDatasetVersionId, iterateOverDatasets, UPDATE_OP, publishDatasetList, updateThreddsMasterCatalog
 from esgcet.config import loadConfig, initLogging, registerHandlers
 from esgcet.exceptions import *
@@ -54,6 +54,9 @@ Arguments:
     use the syntax dataset_name#n. If no version is indicated, the latest version is deleted.
 
 Options:
+
+    --delete
+    --retract
 
     --database-delete: Delete the associated local database entry for this dataset. By default, the
       database information is left intact.
@@ -155,7 +158,7 @@ def main(argv):
     unpublishOnGateway = False
     echoSql = False
     init_dir = '/esg/config/esgcet/'
-    gatewayOp = DELETE
+    gatewayOp = UNINITIALIZED
     las = False
     log_filename = None
     republish = True
@@ -189,6 +192,10 @@ def main(argv):
             gatewayOp = NO_OPERATION
         elif flag=='--skip-index':
             gatewayOp = NO_OPERATION
+        elif flag=='--delete':
+            gatewayOp = DELETE
+        elif flag=='--retract':
+            gatewayOp = RETRACT
         elif flag=='--las':
             las = True
         elif flag=='--log':
