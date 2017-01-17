@@ -84,7 +84,7 @@ setup(
     # test_suite = 'nose.collector',
     # Install the CF standard name table, ESG init file, etc.
     package_data = {'esgcet.config.etc': ['*.ini', '*.xml', '*.txt', '*.tmpl'],
-		            'esgcet.ui': ['*.gif'],
+                    'esgcet.ui': ['*.gif'],
                     'esgcet.schema_migration': ['migrate.cfg'],
                     'esgcet.schema_migration.versions': ['*.sql'],
                     },
