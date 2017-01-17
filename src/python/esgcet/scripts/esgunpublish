@@ -233,7 +233,10 @@ def main(argv):
             myproxy_password = get_myproxy_value_from_config(config, 'password')
             if not check_cert(config, myproxy_username):
                 info('Invalid myproxy certificate, renewing...')
-                logon(config, myproxy_username, myproxy_password, myproxy_hostname)
+                try:
+                    logon(config, myproxy_username, myproxy_password, myproxy_hostname)
+                except:
+                    warning('Certificate generation failed, please try to run myproxy-logon manually...')
 
         if unpublishOnGateway:
             gatewayOp = UNPUBLISH

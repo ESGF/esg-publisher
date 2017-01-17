@@ -105,7 +105,7 @@ setup(
                'scripts/esgupdate_metadata',
                'scripts/esgadd_facetvalues',
                'scripts/esgfind_excludes',
-               'scripts/esg_testpublish',
+               'scripts/esgtest_publish',
                'scripts/meta_synchro.py',
                'scripts/gen_versions.py',
                'scripts/hsils.py',

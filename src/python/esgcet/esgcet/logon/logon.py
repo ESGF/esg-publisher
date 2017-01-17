@@ -1,9 +1,32 @@
 import os
+import socket
 import logging
 import OpenSSL
 import getpass
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
+
+
+def check_server(host, port):
+    """
+    Check whether a server is up and running.
+
+    :param str host: The hostname of the server
+    :param int port: The port to check
+    :returns: True iff something is running on the given host and port
+    :rtype: *boolean*
+
+    """
+    args = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+    for family, socktype, proto, canonname, sockaddr in args:
+        s = socket.socket(family, socktype, proto)
+        try:
+            s.connect(sockaddr)
+        except socket.error:
+            return False
+        else:
+            s.close()
+            return True
 
 
 def check_cert(config, user=None):

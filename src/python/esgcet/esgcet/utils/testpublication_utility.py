@@ -13,17 +13,26 @@ from esgcet.publish import checksum
 from esgcet.model import DatasetVersion
 
 
-def check_permission(directory):
+def check_permission(path, dir=True):
     """
     Check if current user has write access to a directory
 
-    :param str directory: The directory to check against
+    :param str path: The file or directory to check
+    :param bool dir: Flag if path is a file or a directory
     :returns: True iff the directory is writeable by current user, otherwise returns False
     :rtype: *boolean*
 
     """
-    if os.access(directory, os.W_OK):
-        return True
+    if dir:
+        if os.path.isdir(path) and os.access(path, os.W_OK):
+            return True
+    else:
+        if os.path.isfile(path):
+            if os.access(path, os.W_OK):
+                return True
+        else:
+            if os.access(os.path.dirname(path), os.W_OK):
+                return True
     return False
 
 
@@ -39,8 +48,8 @@ def get_test_file(test_file_location, target_checksum):
     """
     url = 'http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals/sftlf.nc'
     if not os.path.isfile(test_file_location) or checksum(test_file_location, 'sha256sum') != target_checksum:
-        print 'Not found - Fetching File %s...' % url,
-        cmd = ['wget', '-O', file_location, url]
+        print 'Not found.',
+        cmd = ['wget', '-O', test_file_location, url]
         success = execute_cmd(cmd)
         if not checksum(test_file_location, 'sha256sum') == target_checksum or not success:
             return False

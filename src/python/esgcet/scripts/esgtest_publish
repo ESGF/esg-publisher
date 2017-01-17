@@ -14,7 +14,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pyesgf.search import SearchConnection
 
-from esgcet.logon import check_cert, get_myproxy_value_from_config, logon
+from esgcet.logon import check_server, check_cert, get_myproxy_value_from_config, logon
 from esgcet.utils import check_permission, execute_cmd, get_test_file, check_mapfile, check_postgres, check_thredds, check_index
 from esgcet.publish import bcolors
 from esgcet.config import loadConfig, initLogging
@@ -168,7 +168,7 @@ def main(argv):
 
     # if myproxy configs not specified, use rootAdmin if running an "all" node installation
     pass_file = '/esg/config/.esgf_pass'
-    if index_node == data_node and os.access(pass_file, os.R_OK):
+    if index_node == data_node and os.access(pass_file, os.R_OK) and check_server(index_node, 7512):
         if not myproxy_hostname:
             myproxy_hostname = (get_myproxy_value_from_config(config, 'hostname') or index_node)
         if not myproxy_username:
@@ -184,8 +184,8 @@ def main(argv):
     # - Make sure current user has write access to data directory and THREDDS catalogs
     # - Download test file
     print(bcolors.BOLD + '\nSet up Publication Test' + bcolors.ENDC)
-    print 'Checking write permissions for %s, user %s...' % (ESGF_TEST_DATA_DIR, getpass.getuser()),
-    success = check_permission(ESGF_TEST_DATA_DIR)
+    print 'Checking write permissions for %s, user %s...' % (ESGF_TEST_FILE_LOCATION, getpass.getuser()),
+    success = check_permission(ESGF_TEST_FILE_LOCATION, dir=False)
     print_res(success, skip_error, session)
 
     print 'Checking write permissions for %s, user %s...' % (thredds_data_directory, getpass.getuser()),
@@ -196,12 +196,18 @@ def main(argv):
     success = get_test_file(ESGF_TEST_FILE_LOCATION, ESGF_TEST_FILE_SHA256)
     print_res(success, skip_error, session)
 
-    print 'Setting up certificates for publication...',
-    success = check_cert(config, myproxy_username)
-    if not success:
-        logon(config, myproxy_username, myproxy_password, myproxy_hostname)
-        success = check_cert(config, myproxy_username)
-    print_res(success, skip_error, session)
+    if not skip_index:
+        print 'Setting up certificates for publication...',
+        try:
+            success = check_cert(config, myproxy_username)
+            if not success:
+                logon(config, myproxy_username, myproxy_password, myproxy_hostname)
+                success = check_cert(config, myproxy_username)
+            print_res(success, skip_error, session)
+        except:
+            print(bcolors.FAIL + '[FAIL]' + bcolors.ENDC)
+            print(bcolors.WARNING + 'Myproxy logon failed. Please generate your myproxy cerificate manually before re-running the script.' + bcolors.ENDC)
+            sys.exit(0)
 
     # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
     print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
