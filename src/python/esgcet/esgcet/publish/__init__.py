@@ -8,6 +8,6 @@ from utility import filelistIterator, fnmatchIterator, fnIterator, directoryIter
     generateDatasetVersionId, compareFilesByPath, bcolors
 from thredds import generateThredds, reinitializeThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, updateThreddsRootCatalog
 from hessianlib import Hessian, RemoteCallException
-from unpublish import deleteDatasetList, DELETE, UNPUBLISH, NO_OPERATION
+from unpublish import deleteDatasetList, DELETE, UNPUBLISH, NO_OPERATION, UNINITIALIZED
 from replica import scanDirectory, generateReplicaThreddsCatalog, publishCatalogs
 from rest import RestPublicationService

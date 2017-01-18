@@ -106,7 +106,7 @@ def processNodeMatchIterator(command, commandArgs, handler, filefilt=None, datas
 
     """
 
-    nodefilts = handler.getDirectoryFormatFilters()
+    nodefilts = handler.getFilters()
     idfields, formats = handler.getDatasetIdFields()
 
     idCache = {}
@@ -586,7 +586,10 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
             mtime = float(mtime)
         yield (path, (size, mtime))
 
-def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg, properties, testProgress1=None, testProgress2=None, handlerDictionary=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False):
+def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt,
+                        initcontext, offlineArg, properties, testProgress1=None, testProgress2=None,
+                        handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None,
+                        masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -648,6 +651,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
     handlerDictionary=None
       A dictionary mapping datasetName => handler. If None, handlers are determined by project name.
+
+    perVariable=None
+      Boolean, overrides ``variable_per_file`` config option.
 
     keepVersion
       Boolean, True if the dataset version should not be incremented.
@@ -780,7 +786,12 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
               testProgress1[2] = (100./ct)*iloop + (100./ct)
 
 
-        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension, offline=offline, operation=operation, progressCallback=testProgress1, keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway, comment=comment, useVersion=versionno, forceRescan=forceAggregate, nodbwrite=nodbwrite, **context)
+        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler,
+                                     aggregateDimensionName=aggregateDimension, offline=offline, operation=operation,
+                                     progressCallback=testProgress1, perVariable=perVariable, keepVersion=keepVersion,
+                                     newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway,
+                                     comment=comment, useVersion=versionno, forceRescan=forceAggregate,
+                                     nodbwrite=nodbwrite, **context)
 
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
 

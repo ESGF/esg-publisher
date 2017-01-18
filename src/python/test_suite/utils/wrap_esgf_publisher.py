@@ -22,14 +22,15 @@ class PublishFuncs(object):
     def publish_to_db(self, ds):
         self.logger.debug("doing publish_to_db: %s" % ds.id)
         self.run_command("esgpublish",
-                         "--new-version", str(ds.version),
                          "--project", ds.id.split(".")[0],
+                         "--new-version", str(ds.version),
                          "--map", ds.mapfile_path)
         self.logger.debug("done publish_to_db: %s" % ds.id)
 
     def publish_to_tds(self, ds, thredds_reinit=True):
         self.logger.debug("doing publish_to_tds: %s" % ds.id)
         command = ["esgpublish", 
+                   "--project", ds.id.split(".")[0],
                    "--new-version", str(ds.version),
                    "--noscan",
                    "--thredds",
@@ -43,6 +44,7 @@ class PublishFuncs(object):
     def publish_to_solr(self, ds):
         self.logger.debug("doing publish_to_solr: %s" % ds.id)
         self.run_command("esgpublish", 
+                         "--project", ds.id.split(".")[0],
                          "--new-version", str(ds.version),
                          "--noscan",
                          "--publish",

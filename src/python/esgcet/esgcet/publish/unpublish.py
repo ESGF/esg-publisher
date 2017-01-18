@@ -120,7 +120,7 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
             service.deleteDataset(versionName, True, 'Deleting dataset')
         else:
             info("Retracting %s"%versionName)
-            service.retractDataset(versionName, 'Retracting dataset')
+            service.retractDataset(versionName, True, 'Retracting dataset')
     except socket.error, e:
         raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
     except RemoteCallException, e:
@@ -144,6 +144,8 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
 DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
+UNINITIALIZED = 4
+
 def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False, reinitThredds=True, restInterface=False):
     """
     Delete or retract a list of datasets:
@@ -195,6 +197,8 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
       Boolean flag. If True, publish datasets with the RESTful publication services.
 
     """
+    if gatewayOperation == UNINITIALIZED:
+        raise ESGPublishError("Need to set mandatory --delete|--retract|--skip-index argument!")
 
     if gatewayOperation not in (DELETE, UNPUBLISH, NO_OPERATION):
         raise ESGPublishError("Invalid gateway operation: %d"%gatewayOperation)

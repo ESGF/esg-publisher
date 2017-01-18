@@ -76,6 +76,12 @@ class ReadThredds(object):
     def _parse_dataset(self, el):
         """
         Parse a single top-level dataset element.  Return Dataset object.
+
+        Raises exception if second-level dataset elements (files and
+        aggregations) do not have their own <variables> children.  This 
+        is a sign of per-time publication, in which case the variable list 
+        is inherited from the top-level dataset even though files might not 
+        contain all the variables present in the dataset.
         """
         # top "dataset" element should be the dataset
         properties = self._get_properties(el)
@@ -89,8 +95,10 @@ class ReadThredds(object):
                 url = ch.get("urlPath")
                 tracking_id = props["tracking_id"]
                 checksum = props["checksum"]
-                size = props["size"]
+                size = props["size"]                
                 ds.add_file(File(url, size, checksum, tracking_id))
+            if not self._get_children_by_tag(ch, "variables"):
+                raise Exception("per-time publication detected")
         return ds
 
     def _get_properties(self, el):

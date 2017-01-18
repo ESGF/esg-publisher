@@ -22,7 +22,7 @@ REPLACE_OP=5
 # When translating numpy arrays (e.g., dimension values) to strings, don't include newlines
 numpy.set_printoptions(threshold=numpy.inf, linewidth=numpy.inf)
 
-def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, **context):
+def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, **context):
     """
     Extract metadata from a dataset represented by a list of files, add to a database. Populates the database tables:
 
@@ -65,6 +65,9 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
     stopEvent
       Object with boolean attribute ``stop_extract`` (for example, ``utility.StopEvent``). If set to True (in another thread) the extraction is stopped.
+
+    perVariable=None
+      Boolean, overrides ``variable_per_file`` config option.
 
     keepVersion
       Boolean, True if the dataset version should not be incremented.
@@ -116,15 +119,25 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
             checksumType = None
 
         versionByDate = config.getboolean(section, 'version_by_date', default=False)
+
+        if not offline:
+            if perVariable is None:
+                perVariable = config.getboolean(section, 'variable_per_file', False)
+            else:
+                perVariable = False
     else:
         varlocate = None
         checksumClient = None
         checksumType = None
         versionByDate = False
-        
+
+    exclude_variables = splitLine(config.get(section, 'thredds_exclude_variables', default=''), sep=',')
+
     configOptions['variable_locate'] = varlocate
     configOptions['checksumClient'] = checksumClient
     configOptions['checksumType'] = checksumType
+    configOptions['exclude_variables'] = exclude_variables
+    configOptions['perVariable'] = perVariable
 
     # Check if the dataset / version is already in the database
     dset = session.query(Dataset).filter_by(name=datasetName).first()
@@ -267,6 +280,9 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
     varlocate = configOptions['variable_locate']
     checksumClient = configOptions['checksumClient']
     checksumType = configOptions['checksumType']
+    exclude_variables = configOptions['exclude_variables']
+    perVariable = configOptions['perVariable']
+
     seq = 0
     for path, sizet in pathlist:
         size, mtime = sizet
@@ -308,7 +324,7 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
         if not offline:
             info("Scanning %s"%path)
             f = handler.openPath(path)
-            extractFromFile(dset, f, file, session, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, **context)
+            extractFromFile(dset, f, file, session, handler, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, exclude_variables=exclude_variables, perVariable=perVariable, **context)
             f.close()
         else:
             info("File %s is offline"%path)
@@ -342,6 +358,8 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
     varlocate = configOptions['variable_locate']
     checksumClient = configOptions['checksumClient']
     checksumType = configOptions['checksumType']
+    exclude_variables = configOptions['exclude_variables']
+    perVariable = configOptions['perVariable']
 
     # Get the base dictionary for the entire dataset
     basedict = dset.getBaseDictionary()
@@ -432,7 +450,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
             if not offline:
                 info("Scanning %s"%path)
                 f = handler.openPath(path)
-                extractFromFile(dset, f, fileObj, session, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, **context)
+                extractFromFile(dset, f, fileObj, session, handler, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, exclude_variables=exclude_variables, perVariable=perVariable, **context)
                 f.close()
             else:
                 info("File %s is offline"%path)
@@ -462,7 +480,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
     # - a file has been added, replaced, or deleted, and
     # - the current version is the latest
     createNewDatasetVersion = haveLatestDsetVersion and fileModified
-    
+
     return createNewDatasetVersion, newFileVersionObjs
 
 def renameFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, keepVersion=False, newVersion=None, extraFields=None, **context):
@@ -570,7 +588,7 @@ def deleteFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOp
 
     return addNewDatasetVersion, fobjdict.values()
 
-def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=None, varlocate=None, **context):
+def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, aggdimName=None, varlocate=None, exclude_variables=None, perVariable=None, **context):
     """
     Extract metadata from a file, add to a database.
 
@@ -589,12 +607,21 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
     cfHandler
       A CF handler instance
 
+    handler
+      Project handler
+
     aggdimName
       The name of the dimension which is split across files, if any.
 
     varlocate
       List with elements [varname, pattern]. The variable will be extracted from the file only if the filename
       matches the pattern at the start. Example: [['ps', 'ps\_'], ['xyz', 'xyz\_']]
+
+    exclude_variables
+        List of thredds_exclude_variables
+
+    perVariable
+        Boolean, Try to find a target_variable if true and extract all variables if false
 
     context
       A dictionary with keys project, model, experiment, and run.
@@ -619,10 +646,44 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
     varlocatedict = {}
     if varlocate is not None:
         for varname, pattern in varlocate:
-            varlocatedict[varname] = pattern
+            varlocatedict[varname] = pattern.strip()
+
+    # Create global attribute
+    target_variable = None
+    for attname in openfile.inquireAttributeList():
+        attvalue = openfile.getAttribute(attname, None)
+        atttype, attlen = getTypeAndLen(attvalue)
+        attribute = FileAttribute(attname, map_to_charset(attvalue), atttype, attlen)
+        fileobj.attributes.append(attribute)
+        if attname == 'tracking_id':
+            fileVersion.tracking_id = attvalue
+        # extract target_variable from global attributes
+        if attname == 'variable_id' and perVariable:
+            target_variable = attvalue
+            debug('Extracted target variable from global attributes: %s' % target_variable)
+        debug('.%s = %s' % (attname, attvalue))
+
+    # try to get target_variable from DRS if not found in global attributes
+    if not target_variable and perVariable:
+        config = getConfig()
+        if config is not None:
+            drs_pattern = handler.getFilters()[0][1:-1]
+            drs_file_pattern = '%s/(?P<filename>[\w.-]+)$' % drs_pattern
+            drs_parts = re.search(drs_file_pattern, openfile.path).groupdict()
+            if 'variable' in drs_parts:
+                target_variable = drs_parts['variable']
+                debug('Extracted target variable from DRS: %s' % target_variable)
 
     # For each variable in the file:
     for varname in openfile.inquireVariableList():
+
+        # we need to extract only target, aggregation and coverage variables
+        if target_variable:
+            is_coverage_variable = check_coverage_variable(varname, openfile)
+            if not is_coverage_variable and varname != target_variable and varname != aggdimName:
+                debug("Skipping variable %s in %s (not target (%s), coverage or aggregation (%s) variable)" % (varname, fileVersion.location, target_variable, aggdimName))
+                continue
+
         varshape = openfile.inquireVariableShape(varname)
         debug("%s%s"%(varname, `varshape`))
 
@@ -631,8 +692,14 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
             debug("Skipping variable %s in %s"%(varname, fileVersion.location))
             continue
 
+        is_target_variable = True
+        if target_variable and target_variable != varname:
+            is_target_variable = False
+        elif varname in exclude_variables:
+            is_target_variable = False
+
         # Create a file variable
-        filevar = FileVariable(varname, openfile.getAttribute('long_name', varname, None))
+        filevar = FileVariable(varname, openfile.getAttribute('long_name', varname, None), is_target_variable=is_target_variable)
         fileobj.file_variables.append(filevar)
 
         # Create attributes:
@@ -677,15 +744,22 @@ def extractFromFile(dataset, openfile, fileobj, session, cfHandler, aggdimName=N
                 filevar.coord_type = 'Z'
                 filevar.coord_values = str(vararray)[1:-1] # See set_printoptions call above
 
-    # Create global attribute
-    for attname in openfile.inquireAttributeList():
-        attvalue = openfile.getAttribute(attname, None)
-        atttype, attlen = getTypeAndLen(attvalue)
-        attribute = FileAttribute(attname, map_to_charset(attvalue), atttype, attlen)
-        fileobj.attributes.append(attribute)
-        if attname=='tracking_id':
-            fileVersion.tracking_id = attvalue
-        debug('.%s = %s'%(attname, attvalue))
+
+def check_coverage_variable(varname, openfile):
+    for attname in openfile.inquireAttributeList(varname):
+        attvalue = openfile.getAttribute(attname, varname)
+        varshape = openfile.inquireVariableShape(varname)
+        if len(varshape) == 1:
+            if attname == 'axis' and attvalue in ['X', 'Y', 'Z']:
+                return True
+            elif attname == 'units' and attvalue in ['degrees_north', 'degrees_east']:
+                return True
+            elif attname[:3] in ['lat', 'lon', 'lev'] and attname != 'long_name':
+                return True
+            elif attname[:5] == 'depth':
+                return True
+    return False
+
 
 def lookupVar(name, index):
     """Helper function for aggregateVariables:
@@ -810,11 +884,16 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
     globalAttrIndex = {}                # globalAttrIndex[attname] = attval, for global attributes
     dsetvars = []
 
+    # list of all target variables of a dataset
+    dset_target_vars = set()
+
     # Create variables
     seq = 0
     nfiles = len(dset.getFiles())
     for file in dset.getFiles():
         for filevar in file.file_variables:
+            if filevar.is_target_variable:
+                dset_target_vars.add(filevar.short_name)
 
             # Get the filevar and variable domain
             fvdomain = map(lambda x: (x.name, x.length, x.seq), filevar.dimensions)
@@ -898,7 +977,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
 
     # Add the non-aggregate dimension variables to the dataset
     for var in dsetvars:
-        if var not in [aggDim, aggDimBounds]:
+        if var not in [aggDim, aggDimBounds] and var.short_name in dset_target_vars:
             dset.variables.append(var)
 
     # Set coordinate ranges
