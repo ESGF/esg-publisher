@@ -18,6 +18,8 @@ from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.model import Dataset
 from esgcet.query import queryDatasetMap
+from esgcet.logon import check_cert, logon, get_myproxy_value_from_config
+
 
 usage = """Usage:
     esgpublish [operation] [options] directory [directory ...]
@@ -83,6 +85,9 @@ Options:
         Directory containing all initialization files.
         Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
         If not specified, the default installed init files are read.
+
+    --keep-credentials:
+        Do not renew myproxy credentials.
 
     --keep-version:
         Keep the dataset version number the same for an existing dataset. By default the version number
@@ -267,7 +272,7 @@ def summarize_errors(Session, datasetNames):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -307,6 +312,7 @@ def main(argv):
     version = None
     versionList = None
     nodbwrite = False
+    keep_credentials = False
 
     for flag, arg in args:
         if flag=='-a':
@@ -330,6 +336,8 @@ def main(argv):
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
+        elif flag == '--keep-credentials':
+            keep_credentials = True
         elif flag=='--keep-version':
             keepVersion = True
         elif flag=='--log':
@@ -455,6 +463,18 @@ def main(argv):
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
+
+    # check cert and generate a new one, if expired
+    if publish and not keep_credentials:
+        myproxy_username = get_myproxy_value_from_config(config, 'username')
+        myproxy_hostname = get_myproxy_value_from_config(config, 'hostname')
+        myproxy_password = get_myproxy_value_from_config(config, 'password')
+        if not check_cert(config, myproxy_username):
+            info('Invalid myproxy certificate, renewing...')
+            try:
+                logon(config, myproxy_username, myproxy_password, myproxy_hostname)
+            except:
+                warning('Certificate generation failed, please try to run myproxy-logon manually...')
 
     # If the dataset map is input, just read it ...
     dmap = None

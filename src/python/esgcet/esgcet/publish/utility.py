@@ -11,6 +11,8 @@ import logging
 import subprocess
 import filecmp
 import urlparse
+import OpenSSL
+import getpass
 from esgcet.config import getHandler, getHandlerByName, splitLine, getConfig
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -18,6 +20,18 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 # Force stat modification times to be returned as integers for consistency.
 # By default, os.stat(path).st_mtime returns a float.
 os.stat_float_times(False)
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 def getTypeAndLen(att):
     """Get the type descriptor of an attribute.
