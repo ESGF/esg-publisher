@@ -3,8 +3,76 @@
 Quick guide to test publication
 ===============================
 
+You can either use the prepared test script to run a publication test or you can execute some manual steps.
+
+Use the script: esgtest_publish
+*******************************
+
 Preliminary
-***********
+-----------
+
+Set up default environment for scripts:
+
+::
+
+    $ source /etc/esg.env
+
+
+Run the test script
+-------------------
+
+::
+
+    $ esgtest_publish
+
+
+**The above command will go through all steps of the publication:**
+
+#. Check whether the current (unix-)user has write permissions to the appropriate directories
+#. Generate a globus certificate, if not already present
+#. Download a test file, if not already present
+#. Generate a mapfile
+#. Publish to Postgres, THREDDS and Solr in separate steps and verify publication
+#. Unpublish and verify unpublication for all three components
+#. Clean up: Delete the mapfile but keep globus certificate and test file
+
+By default the script will publish to all three components: Postgres, THREDDS and Solr. But you can also skip some tests:
+
+    ::
+
+        $ esgtest_publish --skip-index      # Skip publication to the Solr Index
+        $ esgtest_publish --skip-thredds    # Skip publication to THREDDS and Solr Index
+
+
+**Possible options to specify the credentials for the globus cert:**
+
+- Specify the credentials as options:
+
+    ::
+
+        $ esgtest_publish --myproxy-host <openid_server> --myproxy-user <esgf_user> --myproxy-pass <password>
+
+- Add the information to your ``esg.ini`` file, section ``myproxy``:
+
+    ::
+
+        [myproxy]
+        hostname = <openid_server>
+        username = <esgf_user>
+        password = <password>
+
+- Simply fill out the user prompts during the script runtime.
+
+.. note::
+    If you are running an "all" ESGF node installation and the credentials are not specified otherwise the script will use
+    the ``rootAdmin`` account and get the appropriate password automatically.
+
+
+Manual steps
+************
+
+Preliminary
+-----------
 
 Set up default environment for scripts:
 
@@ -21,7 +89,7 @@ Generate a valid globus certificate. For publication of test data you could use 
 
 
 Configuration
-*************
+-------------
 
 The configuration file for project test should already be present in the default location: ``/esg/config/esgcet/esg.test.ini``. In case it is missing fetch it with ``esgprep fetch-ini``:
 
@@ -46,7 +114,7 @@ Make sure you have values for project test in the ``project_options`` and ``thre
 
 
 Download test file
-******************
+------------------
 
 ::
 
@@ -56,7 +124,7 @@ Download test file
 
 
 Mapfile generation
-******************
+------------------
 
 ::
 
@@ -71,10 +139,10 @@ The above will generate a mapfile ``test.test.map`` in your working directory.
 
 
 Publication
-***********
+-----------
 
 Publish to local postgres database
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -82,7 +150,7 @@ Publish to local postgres database
 
 
 Publish to local Thredds server
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -93,7 +161,7 @@ Publish to local Thredds server
 
 
 Publish to index node
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -107,7 +175,7 @@ Publish to index node
 
 
 Unpublication
-*************
+-------------
 
 If you are on a production node please make sure to unpublish the test file after successful publication. Test data should not be visible to users.
 

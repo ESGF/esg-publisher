@@ -168,6 +168,25 @@ sections. This file will be set up during the ESGF installation process.
     .. note::
         After modifying the models table please run ``$ esginitialize -c``  to update the postgres database.
 
+.. _myproxy_section:
+
+#. The ``myproxy`` section
+
+    ``esgpublish`` and ``esgunpublish`` will automatically generate or renew your globus certificate using the credentials specified here.
+
+    ::
+
+        [myproxy]
+        hostname = <openid_server>
+        username = <esgf_user>
+        password = <password>
+
+    .. note::
+        If this section is not specified and the globus certificate is not present or valid the user will be prompted for the credentials during ``esgpublish`` and ``esgunpublish``.
+
+    .. note::
+        This section is not present by default.
+
 #. Other sections, e.g. for scanning the files and the offline services
 
     ::
@@ -535,8 +554,8 @@ Publish to your own index node
 
 .. _myproxy_logon:
 
-Generate credentials
---------------------
+Myproxy Logon
+-------------
 
 For publication to an index node you need to have a valid globus certificate for an user with `Write` permissions.
 

@@ -12,12 +12,12 @@ Set up default environment for scripts:
 
     $ source /etc/esg.env
 
-Publication and unpublication to an index node also requires a valid globus certificate, see :ref:`myproxy_logon`.
+Publication and unpublication to an index node also requires a valid globus certificate.
+By running ``esgpublish`` or ``esgunpublish`` a globus certificate will be generated automatically. Please specify your credentials for the certificate either by filling out the user prompts
+during the publication or add the credential information to your ``esg.ini`` file, see :ref:`myproxy section <myproxy_section>`.
 
-::
 
-    $ myproxy-logon -s <openid_server> -l <esgf_user> -b -t 72 -o $HOME/.globus/certificate-file
-
+In case the certificate generation fails for some reason, please create the certificate manually, see :ref:`myproxy_logon`.
 
 Publication
 ***********
