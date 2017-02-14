@@ -1039,7 +1039,7 @@ def readThreddsWithAuthentication(url, config):
     threddsPassword = config.get('DEFAULT', 'thredds_password')
 
     # Create an OpenerDirector with support for Basic HTTP Authentication...
-    ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
 
     user_pass = b64encode(threddsUsername +":"+threddsPassword)
 
