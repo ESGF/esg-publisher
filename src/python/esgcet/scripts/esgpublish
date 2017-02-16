@@ -12,8 +12,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
     multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
-    processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, updateThreddsMasterCatalog
-from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister
+    processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, \
+    updateThreddsMasterCatalog, establish_pid_connection, bcolors
+from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.model import Dataset
@@ -198,6 +199,10 @@ Options:
     --summarize-errors
         Print a summary of errors for each dataset scanned.
 
+    --test
+        Flag the dataset(s) as test publication. This option must be used for publication of test data that use PIDs.
+        WARNING: Do not use this option in production, all PIDs flagged as test will be deleted after a while.
+
     --thredds
         Generate THREDDS files. The THREDDS Server will be reinitalized automatically unless "no-thredds-reinit" is set.
 
@@ -259,6 +264,7 @@ Examples:
 
 """
 
+
 def summarize_errors(Session, datasetNames):
     print 'Summary of errors:'
     for name,versionno in datasetNames:
@@ -269,10 +275,11 @@ def summarize_errors(Session, datasetNames):
             for line in dset.get_warnings(Session):
                 print line
 
+
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -312,6 +319,7 @@ def main(argv):
     version = None
     versionList = None
     nodbwrite = False
+    test_publication = False
     keep_credentials = False
 
     for flag, arg in args:
@@ -400,6 +408,8 @@ def main(argv):
             masterGateway = 'DEFAULT'
         elif flag=='--summarize-errors':
             summarizeErrors = True
+        elif flag=='--test':
+            test_publication=True
         elif flag=='--thredds':
             thredds = True
         elif flag=='--thredds-reinit':
@@ -464,6 +474,8 @@ def main(argv):
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
+    handler = getHandlerByName(projectName, None, Session, offline=offline)
+
     # check cert and generate a new one, if expired
     if publish and not keep_credentials:
         myproxy_username = get_myproxy_value_from_config(config, 'username')
@@ -476,124 +488,147 @@ def main(argv):
             except:
                 warning('Certificate generation failed, please try to run myproxy-logon manually...')
 
-    # If the dataset map is input, just read it ...
-    dmap = None
-    directoryMap = None
-    extraFields = None
+    # Check if project uses PIDs and start messaging thread
+    pid_connector = None
+    project_config_section = "config:%s" % projectName
+    try:
+        if not publishOnly or thredds:
+            pid_prefix = handler.check_pid_avail(project_config_section, config, version=version)
+            if pid_prefix:
+                pid_connector = establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=True)
+                if thredds:
+                    pid_connector.start_messaging_thread()
 
-    # Process all mapfiles in a directory
-    if mapfileDir is not None:
-        for root, dirs, files in os.walk(mapfileDir, followlinks=True):
-            for mapfile in files:
-                try:
-                    dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
-                except:
-                    error("Skipping %s: File does not match ESGF mapfile format." %os.path.join(root, mapfile))
-                    continue
-                datasetNames = dmap.keys()
-                datasetNames.sort()
-                if len(datasetNames)==0:
-                    error("Skipping %s: File does not contain any datasets." %os.path.join(root, mapfile))
-                    continue
+        # If the dataset map is input, just read it ...
+        dmap = None
+        directoryMap = None
+        extraFields = None
 
-                # Must specify version for replications
-                if masterGateway is not None and version is None and versionList is None:
-                    raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
+        # Process all mapfiles in a directory
+        if mapfileDir is not None:
+            for root, dirs, files in os.walk(mapfileDir, followlinks=True):
+                for mapfile in files:
+                    try:
+                        dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
+                    except:
+                        error("Skipping %s: File does not match ESGF mapfile format." % os.path.join(root, mapfile))
+                        continue
+                    datasetNames = dmap.keys()
+                    datasetNames.sort()
+                    if len(datasetNames)==0:
+                        error("Skipping %s: File does not contain any datasets." % os.path.join(root, mapfile))
+                        continue
 
-                # Iterate over datasets
-                if not publishOnly:
-                    datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
-                                                   filefilt, initcontext, offline, properties, perVariable=perVariable, keepVersion=keepVersion, newVersion=version,
-                                                   extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
-                                                   nodbwrite=nodbwrite)
+                    # Must specify version for replications
+                    if masterGateway is not None and version is None and versionList is None:
+                        raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
 
-                if (not nodbwrite):
-                    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
-                                                perVariable=perVariable, reinitThredds=False, restInterface=restApi, schema=schema)
-                if summarizeErrors:
-                    summarize_errors(Session, datasetNames)
+                    # Iterate over datasets
+                    if not publishOnly:
+                        datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
+                                                       filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
+                                                       extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
+                                                       nodbwrite=nodbwrite, pid_connector=pid_connector)
 
-        # reinitialize THREDDS catalog only once after processing all mapfiles
-        if threddsReinit:
-            updateThreddsMasterCatalog(Session)
-            result = reinitializeThredds()
+                    if (not nodbwrite):
+                        result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
+                                                    perVariable=perVariable, reinitThredds=False, restInterface=restApi, schema=schema,
+                                                    pid_connector=pid_connector, project_config_section=project_config_section)
+                    if summarizeErrors:
+                        summarize_errors(Session, datasetNames)
 
-    else:
-        if datasetMapfile is not None:
-            dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
-            datasetNames = dmap.keys()
+            # reinitialize THREDDS catalog only once after processing all mapfiles
+            if threddsReinit:
+                updateThreddsMasterCatalog(Session)
+                result = reinitializeThredds()
 
-        elif rescan:
-            # Note: No need to get the extra fields, such as mod_time, since
-            # they are already in the database, and will be used for file comparison if necessary.
-            dmap, offline = queryDatasetMap(rescanDatasetName, Session)
-            datasetNames = dmap.keys()
-
-        # ... otherwise generate the directory map.
         else:
-            # Online dataset(s)
-            if not offline:
-                if len(lastargs)==0:
-                    print "No directories specified."
-                    print usage
-                    sys.exit(0)
+            if datasetMapfile is not None:
+                dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
+                datasetNames = dmap.keys()
 
-                if projectName is not None:
-                    handler = getHandlerByName(projectName, None, Session)
-                else:
-                    multiIter = multiDirectoryIterator(lastargs, filefilt=filefilt)
-                    firstFile, size = multiIter.next()
-                    listIter = list(multiIter)
-                    handler = getHandler(firstFile, Session, validate=True)
-                    if handler is None:
-                        raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
-                    projectName = handler.name
+            elif rescan:
+                # Note: No need to get the extra fields, such as mod_time, since
+                # they are already in the database, and will be used for file comparison if necessary.
+                dmap, offline = queryDatasetMap(rescanDatasetName, Session)
+                datasetNames = dmap.keys()
 
-                props = properties.copy()
-                props.update(initcontext)
-                if not readFiles:
-                    directoryMap = handler.generateDirectoryMap(lastargs, filefilt, initContext=props, datasetName=datasetName)
-                else:
-                    directoryMap = handler.generateDirectoryMapFromFiles(lastargs, filefilt, initContext=props, datasetName=datasetName)
-                datasetNames = [(item,-1) for item in directoryMap.keys()]
-
-            # Offline dataset. Format the spec as a dataset map : dataset_name => [(path, size), (path, size), ...]
+            # ... otherwise generate the directory map.
             else:
-                handler = getHandlerByName(projectName, None, Session, offline=True)
-                dmap = {}
-                listerSection = getOfflineLister(config, "project:%s"%projectName, service)
-                offlineLister = config.get(listerSection, 'offline_lister_executable')
-                commandArgs = "--config-section %s "%listerSection
-                commandArgs += " ".join(lastargs)
-                for dsetName, filepath, sizet in processNodeMatchIterator(offlineLister, commandArgs, handler, filefilt=filefilt, datasetName=datasetName, offline=True):
-                    size, mtime = sizet
-                    if dmap.has_key((dsetName,-1)):
-                        dmap[(dsetName,-1)].append((filepath, str(size)))
+                # Online dataset(s)
+                if not offline:
+                    if len(lastargs)==0:
+                        print "No directories specified."
+                        print usage
+                        sys.exit(0)
+
+                    props = properties.copy()
+                    props.update(initcontext)
+                    if not readFiles:
+                        directoryMap = handler.generateDirectoryMap(lastargs, filefilt, initContext=props, datasetName=datasetName)
                     else:
-                        dmap[(dsetName,-1)] = [(filepath, str(size))]
+                        directoryMap = handler.generateDirectoryMapFromFiles(lastargs, filefilt, initContext=props, datasetName=datasetName)
+                    datasetNames = [(item,-1) for item in directoryMap.keys()]
 
-                datasetNames = dmap.keys()
+                # Offline dataset. Format the spec as a dataset map : dataset_name => [(path, size), (path, size), ...]
+                else:
+                    dmap = {}
+                    listerSection = getOfflineLister(config, "project:%s"%projectName, service)
+                    offlineLister = config.get(listerSection, 'offline_lister_executable')
+                    commandArgs = "--config-section %s "%listerSection
+                    commandArgs += " ".join(lastargs)
+                    for dsetName, filepath, sizet in processNodeMatchIterator(offlineLister, commandArgs, handler, filefilt=filefilt, datasetName=datasetName, offline=True):
+                        size, mtime = sizet
+                        if dmap.has_key((dsetName,-1)):
+                            dmap[(dsetName,-1)].append((filepath, str(size)))
+                        else:
+                            dmap[(dsetName,-1)] = [(filepath, str(size))]
 
-        datasetNames.sort()
-        if len(datasetNames)==0:
-            warning("No datasets found.")
-            min_version = -1
-        else:
-            min_version = sorted(datasetNames, key=lambda x: x[1])[0][1]
+                    datasetNames = dmap.keys()
 
-        # Must specify version for replications
-        if min_version == -1 and masterGateway is not None and version is None and versionList is None:
-            raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
+            datasetNames.sort()
+            if len(datasetNames)==0:
+                warning("No datasets found.")
+                min_version = -1
+            else:
+                min_version = sorted(datasetNames, key=lambda x: x[1])[0][1]
 
-        # Iterate over datasets
-        if not publishOnly:
-            datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, perVariable=perVariable, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
+            # Must specify version for replications
+            if min_version == -1 and masterGateway is not None and version is None and versionList is None:
+                raise ESGPublishError("Must specify version with --new-version (or --version-list) for replicated datasets")
 
-        if (not nodbwrite):
-            result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
+            # Iterate over datasets
+            if not publishOnly:
+                datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt,
+                                               initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields,
+                                               masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite,
+                                               pid_connector=pid_connector)
 
-        if summarizeErrors:
-            summarize_errors(Session, datasetNames)
+            if (not nodbwrite):
+                result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
+                                            perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema,
+                                            pid_connector=pid_connector, project_config_section=project_config_section)
+
+            if summarizeErrors:
+                summarize_errors(Session, datasetNames)
+
+        # finish PID messaging queue
+        if pid_connector:
+            if thredds:
+                pid_connector.finish_messaging_thread()
+                pid_connector.force_finish_messaging_thread()
+            if test_publication:
+                print '\n' + bcolors.WARNING + '********************************************************************' + bcolors.ENDC
+                print bcolors.WARNING + '***                                                              ***' + bcolors.ENDC
+                print bcolors.WARNING + '***                        !!! WARNING !!!                       ***' + bcolors.ENDC
+                print bcolors.WARNING + '***                  Datasets are flagged as TEST                ***' + bcolors.ENDC
+                print bcolors.WARNING + '***  PIDs will be deleted from the Handle Server after a while.  ***' + bcolors.ENDC
+                print bcolors.WARNING + '***                                                              ***' + bcolors.ENDC
+                print bcolors.WARNING + '********************************************************************' + bcolors.ENDC + '\n'
+    except:
+        if pid_connector and thredds:
+            pid_connector.force_finish_messaging_thread()
+        raise
 
 if __name__=='__main__':
     main(sys.argv[1:])

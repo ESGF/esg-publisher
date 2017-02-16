@@ -13,7 +13,7 @@ import filecmp
 import urlparse
 import OpenSSL
 import getpass
-from esgcet.config import getHandler, getHandlerByName, splitLine, getConfig
+from esgcet.config import getHandler, getHandlerByName, splitLine, getConfig, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
@@ -586,10 +586,10 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
             mtime = float(mtime)
         yield (path, (size, mtime))
 
-def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt,
-                        initcontext, offlineArg, properties, testProgress1=None, testProgress2=None,
-                        handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None,
-                        masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False):
+def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg,
+                        properties, testProgress1=None, testProgress2=None, handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None,
+                        extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False,
+                        pid_connector=None):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -679,6 +679,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
     readFiles=False
       If True, interpret directoryMap as having one entry per file, instead of one per directory.
+
+    pid_connector
+        esgfpid.Connector object to register PIDs
 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
@@ -786,12 +789,11 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
               testProgress1[2] = (100./ct)*iloop + (100./ct)
 
 
-        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler,
-                                     aggregateDimensionName=aggregateDimension, offline=offline, operation=operation,
-                                     progressCallback=testProgress1, perVariable=perVariable, keepVersion=keepVersion,
-                                     newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway,
-                                     comment=comment, useVersion=versionno, forceRescan=forceAggregate,
-                                     nodbwrite=nodbwrite, **context)
+        dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension,
+                                     offline=offline, operation=operation, progressCallback=testProgress1, perVariable=perVariable,
+                                     keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway,
+                                     comment=comment, useVersion=versionno, forceRescan=forceAggregate, nodbwrite=nodbwrite,
+                                     pid_connector=pid_connector, **context)
 
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
 
@@ -972,30 +974,81 @@ def checksum(path, client):
 
     return csum
 
-def getHessianServiceURL():
+
+def getHessianServiceURL(project_config_section=None):
     """Get the configured value of hessian_service_url"""
 
     config = getConfig()
-    serviceURL = config.get('DEFAULT', 'hessian_service_url')
-
-    gatewayServiceRoot = os.environ.get('ESG_GATEWAY_SVC_ROOT', None)
-    if gatewayServiceRoot is not None:
-        dum, serviceHost, dum, dum, dum, dum = urlparse.urlparse(serviceURL)
-        dum, envServiceHost, dum, dum, dum, dum = urlparse.urlparse('http://'+gatewayServiceRoot)
-        if serviceHost!=envServiceHost:
-            warning("hessian_service_url=%s but environment variable ESG_GATEWAY_SVC_ROOT=%s, please reconcile these values"%(serviceURL, gatewayServiceRoot))
+    serviceURL = None
+    if project_config_section and config.has_section(project_config_section):
+        serviceURL = config.get(project_config_section, 'hessian_service_url', default=None)
+    if not serviceURL:
+        serviceURL = config.get('DEFAULT', 'hessian_service_url')
 
     return serviceURL
 
-def getRestServiceURL():
+
+def getRestServiceURL(project_config_section=None):
     """Get the configured value of rest_service_url. If not set,
     derive host from hessian_service_url and use '/esg-search/ws' as the path.
     """
 
     config = getConfig()
-    serviceURL = config.get('DEFAULT', 'rest_service_url', default=None)
+    hessianServiceURL = None
+    # get project specific hessian service url
     if serviceURL is None:
-        hessianServiceURL = config.get('DEFAULT', 'hessian_service_url')
+        if project_config_section and config.has_section(project_config_section):
+            hessianServiceURL = config.get(project_config_section, 'hessian_service_url', default=None)
+        if not hessianServiceURL:
+            hessianServiceURL = config.get('DEFAULT', 'hessian_service_url')
         host = urlparse.urlparse(hessianServiceURL).netloc
         serviceURL = urlparse.urlunparse(('https', host, '/esg-search/ws', '', '', ''))
     return serviceURL
+
+
+def establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=True):
+    """Establish a connection to the PID service
+
+    pid_prefix
+        PID prefix to be used for given project
+
+    test_publication
+        Boolean to flag PIDs as test
+
+     project_config_section
+        The name of the project config section in esg.ini
+
+    config
+        Loaded config file(s)
+
+    handler
+        Project handler to be used for given project
+
+    publish
+        Flag to trigger publication and unpublication
+    """
+
+    try:
+        import esgfpid
+    except ImportError:
+        raise "PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install')."
+
+    pid_ms_exchange_name, pid_messaging_service_credentials = handler.get_pid_config(project_config_section, config)
+    pid_data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+    thredds_service_path = None
+    if publish:
+        thredds_file_specs = getThreddsServiceSpecs(config, 'DEFAULT', 'thredds_file_services')
+        for serviceType, base, name, compoundName in thredds_file_specs:
+            if serviceType == 'HTTPServer':
+                thredds_service_path = base
+                break
+
+    pid_connector = esgfpid.Connector(handle_prefix=pid_prefix,
+                                      messaging_service_exchange_name=pid_ms_exchange_name,
+                                      messaging_service_credentials=pid_messaging_service_credentials,
+                                      data_node=pid_data_node,
+                                      thredds_service_path=thredds_service_path,
+                                      test_publication=test_publication)
+    return pid_connector
+
+

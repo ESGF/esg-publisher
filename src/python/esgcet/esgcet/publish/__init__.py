@@ -5,7 +5,7 @@ from extract import extractFromDataset, aggregateVariables, CREATE_OP, DELETE_OP
 from utility import filelistIterator, fnmatchIterator, fnIterator, directoryIterator, multiDirectoryIterator,\
     nodeIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets,\
     processIterator, processNodeMatchIterator, checksum, extraFieldsGet, parseDatasetVersionId,\
-    generateDatasetVersionId, compareFilesByPath, bcolors
+    generateDatasetVersionId, compareFilesByPath, establish_pid_connection, bcolors
 from thredds import generateThredds, reinitializeThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, updateThreddsRootCatalog
 from hessianlib import Hessian, RemoteCallException
 from unpublish import deleteDatasetList, DELETE, UNPUBLISH, NO_OPERATION, UNINITIALIZED

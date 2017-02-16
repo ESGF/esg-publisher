@@ -19,14 +19,15 @@ class CdunifFormatHandler(FormatHandler):
     Generic file accessed with Cdunif / netCDF-3 interface.
     """
 
-    def __init__(self, file):
+    def __init__(self, file, path):
         self.file = file
         self.variables = file.variables
+        self.path = path
 
     @staticmethod
     def open(path, mode='r'):
         cf = Cdunif.CdunifFile(path)
-        f = CdunifFormatHandler(cf)
+        f = CdunifFormatHandler(cf, path)
         return f
 
     @staticmethod
@@ -177,9 +178,9 @@ class NetcdfHandler(ProjectHandler):
             result['source'] = f.source
         if hasattr(f, 'history'):
             result['history'] = f.history
-        
+
         config = getConfig()
-        projectSection = 'project:'+self.name
+        projectSection = 'project:' + self.name
 
         config_key = "extract_global_attrs"
 

@@ -8,8 +8,9 @@ import string
 
 from esgcet.model import *
 from esgcet.publish import deleteDatasetList, updateThreddsMasterCatalog, reinitializeThredds, DELETE, UNPUBLISH, NO_OPERATION, UNINITIALIZED, readDatasetMap,\
-    parseDatasetVersionId, generateDatasetVersionId, iterateOverDatasets, UPDATE_OP, publishDatasetList, updateThreddsMasterCatalog
-from esgcet.config import loadConfig, initLogging, registerHandlers
+    parseDatasetVersionId, generateDatasetVersionId, iterateOverDatasets, UPDATE_OP, publishDatasetList, updateThreddsMasterCatalog, \
+    establish_pid_connection
+from esgcet.config import loadConfig, initLogging, registerHandlers, getHandlerByName
 from esgcet.exceptions import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, join
@@ -95,6 +96,9 @@ Options:
         Use this option with caution, as it will leave the database and THREDDS catalogs in an inconsistent
         state.
 
+    --project project_id:
+        Project identifier. This option is mandatory.
+
     --rest-api
         Publish using the RESTful publication services. The configuration file option ``rest_service_url''
         defines the service location. If it is undefined, the service location is
@@ -149,7 +153,9 @@ def republishDataset(result, Session, thredds, gatewayOp):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'echo-sql', 'keep-credentials', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'rest-api', 'skip-thredds', 'sync-thredds', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'delete', 'echo-sql', 'keep-credentials', 'map=', 'no-republish',
+                                                     'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'project=', 'rest-api', 'retract',
+                                                     'skip-thredds', 'sync-thredds', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -171,6 +177,7 @@ def main(argv):
     syncThredds = False
     useList = False
     threddsReinit = True
+    projectName = None
     keep_credentials = False
 
     for flag, arg in args:
@@ -203,7 +210,7 @@ def main(argv):
         elif flag=='--delete':
             gatewayOp = DELETE
         elif flag=='--retract':
-            gatewayOp = RETRACT
+            gatewayOp = UNPUBLISH
         elif flag=='--las':
             las = True
         elif flag=='--log':
@@ -212,6 +219,8 @@ def main(argv):
             republish = False
         elif flag=='--no-thredds-reinit':
             threddsReinit = False
+        elif flag == '--project':
+            projectName = arg
         elif flag=='--rest-api':
             restApi = True
         elif flag=='--skip-thredds':
@@ -222,6 +231,12 @@ def main(argv):
             useList = True
             useListPath = arg
 
+    # The project must be specified
+    if projectName is None:
+        raise ESGPublishError("Must specify project with --project")
+
+    if gatewayOp!=NO_OPERATION and unpublishOnGateway:
+        gatewayOp = UNPUBLISH
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir)
@@ -248,68 +263,101 @@ def main(argv):
         if unpublishOnGateway:
             gatewayOp = UNPUBLISH
 
+    if gatewayOp == UNINITIALIZED:
+        gatewayOp = UNPUBLISH
+
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
-    if datasetMap is None and mapfileDir is None:
-        if not useList:
-            datasetNames = [parseDatasetVersionId(item) for item in lastargs]
-        else:
-            if useListPath=='-':
-                namelist = sys.stdin
+    # Register project handlers
+    registerHandlers(projectName)
+    handler = getHandlerByName(projectName, None, Session)
+
+    # Check if project uses PIDs and start messaging thread
+    pid_connector = None
+    try:
+        project_config_section = "config:%s" % projectName
+        pid_prefix = handler.check_pid_avail(project_config_section, config)
+        if pid_prefix:
+            pid_connector = establish_pid_connection(pid_prefix, False, project_config_section, config, handler, publish=False)
+            pid_connector.start_messaging_thread()
+
+        if datasetMap is None and mapfileDir is None:
+            if not useList:
+                datasetNames = [parseDatasetVersionId(item) for item in lastargs]
             else:
-                namelist = open(useListPath)
-            datasetNames = []
-            for line in namelist.readlines():
-                versionId = parseDatasetVersionId(line.strip())
-                datasetNames.append(versionId)
-        result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=threddsReinit, restInterface=restApi)
+                if useListPath=='-':
+                    namelist = sys.stdin
+                else:
+                    namelist = open(useListPath)
+                datasetNames = []
+                for line in namelist.readlines():
+                    versionId = parseDatasetVersionId(line.strip())
+                    datasetNames.append(versionId)
+            result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
+                                       republish=republish, reinitThredds=threddsReinit, restInterface=restApi,
+                                       pid_connector=pid_connector, project_config_section=project_config_section)
 
-    elif mapfileDir is not None:
-        for root, dirs, files in os.walk(mapfileDir, followlinks=True):
-            for mapfile in files:
-                try:
-                    datasetMap = readDatasetMap(os.path.join(root, mapfile))
-                except:
-                    error("Skipping %s: File does not match ESGF mapfile format." %os.path.join(root, mapfile))
-                    continue
-                datasetNames = datasetMap.keys()
-                datasetNames.sort()
-                result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=False, restInterface=restApi)
+        elif mapfileDir is not None:
+            for root, dirs, files in os.walk(mapfileDir, followlinks=True):
+                for mapfile in files:
+                    try:
+                        datasetMap = readDatasetMap(os.path.join(root, mapfile))
+                    except:
+                        error("Skipping %s: File does not match ESGF mapfile format." %os.path.join(root, mapfile))
+                        continue
+                    datasetNames = datasetMap.keys()
+                    datasetNames.sort()
+                    result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset,
+                                               deleteAll=deleteAll, republish=republish, reinitThredds=False,
+                                               restInterface=restApi, pid_connector=pid_connector,
+                                               project_config_section=project_config_section)
 
-                if republish:
-                    republishDataset(result, Session, thredds, gatewayOp)
+                    if republish:
+                        republishDataset(result, Session, thredds, gatewayOp)
 
-        # reinitialize THREDDS catalog only once after processing all mapfiles
-        if threddsReinit:
-            updateThreddsMasterCatalog(Session)
-            result = reinitializeThredds()
+            # reinitialize THREDDS catalog only once after processing all mapfiles
+            if threddsReinit:
+                updateThreddsMasterCatalog(Session)
+                result = reinitializeThredds()
 
-    else:
-        datasetNames = datasetMap.keys()
-        datasetNames.sort()
+        else:
+            datasetNames = datasetMap.keys()
+            datasetNames.sort()
 
-        result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll, republish=republish, reinitThredds=threddsReinit, restInterface=restApi)
+            result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
+                                       republish=republish, reinitThredds=threddsReinit, restInterface=restApi,
+                                       pid_connector=pid_connector, project_config_section=project_config_section)
 
-        if republish:
-            republishDataset(result, Session, thredds, gatewayOp)
+            if republish:
+                republishDataset(result, Session, thredds, gatewayOp)
 
-    # Synchronize database and THREDDS catalogs
-    if syncThredds:
-        threddsRoot = config.get('DEFAULT', 'thredds_root')
+        # Synchronize database and THREDDS catalogs
+        if syncThredds:
+            threddsRoot = config.get('DEFAULT', 'thredds_root')
 
-        # Make a dictionary of catalogs from the database
-        session = Session()
-        subcatalogs = session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).all()
-        catdict = {}
-        for catalog in subcatalogs:
-            location = os.path.join(threddsRoot, catalog.location)
-            catdict[location] = 1
-        session.close()
+            # Make a dictionary of catalogs from the database
+            session = Session()
+            subcatalogs = session.query(Catalog).select_from(join(Catalog, Dataset, Catalog.dataset_name==Dataset.name)).all()
+            catdict = {}
+            for catalog in subcatalogs:
+                location = os.path.join(threddsRoot, catalog.location)
+                catdict[location] = 1
+            session.close()
 
-        # Scan all XML files in the threddsroot
-        os.path.walk(threddsRoot, cleanupCatalogs, catdict)
+            # Scan all XML files in the threddsroot
+            os.path.walk(threddsRoot, cleanupCatalogs, catdict)
+
+        # finish PID messaging queue
+        if pid_connector:
+            pid_connector.finish_messaging_thread()
+            pid_connector.force_finish_messaging_thread()
+
+    except:
+        if pid_connector:
+            pid_connector.force_finish_messaging_thread()
+        raise
 
 if __name__=='__main__':
     main(sys.argv[1:])

@@ -156,7 +156,9 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session, sche
 
     return dset, statusId, state, event.event, status
 
-def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None, service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False, restInterface=False, schema=None):
+def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None,
+                       service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False, restInterface=False,
+                       schema=None, pid_connector=None, project_config_section=None):
     """
     Publish a list of datasets:
 
@@ -219,6 +221,12 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
     schema
       (Optional) String name of the schema to validate against, for RESTful publication calls.
 
+    pid_connector
+        esgfpid.Connector object to register PIDs
+
+    project_config_section
+        Name of the project config section in esg.ini (for user specific project configs)
+
     """
 
     session = Session()
@@ -262,7 +270,8 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             if threddsCatalogDictionary is None:
                 threddsOutputPath = generateThreddsOutputPath(datasetName, versionno, Session, handler)
                 threddsOutput = open(threddsOutputPath, "w")
-                generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno)
+                generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno,
+                                pid_connector=pid_connector)
                 threddsOutput.close()
                 try:
                     os.chmod(threddsOutputPath, 0664)
@@ -286,7 +295,8 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             else:
                 threddsOutputPath = generateThreddsOutputPath(datasetName, versionno, Session, handler) # Creates catalog entry
                 threddsOutput = cStringIO.StringIO()
-                generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno)
+                generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno,
+                                pid_connector=pid_connector)
                 threddsCatalogDictionary[(datasetName,versionno)] = threddsOutput.getvalue()
                 threddsOutput.close()
 
@@ -308,7 +318,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
         if not restInterface:
-            serviceURL = getHessianServiceURL()
+            serviceURL = getHessianServiceURL(project_config_section=project_config_section)
             servicePort = config.getint('DEFAULT','hessian_service_port')
             serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
             servicePollingDelay = config.getfloat('DEFAULT','hessian_service_polling_delay')
@@ -316,7 +326,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:                   # REST service
             spi = 1
-            serviceURL = getRestServiceURL()
+            serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
 

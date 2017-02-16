@@ -883,9 +883,10 @@ class ProjectHandler(object):
             # Map to case-sensitive options
             experimentOptions = self.mapValidFieldOptions('experiment', experimentOptions)
             if idFormat.find('%(experiment)s')!=-1 and experimentOptions is not None:
-                optionOr = reduce(lambda x,y: x+'|'+y, experimentOptions)
-                experimentPattern = r'(?P<experiment>%s)'%optionOr
-                newinit = newinit.replace('(?P<experiment>[^.]*)', experimentPattern)
+                if len(experimentOptions) > 0:
+                    optionOr = reduce(lambda x,y: x+'|'+y, experimentOptions)
+                    experimentPattern = r'(?P<experiment>%s)'%optionOr
+                    newinit = newinit.replace('(?P<experiment>[^.]*)', experimentPattern)
             
             if newinit[-1]!='$':
                 newinit += '$'
@@ -1004,3 +1005,88 @@ class ProjectHandler(object):
           A File instance.
         """
         return True
+
+
+    def check_pid_avail(self, project_config_section, config, version=None):
+        """ Returns the pid_prefix if project uses PIDs, otherwise returns None
+
+         project_config_section
+            The name of the project config section in esg.ini
+
+        config
+            The configuration (ini files)
+
+        version
+            Integer or Dict with dataset versions
+        """
+        pid_prefix = None
+        if config.has_section(project_config_section):
+            pid_prefix = config.get(project_config_section, 'pid_prefix', default=None)
+        return pid_prefix
+
+
+    def get_pid_config(self, project_config_section, config):
+        """ Returns the project specific pid config
+
+         project_config_section
+            The name of the project config section in esg.ini
+
+        config
+            The configuration (ini files)
+        """
+        pid_ms_exchange_name = None
+        if config.has_section(project_config_section):
+            pid_ms_exchange_name = config.get(project_config_section, 'pid_ms_exchange_name', default=None)
+        if not pid_ms_exchange_name:
+            raise ESGPublishError("Option 'pid_ms_exchange_name' is missing in section '%s' of esg.ini." % project_config_section)
+
+        # get credentials from config:project section of esg.ini
+        if config.has_section(project_config_section):
+            pid_messaging_service_credentials = []
+            credentials = splitRecord(config.get(project_config_section, 'pid_messaging_service_credentials', default=None))
+            if credentials:
+                priority = 0
+                for cred in credentials:
+                    if len(cred) == 4 and isinstance(cred[3], int):
+                        priority = cred[3]
+                    elif len(cred) == 3:
+                        priority += 1
+                    else:
+                        raise ESGPublishError("Misconfiguration: 'pid_messaging_service_credentials', section '%s' of esg.ini." % project_config_section)
+                    pid_messaging_service_credentials.append({'url': cred[0], 'user': cred[1], 'password': cred[2], 'priority': priority})
+            else:
+                raise ESGPublishError("Option 'pid_messaging_service_credentials' is missing in section '%s' of esg.ini." % project_config_section)
+        else:
+            raise ESGPublishError("Section '%s' not found in esg.ini." % project_config_section)
+
+        return pid_ms_exchange_name, pid_messaging_service_credentials
+
+    def get_citation_url(self, project_section, config, dataset_name, dataset_version):
+        """ Returns the citation_url if a project uses citation, otherwise returns None
+
+         project_section
+            The name of the project section in the ini file
+
+        config
+            The configuration (ini files)
+
+        dataset_name
+            Name of the dataset
+
+        dataset_version
+            Version of the dataset
+        """
+        if config.has_option(project_section, 'citation_url'):
+            try:
+                pattern = self.getFilters(option='dataset_id')
+                attributes = re.match(pattern[0], dataset_name).groupdict()
+                if 'version' not in attributes:
+                    attributes['version'] = str(dataset_version)
+                if 'dataset_id' not in attributes:
+                    attributes['dataset_id'] = dataset_name
+                return config.get(project_section, 'citation_url', 0, attributes)
+            except:
+                warning('Unable to generate a citation url for %s' % dataset_name)
+                return None
+        else:
+            return None

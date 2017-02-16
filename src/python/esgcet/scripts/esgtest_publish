@@ -87,7 +87,7 @@ def cleanup(session):
     if os.path.isfile(MAPFILE_PATH):
         if check_postgres(session, DATASET_NAME_VERSION):
             print 'Unpublishing...',
-            cmd = ['esgunpublish', '--database-delete', '--map', MAPFILE_PATH]
+            cmd = ['esgunpublish', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH]
             success, err_msg = execute_cmd(cmd)
             print_res(success, True, session, final_run=True)
         print 'Deleting mapfile...',
