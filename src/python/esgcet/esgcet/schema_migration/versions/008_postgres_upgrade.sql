@@ -1,6 +1,9 @@
 --
--- Upgrade to add is_target_variable boolean to file_variable
+-- Upgrade to add citation and PID
 --
 
-ALTER TABLE file_variable
-  ADD COLUMN is_target_variable BOOLEAN;
+ALTER TABLE dataset_version
+  ADD COLUMN citation_url CHARACTER VARYING(255);
+
+ALTER TABLE dataset_version
+  ADD COLUMN pid CHARACTER VARYING(255);

@@ -286,23 +286,19 @@ Unpublication
     If you unpublish a dataset passing only the dataset_name it will unpublish all versions of the dataset.
     To unpublish a single version use the ``dataset_name#version`` syntax, e.g.: ``cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1#20120315``.
 
-.. note::
-    The esgunpublish call does not take a project name.
-
-
 You could either use a ``mapfile directory``, a single ``mapfile`` a ``dataset`` or a ``dataset_list`` as input for the data unpublication:
 
 - Using a mapfile directory or a single mapfile
 
     ::
 
-        $ esgunpublish --map <input_mapfile or mapfile_directory>
+        $ esgunpublish --project <project> --map <input_mapfile or mapfile_directory>
 
 - Using a list
 
     ::
 
-        $ esgunpublish --use-list <list-of-datasets-filename>
+        $ esgunpublish --project <project> --use-list <list-of-datasets-filename>
 
     .. note::
         To obtain the a list of datasets, there are several alternatives.  On the command line you can use ``$ esglist_datasets --no-header --select name <project>``
@@ -311,7 +307,7 @@ You could either use a ``mapfile directory``, a single ``mapfile`` a ``dataset``
 
     ::
 
-        $ esgunpublish dataset_name[#version]
+        $ esgunpublish --project <project> dataset_name[#version]
 
 
 
@@ -322,7 +318,7 @@ Delete the data from Index, remove the THREDDS catalog, reinitialize/recheck the
 
 ::
 
-    $ esgunpublish --map /esg/mapfiles
+    $ esgunpublish --project cmip5 --map /esg/mapfiles
 
 
 Delete from Index
@@ -332,7 +328,7 @@ Delete the data from Index but keep the Thredds catalogs and postgres entries.
 
 ::
 
-    $ esgunpublish --map /esg/mapfiles --skip-thredds
+    $ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds
 
 
 Delete from Thredds
@@ -342,7 +338,7 @@ Delete the Thredds Catalogs, but keep the data available on the Index node and o
 
 ::
 
-    $ esgunpublish --map /esg/mapfiles --skip-index
+    $ esgunpublish --project cmip5 --map /esg/mapfiles --skip-index
 
 Delete from all components
 --------------------------
@@ -351,7 +347,7 @@ The data will be removed from postgres, Thredds and the Index node.
 
 ::
 
-    $ esgunpublish --map /esg/mapfiles --database-delete
+    $ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete
 
 .. warning::
     Use ``--database-delete`` to unpublish test data only. It is highly recommended to keep a history of all production data in postgres.

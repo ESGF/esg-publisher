@@ -1114,7 +1114,11 @@ def readThreddsWithAuthentication(url, config):
     threddsPassword = config.get('DEFAULT', 'thredds_password')
 
     # Create an OpenerDirector with support for Basic HTTP Authentication...
-    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    try:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    except AttributeError:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+
 
     user_pass = b64encode(threddsUsername +":"+threddsPassword)
 
@@ -1247,7 +1251,8 @@ def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDi
         try:
             os.mkdir(lastSubdir, 0775)
         except OSError:
-            assert os.path.exists(lastSubdir)
+            if not os.path.exists(lastSubdir):
+                raise ESGPublishError("Error creating directory %s. Please make sure you have the correct permissions." % lastSubdir)
 
     # Build the catalog name
     result = os.path.join(lastSubdir, threddsCatalogBasename)

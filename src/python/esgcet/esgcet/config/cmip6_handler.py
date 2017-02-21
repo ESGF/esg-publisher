@@ -167,12 +167,12 @@ class CMIP6Handler(BasicHandler):
             The configuration (ini files)
         """
         # get the PID configs
-        pid_ms_exchange_name = 'esgffed-exchange'
+        pid_messaging_service_exchange_name = 'esgffed-exchange'
 
         # get credentials from config:project section of esg.ini
         if config.has_section(project_config_section):
             pid_messaging_service_credentials = []
-            credentials = splitRecord(config.get(project_config_section, 'pid_messaging_service_credentials', default=None))
+            credentials = splitRecord(config.get(project_config_section, 'pid_credentials', default=''))
             if credentials:
                 priority = 0
                 for cred in credentials:
@@ -181,15 +181,15 @@ class CMIP6Handler(BasicHandler):
                     elif len(cred) == 3:
                         priority += 1
                     else:
-                        raise ESGPublishError("Misconfiguration: 'pid_messaging_service_credentials', section '%s' of esg.ini." % project_config_section)
+                        raise ESGPublishError("Misconfiguration: 'pid_credentials', section '%s' of esg.ini." % project_config_section)
                     pid_messaging_service_credentials.append({'url': cred[0], 'user': cred[1], 'password': cred[2], 'priority': priority})
             else:
-                raise ESGPublishError("Option 'pid_messaging_service_credentials' missing in section '%s' of esg.ini. "
+                raise ESGPublishError("Option 'pid_credentials' missing in section '%s' of esg.ini. "
                                       "Please contact your tier1 data node admin to get the proper values." % project_config_section)
         else:
             raise ESGPublishError("Section '%s' not found in esg.ini." % project_config_section)
 
-        return pid_ms_exchange_name, pid_messaging_service_credentials
+        return pid_messaging_service_exchange_name, pid_messaging_service_credentials
 
     def get_citation_url(self, project_section, config, dataset_name, dataset_version):
         """ Returns the citation_url if a project uses citation, otherwise returns None

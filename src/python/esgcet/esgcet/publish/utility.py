@@ -1033,7 +1033,7 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     except ImportError:
         raise "PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install')."
 
-    pid_ms_exchange_name, pid_messaging_service_credentials = handler.get_pid_config(project_config_section, config)
+    pid_messaging_service_exchange_name, pid_messaging_service_credentials = handler.get_pid_config(project_config_section, config)
     pid_data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
     thredds_service_path = None
     if publish:
@@ -1044,7 +1044,7 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
                 break
 
     pid_connector = esgfpid.Connector(handle_prefix=pid_prefix,
-                                      messaging_service_exchange_name=pid_ms_exchange_name,
+                                      messaging_service_exchange_name=pid_messaging_service_exchange_name,
                                       messaging_service_credentials=pid_messaging_service_credentials,
                                       data_node=pid_data_node,
                                       thredds_service_path=thredds_service_path,

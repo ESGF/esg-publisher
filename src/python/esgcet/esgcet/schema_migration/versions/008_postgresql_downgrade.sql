@@ -1,6 +1,9 @@
 --
--- revert addition of is_target_variable
+-- revert Citation and PID creation
 --
 
-ALTER TABLE file_variable
-  DROP COLUMN is_target_variable;
+ALTER TABLE dataset_version
+  DROP COLUMN citation_url;
+
+ALTER TABLE dataset_version
+  DROP COLUMN pid;
