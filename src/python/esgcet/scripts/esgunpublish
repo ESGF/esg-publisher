@@ -113,6 +113,10 @@ Options:
 
     --sync-thredds: Delete all THREDDS catalogs ('orphaned' catalogs) without a corresponding database entry.
 
+    --test
+        Flag the dataset(s) as test publication. This option must be set for unpublication of test data that use PIDs.
+        WARNING: Do not use this option in production, all PIDs flagged as test will be deleted after a while.
+
     --use-list filelist
         Read the list of dataset names from a file, containing one
         dataset name per line. If the filelist is '-', read from
@@ -155,7 +159,7 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'delete', 'echo-sql', 'keep-credentials', 'map=', 'no-republish',
                                                      'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'project=', 'rest-api', 'retract',
-                                                     'skip-thredds', 'sync-thredds', 'use-list='])
+                                                     'skip-thredds', 'sync-thredds', 'test', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -179,6 +183,7 @@ def main(argv):
     threddsReinit = True
     projectName = None
     keep_credentials = False
+    test_publication = False
 
     for flag, arg in args:
         if flag=='--database-delete':
@@ -227,6 +232,8 @@ def main(argv):
             thredds = False
         elif flag=='--sync-thredds':
             syncThredds = True
+        elif flag == '--test':
+            test_publication = True
         elif flag=='--use-list':
             useList = True
             useListPath = arg
@@ -280,7 +287,7 @@ def main(argv):
         project_config_section = "config:%s" % projectName
         pid_prefix = handler.check_pid_avail(project_config_section, config)
         if pid_prefix:
-            pid_connector = establish_pid_connection(pid_prefix, False, project_config_section, config, handler, publish=False)
+            pid_connector = establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=False)
             pid_connector.start_messaging_thread()
 
         if datasetMap is None and mapfileDir is None:
