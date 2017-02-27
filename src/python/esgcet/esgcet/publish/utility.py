@@ -696,6 +696,11 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
     for iloop in range(ct): 
         datasetName,versionno = datasetNames[iloop]
 
+        # Must specify version for replications
+        if masterGateway:
+            if not newVersion and versionno < 0:
+                raise ESGPublishError("Must specify a version for replicated datasets, e.g. in the mapfile or with --new-version/--version-list.")
+
         # If using a version map, lookup the version for this dataset
         if versionIsMap:
             try:
