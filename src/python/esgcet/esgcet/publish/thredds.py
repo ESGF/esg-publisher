@@ -960,8 +960,8 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                     property = SE(datasetElem, "property", name=name, value=value)    
             else:
                 try:
-
-                    property = SE(datasetElem, "property", name=name, value=handler.getField(name))
+                    if handler.getField(name):
+                        property = SE(datasetElem, "property", name=name, value=handler.getField(name))
                 except TypeError:
                     raise ESGPublishError("Invalid value for field %s: %s"%(name, handler.getField(name)))
 
