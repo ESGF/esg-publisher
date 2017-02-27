@@ -592,7 +592,7 @@ class ProjectHandler(object):
                 if config.has_option(project_section, option):
                     value = config.get(project_section, option, False, context)
                     context[key] = value
-                else:
+                elif config.has_option(project_section, 'maps'):
                     for map_option in splitLine(config.get(project_section, 'maps', default=''), ','):
                         from_keys, to_keys, value_dict = splitMap(config.get(project_section, map_option))
                         if key in to_keys:
