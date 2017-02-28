@@ -145,8 +145,8 @@ DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
 UNINITIALIZED = 4
-
-def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False, reinitThredds=True, restInterface=False):
+def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None,
+                      deleteAll=False, republish=False, reinitThredds=True, restInterface=False, pid_connector=None, project_config_section=None):
     """
     Delete or retract a list of datasets:
 
@@ -196,6 +196,12 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     restInterface
       Boolean flag. If True, publish datasets with the RESTful publication services.
 
+    pid_connector
+        esgfpid.Connector object to register PIDs
+
+    project_config_section
+        Name of the project config section in esg.ini (for user specific project configs)
+
     """
     if gatewayOperation == UNINITIALIZED:
         raise ESGPublishError("Need to set mandatory --delete|--retract|--skip-index argument!")
@@ -225,12 +231,12 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
         if not restInterface:
-            serviceURL = getHessianServiceURL()
+            serviceURL = getHessianServiceURL(project_config_section=project_config_section)
             servicePort = config.getint('DEFAULT','hessian_service_port')
             serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:
-            serviceURL = getRestServiceURL()
+            serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
 
@@ -266,6 +272,9 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             if dset is None:
                 continue
             for versionObj in versionObjs:
+                # send unpublication info to handle server
+                if pid_connector:
+                    pid_connector.unpublish_one_version(drs_id=datasetName, version_number=versionObj.version)
                 catalog = session.query(Catalog).filter_by(dataset_name=dset.name, version=versionObj.version).first()
                 if catalog is not None:
                     path = os.path.join(threddsRoot, catalog.location)

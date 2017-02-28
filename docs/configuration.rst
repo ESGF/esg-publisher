@@ -135,6 +135,25 @@ sections. This file will be set up during the ESGF installation process.
             hessian_service_remote_metadata_url = http://host/esgcet/remote/hessian/guest/remoteMetadataService
             hessian_service_url = https://<index_fqdn>/esg-search/remote/secure/client-cert/hessian/publishingService
 
+#. The ``[config:<project>]`` section
+
+    To specify project specific configuration in `esg.ini` you can add a separate config section for each project.
+    That section holds the PID configs and it also overrides the `hessian_service_url`, if specified.
+
+    Example:
+
+    ::
+
+        [config:cmip6]
+        hessian_service_url = https://esgf-data.dkrz.de/esg-search/remote/secure/client-cert/hessian/publishingService
+        pid_prefix = 21.14100                   # default for CMIP6
+        pid_exchange_name = esgffed-exchange    # default for CMIP6
+        pid_credentials =
+          handle-esgf-trusted.dkrz.de | esgf-publisher | <secret>
+          pcmdi10.llnl.gov            | esgf-publisher | <secret>
+
+    .. note::
+        This option is optional for most projects, except CMIP6. Plase ask your tier1 node admin for the PID credentials.
 
 #. The ``[initialize]`` section
 

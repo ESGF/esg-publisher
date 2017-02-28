@@ -293,6 +293,6 @@ class IPCC5Handler(BasicHandler):
                 result = True
         except:
             result = True
-        if not result:
-            info("Skipping variable %s (in file %s)"%(variable.short_name, fileobj.getLocation()))
+        #if not result:
+        #    info("Skipping variable %s (in file %s)"%(variable.short_name, fileobj.getLocation()))
         return result

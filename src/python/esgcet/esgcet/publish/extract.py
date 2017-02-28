@@ -22,7 +22,9 @@ REPLACE_OP=5
 # When translating numpy arrays (e.g., dimension values) to strings, don't include newlines
 numpy.set_printoptions(threshold=numpy.inf, linewidth=numpy.inf)
 
-def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP, progressCallback=None, stopEvent=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None, comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, **context):
+def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP,
+                       progressCallback=None, stopEvent=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None,
+                       comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, pid_connector=None, **context):
     """
     Extract metadata from a dataset represented by a list of files, add to a database. Populates the database tables:
 
@@ -91,6 +93,9 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
     forceRescan
       Boolean, if True force all files to be rescanned on an update.
+
+    pid_connector
+        ESGF_PID_connector object to register PIDs
 
     context
       A dictionary with keys ``project``, ``model``, ``experiment``, etc. The context consists of all fields needed to uniquely define the dataset.
@@ -239,7 +244,19 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
             datasetTechNotes = dset.dataset_tech_notes
         if hasattr(dset, "dataset_tech_notes_title"):
             datasetTechNotesTitle = dset.dataset_tech_notes_title
-        newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment, tech_notes=datasetTechNotes, tech_notes_title=datasetTechNotesTitle)
+
+        # if project uses PIDs, generate PID for dataset
+        dataset_pid = None
+        if pid_connector:
+            dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=datasetName, version_number=newVersion)
+            info("Assigned PID to dataset %s.v%s: %s " % (datasetName, newVersion, dataset_pid))
+
+        # if project uses citation, build citation url
+        citation_url = handler.get_citation_url(section, config, datasetName, newVersion)
+
+        newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment, tech_notes=datasetTechNotes,
+                                                  tech_notes_title=datasetTechNotesTitle, pid=dataset_pid, citation_url=citation_url)
+
         info("New dataset version = %d"%newDsetVersionObj.version)
         for var in dset.variables:
             session.delete(var)
@@ -646,7 +663,7 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
     varlocatedict = {}
     if varlocate is not None:
         for varname, pattern in varlocate:
-            varlocatedict[varname] = pattern.strip()
+            varlocatedict[varname.strip()] = pattern.strip()
 
     # Create global attribute
     target_variable = None
@@ -688,7 +705,7 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
         debug("%s%s"%(varname, `varshape`))
 
         # Check varlocate
-        if varlocatedict.has_key(varname) and not re.match(varlocatedict[varname], os.path.basename(fileVersion.location)):
+        if varlocatedict.has_key(varname) and not re.match(varlocatedict[varname].strip(), os.path.basename(fileVersion.location)):
             debug("Skipping variable %s in %s"%(varname, fileVersion.location))
             continue
 

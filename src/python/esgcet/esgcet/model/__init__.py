@@ -189,6 +189,8 @@ datasetVersionTable = Table('dataset_version', metadata,
                             Column('comment', types.Text),
                             Column('tech_notes', types.String(255)),
                             Column('tech_notes_title', types.String(255)),
+                            Column('pid', types.String(255)),
+                            Column('citation_url', types.String(255)),
                             mysql_engine='InnoDB',
                             )
 
@@ -740,19 +742,21 @@ class Dataset(object):
     def __repr__(self):
         return "<Dataset, id=%s, name=%s, project=%s, model=%s, experiment=%s, run_name=%s>"%(`self.id`, self.name, `self.project`, `self.model`, `self.experiment`, self.run_name)
     
-def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, bydate=False):
+def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, bydate=False,
+                          pid=None, citation_url=None):
     if version is None:
         current = dset.getVersion()
         version = getNextDatasetVersion(current, bydate)
     if name is None:
         name = dset.generateVersionName(version)
-    dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment, tech_notes=tech_notes, tech_notes_title=tech_notes_title)
+    dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment, tech_notes=tech_notes,
+                                 tech_notes_title=tech_notes_title, pid=pid, citation_url=citation_url)
     dset.versions.append(dsetVersion)
     return dsetVersion
 
 class DatasetVersion(object):
 
-    def __init__(self, version, name, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None):
+    def __init__(self, version, name, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, pid=None, citation_url=None):
         self.version = version
         self.name = name
         if creation_time is None:
@@ -761,6 +765,8 @@ class DatasetVersion(object):
         self.comment = comment
         self.tech_notes = tech_notes
         self.tech_notes_title = tech_notes_title
+        self.pid = pid
+        self.citation_url = citation_url
 
     def reset(self, creation_time=None, comment=None):
         "Reset the creation_time and comment, but keep name and version."
