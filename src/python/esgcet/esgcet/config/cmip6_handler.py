@@ -8,6 +8,7 @@ from cmip5_product import getProduct
 from esgcet.exceptions import *
 from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from esgcet.publish import 
 
 import numpy
 import argparse
@@ -48,7 +49,13 @@ class CMIP6Handler(BasicHandler):
 
 
     def validateFile(self, fileobj):
-        """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
+        """
+        for CMIP6, this will first verify if the data is written by CMOR at the correct version set in the ini file.
+        If so, the file is declared valid. If not, file will go through CFCheck and PrePARE (CV) checks. 
+
+        Raises ESGPublishError if settings are missing or file fails the checks.
+        Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler.
+        """
         
         if self.validator is None:
             raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
@@ -59,36 +66,25 @@ class CMIP6Handler(BasicHandler):
 
         config = getConfig()
         projectSection = 'project:'+self.name
-
-
         min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
-
         file_cmor_version = fileobj.getAttribute('cmor_version', None)
         
         if compareLibVersions(min_cmor_version, file_cmor_version):
             debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
             return
 
-
         min_cf_version = config.get(projectSection, "min_cf_version", defaut="")        
-
-
 
         if len(min_cf_version) == 0: 
             raise ESGPublishError("Minimum CF version not set in esg.ini")
 
-        fakeversion = ["cfchecker.py", "-v", "1.0", "foo"]
-        
+        fakeversion = ["cfchecker.py", "-v", "1.0", "foo"]        
         (badc,coards,uploader,useFileName,standardName,areaTypes,udunitsDat,version,files)=getargs(fakeversion)
-
-
         CF_Chk_obj = CFChecker(uploader=uploader, useFileName=useFileName, badc=badc, coards=coards, cfStandardNamesXML=standardName, cfAreaTypesXML=areaTypes, udunitsDat=udunitsDat, version=version)
-
         rc = CF_Chk_obj.checker(f)
 
         if (rc > 0):
             raise ESGPublishError("File %s fails CF check"%f)
-
 
         table = None
 
@@ -98,19 +94,15 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s missing required table_id global attribute"%f)
 
-
-
         cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
-
 
         if cmor_table_path == "":
             raise ESGPublishError("cmor_table_path not set in esg.ini")            
 
+        checkAndUpdateRepo(cmor_table_path)
+
         table_file = cmor_table_path + '/CMIP6_' + table + '.json'
-
-
         fakeargs = [ table_file ,f]
-
         parser = argparse.ArgumentParser(prog='esgpublisher')
         parser.add_argument('--variable')        
         parser.add_argument('cmip6_table', action=validator.JSONAction)
@@ -122,8 +114,6 @@ class CMIP6Handler(BasicHandler):
                 default=sys.stdout)
         args = parser.parse_args(fakeargs)
 
-
-
 #        print "About to CV check:", f
  
         try:
@@ -132,7 +122,6 @@ class CMIP6Handler(BasicHandler):
                 raise ESGPublishError("File %s failed the CV check - object create failure"%f)
 
             process.ControlVocab()
-
 
         except:
 

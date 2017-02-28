@@ -16,11 +16,13 @@ import getpass
 from esgcet.config import getHandler, getHandlerByName, splitLine, getConfig, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from time import time
 
 # Force stat modification times to be returned as integers for consistency.
 # By default, os.stat(path).st_mtime returns a float.
 os.stat_float_times(False)
 
+UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
 
 class bcolors:
     HEADER = '\033[95m'
@@ -1056,4 +1058,29 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
                                       test_publication=test_publication)
     return pid_connector
 
+
+def checkAndUpdateRepo(cmor_table_path):
+    """
+        Checks for a file written to a predefined location.  if not present or too old, will pull the repo based on the input path argument and update the timestamp.
+    """
+    pull_cmor_repo = False
+
+    if os.path.exists(UPDATE_TIMESTAMP):
+        mtime = os.path.getmtime(file_name)
+        now = time()
+        if now - mtime > (86400.0):
+            pull_cmor_repo = True 
+
+    else:
+        pull_cmor_repo = True
+
+    if pull_cmor_repo:
+
+        try:
+            os.system("pushd "+cmor_table_path+" ; git pull ; popd")
+            f = open(UPDATE_TIMESTAMP, "w")
+            f.write("t")
+            f.close()
+        except Exception as e :
+            warning("Attempt to update the cmor table repo and encountered an error: " + str(e))            
 
