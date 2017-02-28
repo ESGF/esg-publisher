@@ -8,7 +8,7 @@ from cmip5_product import getProduct
 from esgcet.exceptions import *
 from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
 from esgcet.messaging import debug, info, warning, error, critical, exception
-from esgcet.publish import 
+from esgcet.publish import checkAndUpdateRepo
 
 import numpy
 import argparse
