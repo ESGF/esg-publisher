@@ -1061,7 +1061,7 @@ class ProjectHandler(object):
 
         return pid_messaging_service_exchange_name, pid_messaging_service_credentials
 
-    def get_citation_url(self, project_section, config, dataset_name, dataset_version):
+    def get_citation_url(self, project_config_section, config, dataset_name, dataset_version):
         """ Returns the citation_url if a project uses citation, otherwise returns None
 
          project_section
@@ -1076,7 +1076,7 @@ class ProjectHandler(object):
         dataset_version
             Version of the dataset
         """
-        if config.has_option(project_section, 'citation_url'):
+        if config.has_option(project_config_section, 'citation_url'):
             try:
                 pattern = self.getFilters(option='dataset_id')
                 attributes = re.match(pattern[0], dataset_name).groupdict()
@@ -1084,7 +1084,7 @@ class ProjectHandler(object):
                     attributes['version'] = str(dataset_version)
                 if 'dataset_id' not in attributes:
                     attributes['dataset_id'] = dataset_name
-                return config.get(project_section, 'citation_url', 0, attributes)
+                return config.get(project_config_section, 'citation_url', 0, attributes)
             except:
                 warning('Unable to generate a citation url for %s' % dataset_name)
                 return None
