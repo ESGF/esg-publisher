@@ -1066,7 +1066,7 @@ def checkAndUpdateRepo(cmor_table_path):
     pull_cmor_repo = False
 
     if os.path.exists(UPDATE_TIMESTAMP):
-        mtime = os.path.getmtime(file_name)
+        mtime = os.path.getmtime(UPDATE_TIMESTAMP)
         now = time()
         if now - mtime > (86400.0):
             pull_cmor_repo = True 

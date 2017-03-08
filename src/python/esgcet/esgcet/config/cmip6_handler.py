@@ -94,6 +94,12 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s missing required table_id global attribute"%f)
 
+        try:
+                variable_id = fileobj.getAttribute('variable_id', None)
+
+        except:
+            raise ESGPublishError("File %s missing required variable_id global attribute"%f)
+
         cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
 
         if cmor_table_path == "":
@@ -102,7 +108,7 @@ class CMIP6Handler(BasicHandler):
         checkAndUpdateRepo(cmor_table_path)
 
         table_file = cmor_table_path + '/CMIP6_' + table + '.json'
-        fakeargs = [ table_file ,f]
+        fakeargs = [ '--variable', variable_id, table_file ,f]
         parser = argparse.ArgumentParser(prog='esgpublisher')
         parser.add_argument('--variable')        
         parser.add_argument('cmip6_table', action=validator.JSONAction)
