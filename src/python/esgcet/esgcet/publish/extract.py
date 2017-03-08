@@ -252,7 +252,8 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
             info("Assigned PID to dataset %s.v%s: %s " % (datasetName, newVersion, dataset_pid))
 
         # if project uses citation, build citation url
-        citation_url = handler.get_citation_url(section, config, datasetName, newVersion)
+        project_config_section = 'config:%s' %context.get('project')
+        citation_url = handler.get_citation_url(project_config_section, config, datasetName, newVersion)
 
         newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment, tech_notes=datasetTechNotes,
                                                   tech_notes_title=datasetTechNotesTitle, pid=dataset_pid, citation_url=citation_url)
