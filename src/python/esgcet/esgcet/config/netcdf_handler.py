@@ -138,11 +138,14 @@ class CdunifFormatHandler(FormatHandler):
           
         """
         variable = self.variables[variableName]
-        if index is not None:
-            result = variable[index]
-        else:
-            result = variable[:]
-        return result
+        try:
+            if index is not None:
+                result = variable[index]
+            else:
+                result = variable[:]
+            return result
+        except ValueError:
+            return None        
 
     def close(self):
         """

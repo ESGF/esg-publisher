@@ -743,6 +743,8 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
         # Set coordinate axis range and type if applicable
         if len(varshape)==1:
             var0 = openfile.getVariable(varname, index=0)
+            if var0 is None:
+                continue
             varn = openfile.getVariable(varname, index=-1)
             if cfHandler.axisIsLatitude(filevar):
                 filevar.coord_range = genCoordinateRange(var0, varn)
