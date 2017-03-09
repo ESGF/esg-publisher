@@ -3,6 +3,7 @@
 import sys
 import os
 import getopt
+import urlparse
 import logging
 import string
 
@@ -59,6 +60,11 @@ Options:
 
     --delete
     --retract
+
+    --data-node data_node:
+        Unpublish only from the given data_node, only for Solr publication.
+        If data_node is set to "all" it will delete all records in Solr related to the dataset_id(s).
+        Default is to extract the data_node from the thredds_url in esg.ini.
 
     --database-delete: Delete the associated local database entry for this dataset. By default, the
       database information is left intact.
@@ -157,7 +163,7 @@ def republishDataset(result, Session, thredds, gatewayOp):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['database-delete', 'database-only', 'delete', 'echo-sql', 'keep-credentials', 'map=', 'no-republish',
+        args, lastargs = getopt.getopt(argv, "hi:", ['data-node=', 'database-delete', 'database-only', 'delete', 'echo-sql', 'keep-credentials', 'map=', 'no-republish',
                                                      'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'project=', 'rest-api', 'retract',
                                                      'skip-thredds', 'sync-thredds', 'test', 'use-list='])
     except getopt.error:
@@ -184,9 +190,12 @@ def main(argv):
     projectName = None
     keep_credentials = False
     test_publication = False
+    data_node = None
 
     for flag, arg in args:
-        if flag=='--database-delete':
+        if flag == '--data-node':
+            data_node = arg
+        elif flag=='--database-delete':
             deleteDset = True
         elif flag=='--database-only':
             gatewayOp = NO_OPERATION
@@ -254,6 +263,11 @@ def main(argv):
     if config is None:
         raise ESGPublishError("No configuration file found.")
 
+    if not data_node:
+        data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+    elif data_node == 'all':
+        data_node = None
+
     if gatewayOp != NO_OPERATION:
         if not keep_credentials:
             # check cert and generate a new one, if expired
@@ -304,7 +318,8 @@ def main(argv):
                     datasetNames.append(versionId)
             result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
                                        republish=republish, reinitThredds=threddsReinit, restInterface=restApi,
-                                       pid_connector=pid_connector, project_config_section=project_config_section)
+                                       pid_connector=pid_connector, project_config_section=project_config_section,
+                                       data_node=data_node)
 
         elif mapfileDir is not None:
             for root, dirs, files in os.walk(mapfileDir, followlinks=True):
@@ -319,7 +334,7 @@ def main(argv):
                     result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset,
                                                deleteAll=deleteAll, republish=republish, reinitThredds=False,
                                                restInterface=restApi, pid_connector=pid_connector,
-                                               project_config_section=project_config_section)
+                                               project_config_section=project_config_section, data_node=data_node)
 
                     if republish:
                         republishDataset(result, Session, thredds, gatewayOp)
@@ -335,7 +350,8 @@ def main(argv):
 
             result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
                                        republish=republish, reinitThredds=threddsReinit, restInterface=restApi,
-                                       pid_connector=pid_connector, project_config_section=project_config_section)
+                                       pid_connector=pid_connector, project_config_section=project_config_section,
+                                       data_node=data_node)
 
             if republish:
                 republishDataset(result, Session, thredds, gatewayOp)
