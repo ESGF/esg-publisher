@@ -692,6 +692,10 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
                 target_variable = drs_parts['variable']
                 debug('Extracted target variable from DRS: %s' % target_variable)
 
+    # target_variable must be present in the file
+    if target_variable not in openfile.inquireVariableList():
+        target_variable = None
+
     # For each variable in the file:
     for varname in openfile.inquireVariableList():
 
