@@ -254,7 +254,7 @@ def main(argv):
         print_res(success, skip_error, session, err_msg)
 
     print(bcolors.BOLD + '\nUnpublish dataset' + bcolors.ENDC)
-    cmd = ['esgunpublish', '--database-delete', '--map', MAPFILE_PATH, '--keep-credentials']
+    cmd = ['esgunpublish', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH, '--keep-credentials']
     if skip_thredds:
         cmd.append('--skip-thredds')
     if skip_index:
