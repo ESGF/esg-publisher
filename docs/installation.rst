@@ -15,7 +15,14 @@ Clone the Github repo and install the esgcet package using setup.py.
 
 ::
 
+ESGF v2.5 or later
+
+	$ source /usr/local/conda/bin/activate esgf-pub
+
+ESGF v2.4.x or earlier
+
     $ source /etc/esg.env
+
     $ git clone https://github.com/ESGF/esg-publisher.git
     $ cd esg-publisher/src/python/esgcet
     $ python setup.py install
