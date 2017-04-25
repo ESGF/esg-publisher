@@ -10,15 +10,19 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitReco
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.publish import checkAndUpdateRepo
 
+from cmip6_cv.PrePARE import __main__ as validator
+
 import numpy
 import argparse
 import imp
 
 WARN = False
 
+
+
 from cfchecker import *
 
-PrePARE_PATH = '/usr/local/conda/envs/esgf-pub/bin/PrePARE.py'
+#PrePARE_PATH = '/usr/local/conda/envs/esgf-pub/bin/PrePARE.py'
 
 version_pattern = re.compile('20\d{2}[0,1]\d[0-3]\d')
 
@@ -26,15 +30,6 @@ class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
-        self.validator = None
-        
-        try:
-            self.validator = imp.load_source('PrePARE', PrePARE_PATH)
-        except:
-            raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
-
-        if self.validator is None:
-            raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
 
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
@@ -57,11 +52,6 @@ class CMIP6Handler(BasicHandler):
         Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler.
         """
         
-        if self.validator is None:
-            raise ESGPublishError("Unable to load the PrePARE module, expected at %s"%PrePARE_PATH)
-
-        validator = self.validator
-
         f = fileobj.path
 
         config = getConfig()
