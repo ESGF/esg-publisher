@@ -10,7 +10,7 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitReco
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.publish import checkAndUpdateRepo
 
-from cmip6_cv.PrePARE import __main__ as validator
+from cmip6_cv import PrePARE as validator
 
 import numpy
 import argparse
