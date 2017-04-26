@@ -10,6 +10,12 @@ Set up default environment for scripts:
 
 ::
 
+ESGF v2.5 or later
+
+    $ source /usr/local/conda/bin/activate esgf-pub
+
+ESGF v2.4.x or earlier
+
     $ source /etc/esg.env
 
 Publication and unpublication to an index node also requires a valid globus certificate.
