@@ -375,7 +375,6 @@ def main(argv):
         # finish PID messaging queue
         if pid_connector:
             pid_connector.finish_messaging_thread()
-            pid_connector.force_finish_messaging_thread()
 
     except:
         if pid_connector:

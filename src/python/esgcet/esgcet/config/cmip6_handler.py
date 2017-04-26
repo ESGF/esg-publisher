@@ -171,13 +171,25 @@ class CMIP6Handler(BasicHandler):
             if credentials:
                 priority = 0
                 for cred in credentials:
-                    if len(cred) == 4 and isinstance(cred[3], int):
-                        priority = cred[3]
-                    elif len(cred) == 3:
+                    if len(cred) == 7 and isinstance(cred[6], int):
+                        priority = cred[6]
+                    elif len(cred) == 6:
                         priority += 1
                     else:
                         raise ESGPublishError("Misconfiguration: 'pid_credentials', section '%s' of esg.ini." % project_config_section)
-                    pid_messaging_service_credentials.append({'url': cred[0], 'user': cred[1], 'password': cred[2], 'priority': priority})
+
+                    ssl_enabled = False
+                    if cred[5].strip().upper() == 'TRUE':
+                        ssl_enabled = True
+
+                    pid_messaging_service_credentials.append({'url': cred[0].strip(),
+                                                              'port': cred[1].strip(),
+                                                              'vhost': cred[2].strip(),
+                                                              'user': cred[3].strip(),
+                                                              'password': cred[4].strip(),
+                                                              'ssl_enabled': ssl_enabled,
+                                                              'priority': priority})
+
             else:
                 raise ESGPublishError("Option 'pid_credentials' missing in section '%s' of esg.ini. "
                                       "Please contact your tier1 data node admin to get the proper values." % project_config_section)

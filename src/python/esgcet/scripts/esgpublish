@@ -612,7 +612,6 @@ def main(argv):
         if pid_connector:
             if thredds:
                 pid_connector.finish_messaging_thread()
-                pid_connector.force_finish_messaging_thread()
             if test_publication:
                 print '\n' + bcolors.WARNING + '********************************************************************' + bcolors.ENDC
                 print bcolors.WARNING + '***                                                              ***' + bcolors.ENDC
