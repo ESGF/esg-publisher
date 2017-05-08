@@ -149,8 +149,12 @@ sections. This file will be set up during the ESGF installation process.
         pid_prefix = 21.14100                   # default for CMIP6
         pid_exchange_name = esgffed-exchange    # default for CMIP6
         pid_credentials =
-          handle-esgf-trusted.dkrz.de | esgf-publisher | <secret>
-          pcmdi10.llnl.gov            | esgf-publisher | <secret>
+          # hostname                  | port | virtual_host | username       | password | ssl_enabled
+          handle-esgf-trusted.dkrz.de |      |              | esgf-publisher | <secret> | false
+          pcmdi10.llnl.gov            | 5671 |   esgf-pid   | esgf-publisher | <secret> | true
+
+    .. note::
+        In case the port and/or the virtual_host are not set in the pid_credentials the default values will be used.
 
     .. note::
         This option is optional for most projects, except CMIP6. Plase ask your tier1 node admin for the PID credentials.
