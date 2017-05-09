@@ -20,7 +20,7 @@ WARN = False
 
 
 
-from cfchecker import *
+#from cfchecker import getargs, CFChecker
 
 #PrePARE_PATH = '/usr/local/conda/envs/esgf-pub/bin/PrePARE.py'
 
@@ -46,7 +46,7 @@ class CMIP6Handler(BasicHandler):
     def validateFile(self, fileobj):
         """
         for CMIP6, this will first verify if the data is written by CMOR at the correct version set in the ini file.
-        If so, the file is declared valid. If not, file will go through CFCheck and PrePARE (CV) checks. 
+        If so, the file is declared valid. If not, file will go through PrePARE (CV) check.  PrePARE runs CFChecker
 
         Raises ESGPublishError if settings are missing or file fails the checks.
         Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler.
@@ -63,18 +63,20 @@ class CMIP6Handler(BasicHandler):
             debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
             return
 
-        min_cf_version = config.get(projectSection, "min_cf_version", defaut="")        
+            #  PrePARE is going to handle the CF check now
+        # min_cf_version = config.get(projectSection, "min_cf_version", defaut="")        
 
-        if len(min_cf_version) == 0: 
-            raise ESGPublishError("Minimum CF version not set in esg.ini")
+        # if len(min_cf_version) == 0: 
+        #     raise ESGPublishError("Minimum CF version not set in esg.ini")
 
-        fakeversion = ["cfchecker.py", "-v", "1.0", "foo"]        
-        (badc,coards,uploader,useFileName,standardName,areaTypes,udunitsDat,version,files)=getargs(fakeversion)
-        CF_Chk_obj = CFChecker(uploader=uploader, useFileName=useFileName, badc=badc, coards=coards, cfStandardNamesXML=standardName, cfAreaTypesXML=areaTypes, udunitsDat=udunitsDat, version=version)
-        rc = CF_Chk_obj.checker(f)
+        # fakeversion = ["cfchecker.py", "-v", min_cf_version
+        # , "foo"]        
+        # (badc,coards,uploader,useFileName,standardName,areaTypes,udunitsDat,version,files)=getargs(fakeversion)
+        # CF_Chk_obj = CFChecker(uploader=uploader, useFileName=useFileName, badc=badc, coards=coards, cfStandardNamesXML=standardName, cfAreaTypesXML=areaTypes, udunitsDat=udunitsDat, version=version)
+        # rc = CF_Chk_obj.checker(f)
 
-        if (rc > 0):
-            raise ESGPublishError("File %s fails CF check"%f)
+        # if (rc > 0):
+        #     raise ESGPublishError("File %s fails CF check"%f)
 
         table = None
 
