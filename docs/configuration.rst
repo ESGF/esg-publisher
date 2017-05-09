@@ -376,7 +376,7 @@ The project specific config files: esg.<project>.ini
             ensemble_pattern = r%(digit)si%(digit)sp%(digit)s
 
         .. note::
-            The <facet>_pattern currently supports ``%(digit)s`` and ``%(string)s``.
+            The <facet>_pattern currently supports ``%(digit)s`` and ``%(string)s`` where ``%(digit)s`` matches any number and ``%(string)s`` one or more character(s).
 
 #. Project Handler
 
