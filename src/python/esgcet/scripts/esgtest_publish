@@ -31,7 +31,7 @@ ESGF_TEST_FILE_LOCATION = os.path.join(ESGF_TEST_DATA_DIR, 'sftlf.nc')
 ESGF_TEST_FILE_SHA256 = '94d4c7158fb11cea636500aae1fcc9168629631636b76a416660552962fc98ef'
 DATASET_NAME = 'test.%s' % int(time.time())
 DATASET_NAME_VERSION = '%s.v1' % DATASET_NAME
-MAPFILE_PATH = os.path.join('/tmp/', '%s.map' % DATASET_NAME)
+MAPFILE_PATH = os.path.join('/tmp/', DATASET_NAME)
 
 usage = """Usage:
     esg_testpublication [options]
@@ -164,7 +164,7 @@ def main(argv):
     thredds_data_directory = config.get('DEFAULT', 'thredds_root')
     data_node = socket.gethostname()
     index_node = config.get('DEFAULT', 'hessian_service_url').split('/')[2]
-    MAPFILE_PATH = os.path.join(output_directory, '%s.map' %DATASET_NAME)
+    MAPFILE_PATH = os.path.join(output_directory, DATASET_NAME)
 
     # if myproxy configs not specified, use rootAdmin if running an "all" node installation
     pass_file = '/esg/config/.esgf_pass'
@@ -211,7 +211,7 @@ def main(argv):
 
     # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
     print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
-    cmd = ['esgprep', 'mapfile', '--project', 'test', '--dataset', DATASET_NAME, '--mapfile', MAPFILE_PATH.split('.map')[0], ESGF_TEST_DATA_DIR]
+    cmd = ['esgprep', 'mapfile', '--project', 'test', '--dataset', DATASET_NAME, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
 
