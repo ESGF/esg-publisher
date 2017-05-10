@@ -60,8 +60,8 @@ class Cdf2cimWrapper:
             yield start_dir
 
     def _call_cdf2cim(self, starting_directory):
-        # not sure what the interface will be...
-        self.cdf2cim.blah(starting_directory)  # FIXME...
+        self.cdf2cim.scan(starting_directory)
+        self.cdf2cim.publish()
 
     def _deepest_common_parent(self, paths):
         common_substring = self._longest_common_substring([os.path.normpath(p) for p in paths])
