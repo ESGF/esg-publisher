@@ -72,7 +72,7 @@ Options:
 
             - Command line option --create-cim or --no-create-cim take precedence.
 
-            - If no command-line option, and the project handler has createCim=True, then call
+            - If no command-line option, and the project ini file has create_cim=true, then call
               cdf2cim if --map is specified and --noscan is not supplied, ensuring that it is called
               before the scan phase but is not repeated if publication is done in stages.
 
