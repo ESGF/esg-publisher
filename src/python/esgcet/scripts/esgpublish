@@ -522,19 +522,15 @@ def main(argv):
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
+    project_config_section = "config:%s" % projectName
+
     handler = getHandlerByName(projectName, None, Session, offline=offline)
 
     # set createCim to True or False based on handler and options, 
     # unless argument parsing has already found an explicit option that overrides this 
     # (--create-cim / --no-create-cim / --create-cim-only)
-
     if createCim == None:
-        try:
-            handler_create_cim = handler.createCim
-        except AttributeError:
-            handler_create_cim = False
-
-        if handler_create_cim:
+        if config.getboolean(project_config_section, 'create_cim', default=False):
             createCim = (datasetMapfile != None and not publishOnly)
         else:
             createCim = False
@@ -553,7 +549,6 @@ def main(argv):
 
     # Check if project uses PIDs and start messaging thread
     pid_connector = None
-    project_config_section = "config:%s" % projectName
     try:
         if not publishOnly or thredds:
             pid_prefix = handler.check_pid_avail(project_config_section, config, version=version)
