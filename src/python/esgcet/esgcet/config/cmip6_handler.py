@@ -34,8 +34,6 @@ class CMIP6Handler(BasicHandler):
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
 
-    createCim = True
-
 
     def openPath(self, path):
         """Open a sample path, returning a project-specific file object,
