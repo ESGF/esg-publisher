@@ -522,7 +522,7 @@ def main(argv):
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
-    project_config_section = "config:%s" % projectName
+    project_config_section = "project:%s" % projectName
 
     handler = getHandlerByName(projectName, None, Session, offline=offline)
 
