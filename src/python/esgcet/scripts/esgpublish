@@ -530,9 +530,9 @@ def main(argv):
 
     if createCim == None:
         try:
-            hander_create_cim = handler.createCim
+            handler_create_cim = handler.createCim
         except AttributeError:
-            hander_create_cim = False
+            handler_create_cim = False
 
         if handler_create_cim:
             createCim = (datasetMapfile != None and not publishOnly)
