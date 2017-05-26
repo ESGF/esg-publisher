@@ -612,7 +612,7 @@ def main(argv):
                     except:
                         print "WARNING: --create-cim failed:\n"
                         print tracebackString(indent=10)
-                    print "Continuing with publication after --create-cim failure:\n"
+                        print "Continuing with publication after --create-cim failure:\n"
 
             elif rescan:
                 # Note: No need to get the extra fields, such as mod_time, since
