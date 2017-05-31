@@ -189,6 +189,8 @@ datasetVersionTable = Table('dataset_version', metadata,
                             Column('comment', types.Text),
                             Column('tech_notes', types.String(255)),
                             Column('tech_notes_title', types.String(255)),
+                            Column('pid', types.String(255)),
+                            Column('citation_url', types.String(255)),
                             mysql_engine='InnoDB',
                             )
 
@@ -225,14 +227,14 @@ fileVersionTable = Table('file_version', metadata,
                          Column('id', types.Integer, primary_key=True, autoincrement=True),
                          Column('file_id', types.Integer, ForeignKey('file.id')),
                          Column('version', types.Integer),
-                         Column('location', types.String(255), nullable=False),
+                         Column('location', types.Text, nullable=False),
                          Column('size', MyBigInteger),
                          Column('checksum', types.String(64)),
                          Column('checksum_type', types.String(32)),
                          Column('publication_time', types.DateTime),
                          Column('tracking_id', types.String(64)),
                          Column('mod_time', MyDouble),
-                         Column('url', types.String(255)),
+                         Column('url', types.Text),
                          Column('tech_notes', types.String(255)),
                          Column('tech_notes_title', types.String(255)),
                          mysql_engine='InnoDB',
@@ -257,6 +259,7 @@ fileVariableTable = Table('file_variable', metadata,
                           Column('coord_range', types.String(MAX_COORD_RANGE_LENGTH)),
                           Column('coord_type', types.String(8)),
                           Column('coord_values', types.Text), # String representation for Z coordinate variable
+                          Column('is_target_variable', types.Boolean),
                           mysql_engine='InnoDB',
                           )
 Index('filevar_index', fileVariableTable.c.file_id, fileVariableTable.c.variable_id, unique=True)
@@ -739,19 +742,21 @@ class Dataset(object):
     def __repr__(self):
         return "<Dataset, id=%s, name=%s, project=%s, model=%s, experiment=%s, run_name=%s>"%(`self.id`, self.name, `self.project`, `self.model`, `self.experiment`, self.run_name)
     
-def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, bydate=False):
+def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, bydate=False,
+                          pid=None, citation_url=None):
     if version is None:
         current = dset.getVersion()
         version = getNextDatasetVersion(current, bydate)
     if name is None:
         name = dset.generateVersionName(version)
-    dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment, tech_notes=tech_notes, tech_notes_title=tech_notes_title)
+    dsetVersion = DatasetVersion(version, name, creation_time=creation_time, comment=comment, tech_notes=tech_notes,
+                                 tech_notes_title=tech_notes_title, pid=pid, citation_url=citation_url)
     dset.versions.append(dsetVersion)
     return dsetVersion
 
 class DatasetVersion(object):
 
-    def __init__(self, version, name, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None):
+    def __init__(self, version, name, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, pid=None, citation_url=None):
         self.version = version
         self.name = name
         if creation_time is None:
@@ -760,6 +765,8 @@ class DatasetVersion(object):
         self.comment = comment
         self.tech_notes = tech_notes
         self.tech_notes_title = tech_notes_title
+        self.pid = pid
+        self.citation_url = citation_url
 
     def reset(self, creation_time=None, comment=None):
         "Reset the creation_time and comment, but keep name and version."
@@ -1008,13 +1015,14 @@ class FileVersion(object):
 
 class FileVariable(Variable):
 
-    def __init__(self, short_name, long_name, aggdim_first=None, aggdim_last=None, aggdim_units=None, coord_range=None, coord_type=None, coord_values=None):
+    def __init__(self, short_name, long_name, aggdim_first=None, aggdim_last=None, aggdim_units=None, coord_range=None, coord_type=None, coord_values=None, is_target_variable=True):
         Variable.__init__(self, short_name, long_name, aggdim_first, aggdim_last)
         self.aggdim_units = aggdim_units
         self.coord_range = coord_range
         self.coord_type = coord_type
         self.coord_values = coord_values
-        
+        self.is_target_variable = is_target_variable
+
     def __repr__(self):
         return "<FileVariable, id=%s, file_id=%s, variable_id=%s, short_name=%s, long_name=%s, aggdim_first=%s, aggdim_last=%s>"%(`self.id`, `self.file_id`, `self.variable_id`, `self.short_name`, `self.long_name`, `self.aggdim_first`, `self.aggdim_last`)
 

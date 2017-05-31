@@ -28,6 +28,34 @@ MAX_RECURSION_DEPTH = 10
 
 _patpat = re.compile(r'%\(([^()]*)\)s') # Matches the %(name)s pattern
 
+
+def compareLibVersions(v1, v2):
+
+    if v2 is None:
+        return False
+
+    p1 = v1.split()
+    p2 = v2.split()
+
+
+    diff = len(p1) - len(p2)
+    
+    if (diff > 0):
+        for i in range(diff):
+
+            p2.append("0")
+    
+    for x, y in zip(p1, p2):
+
+        if y < x:
+            return False
+
+    return True
+
+
+
+
+
 def getCategoryType(s):
     sl = s.lower().strip()
     if sl=="enum":
@@ -113,6 +141,7 @@ class ProjectHandler(object):
 
         # Try to open the sample file in a project-specific way
         self.path = path
+
         if not offline and path is not None:
             try:
                 fileobj = self.openPath(path)
@@ -152,7 +181,17 @@ class ProjectHandler(object):
 
     def validateFile(self, fileobj):
         """Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler."""
-        pass
+        config = getConfig()
+        projectSection = 'project:'+self.name
+
+        if config.has_option(projectSection, 'min_cmor_version'):
+            min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
+
+            file_cmor_version = fileobj.getAttribute('cmor_version', None)
+
+            if not compareLibVersions(min_cmor_version, file_cmor_version):
+                raise ESGInvalidMetadataFormat("file " + self.path  + " cmor version = " + file_cmor_version  +  ", running checks - minimum = " + min_cmor_version )
+            
 
     def initializeFields(self, Session):
         """Initialize field names and options based on the configuration file."""
@@ -542,11 +581,26 @@ class ProjectHandler(object):
                 options = self.getFieldOptions(key)
             value = context[key]
 
-            delimiter = ""
             config = getConfig()
 
-            delimiter = config.get('project:'+self.name, key + "_delimiter", default="")
-        
+            project_section = 'project:%s' % self.name
+            delimiter = config.get(project_section, key + "_delimiter", default="")
+
+            if value in ['', None]:
+                # if value not in default context, try to get it from key_pattern or *_map
+                option = '%s_pattern' % key
+                if config.has_option(project_section, option):
+                    value = config.get(project_section, option, False, context)
+                    context[key] = value
+                elif config.has_option(project_section, 'maps'):
+                    for map_option in splitLine(config.get(project_section, 'maps', default=''), ','):
+                        from_keys, to_keys, value_dict = splitMap(config.get(project_section, map_option))
+                        if key in to_keys:
+                            from_values = tuple(context[k] for k in from_keys)
+                            to_values = value_dict[from_values]
+                            value = to_values[to_keys.index(key)]
+                            context[key] = value
+
             if self.isMandatory(key):
                 if value in ['', None]:
                     if isenum:
@@ -688,13 +742,14 @@ class ProjectHandler(object):
             config.remove_option(section, "_temp_")
         return datasetId
 
-    def getDirectoryFormatFilters(self):
-        """Return a list of regular expression filters associated with the ``directory_format`` option
-        in the configuration file. This can be passed to ``nodeIterator`` and ``processNodeMatchIterator``.
+
+    def getFilters(self, option='directory_format'):
+        """Return a list of regular expression filters associated with the option in the configuration file.
+         This can be passed to ``nodeIterator`` and ``processNodeMatchIterator``.
         """
         config = getConfig()
         section = 'project:'+self.name
-        directory_format = config.get(section, 'directory_format', raw=True)
+        directory_format = config.get(section, option, raw=True)
         formats = splitLine(directory_format)
         filters = []
         for format in formats:
@@ -707,7 +762,8 @@ class ProjectHandler(object):
             filter = '^'+pattern+'$'
             filters.append(filter)
         return filters
-        
+
+
     def getDatasetIdFields(self):
         """Get a list of (lists of) fields associated with the dataset ID. This may be passed to ``generateDatasetId``.
         """
@@ -746,7 +802,7 @@ class ProjectHandler(object):
         
         if datasetName is None:
             # Get the dataset_id and filters
-            filters = self.getDirectoryFormatFilters()
+            filters = self.getFilters()
             config = getConfig()
             section = 'project:'+self.name
             dataset_id_formats = splitLine(config.get(section, 'dataset_id', raw=True))
@@ -827,9 +883,10 @@ class ProjectHandler(object):
             # Map to case-sensitive options
             experimentOptions = self.mapValidFieldOptions('experiment', experimentOptions)
             if idFormat.find('%(experiment)s')!=-1 and experimentOptions is not None:
-                optionOr = reduce(lambda x,y: x+'|'+y, experimentOptions)
-                experimentPattern = r'(?P<experiment>%s)'%optionOr
-                newinit = newinit.replace('(?P<experiment>[^.]*)', experimentPattern)
+                if len(experimentOptions) > 0:
+                    optionOr = reduce(lambda x,y: x+'|'+y, experimentOptions)
+                    experimentPattern = r'(?P<experiment>%s)'%optionOr
+                    newinit = newinit.replace('(?P<experiment>[^.]*)', experimentPattern)
             
             if newinit[-1]!='$':
                 newinit += '$'
@@ -948,3 +1005,100 @@ class ProjectHandler(object):
           A File instance.
         """
         return True
+
+
+    def check_pid_avail(self, project_config_section, config, version=None):
+        """ Returns the pid_prefix if project uses PIDs, otherwise returns None
+
+         project_config_section
+            The name of the project config section in esg.ini
+
+        config
+            The configuration (ini files)
+
+        version
+            Integer or Dict with dataset versions
+        """
+        pid_prefix = None
+        if config.has_section(project_config_section):
+            pid_prefix = config.get(project_config_section, 'pid_prefix', default=None)
+        return pid_prefix
+
+
+    def get_pid_config(self, project_config_section, config):
+        """ Returns the project specific pid config
+
+         project_config_section
+            The name of the project config section in esg.ini
+
+        config
+            The configuration (ini files)
+        """
+        pid_messaging_service_exchange_name = None
+        if config.has_section(project_config_section):
+            pid_messaging_service_exchange_name = config.get(project_config_section, 'pid_exchange_name', default=None)
+        if not pid_messaging_service_exchange_name:
+            raise ESGPublishError("Option 'pid_exchange_name' is missing in section '%s' of esg.ini." % project_config_section)
+
+        # get credentials from config:project section of esg.ini
+        if config.has_section(project_config_section):
+            pid_messaging_service_credentials = []
+            credentials = splitRecord(config.get(project_config_section, 'pid_credentials', default=''))
+            if credentials:
+                priority = 0
+                for cred in credentials:
+                    if len(cred) == 7 and isinstance(cred[6], int):
+                        priority = cred[6]
+                    elif len(cred) == 6:
+                        priority += 1
+                    else:
+                        raise ESGPublishError("Misconfiguration: 'pid_credentials', section '%s' of esg.ini." % project_config_section)
+
+                    ssl_enabled = False
+                    if cred[5].strip().upper() == 'TRUE':
+                        ssl_enabled = True
+
+                    pid_messaging_service_credentials.append({'url': cred[0].strip(),
+                                                              'port': cred[1].strip(),
+                                                              'vhost': cred[2].strip(),
+                                                              'user': cred[3].strip(),
+                                                              'password': cred[4].strip(),
+                                                              'ssl_enabled': ssl_enabled,
+                                                              'priority': priority})
+
+            else:
+                raise ESGPublishError("Option 'pid_credentials' is missing in section '%s' of esg.ini." % project_config_section)
+        else:
+            raise ESGPublishError("Section '%s' not found in esg.ini." % project_config_section)
+
+        return pid_messaging_service_exchange_name, pid_messaging_service_credentials
+
+    def get_citation_url(self, project_config_section, config, dataset_name, dataset_version):
+        """ Returns the citation_url if a project uses citation, otherwise returns None
+
+         project_section
+            The name of the project section in the ini file
+
+        config
+            The configuration (ini files)
+
+        dataset_name
+            Name of the dataset
+
+        dataset_version
+            Version of the dataset
+        """
+        if config.has_option(project_config_section, 'citation_url'):
+            try:
+                pattern = self.getFilters(option='dataset_id')
+                attributes = re.match(pattern[0], dataset_name).groupdict()
+                if 'version' not in attributes:
+                    attributes['version'] = str(dataset_version)
+                if 'dataset_id' not in attributes:
+                    attributes['dataset_id'] = dataset_name
+                return config.get(project_config_section, 'citation_url', 0, attributes)
+            except:
+                warning('Unable to generate a citation url for %s' % dataset_name)
+                return None
+        else:
+            return None

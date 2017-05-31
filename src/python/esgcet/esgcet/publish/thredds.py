@@ -64,6 +64,7 @@ def genLasServiceHash(serviceAddr):
     result = hashlib.md5(s16).hexdigest().upper()
     return result    
 
+
 def normTime(filevar, tounits, mdhandler):
     try:
         result = mdhandler.normalizeTime(filevar.aggdim_first, filevar.aggdim_units, tounits)
@@ -71,6 +72,7 @@ def normTime(filevar, tounits, mdhandler):
         print filevar
         raise
     return result
+
 
 def normTimeRange(filevar, tounits, calendarTag, mdhandler):
     calendar = mdhandler.tagToCalendar(calendarTag)
@@ -82,6 +84,7 @@ def normTimeRange(filevar, tounits, calendarTag, mdhandler):
         raise
     return rval, sval
 
+
 def parseLASTimeDelta(unitsString):
     fields = unitsString.split()
     if len(fields)!=2:
@@ -89,6 +92,7 @@ def parseLASTimeDelta(unitsString):
     value = string.atof(fields[0])
     units = fields[1].lower()
     return value, units
+
 
 def splitTimes(fvlist, calendarTag, delta, mdhandler):
     # Split the file variables into evenly-spaced chunks.
@@ -110,6 +114,7 @@ def splitTimes(fvlist, calendarTag, delta, mdhandler):
         result.append((istart, istart+n, lookfor, ntot, fa, la, le))
         istart += n
     return result
+
 
 def splitTimes_1(fvlist, calendar, deltaValue, deltaUnits, mdhandler):
     # Find the largest n in [0,len(fvlist)) such that either:
@@ -155,6 +160,7 @@ def splitTimes_1(fvlist, calendar, deltaValue, deltaUnits, mdhandler):
                 n += 1
         return (n, lookfor, ntot, fa, la, le)
 
+
 def hasThreddsService(serviceName, serviceDict):
     # Returns True iff:
     # - the service is a simple Thredds service, or
@@ -173,6 +179,7 @@ def hasThreddsService(serviceName, serviceDict):
                 break
     return result
 
+
 def _getRootPathAndLoc(fileobj, rootDict):
     fileFields = fileobj.getLocation().split(os.sep)
     if fileFields[0]=='':
@@ -187,11 +194,13 @@ def _getRootPathAndLoc(fileobj, rootDict):
 
     return filesRootPath, filesRootLoc
 
+
 def _genLASAccess(parent, dsetname, serviceSpecs, hash, idtype, dataFormat):
     servtype, url, serviceName, compoundname = serviceSpecs
     urlPath = "?%s=%s_ns_%s"%(idtype, hash, dsetname)
     lasAccess = SE(parent, "access", urlPath=urlPath, serviceName=serviceName, dataFormat=dataFormat)
     return lasAccess
+
 
 def _genService(parent, specs, initDictionary=None, serviceApplications=None, serviceAuthRequired=None, serviceDescriptions=None):
 
@@ -248,6 +257,7 @@ def _genService(parent, specs, initDictionary=None, serviceApplications=None, se
 
     return returnDict
 
+
 def _genGeospatialCoverage(parent, variable):
     geospatialCoverage = SE(parent, "geospatialCoverage")
     if variable.northsouth_range is not None:
@@ -280,6 +290,7 @@ def _genGeospatialCoverage(parent, variable):
     
     return geospatialCoverage
 
+
 def _genTimeCoverage(parent, start, end, resolution):
     timeCoverage = SE(parent, "timeCoverage")
     startElem = SE(timeCoverage, "start")
@@ -290,6 +301,7 @@ def _genTimeCoverage(parent, start, end, resolution):
         resolutionElem = SE(timeCoverage, "resolution")
         resolutionElem.text = resolution
     return timeCoverage
+
 
 def _genVariable(parent, variable):
     variableElem = SE(parent, "variable", name=variable.short_name)
@@ -306,7 +318,9 @@ def _genVariable(parent, variable):
     variableElem.text = variable.long_name
     return variableElem
 
-def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, variable=None, fileVersionObj=None, gridftpMap=True):
+
+def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType,
+               variable=None, fileVersionObj=None, gridftpMap=True, pid_wizard=None):
     dataset = SE(parent, "dataset", ID=ID, name=name)
 
     # Cache the URL for notification
@@ -376,12 +390,23 @@ def _genFileV2(parent, path, size, ID, name, urlPath, serviceName, serviceDict, 
                 dataset.set("serviceName", subName)
             else:
                 access = SE(dataset, "access", serviceName=subName, urlPath=publishPath)
-            
+
+    # add file handle to dataset PID
+    if pid_wizard:
+        pid_wizard.add_file(file_name=name,
+                            file_handle=trackingID,
+                            checksum=checksum,
+                            file_size=size,
+                            publish_path=publishPath,
+                            checksum_type=checksumType,
+                            file_version=fileVersion)
     return dataset
+
 
 def _genDatasetRoots(parent, rootSpecs):
     for path, location in rootSpecs:
         datasetRoot = SE(parent, "datasetRoot", path=path, location=location)
+
 
 def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, perVarMetadata, versionNumber):
 
@@ -389,7 +414,7 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
     
     aggID = "%s.%d.aggregation"%(variableID, versionNumber)
     try:
-        aggName = handler.generateNameFromContext('variable_aggregation_dataset_name', project_description=project.description, model_description=model.description, experiment_description = experiment.description, variable=variable.short_name, variable_long_name=variable.long_name, variable_standard_name=variable.standard_name)
+        aggName = handler.generateNameFromContext('variable_aggregation_dataset_name', project_description=project.description, model_description=model.description, experiment_description=experiment.description, variable=variable.short_name, variable_long_name=variable.long_name, variable_standard_name=variable.standard_name)
     except:
         aggName = aggID
     aggDataset = Element("dataset", name=aggName, ID=aggID, urlPath=aggID, serviceName=aggServiceName)
@@ -405,6 +430,8 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
     timeLengthProp = SE(aggDataset, "property", name="time_length", value="0")
     netcdf = SE(aggDataset, "netcdf", nsmap=nsmap)
     aggElem = SE(netcdf, "aggregation", type="joinExisting", dimName=aggdim_name)
+    if dataset.calendar:
+        calendarProperty = SE(aggDataset, "property", name="calendar", value=dataset.calendar)
 
     # Sort filevars according to aggdim_first normalized to the dataset basetime
     filevars = []
@@ -434,6 +461,7 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
     if nvars>0:
         parent.append(aggDataset)
 
+
 def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvlist, flag, las_time_delta, calendar, start, lasServiceSpecs, lasServiceHash):
     aggDataset = Element("dataset", name=aggName, ID=aggID, urlPath=aggID, serviceName=aggServiceName)
     aggIDProp = SE(aggDataset, "property", name="aggregation_id", value=aggID)
@@ -459,6 +487,7 @@ def _genSubAggregation(parent, aggID, aggName, aggServiceName, aggdim_name, fvli
         agglen += ncoords
     timeLengthProperty.set("value", "%d"%agglen)
     parent.append(aggDataset)    
+
 
 def _genLASAggregations(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, lasTimeDelta, perVarMetadata, versionNumber, lasServiceSpecs, lasServiceHash):
 
@@ -533,8 +562,11 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
             subAggName = "%s - Subset %d"%(aggName, nid)
             _genSubAggregation(aggDataset, subAggID, subAggName, aggServiceName, aggdim_name, fvlist[start:stop], flag, lasTimeDelta, dataset.calendar, fa, lasServiceSpecs, lasServiceHash)
             nid += 1
-            
-def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta, versionNumber, variablesElem, variableElemDict, lasServiceSpecs, lasServiceHash, gridftpMap=True):
+
+
+def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline,
+                              serviceName, serviceDict, aggServiceName, handler, project, model, experiment, las_configure, las_time_delta,
+                              versionNumber, variablesElem, variableElemDict, lasServiceSpecs, lasServiceHash, gridftpMap=True, pid_wizard=None):
 
     mdhandler = handler.getMetadataHandler()
 
@@ -633,7 +665,9 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
             modTime = fileobj.getModificationFtime()
             checksum = fileobj.getChecksum()
             checksumType = fileobj.getChecksumType()
-            fileDataset = _genFileV2(parent, path, size, fileVersionID, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, variable=variable, fileVersionObj=fileVersionObj, gridftpMap=gridftpMap)
+            fileDataset = _genFileV2(parent, path, size, fileVersionID, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime,
+                                     fileVersion, checksum, checksumType, variable=variable, fileVersionObj=fileVersionObj, gridftpMap=gridftpMap,
+                                     pid_wizard=pid_wizard)
 
         # Aggregation
         # Don't generate an aggregation if the variable has time overlaps or a non-monotonic aggregate dimension,
@@ -645,7 +679,9 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         else:
             _genAggregationsV2(parent, variable, variableID, handler, dataset, project, model, experiment, aggServiceName, aggdim_name, perVarMetadata, versionNumber)
 
-def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber, gridftpMap=True):
+
+def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName,
+                          serviceDict, handler, project, model, experiment, versionNumber, gridftpMap=True, pid_wizard=None):
     datasetVersionObj = dataset.getVersionObj(versionNumber)
     filelist = [(fileobj.getLocation(), fileobj.getSize(), fileobj) for fileobj in datasetVersionObj.files]
     filesID = datasetName
@@ -676,9 +712,12 @@ def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootP
         fileVersion = fileobj.getVersion()
         checksum = fileobj.getChecksum()
         checksumType = fileobj.getChecksumType()
-        fileDataset = _genFileV2(parent, path, size, threddsFileId, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime, fileVersion, checksum, checksumType, fileVersionObj=fileobj, gridftpMap=gridftpMap)
+        fileDataset = _genFileV2(parent, path, size, threddsFileId, basename, urlpath, serviceName, serviceDict, fileid, trackingID, modTime,
+                                 fileVersion, checksum, checksumType, fileVersionObj=fileobj, gridftpMap=gridftpMap, pid_wizard=pid_wizard)
 
-def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance=None, genRoot=False, service=None, perVariable=None, versionNumber=-1):
+
+def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance=None, genRoot=False, service=None, perVariable=None,
+                    versionNumber=-1, pid_connector=None):
     """
     Generate THREDDS Data Server configuration file.
 
@@ -709,6 +748,9 @@ def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance
 
     versionNumber
       Version number. Defaults to latest.
+
+    pid_connector
+        esgfpid.Connector object to register PIDs
 
     """
 
@@ -753,14 +795,17 @@ def generateThredds(datasetName, dbSession, outputFile, handler, datasetInstance
         raise ESGPublishError("Catalog version=1 deprecated, please use version 2 instead")
 ##         _generateThreddsV1(datasetName, outputFile, handler, session, dset, context, project, model, experiment, config, section, genRoot=genRoot, service=service, perVariable=perVariable)
     elif catalog_version=="2":
-        _generateThreddsV2(datasetName, outputFile, handler, session, dset, context, project, model, experiment, config, section, genRoot=genRoot, service=service, perVariable=perVariable, versionNumber=versionNumber)
+        _generateThreddsV2(datasetName, outputFile, handler, session, dset, context, project, model, experiment, config, section, genRoot=genRoot,
+                           service=service, perVariable=perVariable, versionNumber=versionNumber, pid_connector=pid_connector)
     else:
         raise ESGPublishError("Invalid catalog version: %s"%catalog_version)
 
     session.commit()
     session.close()
 
-def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context, project, model, experiment, config, section, genRoot=False, service=None, perVariable=None, versionNumber=-1):
+
+def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context, project, model, experiment, config, section, genRoot=False,
+                       service=None, perVariable=None, versionNumber=-1, pid_connector=None):
 
     global _nsmap, _XSI
     CATALOG_VERSION = "2"
@@ -780,6 +825,10 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     excludeVariables = splitLine(config.get(section, 'thredds_exclude_variables', default=''), sep=',')
     gridftpMapDatasetRoots = config.getboolean(section, 'gridftp_map_dataset_roots', default=True)
     datasetIdTemplate = config.get(section, 'dataset_id', raw=True, default=None)
+    directoryFormat = config.get(section, 'directory_format', raw=True, default=None)
+
+    if not "%(root)s" in directoryFormat:
+        directoryFormat = None
 
     if not offline:
         if perVariable is None:
@@ -870,17 +919,34 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
         if dsetVersionObj.tech_notes_title is not None:
             documentation.set(_XLINK+"title", dsetVersionObj.tech_notes_title)
 
+    # Add citation link if present
+    if dsetVersionObj.citation_url is not None:
+        SE(datasetElem, "property", name="citation_url", value=dsetVersionObj.citation_url)
+        documentation = SE(datasetElem, "documentation", type="citation")
+        documentation.set(_XLINK + "href", dsetVersionObj.citation_url)
+        documentation.set(_XLINK + "title", "Citation")
+
+    # Add link to PID if present
+    if dsetVersionObj.pid is not None:
+        SE(datasetElem, "property", name="pid", value=dsetVersionObj.pid)
+        documentation = SE(datasetElem, "documentation", type="pid")
+        documentation.set(_XLINK + "href", 'http://hdl.handle.net/%s' %dsetVersionObj.pid)
+        documentation.set(_XLINK + "title", "PID")
+
     datasetIdProp = SE(datasetElem, "property", name="dataset_id", value=datasetName)
     datasetVersionProp = SE(datasetElem, "property", name="dataset_version", value=str(dsetVersion))
     if datasetIdTemplate is not None:
         datasetIdTemplate = SE( datasetElem, "property", name="dataset_id_template_", value=datasetIdTemplate)
+    if directoryFormat is not None:
+        directoryFormat = SE( datasetElem, "property", name="directory_format_template_", value=directoryFormat)
 
+    is_replica = False
     if dset.master_gateway is not None:
-        SE(datasetElem, "property", name="master_gateway", value=dset.master_gateway)
+        is_replica = True
         SE(datasetElem, "property", name="is_replica", value="true")
 
     for name in handler.getFieldNames():
-        if handler.isThreddsProperty(name):
+        if handler.isThreddsProperty(name) and name != "dataset_version":
 
             vals_lst = []
             # delimited-values here
@@ -894,8 +960,8 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                     property = SE(datasetElem, "property", name=name, value=value)    
             else:
                 try:
-
-                    property = SE(datasetElem, "property", name=name, value=handler.getField(name))
+                    if handler.getField(name):
+                        property = SE(datasetElem, "property", name=name, value=handler.getField(name))
                 except TypeError:
                     raise ESGPublishError("Invalid value for field %s: %s"%(name, handler.getField(name)))
 
@@ -995,12 +1061,24 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     catalogObj = session.query(Catalog).filter_by(dataset_name=datasetName, version=versionNumber).first()
     catalogObj.rootpath = filesRootPath
 
+    # start PID generation
+    pid_wizard = None
+    if pid_connector:
+        pid_wizard = pid_connector.create_publication_assistant(drs_id=datasetName,
+                                                                version_number=versionNumber,
+                                                                is_replica=is_replica)
+
     if perVariable:
         # Per-variable datasets
-        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta, versionNumber, variables, variableElemDict, lasServiceSpecs, lasServiceHash, gridftpMap=gridftpMapDatasetRoots)
+        _genPerVariableDatasetsV2(datasetElem, dset, datasetName, resolution, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables,
+                                  offline, serviceName, serviceDict, aggServiceName, handler, project, model, experiment, lasConfigure, lasTimeDelta,
+                                  versionNumber, variables, variableElemDict, lasServiceSpecs, lasServiceHash, gridftpMap=gridftpMapDatasetRoots,
+                                  pid_wizard=pid_wizard)
     else:
         # Per-time datasets
-        _genPerTimeDatasetsV2(datasetElem, dset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName, serviceDict, handler, project, model, experiment, versionNumber, gridftpMap=gridftpMapDatasetRoots)
+        _genPerTimeDatasetsV2(datasetElem, dset, datasetName, filesRootLoc, filesRootPath, datasetRootDict, excludeVariables, offline, serviceName,
+                              serviceDict, handler, project, model, experiment, versionNumber, gridftpMap=gridftpMapDatasetRoots,
+                              pid_wizard=pid_wizard)
 
     # Call the THREDDS catalog hook if set
     catalogHook = handler.getThreddsCatalogHook()
@@ -1011,6 +1089,11 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     doc.write(outputFile, xml_declaration=True, encoding='UTF-8', pretty_print=True)
     event = Event(dset.name, versionNumber, WRITE_THREDDS_CATALOG_EVENT)
     dset.events.append(event)
+
+    # send PID information to handle server once THREDDS catalog is written
+    if pid_wizard:
+        pid_wizard.dataset_publication_finished()
+
 
 def readThreddsWithAuthentication(url, config):
     """
@@ -1031,7 +1114,11 @@ def readThreddsWithAuthentication(url, config):
     threddsPassword = config.get('DEFAULT', 'thredds_password')
 
     # Create an OpenerDirector with support for Basic HTTP Authentication...
-    ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+    try:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    except AttributeError:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+
 
     user_pass = b64encode(threddsUsername +":"+threddsPassword)
 
@@ -1050,7 +1137,8 @@ def readThreddsWithAuthentication(url, config):
     page = res.read()
 
     return page
-    
+
+
 def reinitializeThredds():
     """
     Reinitialize the THREDDS Data Server. This forces the catalogs to be reread.
@@ -1090,6 +1178,7 @@ def reinitializeThredds():
         raise ESGPublishError("Error reinitializing the THREDDS Data Server: Fatal error: %s\n%s"%(errorMessage, str(result)))
 
     return errorResult[index:]
+
 
 def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDirectory=True):
     """Generate a THREDDS dataset catalog output path. If necessary, create a new directory.
@@ -1159,7 +1248,11 @@ def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDi
 
     # Create the subdirectory if necessary
     if createDirectory and not os.path.exists(lastSubdir):
-        os.mkdir(lastSubdir, 0775)
+        try:
+            os.mkdir(lastSubdir, 0775)
+        except OSError:
+            if not os.path.exists(lastSubdir):
+                raise ESGPublishError("Error creating directory %s. Please make sure you have the correct permissions." % lastSubdir)
 
     # Build the catalog name
     result = os.path.join(lastSubdir, threddsCatalogBasename)
@@ -1172,6 +1265,7 @@ def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDi
     session.commit()
     session.close()
     return result
+
 
 def updateThreddsMasterCatalog(dbSession):
     """Rewrite the THREDDS ESG master catalog.
@@ -1230,6 +1324,7 @@ def updateThreddsMasterCatalog(dbSession):
     session.commit()
     session.close()
 
+
 def updateThreddsRootCatalog():
     """Rewrite the THREDDS root catalog. The root catalog is (typically) one level
     above the ESG master catalog, and contains a catalogRef to the ESG master.
@@ -1277,4 +1372,3 @@ def updateThreddsRootCatalog():
         doc.write(rootCatalog, xml_declaration=True, encoding='UTF-8', pretty_print=True)
     except IOError:
         warning("Could not write to THREDDS root catalog %s - permission error?"%rootCatalog)
-        

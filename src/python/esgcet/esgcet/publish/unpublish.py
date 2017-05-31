@@ -77,7 +77,7 @@ def datasetOrVersionName(name, version, session, deleteAll=False, restInterface=
 
     return (deleteAll, dset, dsetVersionObjs, isLatest)
 
-def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session, dset=None):
+def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session, dset=None, data_node=None):
     """
     Delete a dataset version from the gateway.
 
@@ -100,6 +100,9 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
     dset
       Parent dataset of the version. If None, don't record the deletion event.
 
+    data_node
+        String, the datanode to unpublish (only for unpublication from Solr)
+
     """
 
     # Clear publication errors from dataset_status
@@ -117,10 +120,23 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
     try:
         if gatewayOperation==DELETE:
             info("Deleting %s"%versionName)
-            service.deleteDataset(versionName, True, 'Deleting dataset')
+            if data_node:
+                try:
+                    service.deleteDatasetSingleDataNode(versionName, data_node, True, 'Deleting dataset')
+                except:
+                    service.deleteDataset(versionName, True, 'Deleting dataset')
+            else:
+                service.deleteDataset(versionName, True, 'Deleting dataset')
         else:
             info("Retracting %s"%versionName)
-            service.retractDataset(versionName, 'Retracting dataset')
+            if data_node:
+                try:
+                    service.retractDatasetSingleDataNode(versionName, data_node, True, 'Retracting dataset')
+                except:
+                    service.retractDataset(versionName, True, 'Retracting dataset')
+            else:
+                service.retractDataset(versionName, True, 'Retracting dataset')
+
     except socket.error, e:
         raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
     except RemoteCallException, e:
@@ -144,7 +160,9 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
 DELETE = 1
 UNPUBLISH = 2
 NO_OPERATION = 3
-def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None, deleteAll=False, republish=False, reinitThredds=True, restInterface=False):
+UNINITIALIZED = 4
+def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds=True, las=False, deleteInDatabase=False, progressCallback=None,
+                      deleteAll=False, republish=False, reinitThredds=True, restInterface=False, pid_connector=None, project_config_section=None, data_node=None):
     """
     Delete or retract a list of datasets:
 
@@ -194,7 +212,18 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
     restInterface
       Boolean flag. If True, publish datasets with the RESTful publication services.
 
+    pid_connector
+        esgfpid.Connector object to register PIDs
+
+    project_config_section
+        Name of the project config section in esg.ini (for user specific project configs)
+
+    data_node
+        String, the datanode to unpublish (only for unpublication from Solr)
+
     """
+    if gatewayOperation == UNINITIALIZED:
+        raise ESGPublishError("Need to set mandatory --delete|--retract|--skip-index argument!")
 
     if gatewayOperation not in (DELETE, UNPUBLISH, NO_OPERATION):
         raise ESGPublishError("Invalid gateway operation: %d"%gatewayOperation)
@@ -221,23 +250,23 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
         if not restInterface:
-            serviceURL = getHessianServiceURL()
+            serviceURL = getHessianServiceURL(project_config_section=project_config_section)
             servicePort = config.getint('DEFAULT','hessian_service_port')
             serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:
-            serviceURL = getRestServiceURL()
+            serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
 
         for datasetName,version in datasetNames:
             if version > -1:
-                datasetToUnpublish = '%s.v%s'%(datasetName, version)
+                datasetToUnpublish = '%s.v%s' % (datasetName, version)
             else:
                 datasetToUnpublish = datasetName
             isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
             try:
-                eventName, stateName = deleteGatewayDatasetVersion(datasetToUnpublish, gatewayOperation, service, session, dset=dset)
+                eventName, stateName = deleteGatewayDatasetVersion(datasetToUnpublish, gatewayOperation, service, session, dset=dset, data_node=data_node)
             except RemoteCallException, e:
                 fields = `e`.split('\n')
                 error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[0:2], '\n')))
@@ -262,6 +291,9 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             if dset is None:
                 continue
             for versionObj in versionObjs:
+                # send unpublication info to handle server
+                if pid_connector:
+                    pid_connector.unpublish_one_version(drs_id=datasetName, version_number=versionObj.version)
                 catalog = session.query(Catalog).filter_by(dataset_name=dset.name, version=versionObj.version).first()
                 if catalog is not None:
                     path = os.path.join(threddsRoot, catalog.location)

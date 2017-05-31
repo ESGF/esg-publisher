@@ -148,6 +148,19 @@ def main(argv):
         print 'No directory specified'
         print usage
         sys.exit(0)
+    else:
+        tmp_args = []
+
+        for dn in lastargs:
+            if os.path.exists(dn):
+                tmp_args.append(dn)
+            else:
+                print "Directory " + dn + " not found!"
+        lastargs = tmp_args
+    if len(lastargs) == 0:
+        print "No valid directory specified"
+        sys.exit(0)
+
 
     appendMap = None
     datasetName = None

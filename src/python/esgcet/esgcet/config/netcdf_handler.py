@@ -2,7 +2,7 @@
 
 from esgcet.model import cleanup_time_units
 from esgcet.exceptions import *
-from esgcet.config import ProjectHandler, FormatHandler
+from esgcet.config import ProjectHandler, FormatHandler, getConfig, splitLine
 try:
     import cdat_info
     cdat_info.ping = False
@@ -19,14 +19,15 @@ class CdunifFormatHandler(FormatHandler):
     Generic file accessed with Cdunif / netCDF-3 interface.
     """
 
-    def __init__(self, file):
+    def __init__(self, file, path):
         self.file = file
         self.variables = file.variables
+        self.path = path
 
     @staticmethod
     def open(path, mode='r'):
         cf = Cdunif.CdunifFile(path)
-        f = CdunifFormatHandler(cf)
+        f = CdunifFormatHandler(cf, path)
         return f
 
     @staticmethod
@@ -137,11 +138,14 @@ class CdunifFormatHandler(FormatHandler):
           
         """
         variable = self.variables[variableName]
-        if index is not None:
-            result = variable[index]
-        else:
-            result = variable[:]
-        return result
+        try:
+            if index is not None:
+                result = variable[index]
+            else:
+                result = variable[:]
+            return result
+        except ValueError:
+            return None        
 
     def close(self):
         """
@@ -153,6 +157,8 @@ class NetcdfHandler(ProjectHandler):
 
     def getContext(self, **context):
         ProjectHandler.getContext(self, **context)
+
+
         if self.context.get('creation_time', '')=='':
             self.context['creation_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if self.context.get('format', '')=='':
@@ -165,6 +171,7 @@ class NetcdfHandler(ProjectHandler):
     def readContext(self, cdfile):
         "Get a dictionary of key/value pairs from an open file."
         f = cdfile.file
+
         result = {}
         if hasattr(f, 'title'):
             result['title'] = f.title
@@ -174,6 +181,16 @@ class NetcdfHandler(ProjectHandler):
             result['source'] = f.source
         if hasattr(f, 'history'):
             result['history'] = f.history
+
+        config = getConfig()
+        projectSection = 'project:' + self.name
+
+        config_key = "extract_global_attrs"
+
+        if config.has_option(projectSection, config_key):
+            for key in splitLine(config.get(projectSection, config_key), ','):
+                result[key] = cdfile.getAttribute(key, None)
+
         return result
 
 BasicHandler = NetcdfHandler

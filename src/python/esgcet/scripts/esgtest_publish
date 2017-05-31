@@ -1,0 +1,280 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import socket
+import getopt
+import urllib2
+import logging
+import getpass
+
+from subprocess import Popen, PIPE
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from pyesgf.search import SearchConnection
+
+from esgcet.logon import check_server, check_cert, get_myproxy_value_from_config, logon
+from esgcet.utils import check_permission, execute_cmd, get_test_file, check_mapfile, check_postgres, check_thredds, check_index
+from esgcet.publish import bcolors
+from esgcet.config import loadConfig, initLogging
+from esgcet.exceptions import *
+from esgcet.messaging import debug, info, warning, error, critical, exception
+from esgcet.model import Catalog
+
+
+# always flush print statements
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
+ESGF_TEST_DATA_DIR = '/esg/data/test'
+ESGF_TEST_FILE_LOCATION = os.path.join(ESGF_TEST_DATA_DIR, 'sftlf.nc')
+ESGF_TEST_FILE_SHA256 = '94d4c7158fb11cea636500aae1fcc9168629631636b76a416660552962fc98ef'
+DATASET_NAME = 'test.%s' % int(time.time())
+DATASET_NAME_VERSION = '%s.v1' % DATASET_NAME
+MAPFILE_PATH = os.path.join('/tmp/', DATASET_NAME)
+
+usage = """Usage:
+    esg_testpublication [options]
+
+        Test Publication:
+            - Set up a myproxy certificate
+            - Generate a mapfile
+            - Publish and unpublish a dataset
+            - Verify each step
+
+Options:
+
+    -h, --myproxy-host myproxy_hostname:
+        FQDN of the Server your OpenID was issued by
+        e.g. 'esgf-data.dkrz.de' for the OpenID https://esgf-data.dkrz.de/esgf-idp/openid/test_user
+
+    -i init_dir:
+        Directory containing all initialization files.
+        If not specified, the default installed init files are read.
+
+    -o --output output_directory
+        The directory where the mapfile is temporary located.
+        The mapfile will be deleted after running the script.
+        Default: /tmp
+
+    -p, --myproxy-pass myproxy_password
+        Your myproxy password
+
+    -u, --myproxy-user myproxy_username
+        Your myproxy username
+        e.g. 'test_user' for the OpenID https://esgf-data.dkrz.de/esgf-idp/openid/test_user
+
+    -s, --skip-error
+        Skip the errors and finish with all tests.
+        By default the script will exit if any error appears.
+        Note: In case one test failed the following tests will probably fail as well.
+
+    --skip-index
+        Skip publication to Solr index
+
+    --skip-thredds
+        Skip publication to THREDDS Server, includes --skip-index
+"""
+
+
+def cleanup(session):
+    """
+    Unpublish the dataset, if already or still published and delete the generated mapfile.
+    Keep the test file and the myproxy certs for later usage.
+    """
+
+    print(bcolors.BOLD + '\nCleaning up' + bcolors.ENDC)
+    if os.path.isfile(MAPFILE_PATH):
+        if check_postgres(session, DATASET_NAME_VERSION):
+            print 'Unpublishing...',
+            cmd = ['esgunpublish', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH]
+            success, err_msg = execute_cmd(cmd)
+            print_res(success, True, session, final_run=True)
+        print 'Deleting mapfile...',
+        try:
+            os.remove(MAPFILE_PATH)
+            success = True
+        except:
+            success = False
+        print_res(success, True, session, final_run=True)
+    else:
+        print 'Nothing to do...',
+        print_res(True, True, session, final_run=True)
+
+
+def print_res(success, skip_error, session, msg=None, final_run=False):
+    if success:
+        print(bcolors.OKGREEN + '[OK]' + bcolors.ENDC)
+    else:
+        print(bcolors.FAIL + '[FAIL]' + bcolors.ENDC)
+        if msg:
+            print msg
+        if not skip_error:
+            if not final_run:
+                cleanup(session)
+            print(bcolors.WARNING + 'Aborting... Please solve the above issue before continuing.' + bcolors.ENDC)
+            sys.exit(0)
+
+
+def main(argv):
+    try:
+        args, lastargs = getopt.getopt(argv, "h:i:o:p:u:s", ['myproxy-host=', 'output=', 'myproxy-pass=', 'myproxy-user=', 'skip-error', 'skip-index', 'skip-thredds'])
+    except getopt.error:
+        print sys.exc_value
+        print usage
+        sys.exit(0)
+
+    myproxy_hostname = None
+    myproxy_username = None
+    myproxy_password = None
+    skip_thredds = False
+    skip_index = False
+    output_directory = '/tmp'
+    skip_error = False
+    init_dir = '/esg/config/esgcet/'
+    project_name = 'test'
+
+    for flag, arg in args:
+        if flag in ['-h', '--myproxy-host']:
+            myproxy_hostname = arg
+        elif flag == '-i':
+            init_dir = arg
+        elif flag in ['-o', '--output']:
+            output_directory = arg
+        elif flag in ['-p', '--myproxy-pass']:
+            myproxy_password = arg
+        elif flag in ['-u', '--myproxy-user']:
+            myproxy_username = arg
+        elif flag in ['-s', '--skip-error']:
+            skip_error = True
+        elif flag == '--skip-index':
+            skip_index = True
+        elif flag == '--skip-thredds':
+            skip_index = True
+            skip_thredds = True
+
+    # Load the configuration and set up a database connection
+    config = loadConfig(init_dir, project_name)
+    engine = create_engine(config.getdburl('extract'), pool_recycle=3600)
+    initLogging('extract', override_sa=engine)
+    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+    session = Session()
+
+    # get some configs
+    thredds_data_directory = config.get('DEFAULT', 'thredds_root')
+    data_node = socket.gethostname()
+    index_node = config.get('DEFAULT', 'hessian_service_url').split('/')[2]
+    MAPFILE_PATH = os.path.join(output_directory, DATASET_NAME)
+
+    # if myproxy configs not specified, use rootAdmin if running an "all" node installation
+    pass_file = '/esg/config/.esgf_pass'
+    if index_node == data_node and os.access(pass_file, os.R_OK) and check_server(index_node, 7512):
+        if not myproxy_hostname:
+            myproxy_hostname = (get_myproxy_value_from_config(config, 'hostname') or index_node)
+        if not myproxy_username:
+            myproxy_username = (get_myproxy_value_from_config(config, 'username') or 'rootAdmin')
+        if not myproxy_password and myproxy_username == 'rootAdmin':
+            open(pass_file, 'r')
+            with open(pass_file, 'r') as f:
+                for line in f:
+                    myproxy_password = (get_myproxy_value_from_config(config, 'password') or line.strip())
+
+    # Set up the publication test configuration:
+    # - Check and/or generate myproxy cert
+    # - Make sure current user has write access to data directory and THREDDS catalogs
+    # - Download test file
+    print(bcolors.BOLD + '\nSet up Publication Test' + bcolors.ENDC)
+    print 'Checking write permissions for %s, user %s...' % (ESGF_TEST_FILE_LOCATION, getpass.getuser()),
+    success = check_permission(ESGF_TEST_FILE_LOCATION, dir=False)
+    print_res(success, skip_error, session)
+
+    print 'Checking write permissions for %s, user %s...' % (thredds_data_directory, getpass.getuser()),
+    success = check_permission(thredds_data_directory)
+    print_res(success, skip_error, session)
+
+    print 'Searching for Test File in %s...' % ESGF_TEST_FILE_LOCATION,
+    success = get_test_file(ESGF_TEST_FILE_LOCATION, ESGF_TEST_FILE_SHA256)
+    print_res(success, skip_error, session)
+
+    if not skip_index:
+        print 'Setting up certificates for publication...',
+        try:
+            success = check_cert(config, myproxy_username)
+            if not success:
+                logon(config, myproxy_username, myproxy_password, myproxy_hostname)
+                success = check_cert(config, myproxy_username)
+            print_res(success, skip_error, session)
+        except:
+            print(bcolors.FAIL + '[FAIL]' + bcolors.ENDC)
+            print(bcolors.WARNING + 'Myproxy logon failed. Please generate your myproxy cerificate manually before re-running the script.' + bcolors.ENDC)
+            sys.exit(0)
+
+    # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
+    print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
+    cmd = ['esgprep', 'mapfile', '--project', 'test', '--dataset', DATASET_NAME, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
+    success, err_msg = execute_cmd(cmd)
+    print_res(success, skip_error, session, err_msg)
+
+    print 'Checking mapfile...',
+    success = check_mapfile(MAPFILE_PATH, DATASET_NAME)
+    print_res(success, skip_error, session)
+
+    # Publish and unpublish dataset
+    # - Publish to each component (Postgres, THREDDS, Solr) in a separate step
+    # - Make sure the publication to every component was successful
+    # - Unpublish in one single step make sure the dataset was unpublished from all components
+    print(bcolors.BOLD + '\nPublish dataset' + bcolors.ENDC)
+    print 'Step 1: Publish to Postgres,',
+    default_publish_cmd = ['esgpublish', '--project', 'test', '--map', MAPFILE_PATH, '--service', 'fileservice', '--keep-credentials']
+    success, err_msg = execute_cmd(default_publish_cmd)
+    # Make sure dataset is present in postgres
+    if success:
+        success = check_postgres(session, DATASET_NAME_VERSION)
+    print_res(success, skip_error, session, err_msg)
+
+    if not skip_thredds:
+        print 'Step 2: Publish to THREDDS,',
+        cmd = default_publish_cmd + ['--noscan', '--thredds']
+        success, err_msg = execute_cmd(cmd)
+        # Make sure dataset is present in THREDDS
+        if success:
+            catalog = session.query(Catalog).filter_by(dataset_name=DATASET_NAME, version=1).first()
+            thredds_base_url = config.get('DEFAULT', 'thredds_url')
+            thredds_url = os.path.join(thredds_base_url, catalog.location)
+            success = check_thredds(thredds_url)
+        print_res(success, skip_error, session, err_msg)
+
+    if not skip_index:
+        print 'Step 3: Publish to Solr Index at %s,' % index_node,
+        cmd = default_publish_cmd + ['--noscan', '--publish']
+        success, err_msg = execute_cmd(cmd)
+        # Make sure dataset is present in Index
+        if success:
+            success = check_index(index_node, DATASET_NAME, True)
+        print_res(success, skip_error, session, err_msg)
+
+    print(bcolors.BOLD + '\nUnpublish dataset' + bcolors.ENDC)
+    cmd = ['esgunpublish', '--delete', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH, '--keep-credentials']
+    if skip_thredds:
+        cmd.append('--skip-thredds')
+    if skip_index:
+        cmd.append('--skip-index')
+    success, err_msg = execute_cmd(cmd)
+    print_res(success, skip_error, session, err_msg)
+    print 'Check 1: Unpublished from Postgres...',
+    success = check_postgres(session, DATASET_NAME_VERSION)
+    print_res(not success, skip_error, session)
+    if not skip_thredds:
+        print 'Check 2: Unpublished from THREDDS...',
+        success = check_thredds(thredds_url)
+        print_res(not success, skip_error, session)
+    if not skip_index:
+        print 'Check 3: Unpublished from Solr Index...',
+        success = check_index(index_node, DATASET_NAME, False)
+        print_res(success, skip_error, session)
+
+    cleanup(session)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

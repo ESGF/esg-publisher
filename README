@@ -13,7 +13,28 @@ README:
 
 ESGF Publisher
 
-What's new:
+Detailed instructions on publishing are on the ESGF confluence site.  This is access controlled to Federation members.
+
+https://acme-climate.atlassian.net/wiki/display/ESGF/Guide+to+ESGF+Publishing+and+Best+Practices
+
+29 August 2016 - version 3.1.0
+
+* Changes to support CMIP6
+  - Configuration option to extract global attributes
+  - Check for CMOR version in datafiles
+  - CF checker integration
+  - CMIP6-CV check integration (requires CMOR install)
+* Included documentation (requires sphinx, sphinx_rtd_theme)
+
+03 August 2016 - version 3.0.1
+
+* Setup.py inclusion of esgprep utility - see http://esgf-prepare.readthedocs.io/ for more information
+* Use of project-specific esg.ini files read from the default location
+* Support for multiple mapfiles within a single directory
+* support for comma or space-delimited facets
+
+
+Previous versions:
 
 06 July 2015 - version 2.13.0
 
@@ -31,3 +52,4 @@ What's new:
       meta_synchro.py - metadata syncronization checks for PGSQL, Thredds and SOLR
      gen_versions.py, add_checksums_to_map.sh  - used for replica publication (at LLNL/PCMDI)
     
+

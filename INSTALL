@@ -12,12 +12,34 @@
 
 INSTALL:
 
-This installer for the esgf publisher is intended to run on an existing esgf data node. The meta_synchro.py script has the additional dependency of the pysolr library.  
+This installer for the esgf publisher is intended to run on an existing esgf data node.
 
-1) source /etc/esg.env  - needed to run commands using the correct version of python for esgf.
+Additional prerequisites:
 
-2) as root: 
+ *  The meta_synchro.py script has the additional dependency of the pysolr library.  
+ *  The handler module for CMIP6 requires CMOR, its dependencies, and CF checker.
+
+1) as root: 
+
+    source /etc/esg.env  - needed to run commands using the correct version of python for esgf.
+
+2) (CMOR)
+  (a)  Download uuid hosted here: http://aims1.llnl.gov/nm-cfg/uuid-1.6.2.tar.gz
+
+      ./configure --prefix=/usr/local/uvcdat/2.2.0/Externals
+      make
+      make install
+
+  (b) git clone https://github.com/PCMDI/cmor.git
+      git checkout cmor-3.1.2
+     ./configure --prefix=/usr/local/cmor --with-uuid=/usr/local/uvcdat/2.2.0/Externals --with-netcdf=/usr/local/uvcdat/2.2.0/Externals --with-udunits2=/usr/local/uvcdat/2.2.0/Externals
+
+3) 
   cd src/python/esgcet
   ./setup.py install
 
-3) [optional]: easy_install pysolr 
+4) [optional]: easy_install pysolr 
+
+5) (CMOR) when running the publisher:
+   
+    export UDUNITS2_XML_PATH=/usr/local/uvcdat/2.2.0/Externals/share/udunits/udunits2.xml

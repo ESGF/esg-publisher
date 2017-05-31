@@ -69,10 +69,10 @@ def main(argv):
         sys.exit(0)
 
     datasetMapfile = lastargs[0]
-    init_file = None
+    init_dir = '/esg/config/esgcet/'
 
     # Load the configuration and set up a database connection
-    config = loadConfig(init_file)
+    config = loadConfig(init_dir)
     engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
     initLogging('extract', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)

@@ -35,8 +35,10 @@ Options:
     -h, --help:
         Print a help message.
 
-    -i init_file:
-        Initialization file. If not specified, the default installed init file is read.
+    -i init_dir:
+        Directory containing all initialization files.
+        Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
+        If not specified, the default installed init files are read.
 
     --list-projects:
         List all projects in the configuration file.
@@ -71,7 +73,7 @@ def main(argv):
         sys.exit(0)
 
     echoSql = False
-    init_file = None
+    init_dir = '/esg/config/esgcet/'
     listAll = False
     listProjects = False
     listProperties = False
@@ -90,7 +92,7 @@ def main(argv):
             print usage
             sys.exit(0)
         elif flag=='-i':
-            init_file = arg
+            init_dir = arg
         elif flag=='--list-projects':
             listProjects = True
         elif flag=='--list-properties':
@@ -115,7 +117,7 @@ def main(argv):
             sys.exit(0)
 
     # Load the configuration and set up a database connection
-    config = loadConfig(init_file)
+    config = loadConfig(init_dir)
     engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
     initLogging('extract', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
