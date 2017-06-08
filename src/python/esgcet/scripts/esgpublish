@@ -301,6 +301,15 @@ def summarize_errors(Session, datasetNames):
                 print line
 
 
+def create_cim(dmap):
+    try:
+        create_cim_from_dmap(dmap)
+    except:
+        print "WARNING: --create-cim failed:\n"
+        print tracebackString(indent=10)
+        print "Continuing with publication after --create-cim failure:\n"
+
+
 def main(argv):
 
     try:
@@ -490,11 +499,11 @@ def main(argv):
     if version is not None and versionList is not None:
         raise ESGPublishError("Cannot specify both --new-version and --version-list")
 
-    if createCim and datasetMapfile == None:
+    if createCim and not (datasetMapfile or mapfileDir):
         raise ESGPublishError("--create-cim can only be used with --map")
 
     if createCimOnly and datasetMapfile == None:
-        raise ESGPublishError("--create-cim-only can only be used with --map")
+        raise ESGPublishError("--create-cim-only can only be used with --map and a single mapfile")
 
     if versionList is not None:
         version = {}
@@ -568,6 +577,8 @@ def main(argv):
                 for mapfile in files:
                     try:
                         dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
+                        if createCim:
+                            create_cim(dmap)
                     except:
                         error("Skipping %s: File does not match ESGF mapfile format." % os.path.join(root, mapfile))
                         continue
@@ -602,12 +613,7 @@ def main(argv):
                 datasetNames = dmap.keys()
 
                 if createCim:
-                    try:
-                        create_cim_from_dmap(dmap)
-                    except:
-                        print "WARNING: --create-cim failed:\n"
-                        print tracebackString(indent=10)
-                        print "Continuing with publication after --create-cim failure:\n"
+                    create_cim(dmap)
 
             elif rescan:
                 # Note: No need to get the extra fields, such as mod_time, since
