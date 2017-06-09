@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
     multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
     processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, \
-    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap, tracebackString
+    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -301,13 +301,21 @@ def summarize_errors(Session, datasetNames):
                 print line
 
 
-def create_cim(dmap):
-    try:
-        create_cim_from_dmap(dmap)
-    except:
-        print "WARNING: --create-cim failed:\n"
-        print tracebackString(indent=10)
-        print "Continuing with publication after --create-cim failure:\n"
+def yield_parsed_mapfiles(mapfileDir):
+    """
+    yields (dmap, extraFields) for each valid mapfile found under starting directory
+    """
+    for root, dirs, files in os.walk(mapfileDir, followlinks=True):
+        for mapfile in files:
+            try:
+                dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
+            except:
+                error("Skipping %s: File does not match ESGF mapfile format." % os.path.join(root, mapfile))
+                continue
+            if len(dmap) == 0:
+                error("Skipping %s: File does not contain any datasets." % os.path.join(root, mapfile))
+                continue
+            yield dmap, extraFields
 
 
 def main(argv):
@@ -332,6 +340,7 @@ def main(argv):
     las = False
     log_filename = None
     mapfileDir = None
+    mapfileProvided = False
     masterGateway = None
     message = None
     offline = False
@@ -401,6 +410,7 @@ def main(argv):
                 mapfileDir = arg
             else:
                 raise ESGPublishError("Not a valid file or directory: %s" % arg)
+            mapfileProvided = True
         elif flag in ['-m', '--message']:
             message = arg
         elif flag=='--model':
@@ -499,11 +509,11 @@ def main(argv):
     if version is not None and versionList is not None:
         raise ESGPublishError("Cannot specify both --new-version and --version-list")
 
-    if createCim and not (datasetMapfile or mapfileDir):
+    if createCim and not mapfileProvided:
         raise ESGPublishError("--create-cim can only be used with --map")
 
-    if createCimOnly and datasetMapfile == None:
-        raise ESGPublishError("--create-cim-only can only be used with --map and a single mapfile")
+    if createCimOnly and not mapfileProvided:
+        raise ESGPublishError("--create-cim-only can only be used with --map")
 
     if versionList is not None:
         version = {}
@@ -520,9 +530,21 @@ def main(argv):
     # if --create-cim-only specified, just do this and quit without 
     # starting database interaction etc
     if createCimOnly:
-        dmap = readDatasetMap(datasetMapfile)
-        create_cim_from_dmap(dmap)
-        sys.exit(0)  # assume it raised an exception if it failed
+        if mapfileDir is not None:
+            success = True
+            for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
+                if not create_cim_from_dmap(dmap, exception_on_fail=False):
+                    success = False
+            if success:
+                sys.exit(0)
+            else:
+                error("One or more mapfiles had errors with create CIM")
+                sys.exit(1)
+
+        else:
+            dmap = readDatasetMap(datasetMapfile)
+            create_cim_from_dmap(dmap)
+            sys.exit(0)  # assume it raised an exception if it failed
         
     # Register project handlers
     registerHandlers(projectName)
@@ -540,7 +562,7 @@ def main(argv):
     # (--create-cim / --no-create-cim / --create-cim-only)
     if createCim == None:
         if config.getboolean(project_config_section, 'create_cim', default=False):
-            createCim = (datasetMapfile != None and not publishOnly)
+            createCim = (mapfileProvided and not publishOnly)
         else:
             createCim = False
 
@@ -573,20 +595,12 @@ def main(argv):
 
         # Process all mapfiles in a directory
         if mapfileDir is not None:
-            for root, dirs, files in os.walk(mapfileDir, followlinks=True):
-                for mapfile in files:
-                    try:
-                        dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
-                        if createCim:
-                            create_cim(dmap)
-                    except:
-                        error("Skipping %s: File does not match ESGF mapfile format." % os.path.join(root, mapfile))
-                        continue
+            for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
                     datasetNames = dmap.keys()
                     datasetNames.sort()
-                    if len(datasetNames)==0:
-                        error("Skipping %s: File does not contain any datasets." % os.path.join(root, mapfile))
-                        continue
+
+                    if createCim:
+                        create_cim_from_dmap(dmap, exception_on_fail=False)
 
                     # Iterate over datasets
                     if not publishOnly:
@@ -610,10 +624,10 @@ def main(argv):
         else:
             if datasetMapfile is not None:
                 dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
-                datasetNames = dmap.keys()
+                datasetNames = dmap.keys()                
 
                 if createCim:
-                    create_cim(dmap)
+                    create_cim_from_dmap(dmap, exception_on_fail=False)
 
             elif rescan:
                 # Note: No need to get the extra fields, such as mod_time, since

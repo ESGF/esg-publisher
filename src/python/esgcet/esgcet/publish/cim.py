@@ -20,12 +20,15 @@ class Cdf2cimWrapper:
         if self.cdf2cim == None:
             self.cdf2cim = __import__("cdf2cim")    
 
-    def create_cim_from_dmap(self, dmap):
+    def create_cim_from_dmap(self, dmap, exception_on_fail=True):
         """
         Call cdf2cim with a starting directory which is the deepest common parent directory 
         for the set of files listed in the map file.
         The map file ought only contain one dataset ID, but if it contains more than one, 
         call cdf2cim for each separately.
+
+        If exception_on_fail=False, then on failure it will not raise an exception, 
+        but will print a warning and return False.  (Otherwise returns True.)
         """
 
         if not dmap:
@@ -46,7 +49,15 @@ class Cdf2cimWrapper:
                 failures += "While running cdf2cim on 'top_dir':\n%s" % tracebackString(indent=5)
 
         if failures:
-            raise Exception(failures)
+            if exception_on_fail:
+                raise Exception(failures)
+            else:
+                print "WARNING: --create-cim failed:\n"
+                print failures
+                print "Continuing after --create-cim failure:\n"
+                return False
+
+        return True
     
     def _yield_starting_directories(self, dmap):
         for (dsid, version), values in dmap.items():
