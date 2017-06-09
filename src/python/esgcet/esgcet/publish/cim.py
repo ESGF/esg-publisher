@@ -30,7 +30,20 @@ class Cdf2cimWrapper:
         If exception_on_fail=False, then on failure it will not raise an exception, 
         but will print a warning and return False.  (Otherwise returns True.)
         """
+        try:
+            self._create_cim_from_dmap(dmap)
+        except:
+            if exception_on_fail:
+                raise
+            else:
+                print "WARNING: --create-cim failed:\n"
+                print tracebackString(indent=5)
+                print "Continuing after --create-cim failure:\n"
+                return False
 
+        return True
+
+    def _create_cim_from_dmap(self, dmap):
         if not dmap:
             print "WARNING: Empty map file.  cdf2cim will not be run."
             return
@@ -49,15 +62,8 @@ class Cdf2cimWrapper:
                 failures += "While running cdf2cim on 'top_dir':\n%s" % tracebackString(indent=5)
 
         if failures:
-            if exception_on_fail:
-                raise Exception(failures)
-            else:
-                print "WARNING: --create-cim failed:\n"
-                print failures
-                print "Continuing after --create-cim failure:\n"
-                return False
+            raise Exception(failures)
 
-        return True
     
     def _yield_starting_directories(self, dmap):
         for (dsid, version), values in dmap.items():
