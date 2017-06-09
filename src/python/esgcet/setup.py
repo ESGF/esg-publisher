@@ -69,10 +69,11 @@ setup(
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6",
         "requests>=1.2.0",
-        "esgprep>=2.7.1",
+        "esgprep>=2.7.2",
         "MyProxyClient>=2.0.1",
         "esgf-pyclient>=0.1.8",
         "esgfpid>=0.7.6",
+        "cdf2cim>=0.1.9.0",
     ],
     setup_requires = [
         "psycopg2>=2.0",
