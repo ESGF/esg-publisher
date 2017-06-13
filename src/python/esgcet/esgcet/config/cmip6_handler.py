@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 
 from cmip5_product import getProduct
 
