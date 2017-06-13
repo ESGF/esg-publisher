@@ -57,8 +57,14 @@ class CMIP6Handler(BasicHandler):
         config = getConfig()
         projectSection = 'project:'+self.name
         min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
-        file_cmor_version = fileobj.getAttribute('cmor_version', None)
         
+        file_cmor_version = "0.0.0"
+
+        try:
+	        file_cmor_version = fileobj.getAttribute('cmor_version', None)
+    	except:
+    		debug('File %s missing cmor_version attribute; will proceed with PrePARE check' %f)
+
         if compareLibVersions(min_cmor_version, file_cmor_version):
             debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
             return
