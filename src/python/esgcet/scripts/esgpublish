@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
     multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
     processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, \
-    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap
+    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap, setup_cdf2cim_environment
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -489,8 +489,60 @@ def main(argv):
         elif flag=='--version-list':
             versionList = arg
 
-    # Load the configuration and set up a database connection
+    if createCimOnly and not mapfileProvided:
+        raise ESGPublishError("--create-cim-only can only be used with --map")
+
+    if createCim and not mapfileProvided:
+        raise ESGPublishError("--create-cim can only be used with --map")
+
+    # Load the configuration
     config = loadConfig(init_dir, projectName)
+    project_section = "project:%s" % projectName    
+    project_config_section = "config:%s" % projectName
+
+    #---------------------------------------------------------------------
+    # if --create-cim-only specified, just do this and quit without 
+    # starting database interaction etc
+    if createCimOnly:        
+
+        setup_cdf2cim_environment(config, project_config_section)
+
+        if mapfileDir is not None:
+            success = True
+            for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
+                if not create_cim_from_dmap(dmap, exception_on_fail=False):
+                    success = False
+            if success:
+                sys.exit(0)
+            else:
+                error("One or more mapfiles had errors with create CIM")
+                sys.exit(1)
+
+        else:
+            dmap = readDatasetMap(datasetMapfile)
+            create_cim_from_dmap(dmap)
+            sys.exit(0)  # assume it raised an exception if it failed
+
+    # set createCim to True or False based on handler and options, 
+    # unless argument parsing has already found an explicit option that overrides this 
+    # (--create-cim / --no-create-cim / --create-cim-only)
+    if createCim == None:
+        if config.getboolean(project_section, 'create_cim', default=False):
+            createCim = (mapfileProvided and not publishOnly and masterGateway == None)
+        else:
+            createCim = False
+
+    if createCim:
+        try:
+            setup_cdf2cim_environment(config, project_config_section)
+        except Exception as exc:
+            print exc
+            print "Turning off create_cim because related configuration variables are missing."
+            createCim = False
+
+    #---------------------------------------------------------------------
+
+    # set up a database connection
     engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
     initLogging('extract', override_sa=engine, log_filename=log_filename)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
@@ -509,12 +561,6 @@ def main(argv):
     if version is not None and versionList is not None:
         raise ESGPublishError("Cannot specify both --new-version and --version-list")
 
-    if createCim and not mapfileProvided:
-        raise ESGPublishError("--create-cim can only be used with --map")
-
-    if createCimOnly and not mapfileProvided:
-        raise ESGPublishError("--create-cim-only can only be used with --map")
-
     if versionList is not None:
         version = {}
         f = open(versionList)
@@ -526,26 +572,7 @@ def main(argv):
             dsid = dsid.strip()
             vers = int(vers.strip())
             version[dsid] = vers
-    
-    # if --create-cim-only specified, just do this and quit without 
-    # starting database interaction etc
-    if createCimOnly:
-        if mapfileDir is not None:
-            success = True
-            for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
-                if not create_cim_from_dmap(dmap, exception_on_fail=False):
-                    success = False
-            if success:
-                sys.exit(0)
-            else:
-                error("One or more mapfiles had errors with create CIM")
-                sys.exit(1)
 
-        else:
-            dmap = readDatasetMap(datasetMapfile)
-            create_cim_from_dmap(dmap)
-            sys.exit(0)  # assume it raised an exception if it failed
-        
     # Register project handlers
     registerHandlers(projectName)
 
@@ -553,19 +580,7 @@ def main(argv):
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
-    project_section = "project:%s" % projectName    
-    project_config_section = "config:%s" % projectName
-
     handler = getHandlerByName(projectName, None, Session, offline=offline)
-
-    # set createCim to True or False based on handler and options, 
-    # unless argument parsing has already found an explicit option that overrides this 
-    # (--create-cim / --no-create-cim / --create-cim-only)
-    if createCim == None:
-        if config.getboolean(project_section, 'create_cim', default=False):
-            createCim = (mapfileProvided and not publishOnly and masterGateway == None)
-        else:
-            createCim = False
 
     # check cert and generate a new one, if expired
     if publish and not keep_credentials:

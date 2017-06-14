@@ -11,4 +11,4 @@ from hessianlib import Hessian, RemoteCallException
 from unpublish import deleteDatasetList, DELETE, UNPUBLISH, NO_OPERATION, UNINITIALIZED
 from replica import scanDirectory, generateReplicaThreddsCatalog, publishCatalogs
 from rest import RestPublicationService
-from cim import create_cim_from_dmap
+from cim import create_cim_from_dmap, setup_cdf2cim_environment

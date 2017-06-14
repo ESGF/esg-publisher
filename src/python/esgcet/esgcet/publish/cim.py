@@ -101,3 +101,29 @@ class Cdf2cimWrapper:
 
 
 create_cim_from_dmap = Cdf2cimWrapper().create_cim_from_dmap
+
+
+def setup_cdf2cim_environment(config, project_section):
+    """
+    Sets the environment values needed by cdf2cim from the ini file.
+    The specified environment variables are set based on the same named var in the 
+    ini file unless they are already set in the environment (so the environment can 
+    override the ini file).
+    
+    Note that the ini file variable names are case-insensitive, for example
+    "cdf2cim_client_ws_host" in the file is acceptable although the 
+    corresponding environment variable is called CDF2CIM_CLIENT_WS_HOST.
+    """
+
+    # known environment variables; 2-tuples of (name, is_mandatory)
+    variables = [('CDF2CIM_CLIENT_WS_HOST', True), 
+                 ('CDF2CIM_CLIENT_GITHUB_USER', True), 
+                 ('CDF2CIM_CLIENT_GITHUB_ACCESS_TOKEN', True)]
+
+    for var_name, is_mandatory in variables:
+        if os.getenv(var_name) == None:
+            if config.has_option(project_section, var_name):
+                os.environ[var_name] = config.get(project_section, var_name)
+            elif is_mandatory:
+                msg = "Mandatory variable '{0}' for cdf2cim needs to be supplied from environment or ini file section '{1}'".format(var_name, project_section)
+                raise Exception(msg)
