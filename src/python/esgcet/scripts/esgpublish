@@ -553,7 +553,8 @@ def main(argv):
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
-    project_config_section = "project:%s" % projectName
+    project_section = "project:%s" % projectName    
+    project_config_section = "config:%s" % projectName
 
     handler = getHandlerByName(projectName, None, Session, offline=offline)
 
@@ -561,7 +562,7 @@ def main(argv):
     # unless argument parsing has already found an explicit option that overrides this 
     # (--create-cim / --no-create-cim / --create-cim-only)
     if createCim == None:
-        if config.getboolean(project_config_section, 'create_cim', default=False):
+        if config.getboolean(project_section, 'create_cim', default=False):
             createCim = (mapfileProvided and not publishOnly)
         else:
             createCim = False
