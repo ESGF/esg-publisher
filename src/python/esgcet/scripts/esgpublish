@@ -495,6 +495,26 @@ def main(argv):
     if createCim and not mapfileProvided:
         raise ESGPublishError("--create-cim can only be used with --map")
 
+
+    # The project must be specified
+    if projectName is None:
+        raise ESGPublishError("Must specify project with --project")
+
+    if version is not None and versionList is not None:
+        raise ESGPublishError("Cannot specify both --new-version and --version-list")
+
+    if versionList is not None:
+        version = {}
+        f = open(versionList)
+        lines = f.readlines()
+        f.close()
+        for line in lines:
+            line = line.strip()
+            dsid, vers = line.split('|')
+            dsid = dsid.strip()
+            vers = int(vers.strip())
+            version[dsid] = vers
+
     # Load the configuration
     config = loadConfig(init_dir, projectName)
     project_section = "project:%s" % projectName    
@@ -553,25 +573,6 @@ def main(argv):
         sys.exit(0)
     elif threddsReinit is None:
         threddsReinit = thredds
-
-    # The project must be specified
-    if projectName is None:
-        raise ESGPublishError("Must specify project with --project")
-
-    if version is not None and versionList is not None:
-        raise ESGPublishError("Cannot specify both --new-version and --version-list")
-
-    if versionList is not None:
-        version = {}
-        f = open(versionList)
-        lines = f.readlines()
-        f.close()
-        for line in lines:
-            line = line.strip()
-            dsid, vers = line.split('|')
-            dsid = dsid.strip()
-            vers = int(vers.strip())
-            version[dsid] = vers
 
     # Register project handlers
     registerHandlers(projectName)
