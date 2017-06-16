@@ -72,7 +72,7 @@ setup(
         "esgprep>=2.7.4",
         "MyProxyClient>=2.0.1",
         "esgf-pyclient>=0.1.8",
-        "esgfpid>=0.7.6",
+        "esgfpid>=0.7.8",
     ],
     setup_requires = [
         "psycopg2>=2.0",
