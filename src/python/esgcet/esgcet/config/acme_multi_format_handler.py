@@ -1,4 +1,3 @@
-
 """-*- Python -*-
 Format handler template.
 
@@ -26,16 +25,22 @@ To create a format handler:
 """
 from esgcet.exceptions import *
 from esgcet.config import FormatHandler, CdunifFormatHandler
+from cdms2 import Cdunif
+
+import pdb
+
 
 class AcmeMultiFormatHandler(CdunifFormatHandler):
 
-    def __init__(self, cdf):
+    def __init__(self, cdf, path):
         
         if (cdf is None ):
             self.noncd = True
+            self.file = {}
+            self.path = path
         else:
             self.noncd = False
-            CdunifFormatHandler.__init__(self, cdf)
+            CdunifFormatHandler.__init__(self, cdf, path)
             
 
     @staticmethod
@@ -52,13 +57,15 @@ class AcmeMultiFormatHandler(CdunifFormatHandler):
           String mode. Since only mode='r' (read-only) is currently used, it is optional.
           """
         f = None
+#        pdb.set_trace()
         
         if (path[-3:] == ".nc"):  
-            cd = CdunifFormatHandler.open(path, mode=mode)
 
-            f = AcmeMultiFormatHandler(cd.file)
+            cf = Cdunif.CdunifFile(path)
+
+            f = AcmeMultiFormatHandler(cf, path)
         else:
-            f = AcmeMultiFormatHandler(None)
+            f = AcmeMultiFormatHandler(None, path)
         return f
 
     @staticmethod
