@@ -1059,7 +1059,7 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     return pid_connector
 
 
-def checkAndUpdateRepo(cmor_table_path):
+def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
     """
         Checks for a file written to a predefined location.  if not present or too old, will pull the repo based on the input path argument and update the timestamp.
     """
@@ -1082,5 +1082,13 @@ def checkAndUpdateRepo(cmor_table_path):
             f.write("t")
             f.close()
         except Exception as e :
-            warning("Attempt to update the cmor table repo and encountered an error: " + str(e))            
+            warning("Attempt to update the cmor table repo and encountered an error: " + str(e))
+
+    if handler.data_specs_version != ds_version:
+        try:
+            os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; popd")
+            handler.set_data_specs_version(ds_version)
+            
+        except Exception as e:
+            raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables.  Please contact support"%ds_version)
 

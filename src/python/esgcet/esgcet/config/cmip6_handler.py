@@ -19,7 +19,7 @@ import imp
 
 WARN = False
 
-
+DEFAULT_CMOR_TABLE_PATH = "/usr/local/cmip6-cmor-tables/TABLES"
 
 #from cfchecker import getargs, CFChecker
 
@@ -31,9 +31,12 @@ class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
-
+    	self.data_specs_version = "0"
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
+
+    def set_spec_version(ver):
+    	self.data_specs_version = ver
 
 
     def openPath(self, path):
@@ -85,8 +88,14 @@ class CMIP6Handler(BasicHandler):
         # if (rc > 0):
         #     raise ESGPublishError("File %s fails CF check"%f)
 
-        table = None
+        file_data_specs_version = None
+        try:
+        	file_data_specs_version = fileobj.getAttribute('data_specs_version', None)
+        except Exception as e:
+        	raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
 
+
+        table = None
         try:
             table = fileobj.getAttribute('table_id', None)
 
@@ -99,12 +108,14 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s missing required variable_id global attribute"%f)
 
+
         cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
 
         if cmor_table_path == "":
-            raise ESGPublishError("cmor_table_path not set in esg.ini")            
+        	cmor_table_path = DEFAULT_CMOR_TABLE_PATH
 
-        checkAndUpdateRepo(cmor_table_path)
+        checkAndUpdateRepo(cmor_table_path, self, file_data_specs_version)
+
 
         table_file = cmor_table_path + '/CMIP6_' + table + '.json'
         fakeargs = [ '--variable', variable_id, table_file ,f]
