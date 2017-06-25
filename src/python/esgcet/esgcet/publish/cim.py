@@ -15,10 +15,14 @@ from utility import tracebackString
 class Cdf2cimWrapper:
 
     cdf2cim = None
+    _verbose_errors = False
 
     def _do_import(self):
         if self.cdf2cim == None:
             self.cdf2cim = __import__("cdf2cim")    
+
+    def set_verbose_errors(self):
+        self._verbose_errors = True
 
     def create_cim_from_dmap(self, dmap, exception_on_fail=True):
         """
@@ -76,9 +80,30 @@ class Cdf2cimWrapper:
             print "      top dir for create-cim is %s" % start_dir
             yield start_dir
 
+    def _list_files(self, files, title):
+        print title + ":"
+        if files:
+            for f in files:
+                print "    " + f
+        else:
+            print "    (none)"
+
     def _call_cdf2cim(self, starting_directory):
-        self.cdf2cim.scan(starting_directory)
-        self.cdf2cim.publish()
+        generated = self.cdf2cim.scan(starting_directory)
+        self._list_files(generated, "JSON files generated")
+        published, errors = self.cdf2cim.publish()
+        self._list_files(published, "JSON files published")
+        self._list_files([path for path, err in errors],
+                         "JSON files that failed to publish")
+        if errors:
+            if self._verbose_errors:
+                print "========================"
+                print "Web-service responses for failed JSON publication:"
+                for path, err in errors:
+                    print "\nPath: %s" % path
+                    print "\nError: %s" % err.message
+                print "========================"
+            raise Exception("some JSON files could not be published")
 
     def _deepest_common_parent(self, paths):
         common_substring = self._longest_common_substring([os.path.normpath(p) for p in paths])
@@ -100,7 +125,9 @@ class Cdf2cimWrapper:
         return s
 
 
-create_cim_from_dmap = Cdf2cimWrapper().create_cim_from_dmap
+_create_cim_wrapper = Cdf2cimWrapper()
+create_cim_from_dmap = _create_cim_wrapper.create_cim_from_dmap
+set_verbose_cim_errors = _create_cim_wrapper.set_verbose_errors
 
 
 def setup_cdf2cim_environment(config, project_section):

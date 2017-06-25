@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
     multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
     processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, \
-    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap, setup_cdf2cim_environment
+    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap, setup_cdf2cim_environment, set_verbose_cim_errors
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -269,6 +269,9 @@ Options:
         This option is useful for publishing replica data in bulk, where the datasets must retain
         the replica version.
 
+    --verbose-cim-errors
+        In the event of failure to publish CIM documents, display the error from the server.
+
 Examples:
 
     Publish data in directory /foo/bar, for project test. Obtain metadata by opening and reading the files,
@@ -321,7 +324,7 @@ def yield_parsed_mapfiles(mapfileDir):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -330,6 +333,7 @@ def main(argv):
     aggregateDimension = "time"
     createCim = None  # default (behaviour depends on various options and project handler), not same as False
     createCimOnly = False
+    verboseCimErrors = False
     datasetMapfile = None
     datasetName = None
     echoSql = False
@@ -382,6 +386,8 @@ def main(argv):
             createCim = False
         elif flag == '--create-cim-only':
             createCimOnly = True
+        elif flag == '--verbose-cim-errors':
+            verboseCimErrors = True
         elif flag=='--dataset':
             datasetName = arg
         elif flag in ['-d', '--delete-files']:
@@ -521,6 +527,9 @@ def main(argv):
     project_config_section = "config:%s" % projectName
 
     #---------------------------------------------------------------------
+    if verboseCimErrors:
+        set_verbose_cim_errors()
+
     # if --create-cim-only specified, just do this and quit without 
     # starting database interaction etc
     if createCimOnly:        
