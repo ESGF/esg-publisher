@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; esg-publisher 3.0.1 documentation</title>
+  <title>Configuration &mdash; esg-publisher 3.1.3 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="esg-publisher 3.0.1 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.1.3 documentation" href="index.html"/>
         <link rel="next" title="Mapfile preparation" href="mapfiles.html"/>
         <link rel="prev" title="Quick guide to test publication" href="testpublication.html"/> 
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                3.0.1
+                3.1.3
               </div>
             
           
@@ -93,7 +93,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#prepare-user-and-permissions-for-publication">Prepare user and permissions for publication</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#publish-to-an-index-node-at-another-side">Publish to an index node at another side</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#publish-to-your-own-index-node">Publish to your own index node</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#generate-credentials">Generate credentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myproxy-logon">Myproxy Logon</a></li>
 </ul>
 </li>
 </ul>
@@ -283,6 +283,28 @@ thredds_username = dnode_user
 </ul>
 </div></blockquote>
 </li>
+<li><p class="first">The <code class="docutils literal"><span class="pre">[config:&lt;project&gt;]</span></code> section</p>
+<blockquote>
+<div><p>To specify project specific configuration in <cite>esg.ini</cite> you can add a separate config section for each project.
+If PIDs are used by the project, the PID configs are set in that section, the same applies for the Citation. It also overrides the <cite>hessian_service_url</cite>, if specified.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">config</span><span class="p">:</span><span class="n">cmip6</span><span class="p">]</span>
+<span class="n">hessian_service_url</span> <span class="o">=</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">esgf</span><span class="o">-</span><span class="n">data</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">esg</span><span class="o">-</span><span class="n">search</span><span class="o">/</span><span class="n">remote</span><span class="o">/</span><span class="n">secure</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">cert</span><span class="o">/</span><span class="n">hessian</span><span class="o">/</span><span class="n">publishingService</span>
+<span class="n">citation_url</span> <span class="o">=</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">cera</span><span class="o">-</span><span class="n">www</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">WDCC</span><span class="o">/</span><span class="n">meta</span><span class="o">/</span><span class="n">CMIP6</span><span class="o">/%</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">version</span><span class="p">)</span><span class="n">s</span><span class="o">.</span><span class="n">json</span> <span class="c1"># not mandatory for CMIP6</span>
+<span class="n">pid_prefix</span> <span class="o">=</span> <span class="mf">21.14100</span>                   <span class="c1"># not mandatory for CMIP6</span>
+<span class="n">pid_exchange_name</span> <span class="o">=</span> <span class="n">esgffed</span><span class="o">-</span><span class="n">exchange</span>    <span class="c1"># not mandatory for CMIP6</span>
+<span class="n">pid_credentials</span> <span class="o">=</span>
+  <span class="c1"># hostname                  | port | virtual_host |    username    | password | ssl_enabled</span>
+  <span class="n">handle</span><span class="o">-</span><span class="n">esgf</span><span class="o">-</span><span class="n">trusted</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span> <span class="o">|</span> <span class="mi">5672</span> <span class="o">|</span>   <span class="n">esgf</span><span class="o">-</span><span class="n">pid</span>   <span class="o">|</span> <span class="n">esgf</span><span class="o">-</span><span class="n">publisher</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">secret</span><span class="o">&gt;</span> <span class="o">|</span>    <span class="n">false</span>
+  <span class="n">pcmdi10</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>            <span class="o">|</span> <span class="mi">5671</span> <span class="o">|</span>   <span class="n">esgf</span><span class="o">-</span><span class="n">pid</span>   <span class="o">|</span> <span class="n">esgf</span><span class="o">-</span><span class="n">publisher</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">secret</span><span class="o">&gt;</span> <span class="o">|</span>    <span class="n">true</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This option is optional for most projects, except CMIP6. Please use the ESGF node manager to fetch the credentials or ask your tier1 node admin.</p>
+</div>
+</div></blockquote>
+</li>
 <li><p class="first">The <code class="docutils literal"><span class="pre">[initialize]</span></code> section</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">initialize</span><span class="p">]</span>
@@ -306,6 +328,27 @@ thredds_username = dnode_user
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">After modifying the models table please run <code class="docutils literal"><span class="pre">$</span> <span class="pre">esginitialize</span> <span class="pre">-c</span></code>  to update the postgres database.</p>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<ol class="arabic" id="myproxy-section">
+<li><p class="first">The <code class="docutils literal"><span class="pre">myproxy</span></code> section</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">esgpublish</span></code> and <code class="docutils literal"><span class="pre">esgunpublish</span></code> will automatically generate or renew your globus certificate using the credentials specified here.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">myproxy</span><span class="p">]</span>
+<span class="n">hostname</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">openid_server</span><span class="o">&gt;</span>
+<span class="n">username</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">esgf_user</span><span class="o">&gt;</span>
+<span class="n">password</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If this section is not specified and the globus certificate is not present or valid the user will be prompted for the credentials during <code class="docutils literal"><span class="pre">esgpublish</span></code> and <code class="docutils literal"><span class="pre">esgunpublish</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This section is not present by default.</p>
 </div>
 </div></blockquote>
 </li>
@@ -464,7 +507,7 @@ of that facet value from the <code class="docutils literal"><span class="pre">da
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The &lt;facet&gt;_pattern currently supports <code class="docutils literal"><span class="pre">%(digit)s</span></code> and <code class="docutils literal"><span class="pre">%(string)s</span></code>.</p>
+<p class="last">The &lt;facet&gt;_pattern currently supports <code class="docutils literal"><span class="pre">%(digit)s</span></code> and <code class="docutils literal"><span class="pre">%(string)s</span></code> where <code class="docutils literal"><span class="pre">%(digit)s</span></code> matches any number and <code class="docutils literal"><span class="pre">%(string)s</span></code> one or more character(s).</p>
 </div>
 </div></blockquote>
 </li>
@@ -645,8 +688,8 @@ esgcet=# INSERT INTO esgf_security.permission VALUES(2, 3, 4, true);
 </li>
 </ol>
 </div>
-<div class="section" id="generate-credentials">
-<span id="myproxy-logon"></span><h3>Generate credentials<a class="headerlink" href="#generate-credentials" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="myproxy-logon">
+<span id="id2"></span><h3>Myproxy Logon<a class="headerlink" href="#myproxy-logon" title="Permalink to this headline">¶</a></h3>
 <p>For publication to an index node you need to have a valid globus certificate for an user with <cite>Write</cite> permissions.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ mkdir $HOME/.globus   # if not already present
 $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512 -t 72 -o $HOME/.globus/certificate-file
@@ -710,7 +753,7 @@ $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.0.1',
+            VERSION:'3.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

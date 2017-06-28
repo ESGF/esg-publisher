@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; esg-publisher 3.0.1 documentation</title>
+  <title>Usage &mdash; esg-publisher 3.1.3 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="esg-publisher 3.0.1 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.1.3 documentation" href="index.html"/>
         <link rel="next" title="FAQ and known issues" href="faq.html"/>
         <link rel="prev" title="Mapfile preparation" href="mapfiles.html"/> 
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                3.0.1
+                3.1.3
               </div>
             
           
@@ -156,13 +156,18 @@
 <div class="section" id="preliminary">
 <h2>Preliminary<a class="headerlink" href="#preliminary" title="Permalink to this headline">¶</a></h2>
 <p>Set up default environment for scripts:</p>
+<p>ESGF v2.5 or later</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+</pre></div>
+</div>
+<p>ESGF v2.4.x or earlier</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
 </pre></div>
 </div>
-<p>Publication and unpublication to an index node also requires a valid globus certificate, see <a class="reference internal" href="configuration.html#myproxy-logon"><span class="std std-ref">Generate credentials</span></a>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ myproxy-logon -s &lt;openid_server&gt; -l &lt;esgf_user&gt; -b -t 72 -o $HOME/.globus/certificate-file
-</pre></div>
-</div>
+<p>Publication and unpublication to an index node also requires a valid globus certificate.
+By running <code class="docutils literal"><span class="pre">esgpublish</span></code> or <code class="docutils literal"><span class="pre">esgunpublish</span></code> a globus certificate will be generated automatically. Please specify your credentials for the certificate either by filling out the user prompts
+during the publication or add the credential information to your <code class="docutils literal"><span class="pre">esg.ini</span></code> file, see <a class="reference internal" href="configuration.html#myproxy-section"><span class="std std-ref">myproxy section</span></a>.</p>
+<p>In case the certificate generation fails for some reason, please create the certificate manually, see <a class="reference internal" href="configuration.html#myproxy-logon"><span class="std std-ref">Myproxy Logon</span></a>.</p>
 </div>
 <div class="section" id="publication">
 <h2>Publication<a class="headerlink" href="#publication" title="Permalink to this headline">¶</a></h2>
@@ -416,22 +421,18 @@ $ esgpublish --thredds-reinit
 <p class="last">If you unpublish a dataset passing only the dataset_name it will unpublish all versions of the dataset.
 To unpublish a single version use the <code class="docutils literal"><span class="pre">dataset_name#version</span></code> syntax, e.g.: <code class="docutils literal"><span class="pre">cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1#20120315</span></code>.</p>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The esgunpublish call does not take a project name.</p>
-</div>
 <p>You could either use a <code class="docutils literal"><span class="pre">mapfile</span> <span class="pre">directory</span></code>, a single <code class="docutils literal"><span class="pre">mapfile</span></code> a <code class="docutils literal"><span class="pre">dataset</span></code> or a <code class="docutils literal"><span class="pre">dataset_list</span></code> as input for the data unpublication:</p>
 <ul>
 <li><p class="first">Using a mapfile directory or a single mapfile</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map &lt;input_mapfile or mapfile_directory&gt;
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --map &lt;input_mapfile or mapfile_directory&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Using a list</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --use-list &lt;list-of-datasets-filename&gt;
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --use-list &lt;list-of-datasets-filename&gt;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -442,7 +443,7 @@ To unpublish a single version use the <code class="docutils literal"><span class
 </li>
 <li><p class="first">Using a single dataset_name</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish dataset_name[#version]
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; dataset_name[#version]
 </pre></div>
 </div>
 </div></blockquote>
@@ -451,28 +452,28 @@ To unpublish a single version use the <code class="docutils literal"><span class
 <div class="section" id="delete-from-index-and-thredds">
 <h3>Delete from Index and Thredds<a class="headerlink" href="#delete-from-index-and-thredds" title="Permalink to this headline">¶</a></h3>
 <p>Delete the data from Index, remove the THREDDS catalog, reinitialize/recheck the Thredds Server but keep the data on postgres.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map /esg/mapfiles
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-index">
 <h3>Delete from Index<a class="headerlink" href="#delete-from-index" title="Permalink to this headline">¶</a></h3>
 <p>Delete the data from Index but keep the Thredds catalogs and postgres entries.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map /esg/mapfiles --skip-thredds
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-thredds">
 <h3>Delete from Thredds<a class="headerlink" href="#delete-from-thredds" title="Permalink to this headline">¶</a></h3>
 <p>Delete the Thredds Catalogs, but keep the data available on the Index node and on the postgres database.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map /esg/mapfiles --skip-index
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-index
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-all-components">
 <h3>Delete from all components<a class="headerlink" href="#delete-from-all-components" title="Permalink to this headline">¶</a></h3>
 <p>The data will be removed from postgres, Thredds and the Index node.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map /esg/mapfiles --database-delete
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -524,7 +525,7 @@ To unpublish a single version use the <code class="docutils literal"><span class
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.0.1',
+            VERSION:'3.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
