@@ -108,7 +108,7 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s missing required variable_id global attribute"%f)
 
-
+        project_section = 'config:cmip6'
         cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
 
         if cmor_table_path == "":
