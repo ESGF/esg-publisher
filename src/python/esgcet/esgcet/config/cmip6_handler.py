@@ -11,7 +11,8 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitReco
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.publish import checkAndUpdateRepo
 
-from cmip6_cv import PrePARE as validator
+from cmip6_cv import PrePARE 
+
 
 import numpy
 import argparse
@@ -19,7 +20,7 @@ import imp
 
 WARN = False
 
-DEFAULT_CMOR_TABLE_PATH = "/usr/local/cmip6-cmor-tables/TABLES"
+DEFAULT_CMOR_TABLE_PATH = "/usr/local/cmip6-cmor-tables/Tables"
 
 #from cfchecker import getargs, CFChecker
 
@@ -35,7 +36,7 @@ class CMIP6Handler(BasicHandler):
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
 
-    def set_spec_version(ver):
+    def set_spec_version(self, ver):
     	self.data_specs_version = ver
 
 
@@ -55,7 +56,9 @@ class CMIP6Handler(BasicHandler):
         Raises ESGPublishError if settings are missing or file fails the checks.
         Raise ESGInvalidMetadataFormat if the file cannot be processed by this handler.
         """
-        
+
+        validator = PrePARE.PrePARE
+
         f = fileobj.path
 
         config = getConfig()
@@ -108,8 +111,11 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s missing required variable_id global attribute"%f)
 
-
-        cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")        
+        cmor_table_path=""
+        try:
+            cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")
+        except:
+            debug("Missing cmor_table_path setting. Using default location")
 
         if cmor_table_path == "":
         	cmor_table_path = DEFAULT_CMOR_TABLE_PATH
