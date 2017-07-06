@@ -138,7 +138,7 @@ sections. This file will be set up during the ESGF installation process.
 #. The ``[config:<project>]`` section
 
     To specify project specific configuration in `esg.ini` you can add a separate config section for each project.
-    That section holds the PID configs and it also overrides the `hessian_service_url`, if specified.
+    If PIDs are used by the project, the PID configs are set in that section, the same applies for the Citation. It also overrides the `hessian_service_url`, if specified.
 
     Example:
 
@@ -146,8 +146,9 @@ sections. This file will be set up during the ESGF installation process.
 
         [config:cmip6]
         hessian_service_url = https://esgf-data.dkrz.de/esg-search/remote/secure/client-cert/hessian/publishingService
-        pid_prefix = 21.14100                   # default for CMIP6
-        pid_exchange_name = esgffed-exchange    # default for CMIP6
+        citation_url = http://cera-www.dkrz.de/WDCC/meta/CMIP6/%(dataset_id)s.%(version)s.json # not mandatory for CMIP6
+        pid_prefix = 21.14100                   # not mandatory for CMIP6
+        pid_exchange_name = esgffed-exchange    # not mandatory for CMIP6
         pid_credentials =
           # hostname                  | port | virtual_host |    username    | password | ssl_enabled
           handle-esgf-trusted.dkrz.de | 5672 |   esgf-pid   | esgf-publisher | <secret> |    false

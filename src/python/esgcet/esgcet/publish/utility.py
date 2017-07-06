@@ -1087,8 +1087,8 @@ def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
     if handler.data_specs_version != ds_version:
         try:
             os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; popd")
-            handler.set_data_specs_version(ds_version)
+            handler.set_spec_version(ds_version)
             
         except Exception as e:
-            raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables.  Please contact support"%ds_version)
+            raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables or other error.  Please contact support"%ds_version)
 
