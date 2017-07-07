@@ -41,7 +41,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
         else:
             # load config and set it based on 
             config = getConfig()
-            projectSection = 'project:'
+            projectSection = 'project:input4mips'
             variables_none = config.get(projectSection, "variables_none", default="false")
 
             if variables_none == "false":
@@ -205,7 +205,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
           Integer index to select along the first dimension. If None, return all values.
           
         """
-        if (self.noncd or ):
+        if (self.noncd):
             return []
         else:
             return CdunifFormatHandler.getVariable(self, variableName, index=index)
