@@ -7,6 +7,8 @@ import types
 import string
 import glob
 import re
+import sys
+import traceback
 import logging
 import subprocess
 import filecmp
@@ -1011,6 +1013,15 @@ def getRestServiceURL(project_config_section=None):
         host = urlparse.urlparse(hessianServiceURL).netloc
         serviceURL = urlparse.urlunparse(('https', host, '/esg-search/ws', '', '', ''))
     return serviceURL
+
+
+def tracebackString(indent=0):
+    """
+    Returns the traceback of the current exception as an indented string.
+    """
+    lines = traceback.format_exc(sys.exc_info()[2]).split("\n")
+    prefix = " " * indent
+    return string.join([prefix + line + "\n" for line in lines])
 
 
 def establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=True):
