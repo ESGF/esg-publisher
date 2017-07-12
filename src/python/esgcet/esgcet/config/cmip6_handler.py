@@ -112,7 +112,7 @@ class CMIP6Handler(BasicHandler):
             raise ESGPublishError("File %s missing required variable_id global attribute"%f)
 
 
-        project_section = 'config:cmip6'
+        projectSection = 'config:cmip6'
 
         cmor_table_path=""
         try:
