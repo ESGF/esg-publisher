@@ -65,7 +65,7 @@ class CMIP6Handler(BasicHandler):
         projectSection = 'project:'+self.name
         min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
         
-        file_cmor_version = "0.0.0"
+        file_cmor_version = None
 
         try:
 	        file_cmor_version = fileobj.getAttribute('cmor_version', None)
