@@ -1088,7 +1088,7 @@ def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
     if pull_cmor_repo:
 
         try:
-            os.system("pushd "+cmor_table_path+" ; git pull ; popd")
+            os.system("pushd "+cmor_table_path+" ; git fetch ; popd")
             f = open(UPDATE_TIMESTAMP, "w")
             f.write("t")
             f.close()
