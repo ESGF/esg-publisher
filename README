@@ -13,9 +13,15 @@ README:
 
 ESGF Publisher
 
-Detailed instructions on publishing are on the ESGF confluence site.  This is access controlled to Federation members.
+https://esgf.github.io/esg-publisher 
 
-https://acme-climate.atlassian.net/wiki/display/ESGF/Guide+to+ESGF+Publishing+and+Best+Practices
+16 August 2017 - version 3.2.6
+
+* Support for CMIP6 
+- integration of PrePARE
+- PID creation via RabbitMQ
+- cdf2cim included
+- handler for non-netCDF and skip variable scan for multiple cases
 
 29 August 2016 - version 3.1.0
 
