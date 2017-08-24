@@ -9,7 +9,7 @@ from registry import getHandler, getHandlerByName, getHandlerFromDataset, getHan
 from cf_handler import CFHandler
 from netcdf_handler import BasicHandler, CdunifFormatHandler
 from metadata import MetadataHandler
-from acme_multi_format_handler import AcmeMultiFormatHandler
+from multiple_format_handler import MultipleFormatHandler
 
 from ipcc4_handler import IPCC4Handler
 from ipcc5_handler import IPCC5Handler
@@ -26,5 +26,5 @@ builtinProjectHandlers = {
     }
 builtinFormatHandlers = {
     'netcdf_builtin' : CdunifFormatHandler,
-    'acme_builtin' : AcmeMultiFormatHandler,
+    'multiple_builtin' : MultipleFormatHandler,
     }

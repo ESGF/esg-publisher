@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
     multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
     processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, \
-    updateThreddsMasterCatalog, establish_pid_connection, bcolors
+    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap, setup_cdf2cim_environment, set_verbose_cim_errors
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -58,6 +58,28 @@ Options:
 
     -c, --create
         Create and publish a dataset containing the files listed in the directory or dataset map.
+
+    --create-cim
+        Can only be used in conjunction with --map. Calls cdf2cim as an initial step before
+        publication to the database, to create CIM records.
+
+        The cdf2cim script will scan for data files below a given starting directory, which will 
+        be the deepest common parent directory of the data files listed in the map file.  If 
+        filesystem layout recommendations for CMIP6 are followed, it will find the same set of
+        data files as listed in the map file.
+
+        The decision whether to call cdf2cim is determined as follows:
+
+            - Command line option --create-cim or --no-create-cim take precedence.
+
+            - If no command-line option, and the project ini file has create_cim=true, then call
+              cdf2cim if --map is specified and --noscan is not supplied, ensuring that it is called
+              before the scan phase but is not repeated if publication is done in stages.
+
+            - If neither of the above apply, default is not to run cdf2cim.
+
+    --create-cim-only
+        As --create-cim, but does not actually publish the dataset.
 
     --echo-sql: Echo SQL commands
 
@@ -112,6 +134,9 @@ Options:
         Specify the dataset version number, a positive integer. If unspecified, the version number is
         set to 1 for new datasets, and is incremented by 1 for existing datasets. Use this option
         with caution, as the version number will apply to all datasets processed. See --keep-version and --version-list.
+
+    --no-create-cim
+        Do not call cd2fcim.  See --create-cim for more details.
 
     --nodbwrite
          Scan the files, but do not write the dataset to the postgres database.  This option should not be used with --noscan, --thredds, --publish, as it is intended for "dry-runs" to validate metadata.
@@ -244,6 +269,9 @@ Options:
         This option is useful for publishing replica data in bulk, where the datasets must retain
         the replica version.
 
+    --verbose-cim-errors
+        In the event of failure to publish CIM documents, display the error from the server.
+
 Examples:
 
     Publish data in directory /foo/bar, for project test. Obtain metadata by opening and reading the files,
@@ -276,16 +304,36 @@ def summarize_errors(Session, datasetNames):
                 print line
 
 
+def yield_parsed_mapfiles(mapfileDir):
+    """
+    yields (dmap, extraFields) for each valid mapfile found under starting directory
+    """
+    for root, dirs, files in os.walk(mapfileDir, followlinks=True):
+        for mapfile in files:
+            try:
+                dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
+            except:
+                error("Skipping %s: File does not match ESGF mapfile format." % os.path.join(root, mapfile))
+                continue
+            if len(dmap) == 0:
+                error("Skipping %s: File does not contain any datasets." % os.path.join(root, mapfile))
+                continue
+            yield dmap, extraFields
+
+
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'nodbwrite'])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite'])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
     aggregateDimension = "time"
+    createCim = None  # default (behaviour depends on various options and project handler), not same as False
+    createCimOnly = False
+    verboseCimErrors = False
     datasetMapfile = None
     datasetName = None
     echoSql = False
@@ -296,6 +344,7 @@ def main(argv):
     las = False
     log_filename = None
     mapfileDir = None
+    mapfileProvided = False
     masterGateway = None
     message = None
     offline = False
@@ -329,6 +378,16 @@ def main(argv):
             publishOp = UPDATE_OP
         elif flag in ['-c', '--create']:
             publishOp = CREATE_OP
+        elif flag in ('--create-cim', '--no-create-cim', '--create-cim-only') and (createCim != None or createCimOnly):
+            raise ESGPublishError('--create-cim/--no-create-cim/--create-cim-only are mutually exclusive')
+        elif flag == '--create-cim':
+            createCim = True
+        elif flag == '--no-create-cim':
+            createCim = False
+        elif flag == '--create-cim-only':
+            createCimOnly = True
+        elif flag == '--verbose-cim-errors':
+            verboseCimErrors = True
         elif flag=='--dataset':
             datasetName = arg
         elif flag in ['-d', '--delete-files']:
@@ -357,6 +416,7 @@ def main(argv):
                 mapfileDir = arg
             else:
                 raise ESGPublishError("Not a valid file or directory: %s" % arg)
+            mapfileProvided = True
         elif flag in ['-m', '--message']:
             message = arg
         elif flag=='--model':
@@ -435,18 +495,12 @@ def main(argv):
         elif flag=='--version-list':
             versionList = arg
 
-    # Load the configuration and set up a database connection
-    config = loadConfig(init_dir, projectName)
-    engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
-    initLogging('extract', override_sa=engine, log_filename=log_filename)
-    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+    if createCimOnly and not mapfileProvided:
+        raise ESGPublishError("--create-cim-only can only be used with --map")
 
-    if threddsReinit:
-        updateThreddsMasterCatalog(Session)
-        result = reinitializeThredds()
-        sys.exit(0)
-    elif threddsReinit is None:
-        threddsReinit = thredds
+    if createCim and not mapfileProvided:
+        raise ESGPublishError("--create-cim can only be used with --map")
+
 
     # The project must be specified
     if projectName is None:
@@ -466,6 +520,68 @@ def main(argv):
             dsid = dsid.strip()
             vers = int(vers.strip())
             version[dsid] = vers
+
+    # Load the configuration
+    config = loadConfig(init_dir, projectName)
+    project_section = "project:%s" % projectName    
+    project_config_section = "config:%s" % projectName
+
+    #---------------------------------------------------------------------
+    if verboseCimErrors:
+        set_verbose_cim_errors()
+
+    # if --create-cim-only specified, just do this and quit without 
+    # starting database interaction etc
+    if createCimOnly:        
+
+        setup_cdf2cim_environment(config, project_config_section)
+
+        if mapfileDir is not None:
+            success = True
+            for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
+                if not create_cim_from_dmap(dmap, exception_on_fail=False):
+                    success = False
+            if success:
+                sys.exit(0)
+            else:
+                error("One or more mapfiles had errors with create CIM")
+                sys.exit(1)
+
+        else:
+            dmap = readDatasetMap(datasetMapfile)
+            create_cim_from_dmap(dmap)
+            sys.exit(0)  # assume it raised an exception if it failed
+
+    # set createCim to True or False based on handler and options, 
+    # unless argument parsing has already found an explicit option that overrides this 
+    # (--create-cim / --no-create-cim / --create-cim-only)
+    if createCim == None:
+        if config.getboolean(project_section, 'create_cim', default=False):
+            createCim = (mapfileProvided and not publishOnly and masterGateway == None)
+        else:
+            createCim = False
+
+    if createCim:
+        try:
+            setup_cdf2cim_environment(config, project_config_section)
+        except Exception as exc:
+            print exc
+            print "Turning off create_cim because related configuration variables are missing."
+            createCim = False
+
+    #---------------------------------------------------------------------
+
+    # set up a database connection
+    engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
+    initLogging('extract', override_sa=engine, log_filename=log_filename)
+    Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
+
+    if threddsReinit:
+        updateThreddsMasterCatalog(Session)
+        result = reinitializeThredds()
+        sys.exit(0)
+    elif threddsReinit is None:
+        threddsReinit = thredds
 
     # Register project handlers
     registerHandlers(projectName)
@@ -490,7 +606,6 @@ def main(argv):
 
     # Check if project uses PIDs and start messaging thread
     pid_connector = None
-    project_config_section = "config:%s" % projectName
     try:
         if not publishOnly or thredds:
             pid_prefix = handler.check_pid_avail(project_config_section, config, version=version)
@@ -506,18 +621,12 @@ def main(argv):
 
         # Process all mapfiles in a directory
         if mapfileDir is not None:
-            for root, dirs, files in os.walk(mapfileDir, followlinks=True):
-                for mapfile in files:
-                    try:
-                        dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
-                    except:
-                        error("Skipping %s: File does not match ESGF mapfile format." % os.path.join(root, mapfile))
-                        continue
+            for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
                     datasetNames = dmap.keys()
                     datasetNames.sort()
-                    if len(datasetNames)==0:
-                        error("Skipping %s: File does not contain any datasets." % os.path.join(root, mapfile))
-                        continue
+
+                    if createCim:
+                        create_cim_from_dmap(dmap, exception_on_fail=False)
 
                     # Iterate over datasets
                     if not publishOnly:
@@ -541,7 +650,10 @@ def main(argv):
         else:
             if datasetMapfile is not None:
                 dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
-                datasetNames = dmap.keys()
+                datasetNames = dmap.keys()                
+
+                if createCim:
+                    create_cim_from_dmap(dmap, exception_on_fail=False)
 
             elif rescan:
                 # Note: No need to get the extra fields, such as mod_time, since

@@ -7,6 +7,8 @@ import types
 import string
 import glob
 import re
+import sys
+import traceback
 import logging
 import subprocess
 import filecmp
@@ -1013,6 +1015,15 @@ def getRestServiceURL(project_config_section=None):
     return serviceURL
 
 
+def tracebackString(indent=0):
+    """
+    Returns the traceback of the current exception as an indented string.
+    """
+    lines = traceback.format_exc(sys.exc_info()[2]).split("\n")
+    prefix = " " * indent
+    return string.join([prefix + line + "\n" for line in lines])
+
+
 def establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=True):
     """Establish a connection to the PID service
 
@@ -1077,7 +1088,7 @@ def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
     if pull_cmor_repo:
 
         try:
-            os.system("pushd "+cmor_table_path+" ; git pull ; popd")
+            os.system("pushd "+cmor_table_path+" ; git fetch ; popd")
             f = open(UPDATE_TIMESTAMP, "w")
             f.write("t")
             f.close()
