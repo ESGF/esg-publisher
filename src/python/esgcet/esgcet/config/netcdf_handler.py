@@ -189,7 +189,14 @@ class NetcdfHandler(ProjectHandler):
 
         if config.has_option(projectSection, config_key):
             for key in splitLine(config.get(projectSection, config_key), ','):
-                result[key] = cdfile.getAttribute(key, None)
+                
+                # check for mapped keys
+                if ':' in key:
+                    parts = key.split(':')
+                    result[parts[1]] = cdfile.getAttribute(parts[0], None)
+
+                else:
+                    result[key] = cdfile.getAttribute(key, None)
 
         return result
 
