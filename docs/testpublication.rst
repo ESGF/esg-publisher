@@ -21,7 +21,6 @@ ESGF v2.5 or later
 
 ESGF v2.4.x or earlier
 
-
 ::
 
     $ source /etc/esg.env
@@ -85,15 +84,18 @@ Preliminary
 
 Set up default environment for scripts:
 
-::
-
 ESGF v2.5 or later
+
+::
 
     $ source /usr/local/conda/bin/activate esgf-pub
 
 ESGF v2.4.x or earlier
 
+::
+
     $ source /etc/esg.env
+
 
 
 Generate a valid globus certificate. For publication of test data you could use ``esgf_user`` rootAdmin, this account has preset permissions to publish test data.
