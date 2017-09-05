@@ -227,11 +227,13 @@ the <code class="docutils literal"><span class="pre">rootAdmin</span></code> acc
 <h3>Preliminary<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Set up default environment for scripts:</p>
 <p>ESGF v2.5 or later</p>
-<blockquote>
-<div>$ source /usr/local/conda/bin/activate esgf-pub</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+</pre></div>
+</div>
 <p>ESGF v2.4.x or earlier</p>
-<blockquote>
-<div>$ source /etc/esg.env</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
+</pre></div>
+</div>
 <p>Generate a valid globus certificate. For publication of test data you could use <code class="docutils literal"><span class="pre">esgf_user</span></code> rootAdmin, this account has preset permissions to publish test data.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ myproxy-logon -s &lt;openid_server&gt; -l &lt;esgf_user&gt; -b -t 72 -o $HOME/.globus/certificate-file
 </pre></div>
