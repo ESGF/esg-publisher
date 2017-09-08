@@ -271,8 +271,8 @@ $ wget -O sftlf.nc http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ esgprep mapfile --project test /esg/data/test
 </pre></div>
 </div>
-<p>The above will generate a mapfile <code class="docutils literal"><span class="pre">test.test.map</span></code> in your working directory.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cat test.test.map
+<p>The above will generate the directory <code class="docutils literal"><span class="pre">mapfiles</span></code> containing the file <code class="docutils literal"><span class="pre">test.test.map</span></code> in your working directory.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cat ./mapfiles/test.test.map
 test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2 | checksum_type=SHA256
 </pre></div>
 </div>
@@ -281,13 +281,13 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
 <h3>Publication<a class="headerlink" href="#publication" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="publish-to-local-postgres-database">
 <h4>Publish to local postgres database<a class="headerlink" href="#publish-to-local-postgres-database" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice
 </pre></div>
 </div>
 </div>
 <div class="section" id="publish-to-local-thredds-server">
 <h4>Publish to local Thredds server<a class="headerlink" href="#publish-to-local-thredds-server" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --thredds
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -297,7 +297,7 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
 </div>
 <div class="section" id="publish-to-index-node">
 <h4>Publish to index node<a class="headerlink" href="#publish-to-index-node" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --publish
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --publish
 </pre></div>
 </div>
 <div class="admonition note">
@@ -314,7 +314,7 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
 <h3>Unpublication<a class="headerlink" href="#unpublication" title="Permalink to this headline">¶</a></h3>
 <p>If you are on a production node please make sure to unpublish the test file after successful publication. Test data should not be visible to users.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map test.test.map
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --map ./mapfiles/test.test.map
 </pre></div>
 </div>
 </div></blockquote>
