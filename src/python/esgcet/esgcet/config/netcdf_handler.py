@@ -9,6 +9,8 @@ try:
 except:
     pass
 from cdms2 import Cdunif
+from cdms2 import open as cdms_open
+
 
 import datetime
 
@@ -23,6 +25,7 @@ class CdunifFormatHandler(FormatHandler):
         self.file = file
         self.variables = file.variables
         self.path = path
+
 
     @staticmethod
     def open(path, mode='r'):
@@ -188,15 +191,16 @@ class NetcdfHandler(ProjectHandler):
         config_key = "extract_global_attrs"
 
         if config.has_option(projectSection, config_key):
+            cdms_file = cdms_open(self.path)
             for key in splitLine(config.get(projectSection, config_key), ','):
                 
                 # check for mapped keys
                 if ':' in key:
                     parts = key.split(':')
-                    result[parts[1]] = cdfile.getAttribute(parts[0], None)
+                    result[parts[1]] = cdfile.__getattribute__(parts[0])
 
                 else:
-                    result[key] = cdfile.getAttribute(key, None)
+                    result[key] = cdms_file.__getattribute__(key)
 
         return result
 
