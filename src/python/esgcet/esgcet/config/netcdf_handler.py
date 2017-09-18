@@ -197,7 +197,7 @@ class NetcdfHandler(ProjectHandler):
                 # check for mapped keys
                 if ':' in key:
                     parts = key.split(':')
-                    result[parts[1]] = cdfile.__getattribute__(parts[0])
+                    result[parts[1]] = cdms_file.__getattribute__(parts[0])
 
                 else:
                     result[key] = cdms_file.__getattribute__(key)
