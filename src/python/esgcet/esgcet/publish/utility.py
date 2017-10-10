@@ -1097,7 +1097,10 @@ def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
 
     if handler.data_specs_version != ds_version:
         try:
-            os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; popd")
+            xtra = ""
+            if ds_version == "master":
+                xtra = " git pull ; "
+            os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; " + xtra + " popd")
             handler.set_spec_version(ds_version)
             
         except Exception as e:

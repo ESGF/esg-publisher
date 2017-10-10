@@ -61,9 +61,13 @@ class CMIP6Handler(BasicHandler):
 
         f = fileobj.path
 
+# todo refactoring these could loaded upfront in the constructor
         config = getConfig()
         projectSection = 'project:'+self.name
         min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
+
+        data_specs_version = config.get(projectSection, "data_specs_version", default="master")
+
         
         file_cmor_version = None
 
@@ -91,11 +95,13 @@ class CMIP6Handler(BasicHandler):
         # if (rc > 0):
         #     raise ESGPublishError("File %s fails CF check"%f)
 
-        file_data_specs_version = None
-        try:
-        	file_data_specs_version = fileobj.getAttribute('data_specs_version', None)
-        except Exception as e:
-        	raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
+
+# We are not using the data specs from each file
+        # file_data_specs_version = None
+        # try:
+        # 	file_data_specs_version = fileobj.getAttribute('data_specs_version', None)
+        # except Exception as e:
+        # 	raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
 
 
         table = None
@@ -123,7 +129,7 @@ class CMIP6Handler(BasicHandler):
         if cmor_table_path == "":
         	cmor_table_path = DEFAULT_CMOR_TABLE_PATH
 
-        checkAndUpdateRepo(cmor_table_path, self, file_data_specs_version)
+        checkAndUpdateRepo(cmor_table_path, self, data_specs_version)
 
 
         table_file = cmor_table_path + '/CMIP6_' + table + '.json'

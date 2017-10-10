@@ -21,7 +21,6 @@ ESGF v2.5 or later
 
 ESGF v2.4.x or earlier
 
-
 ::
 
     $ source /etc/esg.env
@@ -85,15 +84,18 @@ Preliminary
 
 Set up default environment for scripts:
 
-::
-
 ESGF v2.5 or later
+
+::
 
     $ source /usr/local/conda/bin/activate esgf-pub
 
 ESGF v2.4.x or earlier
 
+::
+
     $ source /etc/esg.env
+
 
 
 Generate a valid globus certificate. For publication of test data you could use ``esgf_user`` rootAdmin, this account has preset permissions to publish test data.
@@ -145,11 +147,11 @@ Mapfile generation
 
     $ esgprep mapfile --project test /esg/data/test
 
-The above will generate a mapfile ``test.test.map`` in your working directory.
+The above will generate the directory ``mapfiles`` containing the file ``test.test.map`` in your working directory.
 
 ::
 
-    $ cat test.test.map
+    $ cat ./mapfiles/test.test.map
     test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2 | checksum_type=SHA256
 
 
@@ -161,7 +163,7 @@ Publish to local postgres database
 
 ::
 
-   $ esgpublish --project test --map test.test.map --service fileservice
+   $ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice
 
 
 Publish to local Thredds server
@@ -169,7 +171,7 @@ Publish to local Thredds server
 
 ::
 
-   $ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
+   $ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --thredds
 
 .. warning::
     Make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in ``/esg/content/thredds/esgcet/``.
@@ -180,7 +182,7 @@ Publish to index node
 
 ::
 
-   $ esgpublish --project test --map test.test.map --service fileservice --noscan --publish
+   $ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --publish
 
 .. note::
     If you publish to another index please coordinate with that site's node administrator.
@@ -196,4 +198,4 @@ If you are on a production node please make sure to unpublish the test file afte
 
     ::
 
-        $ esgunpublish --map test.test.map
+        $ esgunpublish --map ./mapfiles/test.test.map
