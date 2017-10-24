@@ -1070,39 +1070,75 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     return pid_connector
 
 
-def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
+def checkAndUpdateRepo(cmor_table_path, ds_version):
     """
         Checks for a file written to a predefined location.  if not present or too old, will pull the repo based on the input path argument and update the timestamp.
     """
-    pull_cmor_repo = False
 
+    # Pull repo if fetched more than one day ago
+    # or if never fetched before
     if os.path.exists(UPDATE_TIMESTAMP):
         mtime = os.path.getmtime(UPDATE_TIMESTAMP)
         now = time()
         if now - mtime > (86400.0):
-            pull_cmor_repo = True 
-
+            pull_cmor_repo = True
+        else:
+            pull_cmor_repo = False
     else:
         pull_cmor_repo = True
 
     if pull_cmor_repo:
-
         try:
-            os.system("pushd "+cmor_table_path+" ; git fetch ; popd")
+            # Go into CMOR table path
+            # Git fetch CMOR table repo
+            # Go back to previous working directory
+            os.system('pushd {} >/dev/null ; '
+                      'git fetch --quiet ; '
+                      'popd >/dev/null'.format(cmor_table_path))
+            # Update local timestamp
             f = open(UPDATE_TIMESTAMP, "w")
-            f.write("t")
+            f.write("CMOR table updated at {}".format(time()))
             f.close()
+            debug("Local CMOR table repository fetched or updated")
         except Exception as e :
             warning("Attempt to update the cmor table repo and encountered an error: " + str(e))
-
-    if handler.data_specs_version != ds_version:
         try:
-            xtra = ""
-            if ds_version == "master":
-                xtra = " git pull ; "
-            os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; " + xtra + " popd")
-            handler.set_spec_version(ds_version)
-            
+            # Go into CMOR table path
+            # Checkout to the appropriate CMOR table tag
+            # Go back to previous working directory
+            os.system('pushd {} >/dev/null ; '
+                      'git checkout {}  --quiet ; '
+                      'popd >/dev/null'.format(cmor_table_path, ds_version))
+            # Update local timestamp
+            f = open(UPDATE_TIMESTAMP, "w")
+            f.write("CMOR table updated at {}".format(time()))
+            f.close()
+            debug("Consider CMOR table tag: {}".format(ds_version))
         except Exception as e:
             raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables or other error.  Please contact support"%ds_version)
+        if ds_version != "master":
+            try:
+                # Go into CMOR table path
+                # PrePARE requires to have the most up to date CMIP6 CV.
+                # Update CMIP6_CV.json from master branch.
+                # Go back to previous working directory
+                os.system('pushd {} >/dev/null ; '
+                          'git checkout master CMIP6_CV.json --quiet ; '
+                          'git add CMIP6_CV.json ; '
+                          'git commit -m "update CMIP6_CV.json from master" --quiet ; '
+                          'popd >/dev/null'.format(cmor_table_path))
+                debug("CMIP6 CV updated from master")
+            except Exception as e:
+                raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)
+
+        #if handler.data_specs_version != ds_version:
+        #     try:
+        #         xtra = ""
+        #         if ds_version == "master":
+        #             xtra = " git pull ; "
+        #         os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; " + xtra + " popd")
+        #         handler.set_spec_version(ds_version)
+        #
+        #     except Exception as e:
+        #         raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables or other error.  Please contact support"%ds_version)
 
