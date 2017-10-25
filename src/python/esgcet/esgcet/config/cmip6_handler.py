@@ -11,7 +11,7 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitReco
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.publish import checkAndUpdateRepo
 
-from cmip6_cv import PrePARE 
+from cmip6_cv import PrePARE
 
 
 import numpy
@@ -32,12 +32,12 @@ class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
 
-    	self.data_specs_version = "0"
+        self.data_specs_version = "0"
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
 
     def set_spec_version(self, ver):
-    	self.data_specs_version = ver
+        self.data_specs_version = ver
 
 
     def openPath(self, path):
@@ -65,77 +65,50 @@ class CMIP6Handler(BasicHandler):
         config = getConfig()
         projectSection = 'project:'+self.name
         min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
-
         data_specs_version = config.get(projectSection, "data_specs_version", default="master")
 
-        
-        file_cmor_version = None
-
         try:
-	        file_cmor_version = fileobj.getAttribute('cmor_version', None)
-    	except:
-    		debug('File %s missing cmor_version attribute; will proceed with PrePARE check' %f)
+            file_cmor_version = fileobj.getAttribute('cmor_version', None)
+        except:
+            file_cmor_version = None
+            debug('File %s missing cmor_version attribute; will proceed with PrePARE check' %f)
 
         if compareLibVersions(min_cmor_version, file_cmor_version):
             debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
             return
 
-            #  PrePARE is going to handle the CF check now
-        # min_cf_version = config.get(projectSection, "min_cf_version", defaut="")        
-
-        # if len(min_cf_version) == 0: 
-        #     raise ESGPublishError("Minimum CF version not set in esg.ini")
-
-        # fakeversion = ["cfchecker.py", "-v", min_cf_version
-        # , "foo"]        
-        # (badc,coards,uploader,useFileName,standardName,areaTypes,udunitsDat,version,files)=getargs(fakeversion)
-        # CF_Chk_obj = CFChecker(uploader=uploader, useFileName=useFileName, badc=badc, coards=coards, cfStandardNamesXML=standardName, cfAreaTypesXML=areaTypes, udunitsDat=udunitsDat, version=version)
-        # rc = CF_Chk_obj.checker(f)
-
-        # if (rc > 0):
-        #     raise ESGPublishError("File %s fails CF check"%f)
-
-
-# We are not using the data specs from each file
-        # file_data_specs_version = None
-        # try:
-        # 	file_data_specs_version = fileobj.getAttribute('data_specs_version', None)
-        # except Exception as e:
-        # 	raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
-
-
-        table = None
         try:
             table = fileobj.getAttribute('table_id', None)
-
         except:
             raise ESGPublishError("File %s missing required table_id global attribute"%f)
 
         try:
-                variable_id = fileobj.getAttribute('variable_id', None)
-
+            variable_id = fileobj.getAttribute('variable_id', None)
         except:
             raise ESGPublishError("File %s missing required variable_id global attribute"%f)
 
-
-        projectSection = 'config:cmip6'
-
         cmor_table_path=""
         try:
-            cmor_table_path = config.get(projectSection, "cmor_table_path", defaut="")
+            cmor_table_path = config.get(projectSection, "cmor_table_path", defaut=DEFAULT_CMOR_TABLE_PATH)
         except:
             debug("Missing cmor_table_path setting. Using default location")
 
-        if cmor_table_path == "":
-        	cmor_table_path = DEFAULT_CMOR_TABLE_PATH
+        # data_specs_version drives CMOR table fetching
+        # Behavior A (default): fetches "master" branch" (if not "data_specs_version" in esg.ini")
+        # Behavior A: fetches branch specified by "data_specs_version=my_branch" into esg.ini
+        # Behavior B: fetches branch specified by file global attributes using "data_specs_version=file" into esg.ini
+        if data_specs_version == "file":
+            try:
+                data_specs_version = fileobj.getAttribute('data_specs_version', None)
+            except Exception as e:
+                raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
 
-        checkAndUpdateRepo(cmor_table_path, self, data_specs_version)
-
+        checkAndUpdateRepo(cmor_table_path, data_specs_version)
 
         table_file = cmor_table_path + '/CMIP6_' + table + '.json'
         fakeargs = [ '--variable', variable_id, table_file ,f]
         parser = argparse.ArgumentParser(prog='esgpublisher')
-        parser.add_argument('--variable')        
+        parser.add_argument('--variable')
         parser.add_argument('cmip6_table', action=validator.JSONAction)
         parser.add_argument('infile', action=validator.CDMSAction)
         parser.add_argument('outfile',
@@ -146,7 +119,7 @@ class CMIP6Handler(BasicHandler):
         args = parser.parse_args(fakeargs)
 
 #        print "About to CV check:", f
- 
+
         try:
             process = validator.checkCMIP6(args)
             if process is None:
