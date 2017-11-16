@@ -47,10 +47,15 @@ class MultipleFormatHandler(CdunifFormatHandler):
             if variables_none == "false":
                 self.noncd = False
                 CdunifFormatHandler.__init__(self, cdf, path)
-            else:
+            elif variables_none == "attr":
+                CdunifFormatHandler.__init__(self, cdf, path)
+                self.attr_only = True
+                self.noncd = True
+            else:  # assume "true"
                 self.noncd = True
                 self.file = {}
                 self.path = path
+                self.attr_only = False
 
     @staticmethod
     def open(path, mode='r'):
@@ -126,7 +131,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
         variableName
           String variable name. If None, return the global attribute list.
         """
-        if (self.noncd):
+        if (self.noncd and not self.attr_only):
             return []
         else:
             return CdunifFormatHandler.inquireAttributeList(self, variableName=variableName)
@@ -146,7 +151,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
         args
           optional default value if the attribute is not found.
         """
-        if (self.noncd):
+        if (self.noncd and not self.attr_only):
             return None
         else:
             return CdunifFormatHandler.getAttribute(self, attributeName, variableName, *args)
@@ -173,7 +178,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
         variableName:
           String name of the variable. If None, check a global attribute.
         """
-        if (self.noncd):
+        if (self.noncd and not self.attr_only):
             return False
         else:
             return CdunifFormatHandler.hasAttribute(self, attributeName, variableName=variableName)
