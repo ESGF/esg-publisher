@@ -43,8 +43,9 @@ class CMIP6Handler(BasicHandler):
 
         # todo refactoring these could loaded upfront in the constructor
         config = getConfig()
+        project_section = 'project:'+self.name
         project_config_section = 'config:'+self.name
-        min_cmor_version = config.get(project_config_section, "min_cmor_version", default="0.0.0")
+        min_cmor_version = config.get(project_section, "min_cmor_version", default="0.0.0")
         data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
         cmor_table_path = config.get(project_config_section, "cmor_table_path", defaut=DEFAULT_CMOR_TABLE_PATH)
 
