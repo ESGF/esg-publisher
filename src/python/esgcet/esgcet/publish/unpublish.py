@@ -255,13 +255,13 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         threddsRootURL = config.get('DEFAULT', 'thredds_url')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
         if not restInterface:
             serviceURL = getHessianServiceURL(project_config_section=project_config_section)
             servicePort = config.getint('DEFAULT','hessian_service_port')
             serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:
+            service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
