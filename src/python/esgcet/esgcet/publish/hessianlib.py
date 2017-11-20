@@ -469,16 +469,17 @@ class Hessian:
           
         """
 	# Creates a Hessian proxy object
-        global DEBUG
+    global DEBUG
 
+    self.service_type = 'HESSIAN'
 	self._url = url
-        self._port = port
-        self._key_file = key_file
-        self._cert_file = cert_file
-        # print "Using key file = %s, cert file = %s"%(key_file, cert_file)
-        messaging.debug("Using key file = %s, cert file = %s"%(key_file, cert_file))
-        if debug:
-            DEBUG = True
+    self._port = port
+    self._key_file = key_file
+    self._cert_file = cert_file
+    # print "Using key file = %s, cert file = %s"%(key_file, cert_file)
+    messaging.debug("Using key file = %s, cert file = %s"%(key_file, cert_file))
+    if debug:
+        DEBUG = True
 
 	# get the uri
 	scheme, uri = urllib.splittype(url)

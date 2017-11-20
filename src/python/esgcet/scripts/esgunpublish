@@ -263,11 +263,6 @@ def main(argv):
     if config is None:
         raise ESGPublishError("No configuration file found.")
 
-    if not data_node:
-        data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
-    elif data_node == 'all':
-        data_node = None
-
     if gatewayOp != NO_OPERATION:
         if not keep_credentials:
             # check cert and generate a new one, if expired
@@ -290,6 +285,15 @@ def main(argv):
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
+
+    if not data_node:
+        data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+    elif data_node == 'all':
+        if not restApi:
+            data_node = None
+        else:
+            data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+            warning('Cannot unpublish from multiple data nodes using REST, unpublishing from %s.' % (data_node))
 
     # Register project handlers
     registerHandlers(projectName)
