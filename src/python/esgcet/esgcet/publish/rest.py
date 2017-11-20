@@ -5,7 +5,7 @@ from esgcet.exceptions import *
 
 class RestPublicationService(object):
 
-    def __init__(self, url, certFile, keyFile=None, debug=False):
+    def __init__(self, url, certFile, certs_location, keyFile=None, debug=False):
         """
 
         Create a RESTful ESGF Publication Service proxy. The proxy
@@ -42,6 +42,7 @@ class RestPublicationService(object):
             self.keyFile = keyFile
         else:
             self.keyFile = certFile
+        self.certs_location = certs_location
         self.debug = debug
         self.status = 0
         self.message = ''
@@ -151,7 +152,7 @@ class RestPublicationService(object):
             params['schema'] = schema
 
         try:
-            response = requests.post(self.harvestUrl, params=params, cert=(self.certFile, self.keyFile), verify=False)
+            response = requests.post(self.harvestUrl, params=params, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
         except requests.exceptions.SSLError, e:
             raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
 

@@ -249,6 +249,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         threddsRootURL = config.get('DEFAULT', 'thredds_url')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
+        service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
         if not restInterface:
             serviceURL = getHessianServiceURL(project_config_section=project_config_section)
             servicePort = config.getint('DEFAULT','hessian_service_port')
@@ -257,7 +258,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         else:
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
-            service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
+            service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
 
         for datasetName,version in datasetNames:
             if version > -1:

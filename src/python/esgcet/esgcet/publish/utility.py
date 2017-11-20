@@ -1004,6 +1004,7 @@ def getRestServiceURL(project_config_section=None):
 
     config = getConfig()
     hessianServiceURL = None
+    serviceURL = None
     # get project specific hessian service url
     if serviceURL is None:
         if project_config_section and config.has_section(project_config_section):
