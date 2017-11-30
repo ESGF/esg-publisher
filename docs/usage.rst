@@ -171,6 +171,9 @@ Publish to index node
 
 The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF's `esg-search <https://github.com/ESGF/esg-search>`_.
 
+.. note::
+    By default the publication will use the HESSIAN web service protocol. For the REST service please use the ``--rest-api`` flag.
+
 ::
 
    $ esgpublish [optional: -i <path_to_ini_files>] --project <project_name> --map <input_mapfile or mapfile_directory> --service fileservice --noscan --publish
@@ -295,6 +298,10 @@ Unpublication
     To unpublish a single version use the ``dataset_name#version`` syntax, e.g.: ``cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1#20120315``.
 
 You could either use a ``mapfile directory``, a single ``mapfile`` a ``dataset`` or a ``dataset_list`` as input for the data unpublication:
+
+.. note::
+    By default the unpublication from the Solr index will use the HESSIAN web service protocol.
+    For the REST service please use the ``--rest-api`` flag. When using REST, it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).
 
 - Using a mapfile directory or a single mapfile
 
