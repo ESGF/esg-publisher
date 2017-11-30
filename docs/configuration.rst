@@ -127,8 +127,9 @@ sections. This file will be set up during the ESGF installation process.
         ::
 
             hessian_service_certfile = %(home)s/.globus/certificate-file
-            hessian_service_debug = false
             hessian_service_keyfile = %(home)s/.globus/certificate-file
+            hessian_service_certs_location = %(home)s/.globus/certificates
+            hessian_service_debug = false
             hessian_service_polling_delay = 3
             hessian_service_polling_iterations = 10
             hessian_service_port = 443
