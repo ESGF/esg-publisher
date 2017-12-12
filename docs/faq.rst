@@ -3,6 +3,43 @@
 FAQ and known issues
 ====================
 
+PID Configuration
+*****************
+
+Cannot connect to PID server
+----------------------------
+
+Please ensure that the firewall is open for all PID hosts in your ``[config:<project>]`` section, port 5671.
+
+If you can't connect to the server the publisher will produce the following errors:
+
+::
+
+    $ esgpublish --test --project test --map test.test.map --service fileservice --noscan --thredds
+        ...
+        INFO       2017-11-14 18:50:23,729 Opening connection to RabbitMQ...
+        INFO       2017-11-14 18:50:23,792 Connecting to 198.128.245.160:5671 with SSL
+        ERROR      2017-11-14 18:50:24,042 Connection to 198.128.245.160:5671 failed: timeout
+        WARNING    2017-11-14 18:50:24,042 Could not connect, 0 attempts left
+        ERROR      2017-11-14 18:50:24,042 Could not connect to pcmdi10.llnl.gov/esgf-pid:5671: "Connection to 198.128.245.160:5671 failed: timeout" (connection failure after 0.313869 seconds)
+        ...
+
+
+Setting up PID credentials
+--------------------------
+
+In case the publisher fails with one of the following errors please make sure your ``[config:<project>]`` section is set up correctly and does contain the ``pid_credentials``.
+For more information see section :ref:`The project config section <config_project_section>`
+
+::
+
+    Section 'config:cmip6' not found in esg.ini
+
+::
+
+    Option 'pid_credentials' missing in section [config:<project>] of esg.ini. Please contact your tier1 data node admin to get the proper values.
+
+
 Publication to THREDDS fails
 ****************************
 
