@@ -291,6 +291,10 @@ INFO       2016-08-09 14:07:21,993 Reinitializing THREDDS server
 <div class="section" id="publish-to-index-node">
 <h3>Publish to index node<a class="headerlink" href="#publish-to-index-node" title="Permalink to this headline">¶</a></h3>
 <p>The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF&#8217;s <a class="reference external" href="https://github.com/ESGF/esg-search">esg-search</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default the publication will use the HESSIAN web service protocol. For the REST service please use the <code class="docutils literal"><span class="pre">--rest-api</span></code> flag.</p>
+</div>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --publish
 </pre></div>
 </div>
@@ -422,6 +426,11 @@ $ esgpublish --thredds-reinit
 To unpublish a single version use the <code class="docutils literal"><span class="pre">dataset_name#version</span></code> syntax, e.g.: <code class="docutils literal"><span class="pre">cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1#20120315</span></code>.</p>
 </div>
 <p>You could either use a <code class="docutils literal"><span class="pre">mapfile</span> <span class="pre">directory</span></code>, a single <code class="docutils literal"><span class="pre">mapfile</span></code> a <code class="docutils literal"><span class="pre">dataset</span></code> or a <code class="docutils literal"><span class="pre">dataset_list</span></code> as input for the data unpublication:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default the unpublication from the Solr index will use the HESSIAN web service protocol.
+For the REST service please use the <code class="docutils literal"><span class="pre">--rest-api</span></code> flag. When using REST, it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).</p>
+</div>
 <ul>
 <li><p class="first">Using a mapfile directory or a single mapfile</p>
 <blockquote>

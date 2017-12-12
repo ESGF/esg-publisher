@@ -269,8 +269,9 @@ thredds_username = dnode_user
 <li><p class="first">Index node configuration</p>
 <blockquote>
 <div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">hessian_service_certfile</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificate</span><span class="o">-</span><span class="n">file</span>
-<span class="n">hessian_service_debug</span> <span class="o">=</span> <span class="n">false</span>
 <span class="n">hessian_service_keyfile</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificate</span><span class="o">-</span><span class="n">file</span>
+<span class="n">hessian_service_certs_location</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificates</span>
+<span class="n">hessian_service_debug</span> <span class="o">=</span> <span class="n">false</span>
 <span class="n">hessian_service_polling_delay</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">hessian_service_polling_iterations</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">hessian_service_port</span> <span class="o">=</span> <span class="mi">443</span>
@@ -283,6 +284,8 @@ thredds_username = dnode_user
 </ul>
 </div></blockquote>
 </li>
+</ol>
+<ol class="arabic" id="config-project-section">
 <li><p class="first">The <code class="docutils literal"><span class="pre">[config:&lt;project&gt;]</span></code> section</p>
 <blockquote>
 <div><p>To specify project specific configuration in <cite>esg.ini</cite> you can add a separate config section for each project.
@@ -295,13 +298,35 @@ If PIDs are used by the project, the PID configs are set in that section, the sa
 <span class="n">pid_exchange_name</span> <span class="o">=</span> <span class="n">esgffed</span><span class="o">-</span><span class="n">exchange</span>    <span class="c1"># not mandatory for CMIP6</span>
 <span class="n">pid_credentials</span> <span class="o">=</span>
   <span class="c1"># hostname                  | port | virtual_host |    username    | password | ssl_enabled</span>
-  <span class="n">handle</span><span class="o">-</span><span class="n">esgf</span><span class="o">-</span><span class="n">trusted</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span> <span class="o">|</span> <span class="mi">5672</span> <span class="o">|</span>   <span class="n">esgf</span><span class="o">-</span><span class="n">pid</span>   <span class="o">|</span> <span class="n">esgf</span><span class="o">-</span><span class="n">publisher</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">secret</span><span class="o">&gt;</span> <span class="o">|</span>    <span class="n">false</span>
+  <span class="n">handle</span><span class="o">-</span><span class="n">esgf</span><span class="o">-</span><span class="n">trusted</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span> <span class="o">|</span> <span class="mi">5671</span> <span class="o">|</span>   <span class="n">esgf</span><span class="o">-</span><span class="n">pid</span>   <span class="o">|</span> <span class="n">esgf</span><span class="o">-</span><span class="n">publisher</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">secret</span><span class="o">&gt;</span> <span class="o">|</span>    <span class="n">true</span>
   <span class="n">pcmdi10</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>            <span class="o">|</span> <span class="mi">5671</span> <span class="o">|</span>   <span class="n">esgf</span><span class="o">-</span><span class="n">pid</span>   <span class="o">|</span> <span class="n">esgf</span><span class="o">-</span><span class="n">publisher</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">secret</span><span class="o">&gt;</span> <span class="o">|</span>    <span class="n">true</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal"><span class="pre">pid_credentials</span></code> are available on <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config">Confluence</a>.
+In case you don&#8217;t have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">Ensure that the <code class="docutils literal"><span class="pre">/etc/grid-security/hostcert.pem</span></code> is signed by one of the ESGF root CAs (eg. ANL, IPSL, NSC)</p>
+</li>
+<li><p class="first">[Run as root]:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+$ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py &lt;node-server&gt;  # e.g. esgf-node.llnl.gov or esgf-data.dkrz.de
+</pre></div>
+</div>
+</li>
+<li><p class="first">Inspect <code class="docutils literal"><span class="pre">/esg/config/esgcet/esg.ini</span></code> – <code class="docutils literal"><span class="pre">[config:cmip6]</span></code> section should be installed with <code class="docutils literal"><span class="pre">pid_credentials</span></code></p>
+</li>
+<li><p class="first">Please change the order of the lines – put the host closest to your location first</p>
+</li>
+</ol>
+</div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This option is optional for most projects, except CMIP6. Please use the ESGF node manager to fetch the credentials or ask your tier1 node admin.</p>
+<p class="last">Please ensure that the firewall is open for all PID hosts on port 5671.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This option is optional for most projects, except CMIP6.</p>
 </div>
 </div></blockquote>
 </li>
