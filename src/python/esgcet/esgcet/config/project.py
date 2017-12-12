@@ -225,6 +225,9 @@ class ProjectHandler(object):
             if category=="project":
                 projects = splitRecord(config.get(projectSection, 'project_options', default=''))
                 self.validValues['project'] = [x[0] for x in projects]
+            elif category=="mip_era":
+                projects = splitRecord(config.get(projectSection, 'project_options', default=''))
+                self.validValues['mip_era'] = [x[0] for x in projects]
             elif category=="model":
                 models = session.query(Model).filter_by(project=self.name).all()
                 self.validValues['model'] = [x.name for x in models]

@@ -1,44 +1,25 @@
 """"Handle CMIP6 data file metadata"""
 
-import os
+import argparse
 import re
 import sys
 
-from cmip5_product import getProduct
-
-from esgcet.exceptions import *
-from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
-from esgcet.messaging import debug, info, warning, error, critical, exception
-from esgcet.publish import checkAndUpdateRepo
-
 from cmip6_cv import PrePARE
-
-
-import numpy
-import argparse
-import imp
+from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
+from esgcet.exceptions import *
+from esgcet.messaging import debug, warning
+from esgcet.publish import checkAndUpdateRepo
 
 WARN = False
 
 DEFAULT_CMOR_TABLE_PATH = "/usr/local/cmip6-cmor-tables/Tables"
-
-#from cfchecker import getargs, CFChecker
-
-#PrePARE_PATH = '/usr/local/conda/envs/esgf-pub/bin/PrePARE.py'
 
 version_pattern = re.compile('20\d{2}[0,1]\d[0-3]\d')
 
 class CMIP6Handler(BasicHandler):
 
     def __init__(self, name, path, Session, validate=True, offline=False):
-
-        self.data_specs_version = "0"
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
-
-
-    def set_spec_version(self, ver):
-        self.data_specs_version = ver
-
 
     def openPath(self, path):
         """Open a sample path, returning a project-specific file object,
@@ -46,7 +27,6 @@ class CMIP6Handler(BasicHandler):
         fileobj = BasicHandler.openPath(self, path)
         fileobj.path = path
         return fileobj
-
 
     def validateFile(self, fileobj):
         """
@@ -61,11 +41,13 @@ class CMIP6Handler(BasicHandler):
 
         f = fileobj.path
 
-# todo refactoring these could loaded upfront in the constructor
+        # todo refactoring these could loaded upfront in the constructor
         config = getConfig()
-        projectSection = 'project:'+self.name
-        min_cmor_version = config.get(projectSection, "min_cmor_version", default="0.0.0")
-        data_specs_version = config.get(projectSection, "data_specs_version", default="master")
+        project_section = 'project:'+self.name
+        project_config_section = 'config:'+self.name
+        min_cmor_version = config.get(project_section, "min_cmor_version", default="0.0.0")
+        data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
+        cmor_table_path = config.get(project_config_section, "cmor_table_path", defaut=DEFAULT_CMOR_TABLE_PATH)
 
         try:
             file_cmor_version = fileobj.getAttribute('cmor_version', None)
@@ -86,12 +68,6 @@ class CMIP6Handler(BasicHandler):
             variable_id = fileobj.getAttribute('variable_id', None)
         except:
             raise ESGPublishError("File %s missing required variable_id global attribute"%f)
-
-        cmor_table_path=""
-        try:
-            cmor_table_path = config.get(projectSection, "cmor_table_path", defaut=DEFAULT_CMOR_TABLE_PATH)
-        except:
-            debug("Missing cmor_table_path setting. Using default location")
 
         # data_specs_version drives CMOR table fetching
         # Behavior A (default): fetches "master" branch" (if not "data_specs_version" in esg.ini")
