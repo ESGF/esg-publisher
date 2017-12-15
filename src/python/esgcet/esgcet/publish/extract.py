@@ -722,6 +722,8 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
 
         # Create a file variable
         filevar = FileVariable(varname, openfile.getAttribute('long_name', varname, None), is_target_variable=is_target_variable)
+        if len(filevar) > 255:
+            filevar = filevar[0:255]
         fileobj.file_variables.append(filevar)
 
         # Create attributes:
