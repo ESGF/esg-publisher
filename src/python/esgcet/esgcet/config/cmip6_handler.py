@@ -9,7 +9,7 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitReco
 from esgcet.exceptions import *
 from esgcet.messaging import debug, warning
 from esgcet.publish import checkAndUpdateRepo
-from cdms2 inport Cdunif
+from cdms2 import Cdunif
 
 WARN = False
 
