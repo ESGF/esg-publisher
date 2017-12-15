@@ -9,6 +9,7 @@ from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitReco
 from esgcet.exceptions import *
 from esgcet.messaging import debug, warning
 from esgcet.publish import checkAndUpdateRepo
+from cdms2 inport Cdunif
 
 WARN = False
 
@@ -100,8 +101,9 @@ class CMIP6Handler(BasicHandler):
             process = validator.checkCMIP6(args)
             if process is None:
                 raise ESGPublishError("File %s failed the CV check - object create failure"%f)
-
-            process.ControlVocab()
+            args.infile = Cdunif.CdunifFile(args.infile,"r")
+            process.ControlVocab(args)
+            args.infile.close()
 
         except:
 
