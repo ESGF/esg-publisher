@@ -65,7 +65,7 @@ setup(
     url = 'http://esg-pcmdi.llnl.gov',
     install_requires = [
         "psycopg2>=2.0",
-        "SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99",
+        "SQLAlchemy>0.9.5",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6",
         "requests>=1.2.0",
@@ -77,7 +77,7 @@ setup(
     ],
     setup_requires = [
         "psycopg2>=2.0",
-        "SQLAlchemy>=0.7.8,!=0.9.5,<=0.9.99",
+        "SQLAlchemy>0.9.5",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6",
         "requests>=1.2.0",
