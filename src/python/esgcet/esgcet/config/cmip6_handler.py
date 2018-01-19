@@ -48,7 +48,7 @@ class CMIP6Handler(BasicHandler):
         project_config_section = 'config:'+self.name
         min_cmor_version = config.get(project_section, "min_cmor_version", default="0.0.0")
         data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
-        cmor_table_path = config.get(project_config_section, "cmor_table_path", defaut=DEFAULT_CMOR_TABLE_PATH)
+        cmor_table_path = config.get(project_config_section, "cmor_table_path", default=DEFAULT_CMOR_TABLE_PATH)
 
         try:
             file_cmor_version = fileobj.getAttribute('cmor_version', None)
