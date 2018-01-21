@@ -73,7 +73,6 @@ class Bcolors:
                 self._disable_colors = \
                     config.getboolean('DEFAULT', 'disable_colors',
                                       default=False)
-                print "DISABLE COLORS = ", self._disable_colors
             else:
                 return False  # allow colors until config is loaded
         return self._disable_colors                
