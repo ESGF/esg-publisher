@@ -26,8 +26,6 @@ os.stat_float_times(False)
 
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
 
-
-
 class Bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
