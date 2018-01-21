@@ -26,7 +26,9 @@ os.stat_float_times(False)
 
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
 
-class bcolors:
+
+
+class Bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -36,6 +38,13 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+    def __init__(self):
+        if "ESGPUBLISH_DISABLE_COLORS" in os.environ:
+            for key in dir(self):
+                if isinstance(key, str) and not key.startswith('__'):
+                    setattr(self, key, '')
+
+bcolors = Bcolors()
 
 def getTypeAndLen(att):
     """Get the type descriptor of an attribute.
