@@ -27,20 +27,59 @@ os.stat_float_times(False)
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
 
 class Bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+
+    @property
+    def HEADER(self):
+        return self._get_escape('95')
+
+    @property
+    def OKBLUE(self):
+        return self._get_escape('94')
+
+    @property
+    def OKGREEN(self):
+        return self._get_escape('92')
+
+    @property
+    def WARNING(self):
+        return self._get_escape('93')
+
+    @property
+    def FAIL(self):
+        return self._get_escape('91')
+
+    @property
+    def ENDC(self):
+        return self._get_escape('0')
+
+    @property
+    def BOLD(self):
+        return self._get_escape('1')
+
+    @property
+    def UNDERLINE(self):
+        return self._get_escape('4')
+
+    def _get_escape(self, val):
+        if self._colors_are_disabled():
+            return ''
+        else:
+            return('\033[{}m'.format(val))
+
+    def _colors_are_disabled(self):
+        if self._disable_colors == None:
+            config = getConfig()
+            if config:
+                self._disable_colors = \
+                    config.getboolean('DEFAULT', 'disable_colors',
+                                      default=False)
+                print "DISABLE COLORS = ", self._disable_colors
+            else:
+                return False  # allow colors until config is loaded
+        return self._disable_colors                
 
     def __init__(self):
-        if "ESGPUBLISH_DISABLE_COLORS" in os.environ:
-            for key in dir(self):
-                if isinstance(key, str) and not key.startswith('__'):
-                    setattr(self, key, '')
+        self._disable_colors = None
 
 bcolors = Bcolors()
 
