@@ -593,7 +593,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
 def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg,
                         properties, testProgress1=None, testProgress2=None, handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None,
                         extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False,
-                        pid_connector=None):
+                        pid_connector=None, handlerExtraArgs={}):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -655,6 +655,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
     handlerDictionary=None
       A dictionary mapping datasetName => handler. If None, handlers are determined by project name.
+
+    handlerExtraArgs={}
+      A dictionary of extra keyword arguments to pass when instantiating the handler.
 
     perVariable=None
       Boolean, overrides ``variable_per_file`` config option.
@@ -744,9 +747,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         if handlerDictionary is not None and handlerDictionary.has_key(datasetName):
             handler = handlerDictionary[datasetName]
         elif projectName is not None:
-            handler = getHandlerByName(projectName, firstFile, Session, validate=True, offline=offline)
+            handler = getHandlerByName(projectName, firstFile, Session, validate=True, offline=offline, **handlerExtraArgs)
         else:
-            handler = getHandler(firstFile, Session, validate=True)
+            handler = getHandler(firstFile, Session, validate=True, **handlerExtraArgs)
             if handler is None:
                 raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
             projectName = handler.name

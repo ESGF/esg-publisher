@@ -19,7 +19,8 @@ version_pattern = re.compile('20\d{2}[0,1]\d[0-3]\d')
 
 class CMIP6Handler(BasicHandler):
 
-    def __init__(self, name, path, Session, validate=True, offline=False):
+    def __init__(self, name, path, Session, validate=True, offline=False, replica=False):
+        self.replica = replica
         BasicHandler.__init__(self, name, path, Session, validate=validate, offline=offline)
 
     def openPath(self, path):
@@ -41,6 +42,10 @@ class CMIP6Handler(BasicHandler):
         validator = PrePARE.PrePARE
 
         f = fileobj.path
+
+        if self.replica:
+            debug("skipping PrePARE for replica (file %s)" % f)
+            return
 
         # todo refactoring these could loaded upfront in the constructor
         config = getConfig()
