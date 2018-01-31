@@ -2,6 +2,7 @@
 
 import sys
 import logging
+import inspect
 
 from pkg_resources import iter_entry_points
 from esgcet.exceptions import *
@@ -152,7 +153,21 @@ def registerHandlerName(registry, projectName, handlerName):
 def setRegisterSearchOrder(projectName, search_order):
     projectRegistry.setSearchOrder(projectName, search_order)
 
-def getHandler(path, Session, validate=True):
+def instantiateHandler(cls, *args, **extra_args):
+    """
+    Instantiate the handler class with the specified arguments and extra arguments,
+    but filtering out anything that it doesn't support.
+    """
+    passed_args = {}
+    supported_args = inspect.getargspec(cls.__init__).args
+    for k, v in extra_args.iteritems():
+        if k in supported_args:
+            passed_args[k] = v
+        else:
+            debug("Discarding arg '%s' not supported by handler" % k)
+    return cls(*args, **passed_args)
+
+def getHandler(path, Session, validate=True, **extra_args):
     """
     Get a project handler from a file. The project is determined by trying to create each registered handler using the file.
 
@@ -164,6 +179,8 @@ def getHandler(path, Session, validate=True):
 
     validate
       If True, create a validating handler which will raise an error if an invalid field value is read or input.
+
+    any other keyword args are passed to the handler
     """
 
     found = False
@@ -171,7 +188,7 @@ def getHandler(path, Session, validate=True):
     items.sort(lambda x, y: cmp(projectRegistry.order(x[0]), projectRegistry.order(y[0])))
     for name, cls in items:
         try:
-            handler = cls(name, path, Session, validate)
+            handler = instantiateHandler(cls, name, path, Session, validate, **extra_args)
         except ESGInvalidMetadataFormat:
             continue
         found = True
@@ -182,7 +199,7 @@ def getHandler(path, Session, validate=True):
 
     return handler
 
-def getHandlerByName(projectName, path, Session, validate=True, offline=False):
+def getHandlerByName(projectName, path, Session, validate=True, offline=False, **extra_args):
     """
     Get a project handler by name.
 
@@ -201,14 +218,16 @@ def getHandlerByName(projectName, path, Session, validate=True, offline=False):
 
     offline
       If True, files are not scanned.
+
+    any other keyword args are passed to the handler
     """
     projectHandlerClass = projectRegistry.get(projectName, None)
     if projectHandlerClass is None:
         raise ESGPublishError("Invalid project name: %s, no handler found"%projectName)
-    handler = projectHandlerClass(projectName, path, Session, validate, offline)
+    handler = instantiateHandler(projectHandlerClass, projectName, path, Session, validate, offline, **extra_args)
     return handler
 
-def getHandlerFromDataset(dataset, Session, includeNullFields=True):
+def getHandlerFromDataset(dataset, Session, includeNullFields=True, **extra_args):
     """Create a handler from a dataset object.
 
     dataset
@@ -219,9 +238,11 @@ def getHandlerFromDataset(dataset, Session, includeNullFields=True):
 
     includeNullFields=True
       If True, include all fieldnames as context keys, even if the value is None.
+
+    any other keyword args are passed to the handler
     """
     project = dataset.get_project(Session)
-    handler = getHandlerByName(project, None, Session)
+    handler = getHandlerByName(project, None, Session, **extra_args)
     handler.getContextFromDataset(dataset, Session, includeNullFields)
 
     return handler
@@ -237,7 +258,6 @@ def getHandlerByEntryPointGroup(entryPointGroup, projectName, errorIfMissing=Tru
 
     projectName
       String name of the project
-
     """
     handler = None
     if entryPointGroup==ESGCET_FORMAT_HANDLER_GROUP:

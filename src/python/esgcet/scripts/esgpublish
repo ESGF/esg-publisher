@@ -590,7 +590,12 @@ def main(argv):
     if restApi is None:
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
 
-    handler = getHandlerByName(projectName, None, Session, offline=offline)
+    # Set up dictionary of extra handler args.
+    # (Any not supported by the handler will be filtered out.)
+    handler_extra_args = {'replica': (masterGateway != None)}        
+
+    # get the handler
+    handler = getHandlerByName(projectName, None, Session, offline=offline, **handler_extra_args)
 
     # check cert and generate a new one, if expired
     if publish and not keep_credentials:
@@ -633,7 +638,7 @@ def main(argv):
                         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
                                                        filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
                                                        extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
-                                                       nodbwrite=nodbwrite, pid_connector=pid_connector)
+                                                       nodbwrite=nodbwrite, pid_connector=pid_connector, handlerExtraArgs=handler_extra_args)
 
                     if (not nodbwrite):
                         result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
@@ -710,7 +715,7 @@ def main(argv):
                 datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt,
                                                initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields,
                                                masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite,
-                                               pid_connector=pid_connector)
+                                               pid_connector=pid_connector, handlerExtraArgs=handler_extra_args)
 
             if (not nodbwrite):
                 result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
