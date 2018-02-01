@@ -1249,7 +1249,8 @@ def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDi
     # Create the subdirectory if necessary
     if createDirectory and not os.path.exists(lastSubdir):
         try:
-            os.mkdir(lastSubdir, 0775)
+            os.mkdir(lastSubdir)
+            os.chmod(lastSubdir, 0775)
         except OSError:
             if not os.path.exists(lastSubdir):
                 raise ESGPublishError("Error creating directory %s. Please make sure you have the correct permissions." % lastSubdir)

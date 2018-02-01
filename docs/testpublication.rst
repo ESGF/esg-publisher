@@ -198,4 +198,4 @@ If you are on a production node please make sure to unpublish the test file afte
 
     ::
 
-        $ esgunpublish --map ./mapfiles/test.test.map
+        $ esgunpublish --project test --map ./mapfiles/test.test.map --database-delete --no-republish --delete

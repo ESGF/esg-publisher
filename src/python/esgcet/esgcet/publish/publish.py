@@ -326,9 +326,10 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:                   # REST service
             spi = 1
+            service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
-            service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
+            service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
 
         results = []
         lenresults = len(datasetNames)

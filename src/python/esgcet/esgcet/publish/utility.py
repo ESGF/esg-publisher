@@ -26,16 +26,61 @@ os.stat_float_times(False)
 
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+class Bcolors:
 
+    @property
+    def HEADER(self):
+        return self._get_escape('95')
+
+    @property
+    def OKBLUE(self):
+        return self._get_escape('94')
+
+    @property
+    def OKGREEN(self):
+        return self._get_escape('92')
+
+    @property
+    def WARNING(self):
+        return self._get_escape('93')
+
+    @property
+    def FAIL(self):
+        return self._get_escape('91')
+
+    @property
+    def ENDC(self):
+        return self._get_escape('0')
+
+    @property
+    def BOLD(self):
+        return self._get_escape('1')
+
+    @property
+    def UNDERLINE(self):
+        return self._get_escape('4')
+
+    def _get_escape(self, val):
+        if self._colors_are_disabled():
+            return ''
+        else:
+            return('\033[{}m'.format(val))
+
+    def _colors_are_disabled(self):
+        if self._disable_colors == None:
+            config = getConfig()
+            if config:
+                self._disable_colors = \
+                    config.getboolean('DEFAULT', 'disable_colors',
+                                      default=False)
+            else:
+                return False  # allow colors until config is loaded
+        return self._disable_colors                
+
+    def __init__(self):
+        self._disable_colors = None
+
+bcolors = Bcolors()
 
 def getTypeAndLen(att):
     """Get the type descriptor of an attribute.
@@ -593,7 +638,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
 def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg,
                         properties, testProgress1=None, testProgress2=None, handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None,
                         extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False,
-                        pid_connector=None):
+                        pid_connector=None, handlerExtraArgs={}):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -655,6 +700,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
     handlerDictionary=None
       A dictionary mapping datasetName => handler. If None, handlers are determined by project name.
+
+    handlerExtraArgs={}
+      A dictionary of extra keyword arguments to pass when instantiating the handler.
 
     perVariable=None
       Boolean, overrides ``variable_per_file`` config option.
@@ -744,9 +792,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         if handlerDictionary is not None and handlerDictionary.has_key(datasetName):
             handler = handlerDictionary[datasetName]
         elif projectName is not None:
-            handler = getHandlerByName(projectName, firstFile, Session, validate=True, offline=offline)
+            handler = getHandlerByName(projectName, firstFile, Session, validate=True, offline=offline, **handlerExtraArgs)
         else:
-            handler = getHandler(firstFile, Session, validate=True)
+            handler = getHandler(firstFile, Session, validate=True, **handlerExtraArgs)
             if handler is None:
                 raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
             projectName = handler.name
@@ -1004,6 +1052,7 @@ def getRestServiceURL(project_config_section=None):
 
     config = getConfig()
     hessianServiceURL = None
+    serviceURL = None
     # get project specific hessian service url
     if serviceURL is None:
         if project_config_section and config.has_section(project_config_section):
@@ -1070,39 +1119,68 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     return pid_connector
 
 
-def checkAndUpdateRepo(cmor_table_path, handler, ds_version):
+def checkAndUpdateRepo(cmor_table_path, ds_version):
     """
         Checks for a file written to a predefined location.  if not present or too old, will pull the repo based on the input path argument and update the timestamp.
     """
-    pull_cmor_repo = False
+    # This is run during handler initialization and not for each file validation
 
+    # Pull repo if fetched more than one day ago
+    # or if never fetched before
     if os.path.exists(UPDATE_TIMESTAMP):
         mtime = os.path.getmtime(UPDATE_TIMESTAMP)
         now = time()
         if now - mtime > (86400.0):
-            pull_cmor_repo = True 
-
+            pull_cmor_repo = True
+        else:
+            pull_cmor_repo = False
     else:
         pull_cmor_repo = True
 
     if pull_cmor_repo:
-
         try:
-            os.system("pushd "+cmor_table_path+" ; git fetch ; popd")
+            # Go into CMOR table path
+            # Git fetch CMOR table repo
+            # Go back to previous working directory
+            os.system('pushd {} >/dev/null ; '
+                      'git fetch --quiet ; '
+                      'popd >/dev/null'.format(cmor_table_path))
+            # Update local timestamp
             f = open(UPDATE_TIMESTAMP, "w")
-            f.write("t")
+            f.write("CMOR table updated at {}".format(time()))
             f.close()
+            debug("Local CMOR table repository fetched or updated")
         except Exception as e :
             warning("Attempt to update the cmor table repo and encountered an error: " + str(e))
 
-    if handler.data_specs_version != ds_version:
-        try:
-            xtra = ""
-            if ds_version == "master":
-                xtra = " git pull ; "
-            os.system("pushd "+cmor_table_path+" ; git checkout "+ds_version+ " ; " + xtra + " popd")
-            handler.set_spec_version(ds_version)
-            
-        except Exception as e:
-            raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables or other error.  Please contact support"%ds_version)
+    # Change repo branch in any case
+    try:
+        # Go into CMOR table path
+        # Checkout to the appropriate CMOR table tag
+        # Go back to previous working directory
+        os.system('pushd {} >/dev/null ; '
+                  'git checkout {}  --quiet ; '
+                  'popd >/dev/null'.format(cmor_table_path, ds_version))
+        # Update local timestamp
+        f = open(UPDATE_TIMESTAMP, "w")
+        f.write("CMOR table updated at {}".format(time()))
+        f.close()
+        debug("Consider CMOR table tag: {}".format(ds_version))
+    except Exception as e:
+        raise ESGPublishError("Error data_specs_version tag %s not found in the CMOR tables or other error.  Please contact support"%ds_version)
 
+    # Get most up to date CMIP6_CV in any case
+    if ds_version != "master":
+        try:
+            # Go into CMOR table path
+            # PrePARE requires to have the most up to date CMIP6 CV.
+            # Update CMIP6_CV.json from master branch.
+            # Go back to previous working directory
+            os.system('pushd {} >/dev/null ; '
+                      'git checkout master CMIP6_CV.json --quiet ; '
+                      'git add CMIP6_CV.json ; '
+                      'git commit -m "update CMIP6_CV.json from master" --quiet ; '
+                      'popd >/dev/null'.format(cmor_table_path))
+            debug("CMIP6 CV updated from master")
+        except Exception as e:
+            raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)

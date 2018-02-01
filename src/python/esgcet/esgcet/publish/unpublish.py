@@ -120,7 +120,10 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
     try:
         if gatewayOperation==DELETE:
             info("Deleting %s"%versionName)
-            if data_node:
+            if service.service_type == 'REST':
+                dataset_id = '%s|%s' % (versionName, data_node)
+                service.deleteDataset(dataset_id, True, 'Deleting dataset')
+            elif data_node:
                 try:
                     service.deleteDatasetSingleDataNode(versionName, data_node, True, 'Deleting dataset')
                 except:
@@ -129,7 +132,10 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
                 service.deleteDataset(versionName, True, 'Deleting dataset')
         else:
             info("Retracting %s"%versionName)
-            if data_node:
+            if service.service_type == 'REST':
+                dataset_id = '%s|%s' % (versionName, data_node)
+                service.retractDataset(dataset_id, True, 'Retracting dataset')
+            elif data_node:
                 try:
                     service.retractDatasetSingleDataNode(versionName, data_node, True, 'Retracting dataset')
                 except:
@@ -255,14 +261,18 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:
+            service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
-            service = RestPublicationService(serviceURL, serviceCertfile, keyFile=serviceKeyfile, debug=serviceDebug)
+            service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
 
         for datasetName,version in datasetNames:
             if version > -1:
                 datasetToUnpublish = '%s.v%s' % (datasetName, version)
             else:
+                if service.service_type == 'REST':
+                    error('Cannot unpublish multiple versions using REST. Please specify a single dataset version ("dataset_id#1"). Skipping %s' % datasetName)
+                    continue
                 datasetToUnpublish = datasetName
             isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
             try:

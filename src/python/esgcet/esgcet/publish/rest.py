@@ -5,7 +5,7 @@ from esgcet.exceptions import *
 
 class RestPublicationService(object):
 
-    def __init__(self, url, certFile, keyFile=None, debug=False):
+    def __init__(self, url, certFile, certs_location, keyFile=None, debug=False):
         """
 
         Create a RESTful ESGF Publication Service proxy. The proxy
@@ -30,18 +30,21 @@ class RestPublicationService(object):
         debug:
           Boolean flag. If True, write debugging information.
         """
-            
+
+        self.service_type = 'REST'
         self.url = url
         if self.url[-1] != '/':
             self.url += '/'
         self.harvestUrl = urljoin(self.url, 'harvest')
         self.deleteUrl = urljoin(self.url, 'delete')
+        self.retractUrl = urljoin(self.url, 'retract')
 
         self.certFile = certFile
         if keyFile is not None:
             self.keyFile = keyFile
         else:
             self.keyFile = certFile
+        self.certs_location = certs_location
         self.debug = debug
         self.status = 0
         self.message = ''
@@ -102,6 +105,31 @@ class RestPublicationService(object):
         self.message = message
         return result
 
+    def retractDataset(self, datasetId, recursive, message):
+        """
+        Legacy dataset retraction.
+
+        This method does not return a value.
+
+        datasetId
+          String identifier of dataset to delete.
+
+        recursive
+          Boolean recursion flag (ignored since datasets are single-depth only.)
+
+        message:
+          String message (ignored).
+
+        """
+        status, message = self.retract(datasetId)
+        if status == 200:
+            result = 'SUCCESSFUL'
+        else:
+            result = 'UNSUCCESSFUL'
+        self.status = status
+        self.message = message
+        return result
+
     def getPublishingStatus(self, operationHandle):
         """
         Get the status of publication.
@@ -151,7 +179,7 @@ class RestPublicationService(object):
             params['schema'] = schema
 
         try:
-            response = requests.post(self.harvestUrl, params=params, cert=(self.certFile, self.keyFile), verify=False)
+            response = requests.post(self.harvestUrl, params=params, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
         except requests.exceptions.SSLError, e:
             raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
 
@@ -169,12 +197,12 @@ class RestPublicationService(object):
           String identifier of the object. For example,
           'obs4MIPs.NASA-JPL.AIRS.mon.v1|esg-datanode.jpl.nasa.gov'
         """
-        params = {
+        data = {
             'id' : object_id
             }
 
         try:
-            response = requests.post(self.deleteUrl, params=params, cert=(self.certFile, self.keyFile), verify=False)
+            response = requests.post(self.deleteUrl, data=data, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
         except requests.exceptions.SSLError, e:
             raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
 
@@ -182,3 +210,25 @@ class RestPublicationService(object):
         text = root[0].text
         return (response.status_code, text)
         
+    def retract(self, object_id):
+        """
+        Retract an object (dataset, file, aggregation) from the SOLR metadata store.
+
+        Returns a tuple of strings: (status_code, error_message).
+
+        object_id
+          String identifier of the object. For example,
+          'obs4MIPs.NASA-JPL.AIRS.mon.v1|esg-datanode.jpl.nasa.gov'
+        """
+        data = {
+            'id' : object_id
+            }
+
+        try:
+            response = requests.post(self.retractUrl, data=data, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
+        except requests.exceptions.SSLError, e:
+            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
+
+        root = etree.fromstring(response.content)
+        text = root[0].text
+        return (response.status_code, text)
