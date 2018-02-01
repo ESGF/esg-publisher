@@ -24,7 +24,7 @@ numpy.set_printoptions(threshold=numpy.inf, linewidth=numpy.inf)
 
 def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP,
                        progressCallback=None, stopEvent=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None,
-                       comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, pid_connector=None, **context):
+                       comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, pid_connector=None, test_publication=False, **context):
     """
     Extract metadata from a dataset represented by a list of files, add to a database. Populates the database tables:
 
@@ -96,6 +96,9 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
     pid_connector
         ESGF_PID_connector object to register PIDs
+
+    test_publication
+        Flag whether publication is for production or test
 
     context
       A dictionary with keys ``project``, ``model``, ``experiment``, etc. The context consists of all fields needed to uniquely define the dataset.
@@ -253,7 +256,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
         # if project uses citation, build citation url
         project_config_section = 'config:%s' %context.get('project')
-        citation_url = handler.get_citation_url(project_config_section, config, datasetName, newVersion)
+        citation_url = handler.get_citation_url(project_config_section, config, datasetName, newVersion, test_publication)
 
         newDsetVersionObj = DatasetVersionFactory(dset, version=newVersion, creation_time=createTime, comment=comment, tech_notes=datasetTechNotes,
                                                   tech_notes_title=datasetTechNotesTitle, pid=dataset_pid, citation_url=citation_url)
