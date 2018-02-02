@@ -1076,7 +1076,7 @@ class ProjectHandler(object):
 
         return pid_messaging_service_exchange_name, pid_messaging_service_credentials
 
-    def get_citation_url(self, project_config_section, config, dataset_name, dataset_version):
+    def get_citation_url(self, project_config_section, config, dataset_name, dataset_version, test_publication):
         """ Returns the citation_url if a project uses citation, otherwise returns None
 
          project_section

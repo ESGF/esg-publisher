@@ -638,7 +638,7 @@ def main(argv):
                         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
                                                        filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
                                                        extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
-                                                       nodbwrite=nodbwrite, pid_connector=pid_connector, handlerExtraArgs=handler_extra_args)
+                                                       nodbwrite=nodbwrite, pid_connector=pid_connector, test_publication=test_publication, handlerExtraArgs=handler_extra_args)
 
                     if (not nodbwrite):
                         result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
@@ -715,7 +715,7 @@ def main(argv):
                 datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt,
                                                initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields,
                                                masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite,
-                                               pid_connector=pid_connector, handlerExtraArgs=handler_extra_args)
+                                               pid_connector=pid_connector, test_publication=test_publication, handlerExtraArgs=handler_extra_args)
 
             if (not nodbwrite):
                 result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
