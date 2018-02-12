@@ -358,7 +358,7 @@ def main(argv):
     readFiles = False
     rescan = False
     rescanDatasetName = []
-    restApi = None
+    restApi = True
     schema = None
     service = None
     summarizeErrors = False

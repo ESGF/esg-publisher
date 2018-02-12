@@ -52,6 +52,7 @@ class CMIP6Handler(BasicHandler):
         project_section = 'project:'+self.name
         project_config_section = 'config:'+self.name
         min_cmor_version = config.get(project_section, "min_cmor_version", default="0.0.0")
+        min_ds_version = config.get(project_section, "min_ds_version", default="0.0.0")
         data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
         cmor_table_path = config.get(project_config_section, "cmor_table_path", default=DEFAULT_CMOR_TABLE_PATH)
 
@@ -64,6 +65,10 @@ class CMIP6Handler(BasicHandler):
         if compareLibVersions(min_cmor_version, file_cmor_version):
             debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
             return
+
+        try:
+            file_cmor_version = fileobj.getAttribute('cmor_version', None)
+        except:
 
         try:
             table = fileobj.getAttribute('table_id', None)
@@ -79,11 +84,16 @@ class CMIP6Handler(BasicHandler):
         # Behavior A (default): fetches "master" branch" (if not "data_specs_version" in esg.ini")
         # Behavior A: fetches branch specified by "data_specs_version=my_branch" into esg.ini
         # Behavior B: fetches branch specified by file global attributes using "data_specs_version=file" into esg.ini
+
+        try:
+            file_data_specs_version = fileobj.getAttribute('data_specs_version', None)
+        except Exception as e:
+            raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
+
+        if not compareLibVersions(min_ds_version, file_data_specs_version):
+            raise ESGPublishError("File %s data_specs_version is %s, which is less than the required minimum version of %s", %f, %file_data_specs_version, %min_ds_version)
         if data_specs_version == "file":
-            try:
-                data_specs_version = fileobj.getAttribute('data_specs_version', None)
-            except Exception as e:
-                raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
+            data_specs_version = file_data_specs_version
 
         checkAndUpdateRepo(cmor_table_path, data_specs_version)
 
