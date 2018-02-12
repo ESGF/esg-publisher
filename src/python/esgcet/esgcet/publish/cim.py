@@ -63,7 +63,7 @@ class Cdf2cimWrapper:
             try:
                 self._call_cdf2cim(top_dir)
             except:
-                failures += "While running cdf2cim on 'top_dir':\n%s" % tracebackString(indent=5)
+                failures += "While running cdf2cim on '%s':\n%s" % (top_dir, tracebackString(indent=5))
 
         if failures:
             raise Exception(failures)
