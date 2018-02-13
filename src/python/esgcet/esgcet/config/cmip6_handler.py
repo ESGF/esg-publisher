@@ -67,10 +67,6 @@ class CMIP6Handler(BasicHandler):
             return
 
         try:
-            file_cmor_version = fileobj.getAttribute('cmor_version', None)
-        except:
-
-        try:
             table = fileobj.getAttribute('table_id', None)
         except:
             raise ESGPublishError("File %s missing required table_id global attribute"%f)
@@ -91,7 +87,7 @@ class CMIP6Handler(BasicHandler):
             raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
 
         if not compareLibVersions(min_ds_version, file_data_specs_version):
-            raise ESGPublishError("File %s data_specs_version is %s, which is less than the required minimum version of %s", %f, %file_data_specs_version, %min_ds_version)
+            raise ESGPublishError("File %s data_specs_version is %s, which is less than the required minimum version of %s"%f%file_data_specs_version%min_ds_version)
         if data_specs_version == "file":
             data_specs_version = file_data_specs_version
 
