@@ -52,7 +52,7 @@ class CMIP6Handler(BasicHandler):
         project_section = 'project:'+self.name
         project_config_section = 'config:'+self.name
         min_cmor_version = config.get(project_section, "min_cmor_version", default="0.0.0")
-        min_ds_version = config.get(project_section, "min_ds_version", default="0.0.0")
+        min_ds_version = config.get(project_section, "min_data_specs_version", default="0.0.0")
         data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
         cmor_table_path = config.get(project_config_section, "cmor_table_path", default=DEFAULT_CMOR_TABLE_PATH)
 
@@ -62,9 +62,11 @@ class CMIP6Handler(BasicHandler):
             file_cmor_version = None
             debug('File %s missing cmor_version attribute; will proceed with PrePARE check' %f)
 
+        passed_cmor = False
         if compareLibVersions(min_cmor_version, file_cmor_version):
             debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
-            return
+            passed_cmor = True
+
 
         try:
             table = fileobj.getAttribute('table_id', None)
@@ -87,7 +89,13 @@ class CMIP6Handler(BasicHandler):
             raise ESGPublishError("File %s missing required data_specs_version global attribute"%f)
 
         if not compareLibVersions(min_ds_version, file_data_specs_version):
-            raise ESGPublishError("File %s data_specs_version is %s, which is less than the required minimum version of %s"%f%file_data_specs_version%min_ds_version)
+            raise ESGPublishError("File %s data_specs_version is %s, which is less than the required minimum version of %s"%(f,file_data_specs_version,min_ds_version))
+        # at this point the file has the correct data specs version.
+        # if also was CMORized and has the correct version tag, we can exit
+
+        if passed_cmor:
+            return
+            
         if data_specs_version == "file":
             data_specs_version = file_data_specs_version
 
