@@ -1,15 +1,12 @@
 """"Handle CMIP6 data file metadata"""
 
-import argparse
 import re
-import sys
 
 from cmip6_cv import PrePARE
 from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
 from esgcet.exceptions import *
 from esgcet.messaging import debug, warning
 from esgcet.publish import checkAndUpdateRepo
-from cdms2 import Cdunif
 
 WARN = False
 
@@ -101,31 +98,12 @@ class CMIP6Handler(BasicHandler):
 
         checkAndUpdateRepo(cmor_table_path, data_specs_version)
 
-        table_file = cmor_table_path + '/CMIP6_' + table + '.json'
-        fakeargs = [ '--variable', variable_id, table_file ,f]
-        parser = argparse.ArgumentParser(prog='esgpublisher')
-        parser.add_argument('--variable')
-        parser.add_argument('cmip6_table', action=validator.JSONAction)
-        parser.add_argument('infile', action=validator.CDMSAction)
-        parser.add_argument('outfile',
-                nargs='?',
-                help='Output file (default stdout)',
-                type=argparse.FileType('w'),
-                default=sys.stdout)
-        args = parser.parse_args(fakeargs)
-
-#        print "About to CV check:", f
-
         try:
-            process = validator.checkCMIP6(args)
+            process = validator.checkCMIP6(cmor_table_path)
             if process is None:
                 raise ESGPublishError("File %s failed the CV check - object create failure"%f)
-            args.infile = Cdunif.CdunifFile(args.infile,"r")
-            process.ControlVocab(args)
-            args.infile.close()
-
+            process.ControlVocab(f)
         except:
-
             raise ESGPublishError("File %s failed the CV check"%f)
 
     def check_pid_avail(self, project_config_section, config, version=None):
