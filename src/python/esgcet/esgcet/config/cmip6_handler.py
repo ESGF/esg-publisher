@@ -92,7 +92,7 @@ class CMIP6Handler(BasicHandler):
         except:
             raise ESGPublishError("File %s failed the CV check"%f)
 
-    def check_pid_avail(self, version=None):
+    def check_pid_avail(self, project_config_section, config, version=None):
         """ Returns the pid_prefix
 
          project_config_section
@@ -157,7 +157,7 @@ class CMIP6Handler(BasicHandler):
 
         return pid_messaging_service_exchange_name, pid_messaging_service_credentials
 
-    def get_citation_url(self, dataset_name, dataset_version, test_publication):
+    def get_citation_url(self, project_section, config, dataset_name, dataset_version, test_publication):
         """ Returns the citation_url if a project uses citation, otherwise returns None
 
          project_section
