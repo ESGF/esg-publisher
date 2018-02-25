@@ -81,20 +81,27 @@ class Cdf2cimWrapper:
             yield start_dir
 
     def _list_files(self, files, title):
-        print title + ":"
         if files:
+            print "    " + title + ":"
             for f in files:
-                print "    " + f
-        else:
-            print "    (none)"
+                print "        " + f
 
     def _call_cdf2cim(self, starting_directory):
-        generated = self.cdf2cim.scan(starting_directory)
-        self._list_files(generated, "JSON files generated")
+        print "=========="
+        print "CIM creation and publication"
+        print "scanning %s" % starting_directory
+        new, queued, published = self.cdf2cim.scan(starting_directory)
+        self._list_files(new, "JSON files newly generated and queued for publication")
+        self._list_files(queued, "relevant JSON files found already generated but still queued for publication")
+        self._list_files(published, "relevant JSON files found already published")
+        print "publishing queued JSON files (if any)"
         published, errors = self.cdf2cim.publish()
+        if not published and not errors:
+            print "    (none found)"
         self._list_files(published, "JSON files published")
         self._list_files([path for path, err in errors],
                          "JSON files that failed to publish")
+        print "=========="
         if errors:
             if self._verbose_errors:
                 print "========================"
