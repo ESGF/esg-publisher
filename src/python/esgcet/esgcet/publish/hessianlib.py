@@ -534,8 +534,21 @@ class Hessian:
                 h = httplib.HTTPConnection(self._host, port=self._port)
         else:
             ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
-            h = httplib.HTTPSConnection(self._host, port=self._port, key_file=self._key_file, cert_file=self._cert_file,
-                                        context=ctx)
+            conn_args = {'port' : self._port,
+                         'key_file' : self._key_file,
+                         'cert_file': self._cert_file,
+                         'context': ctx}
+            h = httplib.HTTPSConnection(self._host, **conn_args)
+
+            # test the connection - may need unverified with test index nodes
+            # (hopefully not with operational nodes)
+            try:
+                h.request("HEAD", "/")
+                h.getresponse()
+            except ssl.SSLError:
+                messaging.warning('SSL error - disabling SSL verification')
+                conn_args['context'] = ssl._create_unverified_context()
+                h = httplib.HTTPSConnection(self._host, **conn_args)
 
         req_headers = {'Host': self._host,
                        'User-Agent': "hessianlib.py/%s" % __version__,
