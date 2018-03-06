@@ -156,7 +156,7 @@ def check_index(index_node, dataset_name, publish):
     return False
 
 def test_download():
-    resp = requests.get('http://localhost/thredds/fileService/esg_dataroot/test/sftlf.nc')
+    resp = requests.get('http://localhost/thredds/fileServer/esg_dataroot/test/sftlf.nc')
     if resp.status_code == 200:
         return True
     return False
