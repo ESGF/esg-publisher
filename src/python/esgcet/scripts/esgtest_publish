@@ -124,7 +124,7 @@ def print_res(success, skip_error, session, msg=None, final_run=False):
 
 def main(argv):
     try:
-        args, lastargs = getopt.getopt(argv, "d:h:i:o:p:u:s:x", ['myproxy-host=', 'output=', 'myproxy-pass=', 'myproxy-user=', 'skip-error', 'skip-index', 'skip-thredds', 'skip-unpublish', 'download-test'])
+        args, lastargs = getopt.getopt(argv, "dh:i:o:p:u:s:x", ['myproxy-host=', 'output=', 'myproxy-pass=', 'myproxy-user=', 'skip-error', 'skip-index', 'skip-thredds', 'skip-unpublish', 'download-test'])
     except getopt.error:
         print sys.exc_value
         print usage
