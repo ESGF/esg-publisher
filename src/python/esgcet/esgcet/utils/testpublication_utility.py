@@ -12,6 +12,7 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.publish import checksum
 from esgcet.model import DatasetVersion
 
+import requests
 
 def check_permission(path, dir=True):
     """
