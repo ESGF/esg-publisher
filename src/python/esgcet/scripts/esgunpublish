@@ -182,7 +182,7 @@ def main(argv):
     las = False
     log_filename = None
     republish = True
-    restApi = None
+    restApi = True
     thredds = True
     syncThredds = False
     useList = False

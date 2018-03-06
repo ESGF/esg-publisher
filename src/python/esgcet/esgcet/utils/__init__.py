@@ -1,1 +1,1 @@
-from testpublication_utility import check_permission, get_test_file, execute_cmd, check_mapfile, check_postgres, check_thredds, check_index
+from testpublication_utility import check_permission, get_test_file, execute_cmd, check_mapfile, check_postgres, check_thredds, check_index, test_download
