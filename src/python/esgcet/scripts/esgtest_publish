@@ -268,7 +268,10 @@ def main(argv):
         print_res(success, skip_error, session, err_msg)
 
     if dl_test:
-        test_download()
+        print 'File Download Test'
+
+        success = test_download()
+        print_res(success, skip_error, session, "")
 
     if skip_unpublish:
         print(bcolors.BOLD + '\nSkipping unpublication.' + bcolors.ENDC)
