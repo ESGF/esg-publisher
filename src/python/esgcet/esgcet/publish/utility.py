@@ -1156,9 +1156,11 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
     # Change repo branch in any case
     try:
         # Go into CMOR table path
+        # Stash any changes from previous checkout 
         # Checkout to the appropriate CMOR table tag
         # Go back to previous working directory
         os.system('pushd {} >/dev/null ; '
+                  'git stash --quiet ;'
                   'git checkout {}  --quiet ; '
                   'popd >/dev/null'.format(cmor_table_path, ds_version))
         # Update local timestamp
@@ -1178,8 +1180,6 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             # Go back to previous working directory
             os.system('pushd {} >/dev/null ; '
                       'git checkout master CMIP6_CV.json --quiet ; '
-                      'git add CMIP6_CV.json ; '
-                      'git commit -m "update CMIP6_CV.json from master" --quiet ; '
                       'popd >/dev/null'.format(cmor_table_path))
             debug("CMIP6 CV updated from master")
         except Exception as e:
