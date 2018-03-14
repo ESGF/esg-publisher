@@ -34,14 +34,14 @@ DATASET_NAME_VERSION = '%s.v1' % DATASET_NAME
 MAPFILE_PATH = os.path.join('/tmp/', DATASET_NAME)
 
 usage = """Usage:
-    esg_testpublication [options]
+    esgtest_publish [options]
 
         Test Publication:
             - Set up a myproxy certificate
             - Generate a mapfile
             - Publish and unpublish a dataset
             - Verify each step
-
+            - Optional download test
 Options:
 
     -h, --myproxy-host myproxy_hostname:
