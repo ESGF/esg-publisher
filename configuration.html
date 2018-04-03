@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="esg-publisher 3.1.3 documentation" href="index.html"/>
         <link rel="next" title="Mapfile preparation" href="mapfiles.html"/>
         <link rel="prev" title="Quick guide to test publication" href="testpublication.html"/> 
@@ -41,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -81,7 +87,10 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testpublication.html">Quick guide to test publication</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
@@ -101,6 +110,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mapfiles.html">Mapfile preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ and known issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage and Publication Tools</a></li>
 </ul>
 
             
@@ -113,8 +123,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">esg-publisher</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">esg-publisher</a>
+        
       </nav>
 
 
@@ -123,23 +135,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Configuration</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Configuration</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="sources/configuration.txt" rel="nofollow"> View page source</a>
+            
+            <a href="sources/configuration.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -154,35 +183,35 @@
 <dt>esg.ini</dt>
 <dd>This file is the primary means of configuring the default behavior of the publisher.</dd>
 <dt>esg.&lt;project&gt;.ini</dt>
-<dd>The project configuration files contain the project specific sections for publication of particular projects, e.g. <code class="docutils literal"><span class="pre">esg.cmip5.ini</span></code> for CMIP5,
-<code class="docutils literal"><span class="pre">esg.cordex.ini</span></code> for CORDEX, etc.</dd>
+<dd>The project configuration files contain the project specific sections for publication of particular projects, e.g. <code class="docutils literal notranslate"><span class="pre">esg.cmip5.ini</span></code> for CMIP5,
+<code class="docutils literal notranslate"><span class="pre">esg.cordex.ini</span></code> for CORDEX, etc.</dd>
 </dl>
-<p>A <code class="docutils literal"><span class="pre">esg.ini</span></code> template and several <code class="docutils literal"><span class="pre">esg.&lt;project&gt;.ini</span></code> files are available from the <a class="reference external" href="https://github.com/ESGF/config/tree/master/publisher-configs/ini">ESGF config repo</a> on GitHub.</p>
-<p>The default location of all publisher related configuration files is <code class="docutils literal"><span class="pre">/esg/config/esgcet/</span></code>. The ESGF publisher will automatically read from the files in this directory.
-Alternatively, you may specify the location of the ini files via <code class="docutils literal"><span class="pre">-i</span></code> option.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> template and several <code class="docutils literal notranslate"><span class="pre">esg.&lt;project&gt;.ini</span></code> files are available from the <a class="reference external" href="https://github.com/ESGF/config/tree/master/publisher-configs/ini">ESGF config repo</a> on GitHub.</p>
+<p>The default location of all publisher related configuration files is <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/</span></code>. The ESGF publisher will automatically read from the files in this directory.
+Alternatively, you may specify the location of the ini files via <code class="docutils literal notranslate"><span class="pre">-i</span></code> option.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Although it is recommended to generate one configuration file per project the publisher will also work for a single esg.ini that contains all necessary project sections.</p>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">After any modification of the configuration files or the models table you need to update the postgreSQL database by running: <code class="docutils literal"><span class="pre">$</span> <span class="pre">esginitialize</span> <span class="pre">-c</span></code></p>
+<p class="last">After any modification of the configuration files or the models table you need to update the postgreSQL database by running: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">esginitialize</span> <span class="pre">-c</span></code></p>
 </div>
 <div class="section" id="the-default-config-file-esg-ini">
 <h3>The default config file: esg.ini<a class="headerlink" href="#the-default-config-file-esg-ini" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">esg.ini</span></code> contains all basic configs needed for the ESGF publisher, i.e. the <code class="docutils literal"><span class="pre">[DEFAULT]</span></code>, <code class="docutils literal"><span class="pre">[initialize]</span></code>, <code class="docutils literal"><span class="pre">[extract]</span></code>, <code class="docutils literal"><span class="pre">[srmls]</span></code> and <code class="docutils literal"><span class="pre">[hsi]</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> contains all basic configs needed for the ESGF publisher, i.e. the <code class="docutils literal notranslate"><span class="pre">[DEFAULT]</span></code>, <code class="docutils literal notranslate"><span class="pre">[initialize]</span></code>, <code class="docutils literal notranslate"><span class="pre">[extract]</span></code>, <code class="docutils literal notranslate"><span class="pre">[srmls]</span></code> and <code class="docutils literal notranslate"><span class="pre">[hsi]</span></code>
 sections. This file will be set up during the ESGF installation process.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Ensure the <code class="docutils literal"><span class="pre">hessian_service_url</span></code> contains the correct index node as this has been known to be overwritten.</p>
+<p class="last">Ensure the <code class="docutils literal notranslate"><span class="pre">hessian_service_url</span></code> contains the correct index node as this has been known to be overwritten.</p>
 </div>
 <ol class="arabic">
-<li><p class="first">The <code class="docutils literal"><span class="pre">[DEFAULT]</span></code> section</p>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">[DEFAULT]</span></code> section</p>
 <blockquote>
 <div><ul>
 <li><p class="first">Section name and default configs</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DEFAULT</span><span class="p">]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DEFAULT</span><span class="p">]</span>
 <span class="n">checksum</span> <span class="o">=</span> <span class="n">sha256sum</span> <span class="o">|</span> <span class="n">SHA256</span>
 <span class="n">log_format</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">levelname</span><span class="p">)</span><span class="o">-</span><span class="mi">10</span><span class="n">s</span> <span class="o">%</span><span class="p">(</span><span class="n">asctime</span><span class="p">)</span><span class="n">s</span> <span class="o">%</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="n">s</span>
 <span class="n">log_level</span> <span class="o">=</span> <span class="n">INFO</span>
@@ -193,16 +222,16 @@ sections. This file will be set up during the ESGF installation process.</p>
 </li>
 <li><p class="first">Project options</p>
 <blockquote>
-<div><p>Ensure that the project you wish to publish is found in the <code class="docutils literal"><span class="pre">project_options</span></code>. Also make sure that it has it&#8217;s own project specific ini file,
-<code class="docutils literal"><span class="pre">esg.&lt;project&gt;.ini</span></code>, e.g. <code class="docutils literal"><span class="pre">esg.cmip5.ini</span></code>.</p>
+<div><p>Ensure that the project you wish to publish is found in the <code class="docutils literal notranslate"><span class="pre">project_options</span></code>. Also make sure that it has it’s own project specific ini file,
+<code class="docutils literal notranslate"><span class="pre">esg.&lt;project&gt;.ini</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">esg.cmip5.ini</span></code>.</p>
 <p>Format of the project_options:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
     <span class="o">&lt;</span><span class="n">project_name_1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">next_integer_value_from_above_project</span><span class="o">&gt;</span>
     <span class="o">&lt;</span><span class="n">project_name_2</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">next_integer_value_from_above_project</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
     <span class="n">cmip5</span>    <span class="o">|</span> <span class="n">CMIP5</span>    <span class="o">|</span> <span class="mi">1</span>
     <span class="n">cordex</span>   <span class="o">|</span> <span class="n">CORDEX</span>   <span class="o">|</span> <span class="mi">2</span>
     <span class="n">obs4MIPs</span> <span class="o">|</span> <span class="n">obs4MIPs</span> <span class="o">|</span> <span class="mi">3</span>
@@ -211,26 +240,26 @@ sections. This file will be set up during the ESGF installation process.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The <code class="docutils literal"><span class="pre">project_options</span></code> are updated automatically if you fetch the project ini files by running <code class="docutils literal"><span class="pre">$</span> <span class="pre">esgprep</span> <span class="pre">fetch-ini</span></code>.</p>
+<p class="last">The <code class="docutils literal notranslate"><span class="pre">project_options</span></code> are updated automatically if you fetch the project ini files by running <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">esgprep</span> <span class="pre">fetch-ini</span></code>.</p>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Postgres configuration</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dburl</span> <span class="o">=</span> <span class="n">postgresql</span><span class="p">:</span><span class="o">//</span><span class="n">esgcet</span><span class="p">:</span><span class="o">&lt;</span><span class="n">esgcet_password</span><span class="o">&gt;</span><span class="nd">@localhost</span><span class="p">:</span><span class="mi">5432</span><span class="o">/</span><span class="n">esgcet</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dburl</span> <span class="o">=</span> <span class="n">postgresql</span><span class="p">:</span><span class="o">//</span><span class="n">esgcet</span><span class="p">:</span><span class="o">&lt;</span><span class="n">esgcet_password</span><span class="o">&gt;</span><span class="nd">@localhost</span><span class="p">:</span><span class="mi">5432</span><span class="o">/</span><span class="n">esgcet</span>
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Thredds configuration</p>
 <blockquote>
-<div><p>Ensure that the directory/mountpoint where you store the files for publication is set under <code class="docutils literal"><span class="pre">thredds_dataset_roots</span></code>.</p>
+<div><p>Ensure that the directory/mountpoint where you store the files for publication is set under <code class="docutils literal notranslate"><span class="pre">thredds_dataset_roots</span></code>.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">Dataset roots should never contain one another. If the data for a particular project is contained within a single directory even if
 the node publishes just that project, it should be a subdirectory of the root, not included in the dataset_root directory.</p>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>thredds_aggregation_services =
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>thredds_aggregation_services =
         OpenDAP | /thredds/dodsC/            | gridded
         LAS     | http://&lt;fqdn&gt;/las/getUI.do | LASat&lt;your_node&gt;
 thredds_authentication_realm = THREDDS Data Server
@@ -262,13 +291,13 @@ thredds_username = dnode_user
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">It is recommended to have all <code class="docutils literal"><span class="pre">thredds_file_services</span></code> including <cite>HTTPServer</cite>, <cite>GridFTP</cite>, <cite>OpenDAP</cite> and <cite>Globus</cite> unless specific node configuration is needed.</p>
+<p class="last">It is recommended to have all <code class="docutils literal notranslate"><span class="pre">thredds_file_services</span></code> including <cite>HTTPServer</cite>, <cite>GridFTP</cite>, <cite>OpenDAP</cite> and <cite>Globus</cite> unless specific node configuration is needed.</p>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Index node configuration</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">hessian_service_certfile</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificate</span><span class="o">-</span><span class="n">file</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hessian_service_certfile</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificate</span><span class="o">-</span><span class="n">file</span>
 <span class="n">hessian_service_keyfile</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificate</span><span class="o">-</span><span class="n">file</span>
 <span class="n">hessian_service_certs_location</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificates</span>
 <span class="n">hessian_service_debug</span> <span class="o">=</span> <span class="n">false</span>
@@ -286,12 +315,12 @@ thredds_username = dnode_user
 </li>
 </ol>
 <ol class="arabic" id="config-project-section">
-<li><p class="first">The <code class="docutils literal"><span class="pre">[config:&lt;project&gt;]</span></code> section</p>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">[config:&lt;project&gt;]</span></code> section</p>
 <blockquote>
 <div><p>To specify project specific configuration in <cite>esg.ini</cite> you can add a separate config section for each project.
 If PIDs are used by the project, the PID configs are set in that section, the same applies for the Citation. It also overrides the <cite>hessian_service_url</cite>, if specified.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">config</span><span class="p">:</span><span class="n">cmip6</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">config</span><span class="p">:</span><span class="n">cmip6</span><span class="p">]</span>
 <span class="n">hessian_service_url</span> <span class="o">=</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">esgf</span><span class="o">-</span><span class="n">data</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">esg</span><span class="o">-</span><span class="n">search</span><span class="o">/</span><span class="n">remote</span><span class="o">/</span><span class="n">secure</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">cert</span><span class="o">/</span><span class="n">hessian</span><span class="o">/</span><span class="n">publishingService</span>
 <span class="n">citation_url</span> <span class="o">=</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">cera</span><span class="o">-</span><span class="n">www</span><span class="o">.</span><span class="n">dkrz</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">WDCC</span><span class="o">/</span><span class="n">meta</span><span class="o">/</span><span class="n">CMIP6</span><span class="o">/%</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">version</span><span class="p">)</span><span class="n">s</span><span class="o">.</span><span class="n">json</span> <span class="c1"># not mandatory for CMIP6</span>
 <span class="n">pid_prefix</span> <span class="o">=</span> <span class="mf">21.14100</span>                   <span class="c1"># not mandatory for CMIP6</span>
@@ -302,19 +331,19 @@ If PIDs are used by the project, the PID configs are set in that section, the sa
   <span class="n">pcmdi10</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>            <span class="o">|</span> <span class="mi">5671</span> <span class="o">|</span>   <span class="n">esgf</span><span class="o">-</span><span class="n">pid</span>   <span class="o">|</span> <span class="n">esgf</span><span class="o">-</span><span class="n">publisher</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">secret</span><span class="o">&gt;</span> <span class="o">|</span>    <span class="n">true</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">pid_credentials</span></code> are available on <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config">Confluence</a>.
-In case you don&#8217;t have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pid_credentials</span></code> are available on <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config">Confluence</a>.
+In case you don’t have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first">Ensure that the <code class="docutils literal"><span class="pre">/etc/grid-security/hostcert.pem</span></code> is signed by one of the ESGF root CAs (eg. ANL, IPSL, NSC)</p>
+<li><p class="first">Ensure that the <code class="docutils literal notranslate"><span class="pre">/etc/grid-security/hostcert.pem</span></code> is signed by one of the ESGF root CAs (eg. ANL, IPSL, NSC)</p>
 </li>
 <li><p class="first">[Run as root]:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
 $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py &lt;node-server&gt;  # e.g. esgf-node.llnl.gov or esgf-data.dkrz.de
 </pre></div>
 </div>
 </li>
-<li><p class="first">Inspect <code class="docutils literal"><span class="pre">/esg/config/esgcet/esg.ini</span></code> – <code class="docutils literal"><span class="pre">[config:cmip6]</span></code> section should be installed with <code class="docutils literal"><span class="pre">pid_credentials</span></code></p>
+<li><p class="first">Inspect <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.ini</span></code> – <code class="docutils literal notranslate"><span class="pre">[config:cmip6]</span></code> section should be installed with <code class="docutils literal notranslate"><span class="pre">pid_credentials</span></code></p>
 </li>
 <li><p class="first">Please change the order of the lines – put the host closest to your location first</p>
 </li>
@@ -330,21 +359,21 @@ $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">The <code class="docutils literal"><span class="pre">[initialize]</span></code> section</p>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">[initialize]</span></code> section</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">initialize</span><span class="p">]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">initialize</span><span class="p">]</span>
 <span class="n">initial_models_table</span> <span class="o">=</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgcet</span><span class="o">/</span><span class="n">esgcet_models_table</span><span class="o">.</span><span class="n">txt</span>
 <span class="n">log_level</span> <span class="o">=</span> <span class="n">INFO</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">esgcet_models_table</span></code> is a separate file for the configuration of all models. The default location of this file is <code class="docutils literal"><span class="pre">/esg/config/esgcet/esgcet_models_table.txt</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">esgcet_models_table</span></code> is a separate file for the configuration of all models. The default location of this file is <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esgcet_models_table.txt</span></code>.</p>
 <p>Format of the models table:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_url_1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_description</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_url_1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_description</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_2</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_url_2</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">model_description</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cmip5</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">P</span>  <span class="o">|</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">P</span><span class="p">,</span> <span class="n">Max</span> <span class="n">Planck</span> <span class="n">Institute</span> <span class="k">for</span> <span class="n">Meteorology</span> <span class="p">(</span><span class="n">MPI</span><span class="o">-</span><span class="n">M</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmip5</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">P</span>  <span class="o">|</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">P</span><span class="p">,</span> <span class="n">Max</span> <span class="n">Planck</span> <span class="n">Institute</span> <span class="k">for</span> <span class="n">Meteorology</span> <span class="p">(</span><span class="n">MPI</span><span class="o">-</span><span class="n">M</span><span class="p">)</span>
 <span class="n">cmip5</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">LR</span> <span class="o">|</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">LR</span><span class="p">,</span> <span class="n">Max</span> <span class="n">Planck</span> <span class="n">Institute</span> <span class="k">for</span> <span class="n">Meteorology</span> <span class="p">(</span><span class="n">MPI</span><span class="o">-</span><span class="n">M</span><span class="p">)</span>
 <span class="n">cmip5</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">MR</span> <span class="o">|</span> <span class="o">|</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">MR</span><span class="p">,</span> <span class="n">Max</span> <span class="n">Planck</span> <span class="n">Institute</span> <span class="k">for</span> <span class="n">Meteorology</span> <span class="p">(</span><span class="n">MPI</span><span class="o">-</span><span class="n">M</span><span class="p">)</span>
 </pre></div>
@@ -352,16 +381,16 @@ $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py
 <p>If you are defining a new project but using an existing model name, you need to add a new entry to the table file for your new pairing as well.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">After modifying the models table please run <code class="docutils literal"><span class="pre">$</span> <span class="pre">esginitialize</span> <span class="pre">-c</span></code>  to update the postgres database.</p>
+<p class="last">After modifying the models table please run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">esginitialize</span> <span class="pre">-c</span></code>  to update the postgres database.</p>
 </div>
 </div></blockquote>
 </li>
 </ol>
 <ol class="arabic" id="myproxy-section">
-<li><p class="first">The <code class="docutils literal"><span class="pre">myproxy</span></code> section</p>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">myproxy</span></code> section</p>
 <blockquote>
-<div><p><code class="docutils literal"><span class="pre">esgpublish</span></code> and <code class="docutils literal"><span class="pre">esgunpublish</span></code> will automatically generate or renew your globus certificate using the credentials specified here.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">myproxy</span><span class="p">]</span>
+<div><p><code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> and <code class="docutils literal notranslate"><span class="pre">esgunpublish</span></code> will automatically generate or renew your globus certificate using the credentials specified here.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">myproxy</span><span class="p">]</span>
 <span class="n">hostname</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">openid_server</span><span class="o">&gt;</span>
 <span class="n">username</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">esgf_user</span><span class="o">&gt;</span>
 <span class="n">password</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
@@ -369,7 +398,7 @@ $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If this section is not specified and the globus certificate is not present or valid the user will be prompted for the credentials during <code class="docutils literal"><span class="pre">esgpublish</span></code> and <code class="docutils literal"><span class="pre">esgunpublish</span></code>.</p>
+<p class="last">If this section is not specified and the globus certificate is not present or valid the user will be prompted for the credentials during <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> and <code class="docutils literal notranslate"><span class="pre">esgunpublish</span></code>.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -379,7 +408,7 @@ $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py
 </li>
 <li><p class="first">Other sections, e.g. for scanning the files and the offline services</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">extract</span><span class="p">]</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">extract</span><span class="p">]</span>
 <span class="n">log_level</span> <span class="o">=</span> <span class="n">INFO</span>
 <span class="n">validate_standard_names</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -402,25 +431,25 @@ $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py
 <ol class="arabic">
 <li><p class="first">Set the section name</p>
 <blockquote>
-<div><p>Each project specific configuration file starts with a section name following the <code class="docutils literal"><span class="pre">[project:&lt;project_name&gt;]</span></code> syntax.</p>
+<div><p>Each project specific configuration file starts with a section name following the <code class="docutils literal notranslate"><span class="pre">[project:&lt;project_name&gt;]</span></code> syntax.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Please note: The &lt;project_name&gt; is case sensitive and needs to match the file name and the project name you specify with <code class="docutils literal"><span class="pre">--project</span></code>,
-e.g. <code class="docutils literal"><span class="pre">esg.cmip5.ini</span></code>, <code class="docutils literal"><span class="pre">[project:cmip5]</span></code>, <code class="docutils literal"><span class="pre">--project</span> <span class="pre">cmip5</span></code>.</p>
+<p class="last">Please note: The &lt;project_name&gt; is case sensitive and needs to match the file name and the project name you specify with <code class="docutils literal notranslate"><span class="pre">--project</span></code>,
+e.g. <code class="docutils literal notranslate"><span class="pre">esg.cmip5.ini</span></code>, <code class="docutils literal notranslate"><span class="pre">[project:cmip5]</span></code>, <code class="docutils literal notranslate"><span class="pre">--project</span> <span class="pre">cmip5</span></code>.</p>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Set the <code class="docutils literal"><span class="pre">categories</span></code> to be used for the project</p>
+<li><p class="first">Set the <code class="docutils literal notranslate"><span class="pre">categories</span></code> to be used for the project</p>
 <blockquote>
-<div><p>The <code class="docutils literal"><span class="pre">categories</span></code> define the facet fields. All facets listed as <code class="docutils literal"><span class="pre">enum</span></code> will be checked against the <a class="reference internal" href="#facet-options"><span class="std std-ref">facet_options, facet_map or
-facet_pattern</span></a>. Facets that are listed as <code class="docutils literal"><span class="pre">string</span></code> will not be checked unless they are part of the <code class="docutils literal"><span class="pre">directory_format</span></code>.</p>
+<div><p>The <code class="docutils literal notranslate"><span class="pre">categories</span></code> define the facet fields. All facets listed as <code class="docutils literal notranslate"><span class="pre">enum</span></code> will be checked against the <a class="reference internal" href="#facet-options"><span class="std std-ref">facet_options, facet_map or
+facet_pattern</span></a>. Facets that are listed as <code class="docutils literal notranslate"><span class="pre">string</span></code> will not be checked unless they are part of the <code class="docutils literal notranslate"><span class="pre">directory_format</span></code>.</p>
 <p>Format of the categories:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">|</span> <span class="n">category_type</span> <span class="o">|</span> <span class="n">is_mandatory</span> <span class="o">|</span> <span class="n">is_thredds_property</span> <span class="o">|</span> <span class="n">display_order</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">|</span> <span class="n">category_type</span> <span class="o">|</span> <span class="n">is_mandatory</span> <span class="o">|</span> <span class="n">is_thredds_property</span> <span class="o">|</span> <span class="n">display_order</span>
 </pre></div>
 </div>
-<p>If the value for <code class="docutils literal"><span class="pre">is_thredds_property</span></code> is set to <code class="docutils literal"><span class="pre">true</span></code> the facet will appear in the Thredds Catalog and in the Index.</p>
+<p>If the value for <code class="docutils literal notranslate"><span class="pre">is_thredds_property</span></code> is set to <code class="docutils literal notranslate"><span class="pre">true</span></code> the facet will appear in the Thredds Catalog and in the Index.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">categories</span> <span class="o">=</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">categories</span> <span class="o">=</span>
     <span class="n">project</span>        <span class="o">|</span> <span class="n">enum</span>   <span class="o">|</span> <span class="n">true</span>  <span class="o">|</span> <span class="n">true</span>  <span class="o">|</span> <span class="mi">0</span>
     <span class="n">product</span>        <span class="o">|</span> <span class="n">enum</span>   <span class="o">|</span> <span class="n">true</span>  <span class="o">|</span> <span class="n">true</span>  <span class="o">|</span> <span class="mi">1</span>
     <span class="n">institute</span>      <span class="o">|</span> <span class="n">string</span> <span class="o">|</span> <span class="n">true</span>  <span class="o">|</span> <span class="n">true</span>  <span class="o">|</span> <span class="mi">2</span>
@@ -434,66 +463,66 @@ facet_pattern</span></a>. Facets that are listed as <code class="docutils litera
 </pre></div>
 </div>
 <p>You can also set a default value for particular categories, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">category_defaults</span> <span class="o">=</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">category_defaults</span> <span class="o">=</span>
     <span class="n">project</span> <span class="o">|</span> <span class="n">cmip5</span>
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">The <code class="docutils literal"><span class="pre">directory_format</span></code></p>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">directory_format</span></code></p>
 <blockquote>
-<div><p>Ensure that the <code class="docutils literal"><span class="pre">directory_format</span></code> is spelled out for the project, check carefully for typos. Data files must be found in the rightmost set of subdirectories specified,
-the not-project-specific root part in front of the project-specific DRS elements can be specified as <code class="docutils literal"><span class="pre">%(root)</span></code>, all project related elements must be defined separately,
-following the <code class="docutils literal"><span class="pre">%(name)s</span></code> syntax, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">directory_format</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">/%</span><span class="p">(</span><span class="n">project</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">realm</span><span class="p">)</span><span class="n">s</span>
+<div><p>Ensure that the <code class="docutils literal notranslate"><span class="pre">directory_format</span></code> is spelled out for the project, check carefully for typos. Data files must be found in the rightmost set of subdirectories specified,
+the not-project-specific root part in front of the project-specific DRS elements can be specified as <code class="docutils literal notranslate"><span class="pre">%(root)</span></code>, all project related elements must be defined separately,
+following the <code class="docutils literal notranslate"><span class="pre">%(name)s</span></code> syntax, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">directory_format</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="o">/%</span><span class="p">(</span><span class="n">project</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">realm</span><span class="p">)</span><span class="n">s</span>
 <span class="ow">or</span>
 <span class="n">directory_format</span> <span class="o">=</span> <span class="o">/</span><span class="n">some_mountpoint</span><span class="o">/</span><span class="n">data</span><span class="o">/%</span><span class="p">(</span><span class="n">project</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span><span class="n">s</span><span class="o">/%</span><span class="p">(</span><span class="n">realm</span><span class="p">)</span><span class="n">s</span>
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">some_mountpoint</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">cmip5</span><span class="o">/</span><span class="n">CESM</span><span class="o">/</span><span class="n">historical</span><span class="o">/</span><span class="n">atmos</span><span class="o">/</span><span class="n">blah</span><span class="o">.</span><span class="n">nc</span>   <span class="o">-</span> <span class="n">valid</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">some_mountpoint</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">cmip5</span><span class="o">/</span><span class="n">CESM</span><span class="o">/</span><span class="n">historical</span><span class="o">/</span><span class="n">atmos</span><span class="o">/</span><span class="n">blah</span><span class="o">.</span><span class="n">nc</span>   <span class="o">-</span> <span class="n">valid</span>
 <span class="o">/</span><span class="n">some_mountpoint</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">cmip5</span><span class="o">/</span><span class="n">CESM</span><span class="o">/</span><span class="n">historical</span><span class="o">/</span><span class="n">atmos</span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">blah</span><span class="o">.</span><span class="n">nc</span> <span class="o">-</span> <span class="ow">not</span> <span class="n">valid</span>
 <span class="o">/</span><span class="n">some_mountpoint</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">cmip5</span><span class="o">/</span><span class="n">CESM</span><span class="o">/</span><span class="n">historical</span><span class="o">/</span><span class="n">blah</span><span class="o">.</span><span class="n">nc</span>         <span class="o">-</span> <span class="ow">not</span> <span class="n">valid</span>
 </pre></div>
 </div>
-<p>In the example above, <code class="docutils literal"><span class="pre">/some_mountpoint/data</span></code> must be included in the <code class="docutils literal"><span class="pre">thredds_dataset_roots</span></code> entry in the <code class="docutils literal"><span class="pre">[DEFAULT]</span></code> section of esg.ini.</p>
+<p>In the example above, <code class="docutils literal notranslate"><span class="pre">/some_mountpoint/data</span></code> must be included in the <code class="docutils literal notranslate"><span class="pre">thredds_dataset_roots</span></code> entry in the <code class="docutils literal notranslate"><span class="pre">[DEFAULT]</span></code> section of esg.ini.</p>
 </div></blockquote>
 </li>
-<li><p class="first">Ensure that you have a <code class="docutils literal"><span class="pre">dataset_id</span></code> and optional a <code class="docutils literal"><span class="pre">dataset_name_format</span></code></p>
+<li><p class="first">Ensure that you have a <code class="docutils literal notranslate"><span class="pre">dataset_id</span></code> and optional a <code class="docutils literal notranslate"><span class="pre">dataset_name_format</span></code></p>
 <blockquote>
-<div><p>The <code class="docutils literal"><span class="pre">dataset_id</span></code> is project specific and may mirror the directory structure to a point.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dataset_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">project</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">realm</span><span class="p">)</span><span class="n">s</span>
+<div><p>The <code class="docutils literal notranslate"><span class="pre">dataset_id</span></code> is project specific and may mirror the directory structure to a point.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset_id</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">project</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span><span class="n">s</span><span class="o">.%</span><span class="p">(</span><span class="n">realm</span><span class="p">)</span><span class="n">s</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The facets used for the <code class="docutils literal"><span class="pre">dataset_id</span></code> must be a subset of those used in the <code class="docutils literal"><span class="pre">directory_format</span></code>. In other words, the facet names
-for the <code class="docutils literal"><span class="pre">dataset_id</span></code> must appear as variables within the <code class="docutils literal"><span class="pre">directory_format</span></code> using the same corresponding names with the <code class="docutils literal"><span class="pre">%(name)s</span></code> syntax or
-must be derived from some other category using a <code class="docutils literal"><span class="pre">category_map</span></code> entry in <code class="docutils literal"><span class="pre">esg.&lt;project&gt;.ini</span></code>. An error or undefined behavior, such as the sudden absence
-of that facet value from the <code class="docutils literal"><span class="pre">dataset_id</span></code>, might result otherwise.</p>
+<p class="last">The facets used for the <code class="docutils literal notranslate"><span class="pre">dataset_id</span></code> must be a subset of those used in the <code class="docutils literal notranslate"><span class="pre">directory_format</span></code>. In other words, the facet names
+for the <code class="docutils literal notranslate"><span class="pre">dataset_id</span></code> must appear as variables within the <code class="docutils literal notranslate"><span class="pre">directory_format</span></code> using the same corresponding names with the <code class="docutils literal notranslate"><span class="pre">%(name)s</span></code> syntax or
+must be derived from some other category using a <code class="docutils literal notranslate"><span class="pre">category_map</span></code> entry in <code class="docutils literal notranslate"><span class="pre">esg.&lt;project&gt;.ini</span></code>. An error or undefined behavior, such as the sudden absence
+of that facet value from the <code class="docutils literal notranslate"><span class="pre">dataset_id</span></code>, might result otherwise.</p>
 </div>
-<p>The <code class="docutils literal"><span class="pre">dataset_name_format</span></code> is a description of the dataset and will appear in the Thredds catalogs and in the Index.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dataset_name_format</span> <span class="o">=</span> <span class="n">project</span><span class="o">=%</span><span class="p">(</span><span class="n">project_description</span><span class="p">)</span><span class="n">s</span><span class="p">,</span> <span class="n">model</span><span class="o">=%</span><span class="p">(</span><span class="n">model_description</span><span class="p">)</span><span class="n">s</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=%</span><span class="p">(</span><span class="n">experiment_description</span><span class="p">)</span><span class="n">s</span><span class="p">,</span> <span class="n">time_frequency</span><span class="o">=%</span><span class="p">(</span><span class="n">time_frequency</span><span class="p">)</span><span class="n">s</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">dataset_name_format</span></code> is a description of the dataset and will appear in the Thredds catalogs and in the Index.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset_name_format</span> <span class="o">=</span> <span class="n">project</span><span class="o">=%</span><span class="p">(</span><span class="n">project_description</span><span class="p">)</span><span class="n">s</span><span class="p">,</span> <span class="n">model</span><span class="o">=%</span><span class="p">(</span><span class="n">model_description</span><span class="p">)</span><span class="n">s</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=%</span><span class="p">(</span><span class="n">experiment_description</span><span class="p">)</span><span class="n">s</span><span class="p">,</span> <span class="n">time_frequency</span><span class="o">=%</span><span class="p">(</span><span class="n">time_frequency</span><span class="p">)</span><span class="n">s</span>
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li id="facet-options"><p class="first">Generate a <code class="docutils literal"><span class="pre">&lt;facet&gt;_options</span></code> list, a <code class="docutils literal"><span class="pre">&lt;facet&gt;_map</span></code> or a <code class="docutils literal"><span class="pre">&lt;facet&gt;_pattern</span></code> for each facet</p>
+<li id="facet-options"><p class="first">Generate a <code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_options</span></code> list, a <code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_map</span></code> or a <code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_pattern</span></code> for each facet</p>
 <blockquote>
-<div><p>The metadata for each facet that is part of the <code class="docutils literal"><span class="pre">directory_format</span></code> (except for <cite>version</cite> and <cite>variable</cite>) is checked against the values in <cite>facet_options</cite>, <cite>facet_map</cite> or <cite>facet_pattern</cite>.</p>
+<div><p>The metadata for each facet that is part of the <code class="docutils literal notranslate"><span class="pre">directory_format</span></code> (except for <cite>version</cite> and <cite>variable</cite>) is checked against the values in <cite>facet_options</cite>, <cite>facet_map</cite> or <cite>facet_pattern</cite>.</p>
 <ul>
-<li><p class="first"><code class="docutils literal"><span class="pre">&lt;facet&gt;_options</span></code></p>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_options</span></code></p>
 <blockquote>
 <div><p>This is a simple list that contains all possible values for a facet, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model_options</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">LR</span><span class="p">,</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">MR</span><span class="p">,</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">P</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_options</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">LR</span><span class="p">,</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">MR</span><span class="p">,</span> <span class="n">MPI</span><span class="o">-</span><span class="n">ESM</span><span class="o">-</span><span class="n">P</span>
 <span class="n">time_frequency_options</span> <span class="o">=</span> <span class="mi">3</span><span class="n">hr</span><span class="p">,</span> <span class="mi">6</span><span class="n">hr</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">fx</span><span class="p">,</span> <span class="n">mon</span><span class="p">,</span> <span class="n">monClim</span><span class="p">,</span> <span class="n">subhr</span><span class="p">,</span> <span class="n">yr</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p>The option list for the experiments does not follow the above syntax. Each experiment has the format: <code class="docutils literal"><span class="pre">&lt;project&gt;</span> <span class="pre">|</span> <span class="pre">&lt;experiment&gt;</span> <span class="pre">|</span> <span class="pre">&lt;experiment_description&gt;</span></code></p>
+<p>The option list for the experiments does not follow the above syntax. Each experiment has the format: <code class="docutils literal notranslate"><span class="pre">&lt;project&gt;</span> <span class="pre">|</span> <span class="pre">&lt;experiment&gt;</span> <span class="pre">|</span> <span class="pre">&lt;experiment_description&gt;</span></code></p>
 <p>Example:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">experiment_options</span> <span class="o">=</span>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_options</span> <span class="o">=</span>
     <span class="n">cmip5</span> <span class="o">|</span> <span class="mi">1</span><span class="n">pctCO2</span>     <span class="o">|</span> <span class="mi">1</span> <span class="n">percent</span> <span class="n">per</span> <span class="n">year</span> <span class="n">CO2</span>
     <span class="n">cmip5</span> <span class="o">|</span> <span class="n">abrupt4xCO2</span> <span class="o">|</span> <span class="n">Abrupt</span> <span class="mi">4</span><span class="n">xCO2</span>
     <span class="n">cmip5</span> <span class="o">|</span> <span class="n">amip</span>        <span class="o">|</span> <span class="n">AMIP</span>
@@ -507,10 +536,10 @@ of that facet value from the <code class="docutils literal"><span class="pre">da
 </div>
 </div></blockquote>
 </li>
-<li><p class="first"><code class="docutils literal"><span class="pre">&lt;facet&gt;_map</span></code></p>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_map</span></code></p>
 <blockquote>
-<div><p>Using a <code class="docutils literal"><span class="pre">&lt;facet&gt;_map</span></code> is recommended if the facet is not part of the <code class="docutils literal"><span class="pre">directory_structure</span></code> and needs to be mapped to another value, e.g. for CORDEX:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rcm_name_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">rcm_model</span> <span class="p">:</span> <span class="n">rcm_name</span><span class="p">)</span>
+<div><p>Using a <code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_map</span></code> is recommended if the facet is not part of the <code class="docutils literal notranslate"><span class="pre">directory_structure</span></code> and needs to be mapped to another value, e.g. for CORDEX:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rcm_name_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">rcm_model</span> <span class="p">:</span> <span class="n">rcm_name</span><span class="p">)</span>
     <span class="n">cordex</span> <span class="o">|</span> <span class="n">AWI</span><span class="o">-</span><span class="n">HIRHAM5</span>      <span class="o">|</span> <span class="n">HIRHAM5</span>
     <span class="n">cordex</span> <span class="o">|</span> <span class="n">GERICS</span><span class="o">-</span><span class="n">REMO2009</span>  <span class="o">|</span> <span class="n">REMO2009</span>
     <span class="n">cordex</span> <span class="o">|</span> <span class="n">KNMI</span><span class="o">-</span><span class="n">RACMO22E</span>    <span class="o">|</span> <span class="n">RACMO22E</span>
@@ -520,19 +549,19 @@ of that facet value from the <code class="docutils literal"><span class="pre">da
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">All &lt;facet&gt;_maps needs to be listed in the project ini file, e.g. <code class="docutils literal"><span class="pre">maps</span> <span class="pre">=</span> <span class="pre">rcm_name_map,</span> <span class="pre">las_time_delta_map</span></code>.</p>
+<p class="last">All &lt;facet&gt;_maps needs to be listed in the project ini file, e.g. <code class="docutils literal notranslate"><span class="pre">maps</span> <span class="pre">=</span> <span class="pre">rcm_name_map,</span> <span class="pre">las_time_delta_map</span></code>.</p>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first"><code class="docutils literal"><span class="pre">&lt;facet&gt;_pattern</span></code></p>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">&lt;facet&gt;_pattern</span></code></p>
 <blockquote>
 <div><p>A pattern should be used for facets that follow a known syntax, e.g. the ensemble facet:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ensemble_pattern</span> <span class="o">=</span> <span class="n">r</span><span class="o">%</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span><span class="n">si</span><span class="o">%</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span><span class="n">sp</span><span class="o">%</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span><span class="n">s</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ensemble_pattern</span> <span class="o">=</span> <span class="n">r</span><span class="o">%</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span><span class="n">si</span><span class="o">%</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span><span class="n">sp</span><span class="o">%</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span><span class="n">s</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The &lt;facet&gt;_pattern currently supports <code class="docutils literal"><span class="pre">%(digit)s</span></code> and <code class="docutils literal"><span class="pre">%(string)s</span></code> where <code class="docutils literal"><span class="pre">%(digit)s</span></code> matches any number and <code class="docutils literal"><span class="pre">%(string)s</span></code> one or more character(s).</p>
+<p class="last">The &lt;facet&gt;_pattern currently supports <code class="docutils literal notranslate"><span class="pre">%(digit)s</span></code> and <code class="docutils literal notranslate"><span class="pre">%(string)s</span></code> where <code class="docutils literal notranslate"><span class="pre">%(digit)s</span></code> matches any number and <code class="docutils literal notranslate"><span class="pre">%(string)s</span></code> one or more character(s).</p>
 </div>
 </div></blockquote>
 </li>
@@ -541,7 +570,7 @@ of that facet value from the <code class="docutils literal"><span class="pre">da
 </li>
 <li><p class="first">Project Handler</p>
 <blockquote>
-<div><p>You can either use the publisher&#8217;s default handler, a pre-installed project handler or generate a custom handler.</p>
+<div><p>You can either use the publisher’s default handler, a pre-installed project handler or generate a custom handler.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The setup and configuration of a custom handler needs expert knowledge. For most projects the default handler will be sufficient.
@@ -549,50 +578,50 @@ The handlers for major projects like CMIP5 are pre-installed and for some minor 
 <a class="reference external" href="https://github.com/ESGF/config/tree/master/publisher-configs/handlers">customized handlers</a> on github.</p>
 </div>
 <p>To use the default handler please add the following to your project configuration file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">project_handler_name</span> <span class="o">=</span> <span class="n">basic_builtin</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">project_handler_name</span> <span class="o">=</span> <span class="n">basic_builtin</span>
 </pre></div>
 </div>
 <p>For the pre-installed project handler for CMIP5 add the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">handler</span> <span class="o">=</span> <span class="n">esgcet</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ipcc5_handler</span><span class="p">:</span><span class="n">IPCC5Handler</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handler</span> <span class="o">=</span> <span class="n">esgcet</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ipcc5_handler</span><span class="p">:</span><span class="n">IPCC5Handler</span>
 </pre></div>
 </div>
 <p>For creating a new customized handler you can run the following command that will generate the basic package:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgsetup --handler
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgsetup --handler
 </pre></div>
 </div>
-<p>Now you can customize the handler by editing the <code class="docutils literal"><span class="pre">project_handler.py</span></code> file and install the handler package with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd &lt;handler_name&gt;
+<p>Now you can customize the handler by editing the <code class="docutils literal notranslate"><span class="pre">project_handler.py</span></code> file and install the handler package with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd &lt;handler_name&gt;
 $ python setup.py install
 </pre></div>
 </div>
-<p>In your <code class="docutils literal"><span class="pre">esg.&lt;project&gt;.ini</span></code> file simply add whatever you have specified for the <code class="docutils literal"><span class="pre">project_handler_name</span></code> during the setup.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">project_handler_name</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">project_handler_name</span><span class="o">&gt;</span>
+<p>In your <code class="docutils literal notranslate"><span class="pre">esg.&lt;project&gt;.ini</span></code> file simply add whatever you have specified for the <code class="docutils literal notranslate"><span class="pre">project_handler_name</span></code> during the setup.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">project_handler_name</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">project_handler_name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">The <code class="docutils literal"><span class="pre">thredds_exclude_variables</span></code> and <code class="docutils literal"><span class="pre">variable_per_file</span></code>.</p>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">thredds_exclude_variables</span></code> and <code class="docutils literal notranslate"><span class="pre">variable_per_file</span></code>.</p>
 <blockquote>
-<div><p>As mentioned above it is not needed to create a <code class="docutils literal"><span class="pre">variable_options</span></code> list. Instead we need to add a <code class="docutils literal"><span class="pre">thredds_exclude_variables</span></code> list that lists all
+<div><p>As mentioned above it is not needed to create a <code class="docutils literal notranslate"><span class="pre">variable_options</span></code> list. Instead we need to add a <code class="docutils literal notranslate"><span class="pre">thredds_exclude_variables</span></code> list that lists all
 variables that might be part of the file content but are not the <cite>target</cite> variable.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">thredds_exclude_variables</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span> <span class="n">a_bnds</span><span class="p">,</span> <span class="n">alev1</span><span class="p">,</span> <span class="n">alevel</span><span class="p">,</span> <span class="n">alevhalf</span><span class="p">,</span> <span class="n">alt40</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thredds_exclude_variables</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span> <span class="n">a_bnds</span><span class="p">,</span> <span class="n">alev1</span><span class="p">,</span> <span class="n">alevel</span><span class="p">,</span> <span class="n">alevhalf</span><span class="p">,</span> <span class="n">alt40</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">...</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">variable_per_file</span></code> should be always set to <code class="docutils literal"><span class="pre">true</span></code>. If this is set to false no aggregations will be generated and all variables that are part of the dataset are wrongly assigned to every file.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">variable_per_file</span> <span class="o">=</span> <span class="n">true</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">variable_per_file</span></code> should be always set to <code class="docutils literal notranslate"><span class="pre">true</span></code>. If this is set to false no aggregations will be generated and all variables that are part of the dataset are wrongly assigned to every file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable_per_file</span> <span class="o">=</span> <span class="n">true</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">If a excludes variable is missing in the <code class="docutils literal"><span class="pre">thredds_exclude_variables</span></code> and <code class="docutils literal"><span class="pre">variable_per_file</span></code> is set to true this might result in publishing the same file multiple times to Thredds.</p>
+<p class="last">If a excludes variable is missing in the <code class="docutils literal notranslate"><span class="pre">thredds_exclude_variables</span></code> and <code class="docutils literal notranslate"><span class="pre">variable_per_file</span></code> is set to true this might result in publishing the same file multiple times to Thredds.</p>
 </div>
-<p>If a variable can be <cite>taget</cite> variable <strong>and</strong> <cite>exclude</cite> variable it must be listed in the <code class="docutils literal"><span class="pre">variable_locate</span></code>.
-The <code class="docutils literal"><span class="pre">variable_locate</span></code> is a list of variable and begin-of-filename pairs, following the syntax:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">variable_locate</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">var1</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">begin_of_filename1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">var2</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">begin_of_filename2</span><span class="o">&gt;</span>
+<p>If a variable can be <cite>taget</cite> variable <strong>and</strong> <cite>exclude</cite> variable it must be listed in the <code class="docutils literal notranslate"><span class="pre">variable_locate</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">variable_locate</span></code> is a list of variable and begin-of-filename pairs, following the syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable_locate</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">var1</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">begin_of_filename1</span><span class="o">&gt;</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">var2</span><span class="o">&gt;</span><span class="p">,</span><span class="o">&lt;</span><span class="n">begin_of_filename2</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">variable_locate</span> <span class="o">=</span> <span class="n">ps</span><span class="p">,</span><span class="n">ps_</span> <span class="o">|</span> <span class="n">basin</span><span class="p">,</span><span class="n">basin_</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable_locate</span> <span class="o">=</span> <span class="n">ps</span><span class="p">,</span><span class="n">ps_</span> <span class="o">|</span> <span class="n">basin</span><span class="p">,</span><span class="n">basin_</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -601,15 +630,15 @@ The <code class="docutils literal"><span class="pre">variable_locate</span></cod
 <blockquote>
 <div><p><a class="reference external" href="http://www.ferret.noaa.gov/LAS/home">The Live Access Server</a> (LAS) is part of the ESGF Installation and can be used to visualize the data.</p>
 <p>If LAS is enabled the publisher will generate and publish a LAS-link for each dataset and aggregation.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># disable LAS</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable LAS</span>
 <span class="n">las_configure</span> <span class="o">=</span> <span class="n">false</span>
 
 <span class="c1"># enable LAS</span>
 <span class="n">las_configure</span> <span class="o">=</span> <span class="n">true</span>
 </pre></div>
 </div>
-<p>For LAS you also need a <code class="docutils literal"><span class="pre">las_time_delta_map</span></code>, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">las_time_delta_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">time_frequency</span> <span class="p">:</span> <span class="n">las_time_delta</span><span class="p">)</span>
+<p>For LAS you also need a <code class="docutils literal notranslate"><span class="pre">las_time_delta_map</span></code>, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">las_time_delta_map</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">time_frequency</span> <span class="p">:</span> <span class="n">las_time_delta</span><span class="p">)</span>
     <span class="n">yr</span>      <span class="o">|</span> <span class="mi">1</span> <span class="n">year</span>
     <span class="n">mon</span>     <span class="o">|</span> <span class="mi">1</span> <span class="n">month</span>
     <span class="n">day</span>     <span class="o">|</span> <span class="mi">1</span> <span class="n">day</span>
@@ -629,28 +658,28 @@ The <code class="docutils literal"><span class="pre">variable_locate</span></cod
 <span id="policies"></span><h2>Prepare user and permissions for publication<a class="headerlink" href="#prepare-user-and-permissions-for-publication" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="publish-to-an-index-node-at-another-side">
 <h3>Publish to an index node at another side<a class="headerlink" href="#publish-to-an-index-node-at-another-side" title="Permalink to this headline">¶</a></h3>
-<p>Please coordinate with that site&#8217;s node administrator.</p>
+<p>Please coordinate with that site’s node administrator.</p>
 </div>
 <div class="section" id="publish-to-your-own-index-node">
 <h3>Publish to your own index node<a class="headerlink" href="#publish-to-your-own-index-node" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
-<li><p class="first">Verify publishing permissions: <code class="docutils literal"><span class="pre">/esg/config/esgf_policies_local.xml</span></code></p>
+<li><p class="first">Verify publishing permissions: <code class="docutils literal notranslate"><span class="pre">/esg/config/esgf_policies_local.xml</span></code></p>
 <blockquote>
 <div><p>Specifications for datasets are given by regular expression. This could include a data_node or a project, institution, model, etc.
 If you want to publish within a specified collection, ensure that an entry exists for that with a specified ESGF group, publisher role,
 and Write action.</p>
 <p>Example for publication of CMIP5 data only:</p>
-<div class="highlight-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">policy</span> <span class="na">resource</span><span class="o">=</span><span class="s">&quot;.*cmip5.*&quot;</span> <span class="na">attribute_type</span><span class="o">=</span><span class="s">&quot;cmip5_publisher&quot;</span> <span class="na">attribute_value</span><span class="o">=</span><span class="s">&quot;publisher&quot;</span> <span class="na">action</span><span class="o">=</span><span class="s">&quot;Write&quot;</span><span class="p">/&gt;</span>
+<div class="highlight-html notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">policy</span> <span class="na">resource</span><span class="o">=</span><span class="s">&quot;.*cmip5.*&quot;</span> <span class="na">attribute_type</span><span class="o">=</span><span class="s">&quot;cmip5_publisher&quot;</span> <span class="na">attribute_value</span><span class="o">=</span><span class="s">&quot;publisher&quot;</span> <span class="na">action</span><span class="o">=</span><span class="s">&quot;Write&quot;</span><span class="p">/&gt;</span>
 </pre></div>
 </td></tr></table></div>
 <p>Example for publication of all projects from a particular ESGF node:</p>
-<div class="highlight-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">policy</span> <span class="na">resource</span><span class="o">=</span><span class="s">&quot;.*esgf-test.dkrz.de.*&quot;</span> <span class="na">attribute_type</span><span class="o">=</span><span class="s">&quot;cmip5_publisher&quot;</span> <span class="na">attribute_value</span><span class="o">=</span><span class="s">&quot;publisher&quot;</span> <span class="na">action</span><span class="o">=</span><span class="s">&quot;Write&quot;</span><span class="p">/&gt;</span>
+<div class="highlight-html notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">policy</span> <span class="na">resource</span><span class="o">=</span><span class="s">&quot;.*esgf-test.dkrz.de.*&quot;</span> <span class="na">attribute_type</span><span class="o">=</span><span class="s">&quot;cmip5_publisher&quot;</span> <span class="na">attribute_value</span><span class="o">=</span><span class="s">&quot;publisher&quot;</span> <span class="na">action</span><span class="o">=</span><span class="s">&quot;Write&quot;</span><span class="p">/&gt;</span>
 </pre></div>
 </td></tr></table></div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Make sure you have the correct permission for both policies files:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">5840</span> <span class="n">Aug</span>  <span class="mi">8</span> <span class="mi">10</span><span class="p">:</span><span class="mi">32</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_local</span><span class="o">.</span><span class="n">xml</span>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">5840</span> <span class="n">Aug</span>  <span class="mi">8</span> <span class="mi">10</span><span class="p">:</span><span class="mi">32</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_local</span><span class="o">.</span><span class="n">xml</span>
 <span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">1381</span> <span class="n">Mar</span> <span class="mi">21</span>  <span class="mi">2016</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_common</span><span class="o">.</span><span class="n">xml</span>
 </pre></div>
 </div>
@@ -660,7 +689,7 @@ and Write action.</p>
 <li><p class="first">Group, role and permission in the Postgres database:</p>
 <blockquote>
 <div><p>For publication you need to create an ESGF account and add the appropriate role and group to that user. Therefore you have to modify the postgres database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span># login to the escet database
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># login to the escet database
 $ psql -U dbsuper esgcet
 
 # add a new group named cmip5_publisher
@@ -671,7 +700,7 @@ esgcet=# INSERT INTO esgf_security.permission VALUES(2, 3, 4, true);
 </pre></div>
 </div>
 <p>For the example above the tables in esgcet should look like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">esgcet</span><span class="o">=</span><span class="c1"># SELECT * FROM esgf_security.user;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgcet</span><span class="o">=</span><span class="c1"># SELECT * FROM esgf_security.user;</span>
 
 <span class="nb">id</span> <span class="o">|</span> <span class="n">firstname</span> <span class="o">|</span> <span class="n">middlename</span> <span class="o">|</span> <span class="n">lastname</span> <span class="o">|</span>     <span class="n">email</span>     <span class="o">|</span>  <span class="n">username</span>    <span class="o">|</span> <span class="o">...</span>
 <span class="o">---+-----------+------------+----------+---------------+--------------+-----</span>
@@ -698,9 +727,9 @@ esgcet=# INSERT INTO esgf_security.permission VALUES(2, 3, 4, true);
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Ensure that the ESGF group has an entry in the <code class="docutils literal"><span class="pre">/esg/config/esgf_ats_static.xml</span></code> file for the attribute service for that group, e.g.:</p>
+<li><p class="first">Ensure that the ESGF group has an entry in the <code class="docutils literal notranslate"><span class="pre">/esg/config/esgf_ats_static.xml</span></code> file for the attribute service for that group, e.g.:</p>
 <blockquote>
-<div><div class="highlight-html"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+<div><div class="highlight-html notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
 2
 3
 4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">attribute</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;cmip5_publisher&quot;</span>
@@ -716,18 +745,18 @@ esgcet=# INSERT INTO esgf_security.permission VALUES(2, 3, 4, true);
 <div class="section" id="myproxy-logon">
 <span id="id2"></span><h3>Myproxy Logon<a class="headerlink" href="#myproxy-logon" title="Permalink to this headline">¶</a></h3>
 <p>For publication to an index node you need to have a valid globus certificate for an user with <cite>Write</cite> permissions.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ mkdir $HOME/.globus   # if not already present
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mkdir $HOME/.globus   # if not already present
 $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512 -t 72 -o $HOME/.globus/certificate-file
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The certificate is valid for 72 hours when specified by <code class="docutils literal"><span class="pre">-t</span></code>. If you are publishing for the first time, you will need to use <code class="docutils literal"><span class="pre">-b</span></code> to bootstrap it&#8217;s trustroots with the server.</p>
+<p class="last">The certificate is valid for 72 hours when specified by <code class="docutils literal notranslate"><span class="pre">-t</span></code>. If you are publishing for the first time, you will need to use <code class="docutils literal notranslate"><span class="pre">-b</span></code> to bootstrap it’s trustroots with the server.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>Please get the <code class="docutils literal"><span class="pre">openid_server</span></code> and <code class="docutils literal"><span class="pre">esgf_username</span></code> from your ESGF OpenID, e.g.</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">openid</span><span class="p">:</span>        <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">pcmdi</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span><span class="o">/</span><span class="n">esgf</span><span class="o">-</span><span class="n">idp</span><span class="o">/</span><span class="n">openid</span><span class="o">/</span><span class="n">publish_user</span>
+<p>Please get the <code class="docutils literal notranslate"><span class="pre">openid_server</span></code> and <code class="docutils literal notranslate"><span class="pre">esgf_username</span></code> from your ESGF OpenID, e.g.</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">openid</span><span class="p">:</span>        <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">pcmdi</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span><span class="o">/</span><span class="n">esgf</span><span class="o">-</span><span class="n">idp</span><span class="o">/</span><span class="n">openid</span><span class="o">/</span><span class="n">publish_user</span>
 <span class="n">openid_server</span><span class="p">:</span> <span class="n">pcmdi</span><span class="o">.</span><span class="n">llnl</span><span class="o">.</span><span class="n">gov</span>
 <span class="n">esgf_username</span><span class="p">:</span> <span class="n">publish_user</span>
 </pre></div>
@@ -739,15 +768,18 @@ $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mapfiles.html" class="btn btn-neutral float-right" title="Mapfile preparation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mapfiles.html" class="btn btn-neutral float-right" title="Mapfile preparation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="testpublication.html" class="btn btn-neutral" title="Quick guide to test publication" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="testpublication.html" class="btn btn-neutral" title="Quick guide to test publication" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -781,7 +813,8 @@ $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512
             VERSION:'3.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="static/jquery.js"></script>
