@@ -182,7 +182,7 @@ def main(argv):
     las = False
     log_filename = None
     republish = True
-    restApi = True
+    restApi = False  # ska rolled back for v3.4.3 until reconcile changes
     thredds = True
     syncThredds = False
     useList = False
