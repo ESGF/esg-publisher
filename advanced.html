@@ -185,6 +185,11 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgadd_facetvalues --project &lt;project&gt; --mapfile &lt;dataset_mapfile&gt; --noscan --thredds --service fileservice
 </pre></div>
 </div>
+<p>This step above will re-generate your thredds catalogs with the additional facets.  Finally, you will need to republish those catalogs to the Index Node / Solr.  For that you may use either your new or previously generated mapfiles, as long as they have the same list of dataset_ids.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --mapfile &lt;dataset_mapfile&gt; --noscan --publish
+</pre></div>
+</div>
+<p>Note that if you have published “new” facets for the first time to the Index Node, they will not be searchable on Solr and moreover, will cause a an erroneous response.  The solution is to restart the Index Node right after publication and then attempt your search.</p>
 </div>
 </div>
 </div>
