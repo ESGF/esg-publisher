@@ -280,6 +280,10 @@ Also make sure the (unix-) user you use for publication has write access to the 
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">--service</span> <span class="pre">fileservice</span></code> is required to publish Globus, GridFTP and OpenDAP urls in default esg-publisher configurations.  If omitted, rerunning <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> with <code class="docutils literal notranslate"><span class="pre">--thredds</span></code> can be performed to add those urls.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
 <p class="last"><code class="docutils literal notranslate"><span class="pre">--noscan</span></code> skips the netcdf scan of each file. This is useful since the scan was already done in the previous publication step to the database.</p>
 </div>
 <div class="admonition note">
@@ -322,9 +326,11 @@ INFO       2016-08-09 14:07:21,993 Reinitializing THREDDS server
 <p>The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF’s <a class="reference external" href="https://github.com/ESGF/esg-search">esg-search</a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">By default the publication will use the HESSIAN web service protocol. For the REST service please use the <code class="docutils literal notranslate"><span class="pre">--rest-api</span></code> flag.</p>
+<p>Version v3.4.4 or later:  By default the publication will use the REST web service protocol. For the HESSIAN service please use the <code class="docutils literal notranslate"><span class="pre">--hessian-api</span></code> flag.</p>
+<p>Version v3.4.2-3:  By default the publication will use the REST web service protocol. The HESSIAN service has been disabled in this version.</p>
+<p class="last">Earlier versions:  By default the publication will use the HESSIAN web service protocol. For the REST service please use the <code class="docutils literal notranslate"><span class="pre">--rest-api</span></code> flag.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --publish
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --publish [--hessian-api]
 </pre></div>
 </div>
 <p>Example:</p>
