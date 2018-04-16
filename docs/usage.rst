@@ -125,6 +125,8 @@ Also make sure the (unix-) user you use for publication has write access to the 
 
    $ esgpublish [optional: -i <path_to_ini_files>] --project <project_name>  --map <input_mapfile or mapfile_directory> --service fileservice --noscan --thredds [--no-thredds-reinit]
 
+.. note::
+    ``--service fileservice`` is required to publish Globus, GridFTP and OpenDAP urls in default esg-publisher configurations.  If omitted, rerunning ``esgpublish`` with ``--thredds`` can be performed to add those urls.
 
 .. note::
     ``--noscan`` skips the netcdf scan of each file. This is useful since the scan was already done in the previous publication step to the database.
@@ -172,11 +174,15 @@ Publish to index node
 The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF's `esg-search <https://github.com/ESGF/esg-search>`_.
 
 .. note::
-    By default the publication will use the HESSIAN web service protocol. For the REST service please use the ``--rest-api`` flag.
+    Version v3.4.4 or later:  By default the publication will use the REST web service protocol. For the HESSIAN service please use the ``--hessian-api`` flag.
+
+    Version v3.4.2-3:  By default the publication will use the REST web service protocol. The HESSIAN service has been disabled in this version.
+  
+    Earlier versions:  By default the publication will use the HESSIAN web service protocol. For the REST service please use the ``--rest-api`` flag.
 
 ::
 
-   $ esgpublish [optional: -i <path_to_ini_files>] --project <project_name> --map <input_mapfile or mapfile_directory> --service fileservice --noscan --publish
+   $ esgpublish [optional: -i <path_to_ini_files>] --project <project_name> --map <input_mapfile or mapfile_directory> --service fileservice --noscan --publish [--hessian-api]
 
 
 Example:
