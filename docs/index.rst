@@ -12,4 +12,5 @@ Contents:
    mapfiles
    usage
    faq
-
+   advanced
+   

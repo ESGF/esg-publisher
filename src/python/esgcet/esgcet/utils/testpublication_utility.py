@@ -12,6 +12,7 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.publish import checksum
 from esgcet.model import DatasetVersion
 
+import requests
 
 def check_permission(path, dir=True):
     """
@@ -152,4 +153,10 @@ def check_index(index_node, dataset_name, publish):
         elif i < limit:
             print '.',
             time.sleep(10)
+    return False
+
+def test_download():
+    resp = requests.get('http://localhost/thredds/fileServer/esg_dataroot/test/sftlf.nc')
+    if resp.status_code == 200:
+        return True
     return False
