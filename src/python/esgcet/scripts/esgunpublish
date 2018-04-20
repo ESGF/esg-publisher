@@ -188,12 +188,8 @@ def main(argv):
     las = False
     log_filename = None
     republish = True
-    # ska set to false for v3.4.3 until reconcile changes
-    # (ami changed this to a default value that can be overridden in config;
-    # please update help text if setting this to True, see text marked with "**"
-    # under "--rest-api")
     restApi = None
-    restApiDefault = False 
+    restApiDefault = True
     thredds = True
     syncThredds = False
     useList = False
@@ -219,6 +215,7 @@ def main(argv):
             sys.exit(0)
         elif flag=='--hessian-api':
             rest_api = False
+            restApiDefault = False
         elif flag=='-i':
             init_dir = arg
         elif flag == '--keep-credentials':
@@ -235,8 +232,14 @@ def main(argv):
         elif flag=='--skip-index':
             gatewayOp = NO_OPERATION
         elif flag=='--delete':
+                if gatewayOp == DELETE:
+                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                exit(1)
             gatewayOp = DELETE
         elif flag=='--retract':
+            if gatewayOp == DELETE:
+                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                exit(1)
             gatewayOp = UNPUBLISH
         elif flag=='--las':
             las = True
@@ -264,8 +267,6 @@ def main(argv):
     if projectName is None:
         raise ESGPublishError("Must specify project with --project")
 
-    if gatewayOp!=NO_OPERATION and unpublishOnGateway:
-        gatewayOp = UNPUBLISH
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir)
@@ -289,11 +290,11 @@ def main(argv):
                 except:
                     warning('Certificate generation failed, please try to run myproxy-logon manually...')
 
-        if unpublishOnGateway:
-            gatewayOp = UNPUBLISH
 
     if gatewayOp == UNINITIALIZED:
-        gatewayOp = UNPUBLISH
+        print "esgunpublish usage error:  index unpublication mode not set.  Must use one of following options:"
+        print "--skip-index, --database-only, --delete, --retract"      
+        exit(1)  
 
     # Get the default publication interface (REST or Hessian)
     if restApi is None:

@@ -225,7 +225,7 @@ def main(argv):
 
     # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
     print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
-    cmd = ['esgprep', 'mapfile', '--project', 'test', '--dataset', DATASET_NAME, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
+    cmd = ['esgmapfile', '--project', 'test', '--dataset', DATASET_NAME, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
 
