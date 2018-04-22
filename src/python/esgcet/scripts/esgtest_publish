@@ -226,7 +226,7 @@ def main(argv):
 
     # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
     print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
-    DATASET_NAME =
+
     cmd = ['esgmapfile', '--project', 'test', '--dataset', DATASET_NAME_IN, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
@@ -280,11 +280,14 @@ def main(argv):
         return
 
     print(bcolors.BOLD + '\nUnpublish dataset' + bcolors.ENDC)
-    cmd = ['esgunpublish', '--delete', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH, '--keep-credentials']
+    cmd = ['esgunpublish', '--delete', '--project', 'test','--keep-credentials', DATASET_NAME_IN]
     if skip_thredds:
         cmd.append('--skip-thredds')
     if skip_index:
         cmd.append('--skip-index')
+    success, err_msg = execute_cmd(cmd)
+    print_res(success, skip_error, session, err_msg)
+    cmd = ['esgunpublish', '--skip-index', '--database-delete', '--project', 'test','--keep-credentials', DATASET_NAME + ".v1"]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
     print 'Check 1: Unpublished from Postgres...',
