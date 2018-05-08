@@ -132,7 +132,6 @@ User is not authorized to publish
 
 Configuration file option missing
 ---------------------------------
-
 ::
 
     ...
@@ -148,3 +147,9 @@ Configuration file option missing
 
     The certificates are fetched during the myproxy-login -b (bootstrap)
 
+THREDDS does not unpublish
+--------------------------
+
+::
+
+Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.
