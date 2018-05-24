@@ -306,29 +306,33 @@ Unpublication
 You could either use a ``mapfile directory``, a single ``mapfile`` a ``dataset`` or a ``dataset_list`` as input for the data unpublication:
 
 .. note::
-    By default the unpublication from the Solr index will use the HESSIAN web service protocol.
-    For the REST service please use the ``--rest-api`` flag. When using REST, it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).
+    By default the unpublication from the Solr index will use the REST web service protocol.  Thus it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).
+    For the Hessian service please use the ``--hessian-api`` flag. When using Hessian API, the version number is not mandatory to specify with the dataset_id.
 
-- Using a mapfile directory or a single mapfile
+.. note::
+    By default upublication will occur on the index node.  In this case, it is required to either specify whether it is desired to *retract* or *delete* the dataset.  
+    The ``--retract`` flag gives the option to leave a publication record of the dataset on the index node, but the data will no longer be available for download.  In contrast, ``--delete`` completely  removes the dataset record from the index.  Dataset project guidelines should suggest which of these options should be considered.
 
-    ::
-
-        $ esgunpublish --project <project> --map <input_mapfile or mapfile_directory>
-
-- Using a list
+- Using a mapfile directory or a single mapfile; retract the dataset
 
     ::
 
-        $ esgunpublish --project <project> --use-list <list-of-datasets-filename>
+        $ esgunpublish --project <project> --map <input_mapfile or mapfile_directory> --retract
+
+- Using a list;  delete the dataset 
+
+    ::
+
+        $ esgunpublish --project <project> --use-list <list-of-datasets-filename> --delete
 
     .. note::
         To obtain the a list of datasets, there are several alternatives.  On the command line you can use ``$ esglist_datasets --no-header --select name <project>``
 
-- Using a single dataset_name
+- Using a single dataset_name; retract
 
     ::
 
-        $ esgunpublish --project <project> dataset_name[#version]
+        $ esgunpublish --project <project> dataset_name[#version] --retract
 
 
 
@@ -339,7 +343,7 @@ Delete the data from Index, remove the THREDDS catalog, reinitialize/recheck the
 
 ::
 
-    $ esgunpublish --project cmip5 --map /esg/mapfiles
+    $ esgunpublish --project cmip5 --map /esg/mapfiles --delete
 
 
 Delete from Index
@@ -349,13 +353,13 @@ Delete the data from Index but keep the Thredds catalogs and postgres entries.
 
 ::
 
-    $ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds
+    $ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds --delete
 
 
 Delete from Thredds
 -------------------
 
-Delete the Thredds Catalogs, but keep the data available on the Index node and on the postgres database.
+Delete the Thredds Catalogs, but keep the data available on the Index node and on the postgres database.  In this case the
 
 ::
 
@@ -368,7 +372,7 @@ The data will be removed from postgres, Thredds and the Index node.
 
 ::
 
-    $ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete
+    $ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete --delete
 
 .. warning::
     Use ``--database-delete`` to unpublish test data only. It is highly recommended to keep a history of all production data in postgres.
