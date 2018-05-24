@@ -2,6 +2,7 @@ import requests
 from lxml import etree
 from urlparse import urljoin
 from esgcet.exceptions import *
+import os
 
 class RestPublicationService(object):
 
@@ -44,6 +45,15 @@ class RestPublicationService(object):
             self.keyFile = keyFile
         else:
             self.keyFile = certFile
+        outdir=os.path.dirname(certFile)
+        concat_certs=outdir+'/concatenatedcerts'
+        files=['/etc/certs/esgf-ca-bundle.crt',certFile]
+        with open(concat_certs,'w') as outfile:
+            for certf in files:
+                with open(certf, 'r') as file:
+                    outfile.write(file.read())
+                    outfile.write('\n')
+        self.certs_location = concat_certs
         self.certs_location = certs_location
         self.debug = debug
         self.status = 0
