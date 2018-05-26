@@ -12,6 +12,9 @@ from utility import issueCallback, getHessianServiceURL, getRestServiceURL
 from esgcet import messaging
 from rest import RestPublicationService
 
+DEFAULT_CERTS_LOCATION_SUFFIX = "/.globus/certificates"
+
+
 class PublicationState(object):
 
     # Invalid state returned in status
@@ -325,8 +328,24 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:                   # REST service
-            spi = 1
-            service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
+                
+            service_certs_location = None
+            try:
+                service_certs_location =  config.get('DEFAULT', 'hessian_service_certs_location')
+
+            except:
+                home = os.environ.get("HOME")
+                if home is not None:
+                    service_certs_location = home + DEFAULT_CERTS_LOCATION_SUFFIX
+                
+                      
+            if service_certs_location is None:
+                raise ESGPublishError("hessian_service_certs_location needs to be set in esg.ini")
+
+
+            if not os.path.exists(service_certs_location):
+                raise ESGPublishError("Error: " + service_certs_location + " does not exist.  Please run myproxy-logon with -b to bootstrap the certificates, or set an alternate location using the hessian_service_certs_location setting in esg.ini")
+
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
