@@ -328,7 +328,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:                   # REST service
-                
+            spi = 1
             service_certs_location = None
             try:
                 service_certs_location =  config.get('DEFAULT', 'hessian_service_certs_location')
