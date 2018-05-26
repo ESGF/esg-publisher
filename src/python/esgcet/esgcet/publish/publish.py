@@ -72,24 +72,6 @@ class PublicationStatus(object):
         return self.state
 
 
-def getServiceCertsLoc():            
-    try:
-        service_certs_location =  config.get('DEFAULT', 'hessian_service_certs_location')
-
-    except:
-        home = os.environ.get("HOME")
-        if home is not None:
-            service_certs_location = home + DEFAULT_CERTS_LOCATION_SUFFIX        
-            
-    if service_certs_location is None:
-        raise ESGPublishError("hessian_service_certs_location needs to be set in esg.ini")
-
-
-    if not os.path.exists(service_certs_location):
-        raise ESGPublishError("Error: " + service_certs_location + " does not exist.  Please run myproxy-logon with -b to bootstrap the certificates, or set an alternate location using the hessian_service_certs_location setting in esg.ini")
-    return service_certs_location
-
-
 def publishDataset(datasetName, parentId, service, threddsRootURL, session, schema=None, version=None):
     """
     Publish a dataset.
