@@ -8,7 +8,7 @@ from publish import PublicationState, PublicationStatus
 from time import sleep
 from thredds import updateThreddsMasterCatalog, reinitializeThredds
 from las import reinitializeLAS
-from utility import issueCallback, getHessianServiceURL, getRestServiceURL, parseSolrDatasetId
+from utility import issueCallback, getHessianServiceURL, getRestServiceURL, parseSolrDatasetId, getServiceCertsLoc
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from rest import RestPublicationService
 
@@ -261,7 +261,7 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:
-            service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
+            service_certs_location = getServiceCertsLoc()
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)

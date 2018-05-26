@@ -25,6 +25,8 @@ from time import time
 os.stat_float_times(False)
 
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
+DEFAULT_CERTS_LOCATION_SUFFIX = "/.globus/certificates"
+
 
 class Bcolors:
 
@@ -1184,3 +1186,5 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             debug("CMIP6 CV updated from master")
         except Exception as e:
             raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)
+
+
