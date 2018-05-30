@@ -70,7 +70,6 @@ class RestPublicationService(object):
                     outfile.write(file.read())
                     outfile.write('\n')
         self.certs_location = concat_certs
-        self.certs_location = certs_location
         self.debug = debug
         self.status = 0
         self.message = ''
