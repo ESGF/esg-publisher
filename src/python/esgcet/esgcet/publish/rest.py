@@ -58,7 +58,7 @@ class RestPublicationService(object):
         config = getConfig()
         certs_bundle_location = DEFAULT_CERTS_BUNDLE
         try:
-            config.get('DEFAULT', 'esg_certificates_bundle')
+            certs_bundle_location = config.get('DEFAULT', 'esg_certificates_bundle')
         except:
             certs_bundle_location = DEFAULT_CERTS_BUNDLE
         
