@@ -75,6 +75,8 @@ Options:
 
     -h, --help: Print a help message.
 
+    --hessian-api: Use the legacy publishing API. See also --rest-api.
+
     -i init_dir:
         Directory containing all initialization files.
         Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
@@ -111,6 +113,10 @@ Options:
         https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
 
         Note: With this option, the dataset_name should have the form 'dataset_id|data_node'.
+
+        If neither --rest-api nor --hessian-api are specified, then config file option use_rest_api is used,
+        and if this option is not found, the **legacy** API is used by default.
+        ** This contrasts with 'esgpublish' but it is intended to change this behavior in future. **
 
     --skip-index: Perform local (node) operations, skip SOLR index dataset delete.
 
@@ -183,6 +189,7 @@ def main(argv):
     log_filename = None
     republish = True
     restApi = None
+    restApiDefault = True
     thredds = True
     syncThredds = False
     useList = False
@@ -206,6 +213,9 @@ def main(argv):
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
+        elif flag=='--hessian-api':
+            rest_api = False
+            restApiDefault = False
         elif flag=='-i':
             init_dir = arg
         elif flag == '--keep-credentials':
@@ -222,8 +232,14 @@ def main(argv):
         elif flag=='--skip-index':
             gatewayOp = NO_OPERATION
         elif flag=='--delete':
+            if gatewayOp == UNPUBLISH:
+                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                exit(1)
             gatewayOp = DELETE
         elif flag=='--retract':
+            if gatewayOp == DELETE:
+                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                exit(1)
             gatewayOp = UNPUBLISH
         elif flag=='--las':
             las = True
@@ -251,8 +267,6 @@ def main(argv):
     if projectName is None:
         raise ESGPublishError("Must specify project with --project")
 
-    if gatewayOp!=NO_OPERATION and unpublishOnGateway:
-        gatewayOp = UNPUBLISH
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir)
@@ -276,15 +290,15 @@ def main(argv):
                 except:
                     warning('Certificate generation failed, please try to run myproxy-logon manually...')
 
-        if unpublishOnGateway:
-            gatewayOp = UNPUBLISH
 
     if gatewayOp == UNINITIALIZED:
-        gatewayOp = UNPUBLISH
+        print "esgunpublish usage error:  index unpublication mode not set.  Must use one of following options:"
+        print "--skip-index, --database-only, --delete, --retract"      
+        exit(1)  
 
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
-        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
+        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=restApiDefault)
 
     if not data_node:
         data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc

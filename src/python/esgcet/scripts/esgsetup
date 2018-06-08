@@ -242,12 +242,12 @@ def fetch_project_ini():
     # Fetch new esg.<project>.ini files, do not overwrite existing files
     tell("""
     Fetching new esg.<project>.ini files from github:
-    Running 'esgprep fetch-ini' -k:
+    Running 'esgfetchini' -k:
     """)
     try:
-        subprocess.call(["esgprep", "fetch-ini", "-k"])
+        subprocess.call(["esgfetchini", "-k"])
     except OSError, e:
-        raise OSError("Cannot run esgprep fetch-ini: %s. Is $CDAT_HOME/bin in the path?" % `e`)
+        raise OSError("Cannot run esgfetchini: %s. Is $CDAT_HOME/bin in the path?" % `e`)
 
 
 def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoints, optionList, handlerGroup, handlerClass, handler=None, handlerBasename=None, handlerTemplate=None, handlerOption=None, handlerPath=None):

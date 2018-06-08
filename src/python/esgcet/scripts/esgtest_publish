@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker
 from pyesgf.search import SearchConnection
 
 from esgcet.logon import check_server, check_cert, get_myproxy_value_from_config, logon
-from esgcet.utils import check_permission, execute_cmd, get_test_file, check_mapfile, check_postgres, check_thredds, check_index
+from esgcet.utils import check_permission, execute_cmd, get_test_file, check_mapfile, check_postgres, check_thredds, check_index, test_download
 from esgcet.publish import bcolors
 from esgcet.config import loadConfig, initLogging
 from esgcet.exceptions import *
@@ -29,19 +29,20 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 ESGF_TEST_DATA_DIR = '/esg/data/test'
 ESGF_TEST_FILE_LOCATION = os.path.join(ESGF_TEST_DATA_DIR, 'sftlf.nc')
 ESGF_TEST_FILE_SHA256 = '94d4c7158fb11cea636500aae1fcc9168629631636b76a416660552962fc98ef'
-DATASET_NAME = 'test.%s' % int(time.time())
+DATASET_NAME = 'test.%s' % int(time.time()) 
 DATASET_NAME_VERSION = '%s.v1' % DATASET_NAME
 MAPFILE_PATH = os.path.join('/tmp/', DATASET_NAME)
+DATASET_NAME_IN = DATASET_NAME + '#1'
 
 usage = """Usage:
-    esg_testpublication [options]
+    esgtest_publish [options]
 
         Test Publication:
             - Set up a myproxy certificate
             - Generate a mapfile
             - Publish and unpublish a dataset
             - Verify each step
-
+            - Optional download test
 Options:
 
     -h, --myproxy-host myproxy_hostname:
@@ -74,6 +75,12 @@ Options:
 
     --skip-thredds
         Skip publication to THREDDS Server, includes --skip-index
+
+    -x, --skip-unpublish
+        Quit after publication and verification completes.  Note: this will leave the test file published on the datanode.
+
+    -d, --download-test
+        Performs a simple test of attempting to download the file
 """
 
 
@@ -118,7 +125,7 @@ def print_res(success, skip_error, session, msg=None, final_run=False):
 
 def main(argv):
     try:
-        args, lastargs = getopt.getopt(argv, "h:i:o:p:u:s", ['myproxy-host=', 'output=', 'myproxy-pass=', 'myproxy-user=', 'skip-error', 'skip-index', 'skip-thredds'])
+        args, lastargs = getopt.getopt(argv, "dh:i:o:p:u:s:x", ['myproxy-host=', 'output=', 'myproxy-pass=', 'myproxy-user=', 'skip-error', 'skip-index', 'skip-thredds', 'skip-unpublish', 'download-test'])
     except getopt.error:
         print sys.exc_value
         print usage
@@ -133,6 +140,9 @@ def main(argv):
     skip_error = False
     init_dir = '/esg/config/esgcet/'
     project_name = 'test'
+
+    skip_unpublish = False
+    dl_test = False
 
     for flag, arg in args:
         if flag in ['-h', '--myproxy-host']:
@@ -152,6 +162,11 @@ def main(argv):
         elif flag == '--skip-thredds':
             skip_index = True
             skip_thredds = True
+        elif flag in ['-x', '--skip-unpublish']:
+            skip_unpublish = True
+        elif flag in ['-d', '--download-test']:
+            dl_test = True
+
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir, project_name)
@@ -211,12 +226,13 @@ def main(argv):
 
     # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
     print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
-    cmd = ['esgprep', 'mapfile', '--project', 'test', '--dataset', DATASET_NAME, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
+
+    cmd = ['esgmapfile', '--project', 'test', '--dataset', DATASET_NAME_IN, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
 
     print 'Checking mapfile...',
-    success = check_mapfile(MAPFILE_PATH, DATASET_NAME)
+    success = check_mapfile(MAPFILE_PATH, DATASET_NAME_IN)
     print_res(success, skip_error, session)
 
     # Publish and unpublish dataset
@@ -253,12 +269,25 @@ def main(argv):
             success = check_index(index_node, DATASET_NAME, True)
         print_res(success, skip_error, session, err_msg)
 
+    if dl_test:
+        print 'File Download Test'
+
+        success = test_download()
+        print_res(success, skip_error, session, "")
+
+    if skip_unpublish:
+        print(bcolors.BOLD + '\nSkipping unpublication.' + bcolors.ENDC)
+        return
+
     print(bcolors.BOLD + '\nUnpublish dataset' + bcolors.ENDC)
-    cmd = ['esgunpublish', '--delete', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH, '--keep-credentials']
+    cmd = ['esgunpublish', '--delete', '--project', 'test','--keep-credentials', DATASET_NAME_IN]
     if skip_thredds:
         cmd.append('--skip-thredds')
     if skip_index:
         cmd.append('--skip-index')
+    success, err_msg = execute_cmd(cmd)
+    print_res(success, skip_error, session, err_msg)
+    cmd = ['esgunpublish', '--skip-index', '--database-delete', '--project', 'test','--keep-credentials', DATASET_NAME + ".v1"]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
     print 'Check 1: Unpublished from Postgres...',

@@ -8,9 +8,10 @@ from thredds import generateThredds, generateThreddsOutputPath, updateThreddsMas
 from las import reinitializeLAS
 from hessianlib import Hessian
 from esgcet.exceptions import *
-from utility import issueCallback, getHessianServiceURL, getRestServiceURL
+from utility import issueCallback, getHessianServiceURL, getRestServiceURL, getServiceCertsLoc
 from esgcet import messaging
 from rest import RestPublicationService
+
 
 class PublicationState(object):
 
@@ -69,6 +70,7 @@ class PublicationStatus(object):
 
     def getStateItem(self):
         return self.state
+
 
 def publishDataset(datasetName, parentId, service, threddsRootURL, session, schema=None, version=None):
     """
@@ -326,7 +328,9 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
             service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
         else:                   # REST service
             spi = 1
-            service_certs_location = config.get('DEFAULT', 'hessian_service_certs_location')
+
+            service_certs_location = getServiceCertsLoc()
+
             serviceURL = getRestServiceURL(project_config_section=project_config_section)
             serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
             service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)

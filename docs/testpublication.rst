@@ -76,6 +76,10 @@ By default the script will publish to all three components: Postgres, THREDDS an
     the ``rootAdmin`` account and get the appropriate password automatically.
 
 
+.. note::
+    
+
+
 Manual steps
 ************
 
@@ -108,11 +112,11 @@ Generate a valid globus certificate. For publication of test data you could use 
 Configuration
 -------------
 
-The configuration file for project test should already be present in the default location: ``/esg/config/esgcet/esg.test.ini``. In case it is missing fetch it with ``esgprep fetch-ini``:
+The configuration file for project test should already be present in the default location: ``/esg/config/esgcet/esg.test.ini``. In case it is missing fetch it with *esgprep* ``esgfetchini``:
 
 ::
 
-    $ esgprep fetch-ini --project test
+    $ esgfetchini --project test
 
 
 Make sure you have values for project test in the ``project_options`` and ``thredds_dataset_roots`` in ``/esg/config/esgcet/esg.ini``:
@@ -145,7 +149,7 @@ Mapfile generation
 
 ::
 
-    $ esgprep mapfile --project test /esg/data/test
+    $ esgmapfile --project test /esg/data/test
 
 The above will generate the directory ``mapfiles`` containing the file ``test.test.map`` in your working directory.
 

@@ -2,6 +2,11 @@ import requests
 from lxml import etree
 from urlparse import urljoin
 from esgcet.exceptions import *
+import os
+
+DEFAULT_CERTS_BUNDLE = '/etc/certs/esgf-ca-bundle.crt'
+
+from esgcet.config import getConfig
 
 class RestPublicationService(object):
 
@@ -44,7 +49,27 @@ class RestPublicationService(object):
             self.keyFile = keyFile
         else:
             self.keyFile = certFile
-        self.certs_location = certs_location
+        outdir=os.path.dirname(certFile)
+        concat_certs=outdir+'/concatenatedcerts'
+
+        # need to concatenate the certs bundle to the cert to use as the CA context.  Thanks pchengi for the initial fix!
+        # check if there is a setting, if none, use a default
+
+        config = getConfig()
+        certs_bundle_location = DEFAULT_CERTS_BUNDLE
+        try:
+            config.get('DEFAULT', 'esg_certificates_bundle')
+        except:
+            certs_bundle_location = DEFAULT_CERTS_BUNDLE
+        
+
+        files=[certs_bundle_location, certFile]
+        with open(concat_certs,'w') as outfile:
+            for certf in files:
+                with open(certf, 'r') as file:
+                    outfile.write(file.read())
+                    outfile.write('\n')
+        self.certs_location = concat_certs
         self.debug = debug
         self.status = 0
         self.message = ''

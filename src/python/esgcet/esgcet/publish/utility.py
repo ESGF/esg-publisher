@@ -25,6 +25,8 @@ from time import time
 os.stat_float_times(False)
 
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
+DEFAULT_CERTS_LOCATION_SUFFIX = "/.globus/certificates"
+
 
 class Bcolors:
 
@@ -1156,9 +1158,11 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
     # Change repo branch in any case
     try:
         # Go into CMOR table path
+        # Stash any changes from previous checkout 
         # Checkout to the appropriate CMOR table tag
         # Go back to previous working directory
         os.system('pushd {} >/dev/null ; '
+                  'git stash --quiet ;'
                   'git checkout {}  --quiet ; '
                   'popd >/dev/null'.format(cmor_table_path, ds_version))
         # Update local timestamp
@@ -1178,9 +1182,26 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             # Go back to previous working directory
             os.system('pushd {} >/dev/null ; '
                       'git checkout master CMIP6_CV.json --quiet ; '
-                      'git add CMIP6_CV.json ; '
-                      'git commit -m "update CMIP6_CV.json from master" --quiet ; '
                       'popd >/dev/null'.format(cmor_table_path))
             debug("CMIP6 CV updated from master")
         except Exception as e:
             raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)
+
+
+def getServiceCertsLoc():            
+    try:
+        service_certs_location =  config.get('DEFAULT', 'hessian_service_certs_location')
+
+    except:
+        home = os.environ.get("HOME")
+        if home is not None:
+            service_certs_location = home + DEFAULT_CERTS_LOCATION_SUFFIX        
+            
+    if service_certs_location is None:
+        raise ESGPublishError("hessian_service_certs_location needs to be set in esg.ini")
+
+
+    if not os.path.exists(service_certs_location):
+        raise ESGPublishError("Error: " + service_certs_location + " does not exist.  Please run myproxy-logon with -b to bootstrap the certificates, or set an alternate location using the hessian_service_certs_location setting in esg.ini")
+    return service_certs_location
+

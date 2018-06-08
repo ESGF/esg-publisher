@@ -129,3 +129,27 @@ User is not authorized to publish
 
     The CN should exactly match the ESGF hostname. In case you use a commercial certificate make sure your root certificate is in the ESGF truststore.
     More information on the certificate generation and installation can be found on our `github installer wiki <https://github.com/ESGF/esgf-installer/wiki/ESGF-CSR-and-Certificate-Installation>`_.
+
+Configuration file option missing
+---------------------------------
+::
+
+    ...
+    esgcet.exceptions.ESGPublishError: Configuration file option missing: hessian_service_certs_location in section: DEFAULT, file=/esg/config/esgcet/esg.ini
+
+**Solution**
+
+- Add the following to /esg/config/esgcet/esg.ini
+
+    :: 
+
+        hessian_service_certs_location = %(home)s/.globus/certificates
+
+    The certificates are fetched during the myproxy-login -b (bootstrap)
+
+THREDDS does not unpublish
+--------------------------
+
+::
+
+Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.

@@ -104,6 +104,8 @@ Options:
 
     -h, --help: Print a help message.
 
+    --hessian-api: Use the legacy publishing API. See also --rest-api.
+
     -i init_dir:
         Directory containing all initialization files.
         Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
@@ -212,6 +214,9 @@ Options:
         Publish using the RESTful publication services. The configuration file option ``rest_service_url''
         defines the service location. If it is undefined, the service location is
         https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
+
+        If neither --rest-api nor --hessian-api are specified, then config file option use_rest_api is used,
+        and if this option is not found, the REST API is used by default.
 
     --service service_name
         Specify a THREDDS service name to associate with an offline dataset. If omitted, the name of the
@@ -359,6 +364,7 @@ def main(argv):
     rescan = False
     rescanDatasetName = []
     restApi = None
+    restApiDefault = True
     schema = None
     service = None
     summarizeErrors = False
@@ -401,6 +407,8 @@ def main(argv):
         elif flag in ['-h', '--help']:
             print usage
             sys.exit(0)
+        elif flag=='--hessian-api':
+            restApi = False
         elif flag=='-i':
             init_dir = arg
         elif flag == '--keep-credentials':
@@ -588,7 +596,7 @@ def main(argv):
 
     # Get the default publication interface (REST or Hessian)
     if restApi is None:
-        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
+        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=restApiDefault)
 
     # Set up dictionary of extra handler args.
     # (Any not supported by the handler will be filtered out.)
