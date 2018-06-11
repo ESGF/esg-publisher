@@ -929,12 +929,7 @@ def main(argv):
                           ('DEFAULT', 'thredds_dataset_roots', threddsDatasetRoots),
                           ('DEFAULT', 'thredds_file_services', threddsFileSpecs),
                           ], currentConfig=config)
-
-            try:
-                reinitializeThredds()
-            except ESGPublishError, e:
-                tell("Got the error: %s\nCheck that the username/password and reinitialization URLs are correct."%`e`)
-                raise RuntimeError
+            
 
         except RuntimeError:
             tell("Script exited.")
