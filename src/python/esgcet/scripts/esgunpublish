@@ -152,7 +152,8 @@ def republishDataset(result, Session, thredds, gatewayOp):
     """
     Republish previous versions as needed. This will happen if the latest version
     was deleted from the database, and is not
-    the only version. In this case the previous version will be rescanned to generate the aggregations.
+    the only version. In this case the previous version will be rescanned to generate the aggregations
+    (unless user has overridden with skip_aggregations in project config)
     """
     statusDict, republishList = result
     if len(republishList)>0:
