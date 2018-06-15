@@ -389,10 +389,11 @@ def main(argv):
             publishOp = UPDATE_OP
         elif flag=='--commit-every':
             try:
-                commitEvery = int(arg)
-                assert commitEvery > 0
-            except (ValueError, AssertionError):
-                raise ESGPublishError('--commit-every must be a positive integer')
+                commitEvery = string.atoi(arg)
+                if commitEvery <= 0:
+                    raise ValueError
+            except ValueError:
+                raise ESGPublishError('--commit-every must be a positive integer: %s' % arg)
         elif flag in ['-c', '--create']:
             publishOp = CREATE_OP
         elif flag in ('--create-cim', '--no-create-cim', '--create-cim-only') and (createCim != None or createCimOnly):
