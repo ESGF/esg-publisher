@@ -57,8 +57,11 @@ Options:
         Name of the aggregate dimension. Defaults to 'time'
 
     --commit-every n
-        Commit file info to database every n files when adding a dataset. Default to commit once
+        Commit file info to database every n files when adding a dataset. By default commit once
         after all files are scanned.
+
+        This option can reduce memory usage, but if it is used, the dataset should be unpublished
+        if publication is interrupted.
 
     -c, --create
         Create and publish a dataset containing the files listed in the directory or dataset map.
