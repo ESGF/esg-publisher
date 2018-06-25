@@ -640,7 +640,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
 def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg,
                         properties, testProgress1=None, testProgress2=None, handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None,
                         extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False,
-                        pid_connector=None, test_publication=False, handlerExtraArgs={}):
+                        pid_connector=None, test_publication=False, handlerExtraArgs={}, commitEvery=None):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -736,6 +736,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
     pid_connector
         esgfpid.Connector object to register PIDs
+
+    commitEvery
+        Integer specifying how frequently to commit file info to database when scanning files
 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
@@ -852,7 +855,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
                                      offline=offline, operation=operation, progressCallback=testProgress1, perVariable=perVariable,
                                      keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway,
                                      comment=comment, useVersion=versionno, forceRescan=forceAggregate, nodbwrite=nodbwrite,
-                                     pid_connector=pid_connector, test_publication=test_publication, **context)
+                                     pid_connector=pid_connector, test_publication=test_publication, commitEvery=commitEvery, **context)
 
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
 

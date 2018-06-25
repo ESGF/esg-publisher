@@ -56,6 +56,13 @@ Options:
     -a aggregate_dimension_name:
         Name of the aggregate dimension. Defaults to 'time'
 
+    --commit-every n
+        Commit file info to database every n files when adding a dataset. By default commit once
+        after all files are scanned.
+
+        This option can reduce memory usage, but if it is used, the dataset should be unpublished
+        if publication is interrupted.
+
     -c, --create
         Create and publish a dataset containing the files listed in the directory or dataset map.
 
@@ -329,13 +336,14 @@ def yield_parsed_mapfiles(mapfileDir):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite'])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'commit-every=', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite'])
     except getopt.error:
         print sys.exc_value
         print usage
         sys.exit(0)
 
     aggregateDimension = "time"
+    commitEvery = None
     createCim = None  # default (behaviour depends on various options and project handler), not same as False
     createCimOnly = False
     verboseCimErrors = False
@@ -382,6 +390,13 @@ def main(argv):
             aggregateDimension = arg
         elif flag=='--append':
             publishOp = UPDATE_OP
+        elif flag=='--commit-every':
+            try:
+                commitEvery = string.atoi(arg)
+                if commitEvery <= 0:
+                    raise ValueError
+            except ValueError:
+                raise ESGPublishError('--commit-every must be a positive integer: %s' % arg)
         elif flag in ['-c', '--create']:
             publishOp = CREATE_OP
         elif flag in ('--create-cim', '--no-create-cim', '--create-cim-only') and (createCim != None or createCimOnly):
@@ -646,7 +661,8 @@ def main(argv):
                         datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp,
                                                        filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
                                                        extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
-                                                       nodbwrite=nodbwrite, pid_connector=pid_connector, test_publication=test_publication, handlerExtraArgs=handler_extra_args)
+                                                       nodbwrite=nodbwrite, pid_connector=pid_connector, test_publication=test_publication,
+                                                       handlerExtraArgs=handler_extra_args, commitEvery=commitEvery)
 
                     if (not nodbwrite):
                         result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
@@ -723,7 +739,8 @@ def main(argv):
                 datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt,
                                                initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields,
                                                masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite,
-                                               pid_connector=pid_connector, test_publication=test_publication, handlerExtraArgs=handler_extra_args)
+                                               pid_connector=pid_connector, test_publication=test_publication, handlerExtraArgs=handler_extra_args,
+                                               commitEvery=commitEvery)
 
             if (not nodbwrite):
                 result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
