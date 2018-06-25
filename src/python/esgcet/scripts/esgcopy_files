@@ -345,7 +345,7 @@ def main(argv):
 
     config = loadConfig(None)
     engine = create_engine(config.get('extract', 'replica_dburl'), echo=False, pool_recycle=3600)
-    initLogging('extract', override_sa=engine)
+    initLogging('DEFAULT', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
     registerHandlers()
     handler = getHandlerByName(project, None, Session)
