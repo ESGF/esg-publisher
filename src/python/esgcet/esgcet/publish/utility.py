@@ -1135,6 +1135,40 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     return pid_connector
 
 
+def getTableDir(cmor_table_path, ds_version, use_subdirs):
+    """
+    Get the directory of CMOR tables appropriate for use by PrePARE for checking 
+    against version ds_version, using one of two strategies.
+
+    If use_subdirs=False, assume that the cmor_table_path is a git clone.
+    Call checkAndUpdateRepo, and then return the supplied table path itself.
+
+    If use_subdirs=True, assume that the cmor_table_path is a directory containing 
+    read-only subidrectories for the different versions of the tables (as fetched 
+    using esgfetchtables).  Returns the relevant subdirectory after checking that 
+    it exists.
+    """
+
+    if use_subdirs:
+        path = os.path.join(cmor_table_path, ds_version)
+        if not os.path.isdir(path):
+            raise ESGPublishError('tables directory {} does not exist'.format(path))
+        return path
+    else:
+        checkAndUpdateRepo(cmor_table_path, ds_version)
+        return cmor_table_path
+
+
+def checkedRun(command):
+    """
+    Run a command and check that it returns 0 status.
+    """
+    status = os.system(command)
+    if status != 0:
+        raise ESGPublishError(('command {} failed with status {}'
+                               ).format(command, status))
+
+
 def checkAndUpdateRepo(cmor_table_path, ds_version):
     """
         Checks for a file written to a predefined location.  if not present or too old, will pull the repo based on the input path argument and update the timestamp.
@@ -1158,9 +1192,8 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             # Go into CMOR table path
             # Git fetch CMOR table repo
             # Go back to previous working directory
-            os.system('pushd {} >/dev/null ; '
-                      'git fetch --quiet ; '
-                      'popd >/dev/null'.format(cmor_table_path))
+            checkedRun(('cd {} && git fetch --quiet'
+                        ).format(cmor_table_path))
             # Update local timestamp
             f = open(UPDATE_TIMESTAMP, "w")
             f.write("CMOR table updated at {}".format(time()))
@@ -1175,10 +1208,8 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
         # Stash any changes from previous checkout 
         # Checkout to the appropriate CMOR table tag
         # Go back to previous working directory
-        os.system('pushd {} >/dev/null ; '
-                  'git stash --quiet ;'
-                  'git checkout {}  --quiet ; '
-                  'popd >/dev/null'.format(cmor_table_path, ds_version))
+        checkedRun(('cd {} && git stash --quiet && git checkout {} --quiet'
+                    ).format(cmor_table_path, ds_version))
         # Update local timestamp
         f = open(UPDATE_TIMESTAMP, "w")
         f.write("CMOR table updated at {}".format(time()))
@@ -1194,9 +1225,8 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             # PrePARE requires to have the most up to date CMIP6 CV.
             # Update CMIP6_CV.json from master branch.
             # Go back to previous working directory
-            os.system('pushd {} >/dev/null ; '
-                      'git checkout master CMIP6_CV.json --quiet ; '
-                      'popd >/dev/null'.format(cmor_table_path))
+            checkedRun(('cd {} && git checkout master CMIP6_CV.json --quiet'
+                        ).format(cmor_table_path))
             debug("CMIP6 CV updated from master")
         except Exception as e:
             raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)
