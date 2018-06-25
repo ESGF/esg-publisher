@@ -498,6 +498,10 @@ The project specific config files: esg.<project>.ini
             monClim | 1 month
             fx      | fixed
 
+#. (Optional) The ``skip_aggregations`` option:
+
+    If ``skip_aggregations`` is set to ``true``, aggregations will not be created. By default this option is set to ``false``.
+
 .. _policies:
 
 Prepare user and permissions for publication

@@ -864,6 +864,17 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
             runAggregate = (runAggregate and dataset.reaggregate)
         runAggregate = runAggregate or forceAggregate
 
+        # Turn off aggregations if skip_aggregations is set
+        # This applies even if forceAggregate is set to True elsewhere in the
+        # code when republishing an earlier version of the dataset
+        section = 'project:%s' % context.get('project')
+        config = getConfig()
+        skipAggregate = config.getboolean(section, 'skip_aggregations', False)
+
+        if runAggregate and skipAggregate:
+            runAggregate = False
+            info("Skipping aggregations due to skip_aggregations config option")
+
         if testProgress2 is not None:
            testProgress2[1] = (100./ct)*iloop + 50./ct
            testProgress2[2] = (100./ct)*(iloop + 1)
