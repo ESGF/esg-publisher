@@ -596,7 +596,7 @@ def main(argv):
 
     # set up a database connection
     engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
-    initLogging('extract', override_sa=engine, log_filename=log_filename)
+    initLogging('DEFAULT', override_sa=engine, log_filename=log_filename)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
     if threddsReinit:
