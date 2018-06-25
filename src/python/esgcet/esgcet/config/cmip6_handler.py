@@ -1,6 +1,5 @@
 """"Handle CMIP6 data file metadata"""
 
-import logging
 import re
 
 from cmip6_cv import PrePARE
