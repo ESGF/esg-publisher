@@ -21,19 +21,21 @@ ESGF v2.4.x or earlier
 Generate your mapfile(s) using the esgprep utitlity
 ***************************************************
 
-Basic usage of esgprep mapfile
+.. Note:: This documentation refers to esgprep v2.8.x, which featured a significant command-line interface refactor.  For previous versions (v2.7.x) or earlier, instead of using the ``esgmapfile`` command, use ``esgprep mapfile``
+
+Basic usage of esgmapfile
 ------------------------------
 
-The `esgprep toolbox <https://github.com/IS-ENES-Data/esgf-prepare>`_ is a standalone tool to generate mapfiles, fetch the project specific configuration files,
+The `esgprep toolbox <https://github.com/ESGF/esgf-prepare>`_ is a standalone tool to generate mapfiles, fetch the project specific configuration files,
 check the vocabulary, etc. It will be installed during the esg-publisher setup.
 
-.. seealso:: The full documentation of esgprep toolbox can be found on github: http://is-enes-data.github.io/esgf-prepare/.
+.. seealso:: The full documentation of esgprep toolbox can be found on github: http://esgf.github.io/esgf-prepare/.
 
 The basic command to generate the mapfile(s):
 
 ::
 
-    $ esgprep mapfile [optional: -i <ini_directory> --outdir <output_mapfile>] --project <project_name> <target_path_for_data_files>
+    $ esgmapfile [optional: -i <ini_directory> --outdir <output_mapfile>] --project <project_name> <target_path_for_data_files>
 
 This will recursively scan the ``target_path_for_data_files`` and build datasets. If datasets with multiple versions are found it will produce only the latest.
 By default it will produce one mapfile per dataset using the syntax ``{dataset_id}.{version}.map`` as filename and the current working directory as output location.
@@ -43,7 +45,7 @@ Example: Generate a set of mapfiles
 
 ::
 
-    $ esgprep mapfile --project cmip5 /esg/data/cmip5/output1/MPI-M/MPI-ESM-P/historical/day/atmos/day --outdir /esg/mapfiles
+    $ esgmapfile --project cmip5 /esg/data/cmip5/output1/MPI-M/MPI-ESM-P/historical/day/atmos/day --outdir /esg/mapfiles
 
 This will produce two mapfiles, i.e.:
 
@@ -72,13 +74,13 @@ To add a Technical Note to the data (e.g. for obs4MIPs) please run
 
 ::
 
-    $ esgprep mapfile --project <project_name> --tech-notes-url <tech_notes_url> --tech-notes-title <tech_notes_title> <target_path_for_data_files>
+    $ esgmapfile --project <project_name> --tech-notes-url <tech_notes_url> --tech-notes-title <tech_notes_title> <target_path_for_data_files>
 
 Example:
 
 ::
 
-    $ esgprep mapfile --project obs4MIPs --tech-notes-url http://esgf-test.dkrz.de/thredds/fileServer/tech_note.pdf --tech-notes-title 'obs4MIPs Tech Note' /esg/data/obs4MIPs
+    $ esgmapfile --project obs4MIPs --tech-notes-url http://esgf-test.dkrz.de/thredds/fileServer/tech_note.pdf --tech-notes-title 'obs4MIPs Tech Note' /esg/data/obs4MIPs
 
     $ less obs4MIPs_test.v20160811.map
 
@@ -86,7 +88,7 @@ Example:
     obs4MIPs_test#20160811 | /esg/data/obs4MIPs/testfile2.nc | 2116695 | mod_time=1402486544.000000 | checksum=37c2e002d67c3408c43be373ced777ed85c78fbe31fee823840b1285f83b9870 | checksum_type=SHA256 | dataset_tech_notes=http://esgf-test.dkrz.de/thredds/fileServer/tech_note.pdf | dataset_tech_notes_title=obs4MIPs Tech Note
 
 
-Further options of esgprep mapfile
+Further options of esgmapfile
 ----------------------------------
 
 

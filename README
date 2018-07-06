@@ -22,7 +22,7 @@ https://esgf.github.io/esg-publisher
 * esgtest_publish supports download test and skip-unpublish modes of operation
 * new processing modes:
    - --skip-aggregation  
-   - --commit-every  allows for more frequent database commits to aid in 
+   - --commit-every  allows for more frequent database commits to aid in reducing memory footprints
 
 Note - logging controlled now by the [DEFAULT] section of esg.ini. If you have upgraded the publisher with a previous version of the file, you may notice that the old setting is WARNING, in which case, INFO level messages may not appear.  Thus, the publisher may run successfully without any output.  
 

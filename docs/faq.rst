@@ -150,6 +150,4 @@ Configuration file option missing
 THREDDS does not unpublish
 --------------------------
 
-::
-
-Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.
+- Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.  You will need to unpublish with --skip-index and use a list of datasets with versions with the ``.vYYYYMMDD`` or ``.vNN`` format instead of ``#YYYYMMDD``, etc.
