@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick guide to test publication &mdash; esg-publisher 3.4.2 documentation</title>
+  <title>Quick guide to test publication &mdash; esg-publisher 3.4.9 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="esg-publisher 3.4.2 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.4.9 documentation" href="index.html"/>
         <link rel="next" title="Configuration" href="configuration.html"/>
         <link rel="prev" title="Installation" href="installation.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                3.4.2
+                3.4.9
               </div>
             
           
@@ -270,8 +270,8 @@ the <code class="docutils literal notranslate"><span class="pre">rootAdmin</span
 </div>
 <div class="section" id="configuration">
 <h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
-<p>The configuration file for project test should already be present in the default location: <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.test.ini</span></code>. In case it is missing fetch it with <code class="docutils literal notranslate"><span class="pre">esgprep</span> <span class="pre">fetch-ini</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgprep fetch-ini --project test
+<p>The configuration file for project test should already be present in the default location: <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.test.ini</span></code>. In case it is missing fetch it with <em>esgprep</em> <code class="docutils literal notranslate"><span class="pre">esgfetchini</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgfetchini --project test
 </pre></div>
 </div>
 <p>Make sure you have values for project test in the <code class="docutils literal notranslate"><span class="pre">project_options</span></code> and <code class="docutils literal notranslate"><span class="pre">thredds_dataset_roots</span></code> in <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.ini</span></code>:</p>
@@ -297,7 +297,7 @@ $ wget -O sftlf.nc http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals
 </div>
 <div class="section" id="mapfile-generation">
 <h3>Mapfile generation<a class="headerlink" href="#mapfile-generation" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgprep mapfile --project test /esg/data/test
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgmapfile --project test /esg/data/test
 </pre></div>
 </div>
 <p>The above will generate the directory <code class="docutils literal notranslate"><span class="pre">mapfiles</span></code> containing the file <code class="docutils literal notranslate"><span class="pre">test.test.map</span></code> in your working directory.</p>
@@ -395,7 +395,7 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.4.2',
+            VERSION:'3.4.9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

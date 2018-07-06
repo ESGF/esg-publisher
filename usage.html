@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; esg-publisher 3.4.2 documentation</title>
+  <title>Usage &mdash; esg-publisher 3.4.9 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="esg-publisher 3.4.2 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.4.9 documentation" href="index.html"/>
         <link rel="next" title="FAQ and known issues" href="faq.html"/>
         <link rel="prev" title="Mapfile preparation" href="mapfiles.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                3.4.2
+                3.4.9
               </div>
             
           
@@ -463,20 +463,25 @@ To unpublish a single version use the <code class="docutils literal notranslate"
 <p>You could either use a <code class="docutils literal notranslate"><span class="pre">mapfile</span> <span class="pre">directory</span></code>, a single <code class="docutils literal notranslate"><span class="pre">mapfile</span></code> a <code class="docutils literal notranslate"><span class="pre">dataset</span></code> or a <code class="docutils literal notranslate"><span class="pre">dataset_list</span></code> as input for the data unpublication:</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">By default the unpublication from the Solr index will use the HESSIAN web service protocol.
-For the REST service please use the <code class="docutils literal notranslate"><span class="pre">--rest-api</span></code> flag. When using REST, it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).</p>
+<p class="last">By default the unpublication from the Solr index will use the REST web service protocol.  Thus it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).
+For the Hessian service please use the <code class="docutils literal notranslate"><span class="pre">--hessian-api</span></code> flag. When using Hessian API, the version number is not mandatory to specify with the dataset_id.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default upublication will occur on the index node.  In this case, it is required to either specify whether it is desired to <em>retract</em> or <em>delete</em> the dataset.
+The <code class="docutils literal notranslate"><span class="pre">--retract</span></code> flag gives the option to leave a publication record of the dataset on the index node, but the data will no longer be available for download.  In contrast, <code class="docutils literal notranslate"><span class="pre">--delete</span></code> completely  removes the dataset record from the index.  Dataset project guidelines should suggest which of these options should be considered.</p>
 </div>
 <ul>
-<li><p class="first">Using a mapfile directory or a single mapfile</p>
+<li><p class="first">Using a mapfile directory or a single mapfile; retract the dataset</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --map &lt;input_mapfile or mapfile_directory&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --map &lt;input_mapfile or mapfile_directory&gt; --retract
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Using a list</p>
+<li><p class="first">Using a list;  delete the dataset</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --use-list &lt;list-of-datasets-filename&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --use-list &lt;list-of-datasets-filename&gt; --delete
 </pre></div>
 </div>
 <div class="admonition note">
@@ -485,9 +490,9 @@ For the REST service please use the <code class="docutils literal notranslate"><
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Using a single dataset_name</p>
+<li><p class="first">Using a single dataset_name; retract</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; dataset_name[#version]
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; dataset_name[#version] --retract
 </pre></div>
 </div>
 </div></blockquote>
@@ -496,20 +501,20 @@ For the REST service please use the <code class="docutils literal notranslate"><
 <div class="section" id="delete-from-index-and-thredds">
 <h3>Delete from Index and Thredds<a class="headerlink" href="#delete-from-index-and-thredds" title="Permalink to this headline">¶</a></h3>
 <p>Delete the data from Index, remove the THREDDS catalog, reinitialize/recheck the Thredds Server but keep the data on postgres.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --delete
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-index">
 <h3>Delete from Index<a class="headerlink" href="#delete-from-index" title="Permalink to this headline">¶</a></h3>
 <p>Delete the data from Index but keep the Thredds catalogs and postgres entries.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds --delete
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-thredds">
 <h3>Delete from Thredds<a class="headerlink" href="#delete-from-thredds" title="Permalink to this headline">¶</a></h3>
-<p>Delete the Thredds Catalogs, but keep the data available on the Index node and on the postgres database.</p>
+<p>Delete the Thredds Catalogs, but keep the data available on the Index node and on the postgres database.  In this case the</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-index
 </pre></div>
 </div>
@@ -517,7 +522,7 @@ For the REST service please use the <code class="docutils literal notranslate"><
 <div class="section" id="delete-from-all-components">
 <h3>Delete from all components<a class="headerlink" href="#delete-from-all-components" title="Permalink to this headline">¶</a></h3>
 <p>The data will be removed from postgres, Thredds and the Index node.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete --delete
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -572,7 +577,7 @@ For the REST service please use the <code class="docutils literal notranslate"><
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.4.2',
+            VERSION:'3.4.9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
