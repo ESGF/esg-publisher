@@ -73,7 +73,7 @@ sections. This file will be set up during the ESGF installation process.
                     test     | TEST     | 4
 
         .. note::
-            The ``project_options`` are updated automatically if you fetch the project ini files by running ``$ esgprep fetch-ini``.
+            The ``project_options`` are updated automatically if you fetch the project ini files by running ``$ esgfetchini``.
 
     - Postgres configuration
 
