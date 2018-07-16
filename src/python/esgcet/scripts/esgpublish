@@ -374,7 +374,7 @@ def main(argv):
     restApi = None
     restApiDefault = True
     schema = None
-    service = None
+    service = "fileservice"
     summarizeErrors = False
     testProgress1 = testProgress2 = None
     thredds = False
@@ -527,7 +527,10 @@ def main(argv):
 
     # The project must be specified
     if projectName is None:
-        raise ESGPublishError("Must specify project with --project")
+        error("Must specify project with --project")
+        print usage
+        exit(1)
+
 
     if version is not None and versionList is not None:
         raise ESGPublishError("Cannot specify both --new-version and --version-list")
