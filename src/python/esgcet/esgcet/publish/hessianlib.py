@@ -533,7 +533,7 @@ class Hessian:
             else:
                 h = httplib.HTTPConnection(self._host, port=self._port)
         else:
-            ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
             conn_args = {'port' : self._port,
                          'key_file' : self._key_file,
                          'cert_file': self._cert_file,
