@@ -1180,12 +1180,66 @@ def reinitializeThredds():
     return errorResult[index:]
 
 
+def ensureDirectoryExists(dirPath, mode=0775):
+    """
+    Ensure a specified directory exists, including any parent directories.
+    Does not return anything, but raises an exception if it cannot be created.
+    """
+    if not os.path.isdir(dirPath):
+        ensureDirectoryExists(os.path.dirname(dirPath), mode=mode)
+        try:
+            os.mkdir(dirPath)
+            os.chmod(dirPath, mode)
+        except OSError:
+            if not os.path.exists(dirPath):
+                raise ESGPublishError("Error creating directory %s. Please make sure you have the correct permissions." % dirPath)
+
+
+def getThreddsNumberedDir(threddsRoot, threddsMaxCatalogs):
+    """
+    Get the subdirectory path when using the numbered directory scheme.
+    Returns the path relative to threddsRoot
+    """
+
+    # - Find the 'last' subdirectory in numerical order
+    subdirs = os.listdir(threddsRoot)
+    digitSubdirs = [int(item) for item in subdirs if item.isdigit()]
+    if digitSubdirs:
+        lastdir = max(digitSubdirs)
+        subdir = str(lastdir)
+
+        # - Get the number of catalogs. If >= the max, create a new directory        
+        ncatalogs = len(os.listdir(os.path.join(threddsRoot, subdir)))
+
+        if ncatalogs < threddsMaxCatalogs:
+            return subdir
+        else:
+            return str(lastdir + 1)
+    else:
+        return '1'
+
+
+def reusedCatalogPath(catalog, threddsRoot, threddsCatalogBasename):
+    """
+    If catalog path can be reused -- that is: if the dataset has already been 
+    published, and the directory exists, and the basename is correct -- return 
+    the full path, otherwise returns None
+    """
+    subdir, basename = os.path.split(catalog.location)
+    lastSubdir = os.path.join(threddsRoot, subdir)
+    if os.path.exists(lastSubdir) and basename==threddsCatalogBasename:
+        return os.path.join(lastSubdir, basename)
+    else:
+        return None
+
+
 def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDirectory=True):
-    """Generate a THREDDS dataset catalog output path. If necessary, create a new directory.
+    """Generate a THREDDS dataset catalog output path and ensure it is stored in the db. If necessary, create a new directory.
 
     Uses the init file options:
     - thredds_root
     - thredds_catalog_basename
+    - thredds_use_numbered_directories
     - thredds_max_catalogs_per_directory
 
     Returns the pathname, of the form thredds_root/subdir/thredds_catalog_basename, where subdir is an integer.
@@ -1213,51 +1267,37 @@ def generateThreddsOutputPath(datasetName, version, dbSession, handler, createDi
         raise ESGPublishError("No configuration file found.")
     threddsRoot = config.get('DEFAULT', 'thredds_root')
     threddsCatalogBasename = handler.generateNameFromContext('thredds_catalog_basename', dataset_id=datasetName, version=str(version))
-    threddsMaxCatalogs = int(config.get('DEFAULT', 'thredds_max_catalogs_per_directory'))
+    threddsUseNumberedDirs = config.getboolean('DEFAULT', 'thredds_use_numbered_directories', default=True)
+    if threddsUseNumberedDirs:
+        threddsMaxCatalogs = int(config.get('DEFAULT', 'thredds_max_catalogs_per_directory'))
 
-    # If the dataset has already been published, and the directory exists, and the basename is correct, reuse the catalog path.
     session = dbSession()
+
     catalog = session.query(Catalog).filter_by(dataset_name=datasetName, version=version).first()
-    if catalog is not None:
-        subdir, basename = os.path.split(catalog.location)
-        lastSubdir = os.path.join(threddsRoot, subdir)
-        if os.path.exists(lastSubdir) and basename==threddsCatalogBasename:
-            result = os.path.join(lastSubdir, basename)
-            return result
+
+    if catalog:
+        reusedPath = reusedCatalogPath(catalog, threddsRoot, threddsCatalogBasename)
+        if reusedPath:
+            session.close()
+            return reusedPath
         else:
             session.delete(catalog)
             session.commit()
 
-    # Get the subdirectory name:
-    # - Find the 'last' subdirectory in numerical order
-    subdirs = os.listdir(threddsRoot)
-    digitSubdirs = [int(item) for item in subdirs if item.isdigit()]
-    if len(digitSubdirs)>0:
-        nsubdirs = max(digitSubdirs)
-        subdir = str(nsubdirs)
-        lastSubdir = os.path.join(threddsRoot, subdir)
-
-        # - Get the number of catalogs. If >= the max, create a new directory
-        ncatalogs = len(os.listdir(lastSubdir))
-        if ncatalogs>=threddsMaxCatalogs:
-            subdir = str(nsubdirs+1)
-            lastSubdir = os.path.join(threddsRoot, subdir)
+    if threddsUseNumberedDirs:
+        relPath = getThreddsNumberedDir(threddsRoot, threddsMaxCatalogs)
     else:
-        subdir = '1'
-        lastSubdir = os.path.join(threddsRoot, subdir)
+        relPath = datasetName.replace('.', '/')
+
+    fullPath = os.path.join(threddsRoot, relPath)
 
     # Create the subdirectory if necessary
-    if createDirectory and not os.path.exists(lastSubdir):
-        try:
-            os.mkdir(lastSubdir)
-            os.chmod(lastSubdir, 0775)
-        except OSError:
-            if not os.path.exists(lastSubdir):
-                raise ESGPublishError("Error creating directory %s. Please make sure you have the correct permissions." % lastSubdir)
+    if createDirectory:
+        ensureDirectoryExists(fullPath)
 
     # Build the catalog name
-    result = os.path.join(lastSubdir, threddsCatalogBasename)
-    location = os.path.join(subdir, threddsCatalogBasename) # relative to root
+    result = os.path.join(fullPath, threddsCatalogBasename)
+    location = os.path.join(relPath, threddsCatalogBasename) # relative to root
 
     # Add the database catalog entry
     catalog = Catalog(datasetName, version, location)
