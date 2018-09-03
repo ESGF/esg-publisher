@@ -1,12 +1,13 @@
 """"Handle CMIP6 data file metadata"""
 
+import os
 import re
 
 from cmip6_cv import PrePARE
 from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
 from esgcet.exceptions import *
 from esgcet.messaging import debug, warning
-from esgcet.publish import checkAndUpdateRepo
+from esgcet.publish import checkAndUpdateRepo, is_git_repo
 
 WARN = False
 
@@ -92,11 +93,19 @@ class CMIP6Handler(BasicHandler):
 
         if passed_cmor:
             return
-            
+
+        # CMOR table tag for used by PrePARE is driven by 'data_specs_version' value in esg.ini
+        # If 'data_specs_version' from esg.ini config section is 'file' then the tag used is driven by the netCDF value
         if data_specs_version == "file":
             data_specs_version = file_data_specs_version
 
-        checkAndUpdateRepo(cmor_table_path, data_specs_version)
+        if is_git_repo(cmor_table_path):
+            checkAndUpdateRepo(cmor_table_path, data_specs_version)
+        else:
+            # If cmor_table_path is not a git repository
+            # the appropriate DR tag is expected to be found as a sub-folder
+            # e.g. /usr/local/cmip6-cmor-table/Tables/01.00.27
+            cmor_table_path = os.path.join(cmor_table_path, data_specs_version)
 
         try:
             process = validator.checkCMIP6(cmor_table_path)

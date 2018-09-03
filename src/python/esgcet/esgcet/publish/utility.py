@@ -1188,6 +1188,13 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)
 
 
+def is_git_repo(path):
+    """
+    Returns true if the path is a local git repository.
+    """
+    return subprocess.call(['git', 'status'], stderr=subprocess.STDOUT, stdout=open(os.devnull, 'w'), cwd=path) == 0
+
+
 def getServiceCertsLoc():            
     try:
         service_certs_location =  config.get('DEFAULT', 'hessian_service_certs_location')
