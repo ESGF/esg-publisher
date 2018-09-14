@@ -22,7 +22,7 @@ def initdb(init_file=None, echoSql=False, log_filename=None):
     config = loadConfig(init_file)
     if dbengine is None:
         dbengine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
-    initLogging('extract', override_sa=dbengine, log_filename=log_filename)
+    initLogging('DEFAULT', override_sa=dbengine, log_filename=log_filename)
     Session = sessionmaker(bind=dbengine, autoflush=True, autocommit=False)
     return config, Session
 

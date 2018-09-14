@@ -152,7 +152,8 @@ def republishDataset(result, Session, thredds, gatewayOp):
     """
     Republish previous versions as needed. This will happen if the latest version
     was deleted from the database, and is not
-    the only version. In this case the previous version will be rescanned to generate the aggregations.
+    the only version. In this case the previous version will be rescanned to generate the aggregations
+    (unless user has overridden with skip_aggregations in project config)
     """
     statusDict, republishList = result
     if len(republishList)>0:
@@ -271,7 +272,7 @@ def main(argv):
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir)
     engine = create_engine(config.getdburl('extract'), echo=echoSql, pool_recycle=3600)
-    initLogging('extract', override_sa=engine, log_filename=log_filename)
+    initLogging('DEFAULT', override_sa=engine, log_filename=log_filename)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
     if config is None:

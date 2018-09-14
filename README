@@ -15,6 +15,19 @@ ESGF Publisher
 
 https://esgf.github.io/esg-publisher 
 
+26 June 2018 - version 3.5.2
+
+* REST API is default for both publish and unpublish ; support to use the ESGF CA bundle
+* Switching data specs versions during operations
+* esgtest_publish supports download test and skip-unpublish modes of operation
+* new processing modes:
+   - --skip-aggregation  
+   - --commit-every  allows for more frequent database commits to aid in reducing memory footprints
+
+Note - logging controlled now by the [DEFAULT] section of esg.ini. If you have upgraded the publisher with a previous version of the file, you may notice that the old setting is WARNING, in which case, INFO level messages may not appear.  Thus, the publisher may run successfully without any output.  
+
+
+
 16 August 2017 - version 3.2.6
 
 * Support for CMIP6 

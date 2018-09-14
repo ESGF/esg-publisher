@@ -75,7 +75,7 @@ def main(argv):
     config = loadConfig(init_dir)
     dburl = config.getdburl('extract')
     engine = create_engine(config.getdburl('extract'), echo=False, pool_recycle=3600)
-    initLogging('extract', override_sa=engine)
+    initLogging('DEFAULT', override_sa=engine)
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
     project_init_file = os.path.join(init_dir, 'esg.%s.ini'%project_name)

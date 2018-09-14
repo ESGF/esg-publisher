@@ -76,10 +76,6 @@ By default the script will publish to all three components: Postgres, THREDDS an
     the ``rootAdmin`` account and get the appropriate password automatically.
 
 
-.. note::
-    
-
-
 Manual steps
 ************
 
