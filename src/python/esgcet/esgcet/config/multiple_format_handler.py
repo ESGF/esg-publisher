@@ -34,6 +34,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
 
     def __init__(self, cdf, path):
         
+        self.attr_only = False
         if (cdf is None ):
             self.noncd = True
             self.file = {}
@@ -41,7 +42,7 @@ class MultipleFormatHandler(CdunifFormatHandler):
         else:
             # load config and set it based on 
             config = getConfig()
-            projectSection = 'project:input4mips'
+            projectSection = 'project:dream'
             variables_none = config.get(projectSection, "variables_none", default="false")
 
             if variables_none == "false":
