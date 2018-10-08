@@ -5,8 +5,8 @@ import re
 from cmip6_cv import PrePARE
 from esgcet.config import BasicHandler, getConfig, compareLibVersions, splitRecord
 from esgcet.exceptions import *
-from esgcet.messaging import debug, warning
-from esgcet.publish import checkAndUpdateRepo
+from esgcet.messaging import debug, info, warning
+from esgcet.publish import getTableDir
 
 WARN = False
 
@@ -41,10 +41,6 @@ class CMIP6Handler(BasicHandler):
 
         f = fileobj.path
 
-        if self.replica:
-            debug("skipping PrePARE for replica (file %s)" % f)
-            return
-
         # todo refactoring these could loaded upfront in the constructor
         config = getConfig()
         project_section = 'project:' + self.name
@@ -53,17 +49,25 @@ class CMIP6Handler(BasicHandler):
         min_ds_version = config.get(project_section, "min_data_specs_version", default="0.0.0")
         data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
         cmor_table_path = config.get(project_config_section, "cmor_table_path", default=DEFAULT_CMOR_TABLE_PATH)
+        force_validation = config.getboolean(project_config_section, "force_validation", default=False)
+        cmor_table_subdirs = config.getboolean(project_config_section, "cmor_table_subdirs", default=False)
 
-        try:
-            file_cmor_version = fileobj.getAttribute('cmor_version', None)
-        except:
-            file_cmor_version = None
-            debug('File %s missing cmor_version attribute; will proceed with PrePARE check' % f)
+        if not force_validation:
 
-        passed_cmor = False
-        if compareLibVersions(min_cmor_version, file_cmor_version):
-            debug('File %s cmor-ized at version %s, passed!"'%(f, file_cmor_version))
-            passed_cmor = True
+            if self.replica:
+                info("skipping PrePARE for replica (file %s)" % f)
+                return
+
+            try:
+                file_cmor_version = fileobj.getAttribute('cmor_version', None)
+            except:
+                file_cmor_version = None
+                debug('File %s missing cmor_version attribute; will proceed with PrePARE check' % f)
+
+            passed_cmor = False
+            if compareLibVersions(min_cmor_version, file_cmor_version):
+                debug('File %s cmor-ized at version %s, passed!'%(f, file_cmor_version))
+                passed_cmor = True
 
         try:
             table = fileobj.getAttribute('table_id', None)
@@ -90,16 +94,17 @@ class CMIP6Handler(BasicHandler):
         # at this point the file has the correct data specs version.
         # if also was CMORized and has the correct version tag, we can exit
 
-        if passed_cmor:
+        if (not force_validation) and passed_cmor:
             return
             
         if data_specs_version == "file":
             data_specs_version = file_data_specs_version
 
-        checkAndUpdateRepo(cmor_table_path, data_specs_version)
+        table_dir = getTableDir(cmor_table_path, data_specs_version, cmor_table_subdirs)
+        debug("Validating {} using tables dir: {}".format(f, table_dir))
 
         try:
-            process = validator.checkCMIP6(cmor_table_path)
+            process = validator.checkCMIP6(table_dir)
             if process is None:
                 raise ESGPublishError("File %s failed the CV check - object create failure"%f)
             process.ControlVocab(f)

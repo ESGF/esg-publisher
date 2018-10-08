@@ -28,7 +28,7 @@ def call_sessionmaker( root ):
     # Load the configuration and set up a database connection
     config = loadConfig(init_file)
     root.engine = create_engine(config.getdburl('extract'), echo=root.echoSql, pool_recycle=3600)
-    initLogging('extract', override_sa=root.engine)
+    initLogging('DEFAULT', override_sa=root.engine)
     Session = sessionmaker(bind=root.engine, autoflush=True, autocommit=False)
 
     # Register project handlers

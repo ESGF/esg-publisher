@@ -24,7 +24,8 @@ numpy.set_printoptions(threshold=numpy.inf, linewidth=numpy.inf)
 
 def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler, aggregateDimensionName=None, offline=False, operation=CREATE_OP,
                        progressCallback=None, stopEvent=None, perVariable=None, keepVersion=False, newVersion=None, extraFields=None, masterGateway=None,
-                       comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, pid_connector=None, test_publication=False, **context):
+                       comment=None, useVersion=-1, forceRescan=False, nodbwrite=False, pid_connector=None, test_publication=False, commitEvery=None,
+                       **context):
     """
     Extract metadata from a dataset represented by a list of files, add to a database. Populates the database tables:
 
@@ -99,6 +100,9 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
     test_publication
         Flag whether publication is for production or test
+
+    commitEvery
+        Integer specifying how frequently to commit file info to database when scanning files
 
     context
       A dictionary with keys ``project``, ``model``, ``experiment``, etc. The context consists of all fields needed to uniquely define the dataset.
@@ -177,7 +181,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
     pathlist = [item for item in fileIterator]
     if (nodbwrite): 
         dset = Dataset(datasetName, context.get('project', None), context.get('model', None), context.get('experiment', None), context.get('run_name', None), offline=offline, masterGateway=masterGateway)
-        addNewVersion, fobjs = createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, **context)
+        addNewVersion, fobjs = createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, commitEvery=commitEvery, **context)
         info("dataset scan complete, not writing to database")
         return dset
        
@@ -190,7 +194,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         # Create an initial dataset version
         existingVersion = 0
         eventFlag = CREATE_DATASET_EVENT
-        addNewVersion, fobjs = createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, useVersion=useVersion, **context)
+        addNewVersion, fobjs = createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, masterGateway=masterGateway, useVersion=useVersion, commitEvery=commitEvery, **context)
         
     elif operation in [UPDATE_OP, REPLACE_OP]:
         if operation==REPLACE_OP:
@@ -297,7 +301,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
 
     return dset
 
-def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, masterGateway=None, useVersion=-1, **context):
+def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, aggregateDimensionName=None, offline=False, progressCallback=None, stopEvent=None, extraFields=None, masterGateway=None, useVersion=-1, commitEvery=None, **context):
 
     fobjlist = []                       # File objects in the dataset
     nfiles = len(pathlist)
@@ -310,7 +314,7 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
     perVariable = configOptions['perVariable']
 
     seq = 0
-    for path, sizet in pathlist:
+    for n, (path, sizet) in enumerate(pathlist):
         size, mtime = sizet
 
         csum = None
@@ -352,6 +356,11 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
             f = handler.openPath(path)
             extractFromFile(dset, f, file, session, handler, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, exclude_variables=exclude_variables, perVariable=perVariable, **context)
             f.close()
+
+            if commitEvery and (n + 1) % commitEvery == 0:
+                info("Committing to DB")
+                session.commit()
+
         else:
             info("File %s is offline"%path)
 

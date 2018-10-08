@@ -640,7 +640,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
 def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg,
                         properties, testProgress1=None, testProgress2=None, handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None,
                         extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False,
-                        pid_connector=None, test_publication=False, handlerExtraArgs={}):
+                        pid_connector=None, test_publication=False, handlerExtraArgs={}, commitEvery=None):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -736,6 +736,9 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
     pid_connector
         esgfpid.Connector object to register PIDs
+
+    commitEvery
+        Integer specifying how frequently to commit file info to database when scanning files
 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
@@ -852,7 +855,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
                                      offline=offline, operation=operation, progressCallback=testProgress1, perVariable=perVariable,
                                      keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway,
                                      comment=comment, useVersion=versionno, forceRescan=forceAggregate, nodbwrite=nodbwrite,
-                                     pid_connector=pid_connector, test_publication=test_publication, **context)
+                                     pid_connector=pid_connector, test_publication=test_publication, commitEvery=commitEvery, **context)
 
         # If republishing an existing version, only aggregate if online and no variables exist (yet) for the dataset.
 
@@ -860,6 +863,17 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
         if hasattr(dataset, 'reaggregate'):
             runAggregate = (runAggregate and dataset.reaggregate)
         runAggregate = runAggregate or forceAggregate
+
+        # Turn off aggregations if skip_aggregations is set
+        # This applies even if forceAggregate is set to True elsewhere in the
+        # code when republishing an earlier version of the dataset
+        section = 'project:%s' % context.get('project')
+        config = getConfig()
+        skipAggregate = config.getboolean(section, 'skip_aggregations', False)
+
+        if runAggregate and skipAggregate:
+            runAggregate = False
+            info("Skipping aggregations due to skip_aggregations config option")
 
         if testProgress2 is not None:
            testProgress2[1] = (100./ct)*iloop + 50./ct
@@ -1121,6 +1135,40 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     return pid_connector
 
 
+def getTableDir(cmor_table_path, ds_version, use_subdirs):
+    """
+    Get the directory of CMOR tables appropriate for use by PrePARE for checking 
+    against version ds_version, using one of two strategies.
+
+    If use_subdirs=False, assume that the cmor_table_path is a git clone.
+    Call checkAndUpdateRepo, and then return the supplied table path itself.
+
+    If use_subdirs=True, assume that the cmor_table_path is a directory containing 
+    read-only subidrectories for the different versions of the tables (as fetched 
+    using esgfetchtables).  Returns the relevant subdirectory after checking that 
+    it exists.
+    """
+
+    if use_subdirs:
+        path = os.path.join(cmor_table_path, ds_version)
+        if not os.path.isdir(path):
+            raise ESGPublishError('tables directory {} does not exist'.format(path))
+        return path
+    else:
+        checkAndUpdateRepo(cmor_table_path, ds_version)
+        return cmor_table_path
+
+
+def checkedRun(command):
+    """
+    Run a command and check that it returns 0 status.
+    """
+    status = os.system(command)
+    if status != 0:
+        raise ESGPublishError(('command {} failed with status {}'
+                               ).format(command, status))
+
+
 def checkAndUpdateRepo(cmor_table_path, ds_version):
     """
         Checks for a file written to a predefined location.  if not present or too old, will pull the repo based on the input path argument and update the timestamp.
@@ -1144,9 +1192,8 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             # Go into CMOR table path
             # Git fetch CMOR table repo
             # Go back to previous working directory
-            os.system('pushd {} >/dev/null ; '
-                      'git fetch --quiet ; '
-                      'popd >/dev/null'.format(cmor_table_path))
+            checkedRun(('cd {} && git fetch --quiet'
+                        ).format(cmor_table_path))
             # Update local timestamp
             f = open(UPDATE_TIMESTAMP, "w")
             f.write("CMOR table updated at {}".format(time()))
@@ -1161,10 +1208,8 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
         # Stash any changes from previous checkout 
         # Checkout to the appropriate CMOR table tag
         # Go back to previous working directory
-        os.system('pushd {} >/dev/null ; '
-                  'git stash --quiet ;'
-                  'git checkout {}  --quiet ; '
-                  'popd >/dev/null'.format(cmor_table_path, ds_version))
+        checkedRun(('cd {} && git stash --quiet && git checkout {} --quiet'
+                    ).format(cmor_table_path, ds_version))
         # Update local timestamp
         f = open(UPDATE_TIMESTAMP, "w")
         f.write("CMOR table updated at {}".format(time()))
@@ -1180,9 +1225,8 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
             # PrePARE requires to have the most up to date CMIP6 CV.
             # Update CMIP6_CV.json from master branch.
             # Go back to previous working directory
-            os.system('pushd {} >/dev/null ; '
-                      'git checkout master CMIP6_CV.json --quiet ; '
-                      'popd >/dev/null'.format(cmor_table_path))
+            checkedRun(('cd {} && git checkout master CMIP6_CV.json --quiet'
+                        ).format(cmor_table_path))
             debug("CMIP6 CV updated from master")
         except Exception as e:
             raise ESGPublishError("Master branch does not exists or CMIP6_CV.json not found or other error.  Please contact support" % ds_version)

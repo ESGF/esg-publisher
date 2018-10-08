@@ -63,7 +63,7 @@ class RestPublicationService(object):
             certs_bundle_location = DEFAULT_CERTS_BUNDLE
         
 
-        files=[certs_bundle_location, certFile]
+        files=[certFile,certs_bundle_location]
         with open(concat_certs,'w') as outfile:
             for certf in files:
                 with open(certf, 'r') as file:
