@@ -130,6 +130,10 @@ User is not authorized to publish
     The CN should exactly match the ESGF hostname. In case you use a commercial certificate make sure your root certificate is in the ESGF truststore.
     More information on the certificate generation and installation can be found on our `github installer wiki <https://github.com/ESGF/esgf-installer/wiki/ESGF-CSR-and-Certificate-Installation>`_.
 
+
+Miscellaneous
+*************
+
 Configuration file option missing
 ---------------------------------
 ::
@@ -151,3 +155,23 @@ THREDDS does not unpublish
 --------------------------
 
 - Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.  You will need to unpublish with --skip-index and use a list of datasets with versions with the ``.vYYYYMMDD`` or ``.vNN`` format instead of ``#YYYYMMDD``, etc.
+
+Error Running Publisher in nohup (or other) scripted environment
+----------------------------------------------------------------
+
+- You may see an error like this following a stack trace with UVCDAT_ANONYMOUS_LOG:
+
+
+::
+
+    ...
+    IOError: [Errno 9] Bad file descriptor
+
+**Solution**
+
+- You msut diasable the UVCDAT anonymous logging as the user prompt will repeat periodically.  Add to your script before calling esgpublish.
+
+::
+
+        $ export UVCDAT_ANONYMOUS_LOG=no
+

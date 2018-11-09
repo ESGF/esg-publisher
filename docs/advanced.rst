@@ -42,13 +42,13 @@ esgtest_publish
 
 The seemingly simple testing utility has some additional features not performed by default.
 
---skip-unpublish
-----------------
+skip-unpublish
+--------------
 
-This option should be used if desired to have the published test dataset remain on the node after publication.
+The ``--skip-unpublish`` or ``-x`` option should be used if desired to have the published test dataset remain on the node after test publication.
 
 
---test-download
----------------
+test-download
+-------------
 
-The utility can test the unrestricted download of the test file from the default thredds root (assumed to be the same file system) 
+The ``esgtest_publish`` utility can test the unrestricted download of the test file from the default thredds root (assumed to be the same file system) with ``--test-download`` or ``-d`` option added to command line.
