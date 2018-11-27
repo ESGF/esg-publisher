@@ -107,6 +107,7 @@ sections. This file will be set up during the ESGF installation process.
                     OpenDAP    | /thredds/dodsC/               | OpenDAPServer | fileservice
                     Globus     | globus:#DEFAULTENDPOINTNAME#/ | Globus        | fileservice
             thredds_master_catalog_name = Earth System Grid catalog
+            thredds_use_numbered_directories = True
             thredds_max_catalogs_per_directory = 500
             thredds_offline_services =
                     SRM | srm://<fqdn>:6288/srm/v2/server?SFN=/archive.sample.gov | HRMatPCMDI
