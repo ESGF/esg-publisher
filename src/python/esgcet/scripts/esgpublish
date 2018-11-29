@@ -321,8 +321,6 @@ def yield_parsed_mapfiles(mapfileDir):
     yields (dmap, extraFields) for each valid mapfile found under starting directory
     """
     for root, dirs, files in os.walk(mapfileDir, followlinks=True):
-        dirs.sort()
-        files.sort()
         for mapfile in files:
             try:
                 dmap, extraFields = readDatasetMap(os.path.join(root, mapfile), parse_extra_fields=True)
