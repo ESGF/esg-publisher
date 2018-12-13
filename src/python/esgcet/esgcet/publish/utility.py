@@ -1234,7 +1234,7 @@ def checkAndUpdateRepo(cmor_table_path, ds_version):
 
 def getServiceCertsLoc():            
     try:
-        service_certs_location =  config.get('DEFAULT', 'hessian_service_certs_location')
+        service_certs_location =  getConfig().get('DEFAULT', 'hessian_service_certs_location')
 
     except:
         home = os.environ.get("HOME")
