@@ -8,6 +8,7 @@ from esgcet.model import *
 from esgcet.exceptions import *
 from esgcet.config import splitLine, getConfig
 from utility import getTypeAndLen, issueCallback, compareFiles, checksum, extraFieldsGet
+from esgcet.model import StandardName
 
 NAME=0
 LENGTH=1
@@ -865,7 +866,7 @@ def createAggregateVar(var, varattr, aggregateDimensionName):
             aggVar.file_variables.append(aggfilevar)
     return aggVar
 
-def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHandler=None, progressCallback=None, stopEvent=None, datasetInstance=None):
+def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHandler=None, progressCallback=None, stopEvent=None, datasetInstance=None, validate_standard_name=True):
     """
     Aggregate file variables into variables, and add to the database. Populates the database tables:
 
@@ -1171,10 +1172,22 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
     nvars = len(dset.variables)
     for var in dset.variables:
         attr = lookupAttr(var, 'standard_name')
+
         if (attr is not None):
-            if (cfHandler is not None) and (not cfHandler.validateStandardName(attr)):
+            if validate_standard_name and (cfHandler is not None) and (not cfHandler.validateStandardName(attr)):
                 info("Invalid standard name: %s for variable %s"%(attr, var.short_name))
             else:
+                # need to add standard_name to postgres if not validated
+                if not validate_standard_name:
+                    sname = session.query(StandardName).filter_by(name=attr).first()
+                    if sname is None:
+                        try:
+                            units = lookupAttr(var, 'units')
+                        except:
+                            units = ''
+                        standard_name = StandardName(attr, units)
+                        session.add(standard_name)
+
                 var.standard_name = attr
         seq += 1
         try:

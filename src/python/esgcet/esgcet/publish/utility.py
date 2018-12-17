@@ -640,7 +640,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
 def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, operation, filefilt, initcontext, offlineArg,
                         properties, testProgress1=None, testProgress2=None, handlerDictionary=None, perVariable=None, keepVersion=False, newVersion=None,
                         extraFields=None, masterGateway=None, comment=None, forceAggregate=False, readFiles=False, nodbwrite=False,
-                        pid_connector=None, test_publication=False, handlerExtraArgs={}, commitEvery=None):
+                        pid_connector=None, test_publication=False, handlerExtraArgs={}, commitEvery=None, validate_standard_name=True):
     """
     Scan and aggregate (if possible) a list of datasets. The datasets and associated files are specified
     in one of two ways: either as a *dataset map* (see ``dmap``) or a *directory map* (see ``directoryMap``).
@@ -879,7 +879,8 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
            testProgress2[1] = (100./ct)*iloop + 50./ct
            testProgress2[2] = (100./ct)*(iloop + 1)
         if runAggregate and (not nodbwrite):
-            aggregateVariables(datasetName, Session, aggregateDimensionName=aggregateDimension, cfHandler=cfHandler, progressCallback=testProgress2, datasetInstance=dataset)
+            aggregateVariables(datasetName, Session, aggregateDimensionName=aggregateDimension, cfHandler=cfHandler,
+                               progressCallback=testProgress2, datasetInstance=dataset, validate_standard_name=validate_standard_name)
         elif testProgress2 is not None:
             # Just finish the progress GUI
             issueCallback(testProgress2, 1, 1, 0.0, 1.0)

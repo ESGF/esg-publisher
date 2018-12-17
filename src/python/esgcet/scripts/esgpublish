@@ -649,6 +649,8 @@ def main(argv):
         directoryMap = None
         extraFields = None
 
+        validate_standard_name = config.getboolean(project_section, 'validate_standard_name', default=True)
+
         # Process all mapfiles in a directory
         if mapfileDir is not None:
             for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
@@ -664,7 +666,7 @@ def main(argv):
                                                        filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version,
                                                        extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles,
                                                        nodbwrite=nodbwrite, pid_connector=pid_connector, test_publication=test_publication,
-                                                       handlerExtraArgs=handler_extra_args, commitEvery=commitEvery)
+                                                       handlerExtraArgs=handler_extra_args, commitEvery=commitEvery, validate_standard_name=validate_standard_name)
 
                     if (not nodbwrite):
                         result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
@@ -742,7 +744,7 @@ def main(argv):
                                                initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields,
                                                masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite,
                                                pid_connector=pid_connector, test_publication=test_publication, handlerExtraArgs=handler_extra_args,
-                                               commitEvery=commitEvery)
+                                               commitEvery=commitEvery, validate_standard_name=validate_standard_name)
 
             if (not nodbwrite):
                 result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
