@@ -15,6 +15,12 @@ ESGF Publisher
 
 https://esgf.github.io/esg-publisher 
 
+18 December 2018  version 3.5.6
+
+* process files in sorted order
+* bugfix for certs location config
+* new config option to skip validation of standard names
+
 26 June 2018 - version 3.5.2
 
 * REST API is default for both publish and unpublish ; support to use the ESGF CA bundle
