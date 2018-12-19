@@ -155,9 +155,10 @@ sections. This file will be set up during the ESGF installation process.
         pid_prefix = 21.14100                   # not mandatory for CMIP6
         pid_exchange_name = esgffed-exchange    # not mandatory for CMIP6
         pid_credentials =
-          # hostname                  | port | virtual_host |    username    | password | ssl_enabled
-          handle-esgf-trusted.dkrz.de | 5671 |   esgf-pid   | esgf-publisher | <secret> |    true
-          pcmdi10.llnl.gov            | 5671 |   esgf-pid   | esgf-publisher | <secret> |    true
+          # hostname                  | port  | virtual_host |    username    | password | ssl_enabled
+          handle-esgf-trusted.dkrz.de | 5671  |   esgf-pid   | esgf-publisher | <secret> |    true
+          pcmdi10.llnl.gov            | 5671  |   esgf-pid   | esgf-publisher | <secret> |    true
+          207.38.94.86                | 32272 |   esgf-pid   | esgf-publisher | <secret> |    true
 
     The ``pid_credentials`` are available on `Confluence <https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config>`_.
     In case you don't have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:
@@ -179,6 +180,39 @@ sections. This file will be set up during the ESGF installation process.
     .. note::
         This option is optional for most projects, except CMIP6.
 
+    If your project requires `ES-DOC <https://github.com/ES-DOC>`_ documentation access, the ES-DOC configs are set in that section too.
+    ES-DOC authorization is controlled using GitHub’s organizations invitational based structure. The authentication part is set by creating the personal access token.
+
+        #. A verified GitHub account is required, as well as a personal access token generated through your `GitHub profile setting page <https://github.com/settings/profile>`_.
+        #. Go on the bottom of the left menu to access to “Developer Settings”
+        #. Click on “Personal Access Token”:
+        #. Click on “Generate new token”
+        #. Generate your token
+        #. Make sure you associate a meaningful name and description for your newly generated token, to help you manage your tokens.
+        #. The next important step is to set the minimum required scope for your personal access token: ``orgs:READ``. Limiting the number of scopes increases the security of your own personal data associated with your github account.
+        #. Add your GitHub username and token into your ``esg.ini`` section as follow:
+
+    ::
+
+        [config:cmip6]
+        CDF2CIM_CLIENT_WS_HOST = https://cdf2cim.es-doc.org
+        CDF2CIM_CLIENT_GITHUB_USER = <username>
+        CDF2CIM_CLIENT_GITHUB_ACCESS_TOKEN = <secret_token>
+
+    Please then ask to your ES-DOC officer to get granted authorization. He is the only person qualified to add GitHub users to the requested teams. For the authorization, a user needs to be part of the organization team specified for the institute and project he/she on behalf of which wishes to publish data.
+
+    If your project requires to deal with CMOR tables, the following attributes could help you to manage tables version:
+        #. ``cmor_table_path``: Default is ``/usr/local/<project>-cmor-table``. Use this attribute to change the default root path of the CMOR table for the considered project.
+        #. ``data_specs_version``: this is the CMOR table version to take into account during publication process. If your netCDF files includes a ``data_specs_version`` global attribute, you can set ``file`` to automatically switch from one table version to another depending on the file to publish.
+        #. ``cmor_table_subdirs``: Default is False. Set True if your CMOR table versions are stored in separate subfolder in the ``cmor_table_path``. By default, the CMOR table folder is initialized as a git repository with a ``git checkout`` mechanism to switch to the appriopriate branch depending on the ``data_specs_version``.
+
+    In case of CV failure during publication process, we recommend to fetch CMOR tables using `esgfetchtables <http://esgf.github.io/esgf-prepare/fetchtables.html>`_ and enabled subfolders for table version management:
+    ::
+
+        [config:cmip6]
+        cmor_table_path = /PATH/TO/CMOR/TABLES/
+        data_specs_version = file
+        cmor_table_subdirs = true
 
 #. The ``[initialize]`` section
 
