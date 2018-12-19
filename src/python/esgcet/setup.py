@@ -69,7 +69,7 @@ setup(
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6",
         "requests>=1.2.0",
-        "esgprep>=2.8.1",
+        "esgprep>=2.9.3",
         "MyProxyClient>=2.0.1",
         "esgf-pyclient>=0.1.8",
         "esgfpid>=0.7.11",

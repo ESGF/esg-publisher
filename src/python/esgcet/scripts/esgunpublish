@@ -170,9 +170,9 @@ def republishDataset(result, Session, thredds, gatewayOp):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['data-node=', 'database-delete', 'database-only', 'delete', 'echo-sql', 'keep-credentials', 'map=', 'no-republish',
-                                                     'no-thredds-reinit', 'skip-gateway', 'skip-index', 'las', 'log=', 'project=', 'rest-api', 'retract',
-                                                     'skip-thredds', 'sync-thredds', 'test', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['data-node=', 'database-delete', 'database-only', 'delete', 'echo-sql', 'help', 'hessian-api',
+                                                     'keep-credentials', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index',
+                                                     'las', 'log=', 'project=', 'rest-api', 'retract', 'skip-thredds', 'sync-thredds', 'test', 'use-list='])
     except getopt.error:
         print sys.exc_value
         print usage
