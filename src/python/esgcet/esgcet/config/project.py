@@ -147,7 +147,6 @@ class ProjectHandler(object):
                 fileobj = self.openPath(path)
             except:
                 raise ESGPublishError('Error opening %s. Is the data offline?'%path)
-            self.validateFile(fileobj)
             fileobj.close()
 
         self.validate = (validate in [None, True])
