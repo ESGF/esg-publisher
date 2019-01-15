@@ -72,7 +72,7 @@ setup(
         "esgprep>=2.9.3",
         "MyProxyClient>=2.0.1",
         "esgf-pyclient>=0.1.8",
-        "esgfpid>=0.7.11",
+        "esgfpid>=0.7.12",
         "cdf2cim>=0.1.9.0",
     ],
     setup_requires = [
