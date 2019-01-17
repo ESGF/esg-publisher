@@ -27,6 +27,15 @@ during the publication or add the credential information to your ``esg.ini`` fil
 
 In case the certificate generation fails for some reason, please create the certificate manually, see :ref:`myproxy_logon`.
 
+.. tip::
+
+    If your intent is to "script" the publisher, you should diasable the UVCDAT anonymous logging as the user prompt will repeat periodically.
+
+
+::
+
+        $ export UVCDAT_ANONYMOUS_LOG=no
+
 Publication
 ***********
 

@@ -5,7 +5,9 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = _build
+BUILDDIR      = ../../docs-build
+PDFBUILDDIR   = /tmp
+PDF           = ../manual.pdf
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
