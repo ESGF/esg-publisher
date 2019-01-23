@@ -356,7 +356,7 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
             info("Scanning %s"%path)
             f = handler.openPath(path)
             try:
-                hander.validateFile(f)
+                handler.validateFile(f)
             except:
                 session.rollback()
                 session.close()
@@ -493,7 +493,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
                 info("Scanning %s"%path)
                 f = handler.openPath(path)
                 try:
-                    hander.validateFile(f)
+                    handler.validateFile(f)
                 except:
                     session.rollback()
                     session.close()
