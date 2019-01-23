@@ -850,10 +850,6 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
            else:
               testProgress1[2] = (100./ct)*iloop + (100./ct)
 
-        for path in fileiter:
-            fileobj = handler.openPath(path)
-            handler.validateFile(fileobj)
-
         dataset = extractFromDataset(datasetName, fileiter, Session, handler, cfHandler, aggregateDimensionName=aggregateDimension,
                                      offline=offline, operation=operation, progressCallback=testProgress1, perVariable=perVariable,
                                      keepVersion=keepVersion, newVersion=newVersion, extraFields=extraFields, masterGateway=masterGateway,

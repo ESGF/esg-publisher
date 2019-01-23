@@ -355,6 +355,12 @@ def createDataset(dset, pathlist, session, handler, cfHandler, configOptions, ag
         if not offline:
             info("Scanning %s"%path)
             f = handler.openPath(path)
+            try:
+                hander.validateFile(f)
+            except:
+                session.rollback()
+                session.close()
+                raise
             extractFromFile(dset, f, file, session, handler, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, exclude_variables=exclude_variables, perVariable=perVariable, **context)
             f.close()
 
@@ -486,6 +492,12 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
             if not offline:
                 info("Scanning %s"%path)
                 f = handler.openPath(path)
+                try:
+                    hander.validateFile(f)
+                except:
+                    session.rollback()
+                    session.close()
+                    raise
                 extractFromFile(dset, f, fileObj, session, handler, cfHandler, aggdimName=aggregateDimensionName, varlocate=varlocate, exclude_variables=exclude_variables, perVariable=perVariable, **context)
                 f.close()
             else:
