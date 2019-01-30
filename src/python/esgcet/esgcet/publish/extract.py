@@ -10,6 +10,8 @@ from esgcet.config import splitLine, getConfig
 from utility import getTypeAndLen, issueCallback, compareFiles, checksum, extraFieldsGet
 from esgcet.model import StandardName
 
+from sqlalchemy.exc import IntegrityError
+
 NAME=0
 LENGTH=1
 SEQ=2
