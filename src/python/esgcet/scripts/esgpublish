@@ -21,6 +21,8 @@ from esgcet.model import Dataset
 from esgcet.query import queryDatasetMap
 from esgcet.logon import check_cert, logon, get_myproxy_value_from_config
 
+import esgcet
+
 
 usage = """Usage:
     esgpublish [operation] [options] directory [directory ...]
@@ -272,6 +274,9 @@ Options:
         Validate the published catalog against a schema, on the server side. Implies --rest-api.
         By default no schema-specific validation is performed. The schema_name for CMIP5 is 'cmip5'.
 
+    --version
+        Print version of the software and exit.
+
     --version-list versionlist
         Use the version indicated in the version list. versionlist is a file, each line of which
         has the form:
@@ -519,6 +524,8 @@ def main(argv):
             restApi = True
         elif flag=='--version-list':
             versionList = arg
+        elif flag=='--version':
+            print "esg-publisher (esgcet) version {}".format(esgcet.__version__)
 
     if createCimOnly and not mapfileProvided:
         raise ESGPublishError("--create-cim-only can only be used with --map")
