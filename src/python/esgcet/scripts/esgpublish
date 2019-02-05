@@ -526,6 +526,7 @@ def main(argv):
             versionList = arg
         elif flag=='--version':
             print "esg-publisher (esgcet) version {}".format(esgcet.__version__)
+            sys.exit(0)
 
     if createCimOnly and not mapfileProvided:
         raise ESGPublishError("--create-cim-only can only be used with --map")
