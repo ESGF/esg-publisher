@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>FAQ and known issues &mdash; esg-publisher 3.4.9 documentation</title>
+  <title>FAQ and known issues &mdash; esg-publisher 3.5.11 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="esg-publisher 3.4.9 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.5.11 documentation" href="index.html"/>
         <link rel="next" title="Advanced Usage and Publication Tools" href="advanced.html"/>
         <link rel="prev" title="Usage" href="usage.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                3.4.9
+                3.5.11
               </div>
             
           
@@ -112,8 +112,13 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#publication-to-solr-index-fails">Publication to Solr Index fails</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#user-is-not-authorized-to-publish">User is not authorized to publish</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#configuration-file-option-missing">Configuration file option missing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#thredds-does-not-unpublish">THREDDS does not unpublish</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#error-running-publisher-in-nohup-or-other-scripted-environment">Error Running Publisher in nohup (or other) scripted environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#version-of-this-software">Version of this software</a></li>
 </ul>
 </li>
 </ul>
@@ -188,9 +193,9 @@
 <h2>PID Configuration<a class="headerlink" href="#pid-configuration" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="cannot-connect-to-pid-server">
 <h3>Cannot connect to PID server<a class="headerlink" href="#cannot-connect-to-pid-server" title="Permalink to this headline">¶</a></h3>
-<p>Please ensure that the firewall is open for all PID hosts in your <code class="docutils literal"><span class="pre">[config:&lt;project&gt;]</span></code> section, port 5671.</p>
+<p>Please ensure that the firewall is open for all PID hosts in your <code class="docutils literal notranslate"><span class="pre">[config:&lt;project&gt;]</span></code> section, port 5671.</p>
 <p>If you can’t connect to the server the publisher will produce the following errors:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --test --project test --map test.test.map --service fileservice --noscan --thredds
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --test --project test --map test.test.map --service fileservice --noscan --thredds
     ...
     INFO       2017-11-14 18:50:23,729 Opening connection to RabbitMQ...
     INFO       2017-11-14 18:50:23,792 Connecting to 198.128.245.160:5671 with SSL
@@ -203,12 +208,12 @@
 </div>
 <div class="section" id="setting-up-pid-credentials">
 <h3>Setting up PID credentials<a class="headerlink" href="#setting-up-pid-credentials" title="Permalink to this headline">¶</a></h3>
-<p>In case the publisher fails with one of the following errors please make sure your <code class="docutils literal"><span class="pre">[config:&lt;project&gt;]</span></code> section is set up correctly and does contain the <code class="docutils literal"><span class="pre">pid_credentials</span></code>.
+<p>In case the publisher fails with one of the following errors please make sure your <code class="docutils literal notranslate"><span class="pre">[config:&lt;project&gt;]</span></code> section is set up correctly and does contain the <code class="docutils literal notranslate"><span class="pre">pid_credentials</span></code>.
 For more information see section <a class="reference internal" href="configuration.html#config-project-section"><span class="std std-ref">The project config section</span></a></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Section</span> <span class="s1">&#39;config:cmip6&#39;</span> <span class="ow">not</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">esg</span><span class="o">.</span><span class="n">ini</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Section</span> <span class="s1">&#39;config:cmip6&#39;</span> <span class="ow">not</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">esg</span><span class="o">.</span><span class="n">ini</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Option</span> <span class="s1">&#39;pid_credentials&#39;</span> <span class="n">missing</span> <span class="ow">in</span> <span class="n">section</span> <span class="p">[</span><span class="n">config</span><span class="p">:</span><span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span><span class="p">]</span> <span class="n">of</span> <span class="n">esg</span><span class="o">.</span><span class="n">ini</span><span class="o">.</span> <span class="n">Please</span> <span class="n">contact</span> <span class="n">your</span> <span class="n">tier1</span> <span class="n">data</span> <span class="n">node</span> <span class="n">admin</span> <span class="n">to</span> <span class="n">get</span> <span class="n">the</span> <span class="n">proper</span> <span class="n">values</span><span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Option</span> <span class="s1">&#39;pid_credentials&#39;</span> <span class="n">missing</span> <span class="ow">in</span> <span class="n">section</span> <span class="p">[</span><span class="n">config</span><span class="p">:</span><span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span><span class="p">]</span> <span class="n">of</span> <span class="n">esg</span><span class="o">.</span><span class="n">ini</span><span class="o">.</span> <span class="n">Please</span> <span class="n">contact</span> <span class="n">your</span> <span class="n">tier1</span> <span class="n">data</span> <span class="n">node</span> <span class="n">admin</span> <span class="n">to</span> <span class="n">get</span> <span class="n">the</span> <span class="n">proper</span> <span class="n">values</span><span class="o">.</span>
 </pre></div>
 </div>
 </div>
@@ -218,7 +223,7 @@ For more information see section <a class="reference internal" href="configurati
 <div class="section" id="missing-permissions-to-write-catalogs">
 <h3>Missing permissions to write catalogs<a class="headerlink" href="#missing-permissions-to-write-catalogs" title="Permalink to this headline">¶</a></h3>
 <p>If you don’t have the permissions to write to the THREDDS directory the publisher fails with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --thredds
 
 Traceback (most recent call last):
   ...
@@ -229,9 +234,9 @@ IOError: [Errno 13] Permission denied: u&#39;/esg/content/thredds/esgcet/1/test.
 </div>
 <p><strong>Solution:</strong></p>
 <blockquote>
-<div><p>Make sure the (unix-) user you use for publication has write access to the THREDDS catalogs, <code class="docutils literal"><span class="pre">/esg/content/thredds/esgcet/</span></code>.
+<div><p>Make sure the (unix-) user you use for publication has write access to the THREDDS catalogs, <code class="docutils literal notranslate"><span class="pre">/esg/content/thredds/esgcet/</span></code>.
 There are a number of ways to manage the permissions. You could, for instance change the group and group-permissions to a group the (unix-) user is member of.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ chgrp -R &lt;group&gt; /esg/content/thredds/esgcet/
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ chgrp -R &lt;group&gt; /esg/content/thredds/esgcet/
 $ chmod -R g+w /esg/content/thredds/esgcet/
 </pre></div>
 </div>
@@ -243,7 +248,7 @@ $ chmod -R g+w /esg/content/thredds/esgcet/
 <div class="section" id="tlsv1-alert-unknown-ca">
 <h3>tlsv1 alert unknown ca<a class="headerlink" href="#tlsv1-alert-unknown-ca" title="Permalink to this headline">¶</a></h3>
 <p>If you run myproxy-logon as (unix-) user root it might fail with the following error:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ myproxy-logon -s esgf-data.dkrz.de -l test_user -b -t 72 -o $HOME/.globus/certificate-file
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ myproxy-logon -s esgf-data.dkrz.de -l test_user -b -t 72 -o $HOME/.globus/certificate-file
 
 Error authenticating: GSS Major Status: Authentication Failed
 GSS Minor Status Error Chain:
@@ -262,7 +267,7 @@ OpenSSL Error: s3_pkt.c:1259: in library: SSL routines, function SSL3_READ_BYTES
 <h2>Publication to Solr Index fails<a class="headerlink" href="#publication-to-solr-index-fails" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="user-is-not-authorized-to-publish">
 <h3>User is not authorized to publish<a class="headerlink" href="#user-is-not-authorized-to-publish" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --publish
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project test --map test.test.map --service fileservice --noscan --publish
 INFO       2016-10-28 10:50:46,970 Publishing: test.test
 Traceback (most recent call last):
 ...
@@ -277,7 +282,7 @@ esgcet.publish.hessianlib.RemoteCallException: Java ServiceException: User: http
 <dd><p class="first">If you publish to your own index node please check the permissions of the policies files on your <strong>index node</strong>, see section <a class="reference internal" href="configuration.html#policies"><span class="std std-ref">Prepare user and permissions for publication</span></a>
 and also make sure you have the correct permissions for both policies files:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">5840</span> <span class="n">Aug</span>  <span class="mi">8</span> <span class="mi">10</span><span class="p">:</span><span class="mi">32</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_local</span><span class="o">.</span><span class="n">xml</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">5840</span> <span class="n">Aug</span>  <span class="mi">8</span> <span class="mi">10</span><span class="p">:</span><span class="mi">32</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_local</span><span class="o">.</span><span class="n">xml</span>
 <span class="o">-</span><span class="n">rw</span><span class="o">-</span><span class="n">r</span><span class="o">-----</span> <span class="mi">1</span> <span class="n">tomcat</span> <span class="n">tomcat</span> <span class="mi">1381</span> <span class="n">Mar</span> <span class="mi">21</span>  <span class="mi">2016</span> <span class="o">/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgf_policies_common</span><span class="o">.</span><span class="n">xml</span>
 </pre></div>
 </div>
@@ -289,7 +294,7 @@ and also make sure you have the correct permissions for both policies files:</p>
 <li><dl class="first docutils">
 <dt>Check your server certificate</dt>
 <dd><p class="first">Make sure you have a valid server certificate for tomcat.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ openssl s_client -connect &lt;fqdn&gt;:443 2&gt;&amp;1 | openssl x509 -text -noout
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ openssl s_client -connect &lt;fqdn&gt;:443 2&gt;&amp;1 | openssl x509 -text -noout
 </pre></div>
 </div>
 <p class="last">The CN should exactly match the ESGF hostname. In case you use a commercial certificate make sure your root certificate is in the ESGF truststore.
@@ -299,9 +304,12 @@ More information on the certificate generation and installation can be found on 
 </li>
 </ol>
 </div>
+</div>
+<div class="section" id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="configuration-file-option-missing">
 <h3>Configuration file option missing<a class="headerlink" href="#configuration-file-option-missing" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="n">esgcet</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ESGPublishError</span><span class="p">:</span> <span class="n">Configuration</span> <span class="n">file</span> <span class="n">option</span> <span class="n">missing</span><span class="p">:</span> <span class="n">hessian_service_certs_location</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span> <span class="n">DEFAULT</span><span class="p">,</span> <span class="n">file</span><span class="o">=/</span><span class="n">esg</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">esgcet</span><span class="o">/</span><span class="n">esg</span><span class="o">.</span><span class="n">ini</span>
 </pre></div>
 </div>
@@ -309,7 +317,7 @@ More information on the certificate generation and installation can be found on 
 <ul>
 <li><p class="first">Add the following to /esg/config/esgcet/esg.ini</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">hessian_service_certs_location</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificates</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hessian_service_certs_location</span> <span class="o">=</span> <span class="o">%</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="n">s</span><span class="o">/.</span><span class="n">globus</span><span class="o">/</span><span class="n">certificates</span>
 </pre></div>
 </div>
 <p>The certificates are fetched during the myproxy-login -b (bootstrap)</p>
@@ -320,8 +328,35 @@ More information on the certificate generation and installation can be found on 
 <div class="section" id="thredds-does-not-unpublish">
 <h3>THREDDS does not unpublish<a class="headerlink" href="#thredds-does-not-unpublish" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.  You will need to unpublish with –skip-index and use a list of datasets with versions with the <code class="docutils literal"><span class="pre">.vYYYYMMDD</span></code> or <code class="docutils literal"><span class="pre">.vNN</span></code> format instead of <code class="docutils literal"><span class="pre">#YYYYMMDD</span></code>, etc.</li>
+<li>Staring in v3.4.4  esgunpublish is reconfigured to use the REST API by default.  You will need to unpublish with –skip-index and use a list of datasets with versions with the <code class="docutils literal notranslate"><span class="pre">.vYYYYMMDD</span></code> or <code class="docutils literal notranslate"><span class="pre">.vNN</span></code> format instead of <code class="docutils literal notranslate"><span class="pre">#YYYYMMDD</span></code>, etc.</li>
 </ul>
+</div>
+<div class="section" id="error-running-publisher-in-nohup-or-other-scripted-environment">
+<h3>Error Running Publisher in nohup (or other) scripted environment<a class="headerlink" href="#error-running-publisher-in-nohup-or-other-scripted-environment" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>You may see an error like this following a stack trace with UVCDAT_ANONYMOUS_LOG:</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="ne">IOError</span><span class="p">:</span> <span class="p">[</span><span class="n">Errno</span> <span class="mi">9</span><span class="p">]</span> <span class="n">Bad</span> <span class="n">file</span> <span class="n">descriptor</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong></p>
+<ul class="simple">
+<li>You msut diasable the UVCDAT anonymous logging as the user prompt will repeat periodically.  Add to your script before calling esgpublish.</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export UVCDAT_ANONYMOUS_LOG=no
+</pre></div>
+</div>
+</div>
+<div class="section" id="version-of-this-software">
+<h3>Version of this software<a class="headerlink" href="#version-of-this-software" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import esgcet ; print esgcet.__version__&quot;
+</pre></div>
+</div>
+<p>Recent versions may have a <cite>–version</cite> argument implemented and included in <cite>esgpublish</cite>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --version
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -370,7 +405,7 @@ More information on the certificate generation and installation can be found on 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.4.9',
+            VERSION:'3.5.11',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
