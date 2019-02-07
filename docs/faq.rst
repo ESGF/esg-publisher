@@ -175,3 +175,17 @@ Error Running Publisher in nohup (or other) scripted environment
 
         $ export UVCDAT_ANONYMOUS_LOG=no
 
+
+
+Version of this software
+------------------------
+
+::
+
+        $ python -c "import esgcet ; print esgcet.__version__"
+
+Recent versions may have a `--version` argument implemented and included in `esgpublish`.  
+
+::
+
+        $ esgpublish --version
