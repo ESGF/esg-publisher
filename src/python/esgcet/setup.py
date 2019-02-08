@@ -60,8 +60,8 @@ setup(
     name = 'esgcet',
     version = VERSION,
     description = 'ESGCET publication package',
-    author = 'PCMDI Software Team',
-    author_email = 'webmaster@pcmdi.llnl.gov',
+    author = 'Sasha Ames',
+    author_email = 'ames4@llnl.gov',
     url = 'http://esgf.llnl.gov',
     install_requires = [
         "psycopg2>=2.0",

@@ -10,6 +10,8 @@ from esgcet.config import splitLine, getConfig
 from utility import getTypeAndLen, issueCallback, compareFiles, checksum, extraFieldsGet
 from esgcet.model import StandardName
 
+from sqlalchemy.exc import IntegrityError
+
 NAME=0
 LENGTH=1
 SEQ=2
@@ -274,6 +276,8 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         except IntegrityError as ie:
             debug("sqlalchemy IntegrityError: " + str(ie))
             raise ESGPublishError("Error in creating dataset version, did you already publish this version to the database?")
+        except Exception as e:
+            raise ESGPublishError("Error in creating dataset version, " +str(e))
         newDsetVersionObj.files.extend(fobjs)
         event = Event(datasetName, newDsetVersionObj.version, eventFlag)
         dset.events.append(event)
