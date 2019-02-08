@@ -155,9 +155,10 @@ sections. This file will be set up during the ESGF installation process.
         pid_exchange_name = esgffed-exchange    # not mandatory for CMIP6
         pid_credentials =
           # hostname                  | port  | virtual_host |    username    | password | ssl_enabled
-          handle-esgf-trusted.dkrz.de | 5671  |   esgf-pid   | esgf-publisher | <secret> |    true
-          pcmdi10.llnl.gov            | 5671  |   esgf-pid   | esgf-publisher | <secret> |    true
-          207.38.94.86                | 32272 |   esgf-pid   | esgf-publisher | <secret> |    true
+          pcmdi10.llnl.gov            | 5671  |   esgf-pid   | esgf-publisher | <secret> | true
+          handle-esgf-trusted.dkrz.de | 5671  |   esgf-pid   | esgf-publisher | <secret> | true
+          207.38.94.86                | 19102 |   esgf-pid   | esgf-publisher | <secret> | true
+          140.208.31.31               | 5671  |   esgf-pid   | esgf-publisher | <secret> | true
 
     The ``pid_credentials`` are available on `Confluence <https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config>`_.
     In case you don't have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:
