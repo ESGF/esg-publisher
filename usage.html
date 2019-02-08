@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -30,6 +32,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="esg-publisher 3.5.11 documentation" href="index.html"/>
         <link rel="next" title="FAQ and known issues" href="faq.html"/>
         <link rel="prev" title="Mapfile preparation" href="mapfiles.html"/> 
@@ -41,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -81,7 +87,10 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="testpublication.html">Quick guide to test publication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
@@ -120,8 +129,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">esg-publisher</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">esg-publisher</a>
+        
       </nav>
 
 
@@ -130,23 +141,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Usage</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Usage</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="sources/usage.txt" rel="nofollow"> View page source</a>
+            
+            <a href="sources/usage.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -158,22 +186,22 @@
 <h2>Preliminary<a class="headerlink" href="#preliminary" title="Permalink to this headline">¶</a></h2>
 <p>Set up default environment for scripts:</p>
 <p>ESGF v2.5 or later</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
 </pre></div>
 </div>
 <p>ESGF v2.4.x or earlier</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /etc/esg.env
 </pre></div>
 </div>
 <p>Publication and unpublication to an index node also requires a valid globus certificate.
-By running <code class="docutils literal"><span class="pre">esgpublish</span></code> or <code class="docutils literal"><span class="pre">esgunpublish</span></code> a globus certificate will be generated automatically. Please specify your credentials for the certificate either by filling out the user prompts
-during the publication or add the credential information to your <code class="docutils literal"><span class="pre">esg.ini</span></code> file, see <a class="reference internal" href="configuration.html#myproxy-section"><span class="std std-ref">myproxy section</span></a>.</p>
+By running <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> or <code class="docutils literal notranslate"><span class="pre">esgunpublish</span></code> a globus certificate will be generated automatically. Please specify your credentials for the certificate either by filling out the user prompts
+during the publication or add the credential information to your <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> file, see <a class="reference internal" href="configuration.html#myproxy-section"><span class="std std-ref">myproxy section</span></a>.</p>
 <p>In case the certificate generation fails for some reason, please create the certificate manually, see <a class="reference internal" href="configuration.html#myproxy-logon"><span class="std std-ref">Myproxy Logon</span></a>.</p>
 <div class="admonition tip">
 <p class="first admonition-title">Tip</p>
-<p class="last">If your intent is to &#8220;script&#8221; the publisher, you should diasable the UVCDAT anonymous logging as the user prompt will repeat periodically.</p>
+<p class="last">If your intent is to “script” the publisher, you should diasable the UVCDAT anonymous logging as the user prompt will repeat periodically.</p>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ export UVCDAT_ANONYMOUS_LOG=no
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export UVCDAT_ANONYMOUS_LOG=no
 </pre></div>
 </div>
 </div>
@@ -190,33 +218,33 @@ during the publication or add the credential information to your <code class="do
 <p>To be visible in the federation you need to publish to all three components and use one of the federated Indexes.</p>
 <p><strong>Some basics</strong>:</p>
 <blockquote>
-<div><p>Show the help message and all options of <code class="docutils literal"><span class="pre">esgpublish</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish -h
+<div><p>Show the help message and all options of <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish -h
 </pre></div>
 </div>
 <p>The publisher takes a directory containing mapfiles or a single mapfile as input. If a mapfile directory is specified, it is scanned recursively and all containing mapfiles are published.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project_name&gt; --map &lt;mapfile or mapfile_directory&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project_name&gt; --map &lt;mapfile or mapfile_directory&gt;
 </pre></div>
 </div>
-<p>Use <code class="docutils literal"><span class="pre">esg-node</span></code> to show or change the index node you are publishing to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esg-node --get-index-peer
+<p>Use <code class="docutils literal notranslate"><span class="pre">esg-node</span></code> to show or change the index node you are publishing to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esg-node --get-index-peer
 $ esg-node --set-index-peer &lt;index_fqdn&gt;
 </pre></div>
 </div>
 </div></blockquote>
 <div class="section" id="publish-to-local-postgres-database">
 <h3>Publish to local postgres database<a class="headerlink" href="#publish-to-local-postgres-database" title="Permalink to this headline">¶</a></h3>
-<p>This step will scan the data files using the <a class="reference external" href="http://uvcdat.llnl.gov/index.html">uvcdat toolbox</a> , validate the facet values using <code class="docutils literal"><span class="pre">esg.&lt;project&gt;.ini</span></code> and publish
+<p>This step will scan the data files using the <a class="reference external" href="http://uvcdat.llnl.gov/index.html">uvcdat toolbox</a> , validate the facet values using <code class="docutils literal notranslate"><span class="pre">esg.&lt;project&gt;.ini</span></code> and publish
 all data from the mapfile(s) to the local postgres database.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt;  --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice [--set-replica]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt;  --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice [--set-replica]
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><code class="docutils literal"><span class="pre">--service</span> <span class="pre">fileservice</span></code> will add the services specified as <code class="docutils literal"><span class="pre">fileservice</span></code> in esg.ini&#8217;s <code class="docutils literal"><span class="pre">thredds_file_services</span></code>.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">--service</span> <span class="pre">fileservice</span></code> will add the services specified as <code class="docutils literal notranslate"><span class="pre">fileservice</span></code> in esg.ini’s <code class="docutils literal notranslate"><span class="pre">thredds_file_services</span></code>.</p>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project cmip5 --service fileservice --map /esg/mapfiles
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project cmip5 --service fileservice --map /esg/mapfiles
 
  INFO       2016-08-09 13:59:37,073 Creating dataset: cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1
  INFO       2016-08-09 13:59:37,079 Scanning /esg/data/cmip5/output1/MPI-M/MPI-ESM-P/historical/day/atmos/day/v20120315/clt/clt_day_MPI-ESM-P_historical_r1i1p1_19500101-19591231.nc
@@ -228,7 +256,7 @@ all data from the mapfile(s) to the local postgres database.</p>
 </pre></div>
 </div>
 <p>For the above example this will add two datasets and several files in the postgres database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">esgcet</span><span class="o">=</span><span class="c1"># SELECT * FROM dataset WHERE name LIKE &#39;cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day%&#39;;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgcet</span><span class="o">=</span><span class="c1"># SELECT * FROM dataset WHERE name LIKE &#39;cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day%&#39;;</span>
 
    <span class="nb">id</span>  <span class="o">|</span>                             <span class="n">name</span>                              <span class="o">|</span> <span class="n">project</span> <span class="o">|</span> <span class="o">...</span>
  <span class="o">------+---------------------------------------------------------------+---------+-----</span>
@@ -251,28 +279,28 @@ all data from the mapfile(s) to the local postgres database.</p>
 </div>
 <div class="section" id="publish-to-local-thredds-server">
 <h3>Publish to local Thredds server<a class="headerlink" href="#publish-to-local-thredds-server" title="Permalink to this headline">¶</a></h3>
-<p>The publication of the Thredds catalogs will use the local postgres database as input and generate one catalog per dataset in XML format, added to the default location <code class="docutils literal"><span class="pre">/esg/content/thredds/esgcet</span></code>
-It is recommended to set a umask so files are world readable, directories accessible, i.e. <code class="docutils literal"><span class="pre">r-x</span></code>.
-Also make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in <code class="docutils literal"><span class="pre">/esg/content/thredds/esgcet/</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt;  --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --thredds [--no-thredds-reinit]
+<p>The publication of the Thredds catalogs will use the local postgres database as input and generate one catalog per dataset in XML format, added to the default location <code class="docutils literal notranslate"><span class="pre">/esg/content/thredds/esgcet</span></code>
+It is recommended to set a umask so files are world readable, directories accessible, i.e. <code class="docutils literal notranslate"><span class="pre">r-x</span></code>.
+Also make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in <code class="docutils literal notranslate"><span class="pre">/esg/content/thredds/esgcet/</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt;  --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --thredds [--no-thredds-reinit]
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><code class="docutils literal"><span class="pre">--service</span> <span class="pre">fileservice</span></code> is required to publish Globus, GridFTP and OpenDAP urls in default esg-publisher configurations.  If omitted, rerunning <code class="docutils literal"><span class="pre">esgpublish</span></code> with <code class="docutils literal"><span class="pre">--thredds</span></code> can be performed to add those urls.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">--service</span> <span class="pre">fileservice</span></code> is required to publish Globus, GridFTP and OpenDAP urls in default esg-publisher configurations.  If omitted, rerunning <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> with <code class="docutils literal notranslate"><span class="pre">--thredds</span></code> can be performed to add those urls.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><code class="docutils literal"><span class="pre">--noscan</span></code> skips the netcdf scan of each file. This is useful since the scan was already done in the previous publication step to the database.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">--noscan</span></code> skips the netcdf scan of each file. This is useful since the scan was already done in the previous publication step to the database.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you use a mapfile_directory as input the thredds catalog is reinitialized/rechecked only once, after all mapfiles have been processed. If you prefer to pass only one mapfile per
-esgpublish call and you are publishing a series of mapfiles its unnecessary to have THREDDS reinitialize the catalog on each call to <code class="docutils literal"><span class="pre">esgpublish</span></code>. Use the additional argument
-<code class="docutils literal"><span class="pre">--no-thredds-reinit</span></code> to all calls and finish the publication with <code class="docutils literal"><span class="pre">$</span> <span class="pre">esgpublish</span> <span class="pre">--thredds-reinit</span></code> to reinitialize/recheck the catalog.</p>
+esgpublish call and you are publishing a series of mapfiles its unnecessary to have THREDDS reinitialize the catalog on each call to <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code>. Use the additional argument
+<code class="docutils literal notranslate"><span class="pre">--no-thredds-reinit</span></code> to all calls and finish the publication with <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">esgpublish</span> <span class="pre">--thredds-reinit</span></code> to reinitialize/recheck the catalog.</p>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project cmip5 --service fileservice --map /esg/mapfiles --noscan --thredds
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project cmip5 --service fileservice --map /esg/mapfiles --noscan --thredds
 
 INFO       2016-08-09 14:07:21,767 Writing THREDDS catalog /esg/content/thredds/esgcet/13/cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1.v20120315.xml
 INFO       2016-08-09 14:07:21,767 Writing THREDDS catalog /esg/content/thredds/esgcet/13/cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r2i1p1.v20120315.xml
@@ -281,13 +309,13 @@ INFO       2016-08-09 14:07:21,993 Reinitializing THREDDS server
 </pre></div>
 </div>
 <p>For the above example this will generate two Thredds catalogs and add the catalog entry to the postgres database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ ls /esg/content/thredds/esgcet/13
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls /esg/content/thredds/esgcet/13
 
 /esg/content/thredds/esgcet/13/cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1.v20120315.xml
 /esg/content/thredds/esgcet/13/cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r2i1p1.v20120315.xml
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">esgcet</span><span class="o">=</span><span class="c1"># SELECT * FROM catalog WHERE dataset_name LIKE &#39;cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day%&#39;;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgcet</span><span class="o">=</span><span class="c1"># SELECT * FROM catalog WHERE dataset_name LIKE &#39;cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day%&#39;;</span>
 
                              <span class="n">dataset_name</span>                      <span class="o">|</span> <span class="n">version</span>  <span class="o">|</span>                                       <span class="n">location</span>                                 <span class="o">|</span> <span class="n">rootpath</span>
 <span class="o">---------------------------------------------------------------+----------+--------------------------------------------------------------------------------+----------</span>
@@ -302,18 +330,18 @@ INFO       2016-08-09 14:07:21,993 Reinitializing THREDDS server
 </div>
 <div class="section" id="publish-to-index-node">
 <h3>Publish to index node<a class="headerlink" href="#publish-to-index-node" title="Permalink to this headline">¶</a></h3>
-<p>The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF&#8217;s <a class="reference external" href="https://github.com/ESGF/esg-search">esg-search</a>.</p>
+<p>The publication to the Index node will read the Thredds catalogs and publish the datasets to Solr using ESGF’s <a class="reference external" href="https://github.com/ESGF/esg-search">esg-search</a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>Version v3.4.4 or later:  By default the publication will use the REST web service protocol. For the HESSIAN service please use the <code class="docutils literal"><span class="pre">--hessian-api</span></code> flag.</p>
+<p>Version v3.4.4 or later:  By default the publication will use the REST web service protocol. For the HESSIAN service please use the <code class="docutils literal notranslate"><span class="pre">--hessian-api</span></code> flag.</p>
 <p>Version v3.4.2-3:  By default the publication will use the REST web service protocol. The HESSIAN service has been disabled in this version.</p>
-<p class="last">Earlier versions:  By default the publication will use the HESSIAN web service protocol. For the REST service please use the <code class="docutils literal"><span class="pre">--rest-api</span></code> flag.</p>
+<p class="last">Earlier versions:  By default the publication will use the HESSIAN web service protocol. For the REST service please use the <code class="docutils literal notranslate"><span class="pre">--rest-api</span></code> flag.</p>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --publish [--hessian-api]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --noscan --publish [--hessian-api]
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project cmip5 --service fileservice --map /esg/mapfiles --noscan --publish
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project cmip5 --service fileservice --map /esg/mapfiles --noscan --publish
 
 INFO       2016-08-09 14:10:23,767 Publishing: cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1
 INFO       2016-08-09 14:10:28,116   Result: SUCCESSFUL
@@ -332,7 +360,7 @@ INFO       2016-08-09 14:10:31,116   Result: SUCCESSFUL
 <p class="first admonition-title">Warning</p>
 <p class="last">It is not recommended to publish to all components in one step. Please use this call only in case you are sure your configuration is set up correctly.</p>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --thredds --publish
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish [optional: -i &lt;path_to_ini_files&gt;] --project &lt;project_name&gt; --map &lt;input_mapfile or mapfile_directory&gt; --service fileservice --thredds --publish
 </pre></div>
 </div>
 </div>
@@ -346,85 +374,85 @@ The publisher will automatically use the information in the mapfile to publish t
 <ul>
 <li><p class="first">Echo all SQL commands:</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --echo-sql
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --echo-sql
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Specify the directory containing all configuration files, By default it is set to <cite>/esg/config/esgcet</cite>.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --i &lt;init_directory&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --i &lt;init_directory&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Name of output log file. Overrides the configuration log_filename option. Default is standard output.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --log &lt;log_file&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --log &lt;log_file&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Specify the version number. This option is only needed if the version is not included in the mapfile (using the <code class="docutils literal"><span class="pre">dataset_name#version</span></code> syntax).</p>
+<li><p class="first">Specify the version number. This option is only needed if the version is not included in the mapfile (using the <code class="docutils literal notranslate"><span class="pre">dataset_name#version</span></code> syntax).</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --new-version &lt;version_number&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --new-version &lt;version_number&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">This will skip the scan of the files. Assumes that the scan has already been done and all information was added to the database. Use this option only with <code class="docutils literal"><span class="pre">--thredds</span></code> or <code class="docutils literal"><span class="pre">--publish</span></code>.</p>
+<li><p class="first">This will skip the scan of the files. Assumes that the scan has already been done and all information was added to the database. Use this option only with <code class="docutils literal notranslate"><span class="pre">--thredds</span></code> or <code class="docutils literal notranslate"><span class="pre">--publish</span></code>.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --noscan [--thredds] [--publish]
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --noscan [--thredds] [--publish]
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Skip the reinitialization/recheck of the Thredds catalogs. This option can be used if you run a series of <cite>esgpublish</cite> calls with a single mapfile as input. Finish the publication with <code class="docutils literal"><span class="pre">--thredds-reinit</span></code> to reinitialize/recheck the catalog. This option is not necessary if you pass a mapfile_directory as input, in this case the thredds catalog is reinitialized/rechecked only once, after all mapfiles have been processed.</p>
+<li><p class="first">Skip the reinitialization/recheck of the Thredds catalogs. This option can be used if you run a series of <cite>esgpublish</cite> calls with a single mapfile as input. Finish the publication with <code class="docutils literal notranslate"><span class="pre">--thredds-reinit</span></code> to reinitialize/recheck the catalog. This option is not necessary if you pass a mapfile_directory as input, in this case the thredds catalog is reinitialized/rechecked only once, after all mapfiles have been processed.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --no-thredds-reinit
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --no-thredds-reinit
 $ esgpublish --thredds-reinit
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Publish the dataset to the index node. Needs Thredds catalogs of the dataset. (Use <code class="docutils literal"><span class="pre">--noscan</span></code> to skip the scan of the files.)</p>
+<li><p class="first">Publish the dataset to the index node. Needs Thredds catalogs of the dataset. (Use <code class="docutils literal notranslate"><span class="pre">--noscan</span></code> to skip the scan of the files.)</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --publish [--noscan]
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --publish [--noscan]
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Set a <cite>replica</cite> flag to the data.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --set-replica
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --set-replica
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Create the Thredds catalogs and reinitialize/recheck the Thredds Server  unless <code class="docutils literal"><span class="pre">--no-thredds-reinit</span></code> is set. (Use <code class="docutils literal"><span class="pre">--noscan</span></code> to skip the scan of the files.)</p>
+<li><p class="first">Create the Thredds catalogs and reinitialize/recheck the Thredds Server  unless <code class="docutils literal notranslate"><span class="pre">--no-thredds-reinit</span></code> is set. (Use <code class="docutils literal notranslate"><span class="pre">--noscan</span></code> to skip the scan of the files.)</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --thredds [--noscan]
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --thredds [--noscan]
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Publish a single dataset to Thredds or the index, assumes the file information are already in database.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --use-existing &lt;dataset_name[#version]&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --use-existing &lt;dataset_name[#version]&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Like <cite>use-existing</cite>, but read the list of dataset names from a file, containing one dataset name per line.</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --use-list &lt;dataset_list&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --use-list &lt;dataset_list&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Use the version indicated in the version_list. version_list is a file, each line of which has the form: <code class="docutils literal"><span class="pre">dataset_id</span> <span class="pre">|</span> <span class="pre">version</span></code>. Not needed if you use the <code class="docutils literal"><span class="pre">dataset#version</span></code> syntax in the mapfile(s).</p>
+<li><p class="first">Use the version indicated in the version_list. version_list is a file, each line of which has the form: <code class="docutils literal notranslate"><span class="pre">dataset_id</span> <span class="pre">|</span> <span class="pre">version</span></code>. Not needed if you use the <code class="docutils literal notranslate"><span class="pre">dataset#version</span></code> syntax in the mapfile(s).</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --version-list &lt;version_list&gt;
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project &lt;project&gt; --map &lt;map&gt; --version-list &lt;version_list&gt;
 </pre></div>
 </div>
 </div></blockquote>
@@ -437,41 +465,41 @@ $ esgpublish --thredds-reinit
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">If you unpublish a dataset passing only the dataset_name it will unpublish all versions of the dataset.
-To unpublish a single version use the <code class="docutils literal"><span class="pre">dataset_name#version</span></code> syntax, e.g.: <code class="docutils literal"><span class="pre">cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1#20120315</span></code>.</p>
+To unpublish a single version use the <code class="docutils literal notranslate"><span class="pre">dataset_name#version</span></code> syntax, e.g.: <code class="docutils literal notranslate"><span class="pre">cmip5.output1.MPI-M.MPI-ESM-P.historical.day.atmos.day.r1i1p1#20120315</span></code>.</p>
 </div>
-<p>You could either use a <code class="docutils literal"><span class="pre">mapfile</span> <span class="pre">directory</span></code>, a single <code class="docutils literal"><span class="pre">mapfile</span></code> a <code class="docutils literal"><span class="pre">dataset</span></code> or a <code class="docutils literal"><span class="pre">dataset_list</span></code> as input for the data unpublication:</p>
+<p>You could either use a <code class="docutils literal notranslate"><span class="pre">mapfile</span> <span class="pre">directory</span></code>, a single <code class="docutils literal notranslate"><span class="pre">mapfile</span></code> a <code class="docutils literal notranslate"><span class="pre">dataset</span></code> or a <code class="docutils literal notranslate"><span class="pre">dataset_list</span></code> as input for the data unpublication:</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">By default the unpublication from the Solr index will use the REST web service protocol.  Thus it is mandatory to specify the version number for each dataset (i.e. dataset_name#version).
-For the Hessian service please use the <code class="docutils literal"><span class="pre">--hessian-api</span></code> flag. When using Hessian API, the version number is not mandatory to specify with the dataset_id.</p>
+For the Hessian service please use the <code class="docutils literal notranslate"><span class="pre">--hessian-api</span></code> flag. When using Hessian API, the version number is not mandatory to specify with the dataset_id.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">By default upublication will occur on the index node.  In this case, it is required to either specify whether it is desired to <em>retract</em> or <em>delete</em> the dataset.
-The <code class="docutils literal"><span class="pre">--retract</span></code> flag gives the option to leave a publication record of the dataset on the index node, but the data will no longer be available for download.  In contrast, <code class="docutils literal"><span class="pre">--delete</span></code> completely  removes the dataset record from the index.  Dataset project guidelines should suggest which of these options should be considered.</p>
+The <code class="docutils literal notranslate"><span class="pre">--retract</span></code> flag gives the option to leave a publication record of the dataset on the index node, but the data will no longer be available for download.  In contrast, <code class="docutils literal notranslate"><span class="pre">--delete</span></code> completely  removes the dataset record from the index.  Dataset project guidelines should suggest which of these options should be considered.</p>
 </div>
 <ul>
 <li><p class="first">Using a mapfile directory or a single mapfile; retract the dataset</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --map &lt;input_mapfile or mapfile_directory&gt; --retract
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --map &lt;input_mapfile or mapfile_directory&gt; --retract
 </pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Using a list;  delete the dataset</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --use-list &lt;list-of-datasets-filename&gt; --delete
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; --use-list &lt;list-of-datasets-filename&gt; --delete
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">To obtain the a list of datasets, there are several alternatives.  On the command line you can use <code class="docutils literal"><span class="pre">$</span> <span class="pre">esglist_datasets</span> <span class="pre">--no-header</span> <span class="pre">--select</span> <span class="pre">name</span> <span class="pre">&lt;project&gt;</span></code></p>
+<p class="last">To obtain the a list of datasets, there are several alternatives.  On the command line you can use <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">esglist_datasets</span> <span class="pre">--no-header</span> <span class="pre">--select</span> <span class="pre">name</span> <span class="pre">&lt;project&gt;</span></code></p>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">Using a single dataset_name; retract</p>
 <blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; dataset_name[#version] --retract
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project &lt;project&gt; dataset_name[#version] --retract
 </pre></div>
 </div>
 </div></blockquote>
@@ -480,33 +508,33 @@ The <code class="docutils literal"><span class="pre">--retract</span></code> fla
 <div class="section" id="delete-from-index-and-thredds">
 <h3>Delete from Index and Thredds<a class="headerlink" href="#delete-from-index-and-thredds" title="Permalink to this headline">¶</a></h3>
 <p>Delete the data from Index, remove the THREDDS catalog, reinitialize/recheck the Thredds Server but keep the data on postgres.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --delete
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --delete
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-index">
 <h3>Delete from Index<a class="headerlink" href="#delete-from-index" title="Permalink to this headline">¶</a></h3>
 <p>Delete the data from Index but keep the Thredds catalogs and postgres entries.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds --delete
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-thredds --delete
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-thredds">
 <h3>Delete from Thredds<a class="headerlink" href="#delete-from-thredds" title="Permalink to this headline">¶</a></h3>
 <p>Delete the Thredds Catalogs, but keep the data available on the Index node and on the postgres database.  In this case the</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-index
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --skip-index
 </pre></div>
 </div>
 </div>
 <div class="section" id="delete-from-all-components">
 <h3>Delete from all components<a class="headerlink" href="#delete-from-all-components" title="Permalink to this headline">¶</a></h3>
 <p>The data will be removed from postgres, Thredds and the Index node.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete --delete
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project cmip5 --map /esg/mapfiles --database-delete --delete
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Use <code class="docutils literal"><span class="pre">--database-delete</span></code> to unpublish test data only. It is highly recommended to keep a history of all production data in postgres.</p>
+<p class="last">Use <code class="docutils literal notranslate"><span class="pre">--database-delete</span></code> to unpublish test data only. It is highly recommended to keep a history of all production data in postgres.</p>
 </div>
 </div>
 </div>
@@ -514,15 +542,18 @@ The <code class="docutils literal"><span class="pre">--retract</span></code> fla
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="faq.html" class="btn btn-neutral float-right" title="FAQ and known issues" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="faq.html" class="btn btn-neutral float-right" title="FAQ and known issues" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mapfiles.html" class="btn btn-neutral" title="Mapfile preparation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mapfiles.html" class="btn btn-neutral" title="Mapfile preparation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -556,7 +587,8 @@ The <code class="docutils literal"><span class="pre">--retract</span></code> fla
             VERSION:'3.5.11',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="static/jquery.js"></script>
