@@ -8,11 +8,9 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quick guide to test publication &mdash; esg-publisher 3.5.11 documentation</title>
+  <title>Quick guide to test publication &mdash; esg-publisher 3.4.9 documentation</title>
   
 
-  
-  
   
   
 
@@ -32,10 +30,7 @@
   
 
   
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="esg-publisher 3.5.11 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.4.9 documentation" href="index.html"/>
         <link rel="next" title="Configuration" href="configuration.html"/>
         <link rel="prev" title="Installation" href="installation.html"/> 
 
@@ -46,7 +41,6 @@
 
 <body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
@@ -66,7 +60,7 @@
             
             
               <div class="version">
-                3.5.11
+                3.4.9
               </div>
             
           
@@ -87,10 +81,7 @@
           
             
             
-              
-            
-            
-              <ul class="current">
+                <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick guide to test publication</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#use-the-script-esgtest-publish">Use the script: esgtest_publish</a><ul>
@@ -131,10 +122,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">esg-publisher</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">esg-publisher</a>
       </nav>
 
 
@@ -143,40 +132,23 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Quick guide to test publication</li>
-    
-    
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Quick guide to test publication</li>
       <li class="wy-breadcrumbs-aside">
         
-            
-            <a href="sources/testpublication.rst.txt" rel="nofollow"> View page source</a>
+          
+            <a href="sources/testpublication.txt" rel="nofollow"> View page source</a>
           
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -191,17 +163,17 @@
 <h3>Preliminary<a class="headerlink" href="#preliminary" title="Permalink to this headline">¶</a></h3>
 <p>Set up default environment for scripts:</p>
 <p>ESGF v2.5 or later</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
 </pre></div>
 </div>
 <p>ESGF v2.4.x or earlier</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /etc/esg.env
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
 </pre></div>
 </div>
 </div>
 <div class="section" id="run-the-test-script">
 <h3>Run the test script<a class="headerlink" href="#run-the-test-script" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgtest_publish
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgtest_publish
 </pre></div>
 </div>
 <p><strong>The above command will go through all steps of the publication:</strong></p>
@@ -216,7 +188,7 @@
 </ol>
 <p>By default the script will publish to all three components: Postgres, THREDDS and Solr. But you can also skip some tests:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgtest_publish --skip-index      # Skip publication to the Solr Index
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgtest_publish --skip-index      # Skip publication to the Solr Index
 $ esgtest_publish --skip-thredds    # Skip publication to THREDDS and Solr Index
 </pre></div>
 </div>
@@ -225,14 +197,14 @@ $ esgtest_publish --skip-thredds    # Skip publication to THREDDS and Solr Index
 <ul>
 <li><p class="first">Specify the credentials as options:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgtest_publish --myproxy-host &lt;openid_server&gt; --myproxy-user &lt;esgf_user&gt; --myproxy-pass &lt;password&gt;
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgtest_publish --myproxy-host &lt;openid_server&gt; --myproxy-user &lt;esgf_user&gt; --myproxy-pass &lt;password&gt;
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">Add the information to your <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> file, section <code class="docutils literal notranslate"><span class="pre">myproxy</span></code>:</p>
+<li><p class="first">Add the information to your <code class="docutils literal"><span class="pre">esg.ini</span></code> file, section <code class="docutils literal"><span class="pre">myproxy</span></code>:</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">myproxy</span><span class="p">]</span>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">myproxy</span><span class="p">]</span>
 <span class="n">hostname</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">openid_server</span><span class="o">&gt;</span>
 <span class="n">username</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">esgf_user</span><span class="o">&gt;</span>
 <span class="n">password</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
@@ -245,8 +217,8 @@ $ esgtest_publish --skip-thredds    # Skip publication to THREDDS and Solr Index
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If you are running an “all” ESGF node installation and the credentials are not specified otherwise the script will use
-the <code class="docutils literal notranslate"><span class="pre">rootAdmin</span></code> account and get the appropriate password automatically.</p>
+<p class="last">If you are running an &#8220;all&#8221; ESGF node installation and the credentials are not specified otherwise the script will use
+the <code class="docutils literal"><span class="pre">rootAdmin</span></code> account and get the appropriate password automatically.</p>
 </div>
 </div>
 </div>
@@ -256,26 +228,26 @@ the <code class="docutils literal notranslate"><span class="pre">rootAdmin</span
 <h3>Preliminary<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Set up default environment for scripts:</p>
 <p>ESGF v2.5 or later</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
 </pre></div>
 </div>
 <p>ESGF v2.4.x or earlier</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /etc/esg.env
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
 </pre></div>
 </div>
-<p>Generate a valid globus certificate. For publication of test data you could use <code class="docutils literal notranslate"><span class="pre">esgf_user</span></code> rootAdmin, this account has preset permissions to publish test data.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ myproxy-logon -s &lt;openid_server&gt; -l &lt;esgf_user&gt; -b -t 72 -o $HOME/.globus/certificate-file
+<p>Generate a valid globus certificate. For publication of test data you could use <code class="docutils literal"><span class="pre">esgf_user</span></code> rootAdmin, this account has preset permissions to publish test data.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ myproxy-logon -s &lt;openid_server&gt; -l &lt;esgf_user&gt; -b -t 72 -o $HOME/.globus/certificate-file
 </pre></div>
 </div>
 </div>
 <div class="section" id="configuration">
 <h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
-<p>The configuration file for project test should already be present in the default location: <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.test.ini</span></code>. In case it is missing fetch it with <em>esgprep</em> <code class="docutils literal notranslate"><span class="pre">esgfetchini</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgfetchini --project test
+<p>The configuration file for project test should already be present in the default location: <code class="docutils literal"><span class="pre">/esg/config/esgcet/esg.test.ini</span></code>. In case it is missing fetch it with <em>esgprep</em> <code class="docutils literal"><span class="pre">esgfetchini</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgfetchini --project test
 </pre></div>
 </div>
-<p>Make sure you have values for project test in the <code class="docutils literal notranslate"><span class="pre">project_options</span></code> and <code class="docutils literal notranslate"><span class="pre">thredds_dataset_roots</span></code> in <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.ini</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
+<p>Make sure you have values for project test in the <code class="docutils literal"><span class="pre">project_options</span></code> and <code class="docutils literal"><span class="pre">thredds_dataset_roots</span></code> in <code class="docutils literal"><span class="pre">/esg/config/esgcet/esg.ini</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">project_options</span> <span class="o">=</span>
     <span class="n">cmip5</span> <span class="o">|</span> <span class="n">CMIP5</span>        <span class="o">|</span> <span class="mi">1</span>
     <span class="n">test</span>  <span class="o">|</span> <span class="n">Test</span> <span class="n">Project</span> <span class="o">|</span> <span class="mi">2</span>
     <span class="o">...</span>   <span class="o">|</span> <span class="o">...</span>          <span class="o">|</span> <span class="o">...</span>
@@ -289,7 +261,7 @@ the <code class="docutils literal notranslate"><span class="pre">rootAdmin</span
 </div>
 <div class="section" id="download-test-file">
 <h3>Download test file<a class="headerlink" href="#download-test-file" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd /esg/data/test
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /esg/data/test
 $ rm sftlf.nc
 $ wget -O sftlf.nc http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals/sftlf.nc
 </pre></div>
@@ -297,11 +269,11 @@ $ wget -O sftlf.nc http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals
 </div>
 <div class="section" id="mapfile-generation">
 <h3>Mapfile generation<a class="headerlink" href="#mapfile-generation" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgmapfile --project test /esg/data/test
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgmapfile --project test /esg/data/test
 </pre></div>
 </div>
-<p>The above will generate the directory <code class="docutils literal notranslate"><span class="pre">mapfiles</span></code> containing the file <code class="docutils literal notranslate"><span class="pre">test.test.map</span></code> in your working directory.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cat ./mapfiles/test.test.map
+<p>The above will generate the directory <code class="docutils literal"><span class="pre">mapfiles</span></code> containing the file <code class="docutils literal"><span class="pre">test.test.map</span></code> in your working directory.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cat ./mapfiles/test.test.map
 test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2 | checksum_type=SHA256
 </pre></div>
 </div>
@@ -310,28 +282,28 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
 <h3>Publication<a class="headerlink" href="#publication" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="publish-to-local-postgres-database">
 <h4>Publish to local postgres database<a class="headerlink" href="#publish-to-local-postgres-database" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice
 </pre></div>
 </div>
 </div>
 <div class="section" id="publish-to-local-thredds-server">
 <h4>Publish to local Thredds server<a class="headerlink" href="#publish-to-local-thredds-server" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --thredds
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --thredds
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in <code class="docutils literal notranslate"><span class="pre">/esg/content/thredds/esgcet/</span></code>.</p>
+<p class="last">Make sure the (unix-) user you use for publication has write access to the THREDDS catalogs in <code class="docutils literal"><span class="pre">/esg/content/thredds/esgcet/</span></code>.</p>
 </div>
 </div>
 <div class="section" id="publish-to-index-node">
 <h4>Publish to index node<a class="headerlink" href="#publish-to-index-node" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --publish
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ esgpublish --project test --map ./mapfiles/test.test.map --service fileservice --noscan --publish
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If you publish to another index please coordinate with that site’s node administrator.</p>
+<p class="last">If you publish to another index please coordinate with that site&#8217;s node administrator.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -343,7 +315,7 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
 <h3>Unpublication<a class="headerlink" href="#unpublication" title="Permalink to this headline">¶</a></h3>
 <p>If you are on a production node please make sure to unpublish the test file after successful publication. Test data should not be visible to users.</p>
 <blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgunpublish --project test --map ./mapfiles/test.test.map --database-delete --no-republish --delete
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ esgunpublish --project test --map ./mapfiles/test.test.map --database-delete --no-republish --delete
 </pre></div>
 </div>
 </div></blockquote>
@@ -353,18 +325,15 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -395,11 +364,10 @@ test.test | /esg/data/test/sftlf.nc | 5 | mod_time=1469535544.68 | checksum=f2ca
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.5.11',
+            VERSION:'3.4.9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="static/jquery.js"></script>

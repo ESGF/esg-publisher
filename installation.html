@@ -8,11 +8,9 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; esg-publisher 3.5.11 documentation</title>
+  <title>Installation &mdash; esg-publisher 3.4.9 documentation</title>
   
 
-  
-  
   
   
 
@@ -32,10 +30,7 @@
   
 
   
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="esg-publisher 3.5.11 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.4.9 documentation" href="index.html"/>
         <link rel="next" title="Quick guide to test publication" href="testpublication.html"/>
         <link rel="prev" title="esg-publisher documentation" href="index.html"/> 
 
@@ -46,7 +41,6 @@
 
 <body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
@@ -66,7 +60,7 @@
             
             
               <div class="version">
-                3.5.11
+                3.4.9
               </div>
             
           
@@ -87,12 +81,8 @@
           
             
             
-              
-            
-            
-              <ul class="current">
+                <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation-with-pip">Installation with pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-from-source">Installation from source</a></li>
 </ul>
 </li>
@@ -114,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">esg-publisher</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">esg-publisher</a>
       </nav>
 
 
@@ -126,40 +114,23 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html">Docs</a> &raquo;</li>
-        
-      <li>Installation</li>
-    
-    
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Installation</li>
       <li class="wy-breadcrumbs-aside">
         
-            
-            <a href="sources/installation.rst.txt" rel="nofollow"> View page source</a>
+          
+            <a href="sources/installation.txt" rel="nofollow"> View page source</a>
           
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -167,37 +138,21 @@
             
   <div class="section" id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>The esg-publisher requires a pre-installed <a class="reference external" href="http://esgf.llnl.gov">ESGF node</a> and the installation of <a class="reference external" href="http://cdat.llnl.gov/index.html">CDAT</a>.
-By default the installation of the esg-publisher is part of the <a class="reference external" href="https://github.com/ESGF/esgf-installer/wiki">ESGF node installation</a> that also installs CDAT and generates most of the publisher configs.</p>
-<p>If you want to install a new version without upgrading the ESGF node you can use <cite>pip</cite> or install the package from source.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">In order to install/upgrade the publisher in the default <cite>esgf-pub</cite> <cite>conda</cite> environment, you must run effectively as the <cite>root</cite> user.</p>
-</div>
-<div class="section" id="installation-with-pip">
-<h2>Installation with pip<a class="headerlink" href="#installation-with-pip" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
-$ pip install --upgrade esgcet
-# Upgrades the esg-publsher (aka `esgcet`) to the latest available version and all prerequisite packages
-</pre></div>
-</div>
-<p>To install a specific version of the publisher (without upgrading all packages), eg. <cite>v3.5.11</cite>, perform the <cite>source</cite> command as above, and:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install esgcet==3.5.11
-</pre></div>
-</div>
-</div>
+<p>The esg-publisher requires a pre-installed <a class="reference external" href="http://esgf.llnl.gov">ESGF node</a> and the installation of <a class="reference external" href="http://uvcdat.llnl.gov/index.html">uvcdat</a>.
+By default the installation of the esg-publisher is part of the <a class="reference external" href="https://github.com/ESGF/esgf-installer/wiki">ESGF node installation</a> that also installs uvcdat and generates most of the publisher configs.</p>
+<p>If you want to install a new version without upgrading the ESGF node you can install the package from source.</p>
 <div class="section" id="installation-from-source">
 <h2>Installation from source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h2>
 <p>Clone the Github repo and install the esgcet package using setup.py.</p>
 <p>ESGF v2.5 or later</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
 $ git clone https://github.com/ESGF/esg-publisher.git
 $ cd esg-publisher/src/python/esgcet
 $ python setup.py install
 </pre></div>
 </div>
 <p>ESGF v2.4.x or earlier</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /etc/esg.env
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source /etc/esg.env
 $ git clone https://github.com/ESGF/esg-publisher.git
 $ cd esg-publisher/src/python/esgcet
 $ python setup.py install
@@ -208,18 +163,15 @@ $ python setup.py install
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="testpublication.html" class="btn btn-neutral float-right" title="Quick guide to test publication" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="testpublication.html" class="btn btn-neutral float-right" title="Quick guide to test publication" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="esg-publisher documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="esg-publisher documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -250,11 +202,10 @@ $ python setup.py install
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.5.11',
+            VERSION:'3.4.9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="static/jquery.js"></script>
