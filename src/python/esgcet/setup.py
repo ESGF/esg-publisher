@@ -65,7 +65,7 @@ setup(
     url = 'http://esgf.llnl.gov',
     install_requires = [
         "psycopg2>=2.0",
-        "SQLAlchemy>=0.7.8,!=0.9.5",
+        "SQLAlchemy==1.2.18",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6",
         "requests>=2.20.0",
@@ -73,11 +73,11 @@ setup(
         "MyProxyClient>=2.1.0",
         "esgf-pyclient>=0.1.8",
         "esgfpid>=0.7.12",
-        "cdf2cim>=0.3.2.0",
+        "cdf2cim>=0.3.3.0",
     ],
     setup_requires = [
         "psycopg2>=2.0",
-        "SQLAlchemy>=0.7.8,!=0.9.5",
+        "SQLAlchemy==1.2.18",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6",
         "requests>=2.20.0",

@@ -206,8 +206,11 @@ class CFHandler(MetadataHandler):
         calendar
           cdtime calendar type.
         """
-        result = reltime(fromDimensionValue, fromUnits).torel(toUnits, calendar).value
-        return float(result)
+        result = reltime(fromDimensionValue, fromUnits)
+        relresult = result.torel(toUnits, calendar)
+        relvalue = relresult.value
+        
+        return float(relvalue)
 
     @staticmethod
     def LAS2CDUnits(lasUnits):
