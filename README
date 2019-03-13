@@ -15,6 +15,18 @@ ESGF Publisher
 
 https://esgf.github.io/esg-publisher 
 
+Requirements:  most requirements are listed in requirements.txt.  Other requirements must be deployed via conda, include cdms2, cdtime and cmor (for CMIP6, other projects coming soon).  
+
+Installation:  the most convenient method to install is via pip.  To capture all dependencies, consider installation of the predetermined conda environment: https://github.com/ESGF/esgf-devOps/blob/master/esgf-pub_env.yml
+
+
+13 March 2019 version 3.6.2
+
+* Skip THREDDS reinit during esgsetup - solves installation issue for successful status code return
+* PrePARE to run on each input file rather than first in dataset
+* Fix some package versions, eg. requests, SQLAlchemy
+* Version information from esgpublish
+
 18 December 2018  version 3.5.6
 
 * process files in sorted order
