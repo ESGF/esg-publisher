@@ -428,7 +428,8 @@ def main(argv):
     # Config file initialization
     if initconfig:
         configdir = setupconfig()
-        fetch_project_ini()
+        print("Note: project .ini files should have been fetched (using esgfetchini or manually via github.) prior to running esgsetup.  Not doing so results in undefined behavior.")
+#        fetch_project_ini()
 
         if initroot:
             updateconfig([('DEFAULT', 'root_id', rootid)])
