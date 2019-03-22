@@ -19,6 +19,9 @@ Requirements:  most requirements are listed in requirements.txt.  Other requirem
 
 Installation:  the most convenient method to install is via pip.  To capture all dependencies, consider installation of the predetermined conda environment: https://github.com/ESGF/esgf-devOps/blob/master/esgf-pub_env.yml
 
+22 March 2018 version 3.7.0
+
+* Remove calls to esgfetchini and the esgprep requirement.  Install esgprep separately with pip.
 
 13 March 2019 version 3.6.2
 
