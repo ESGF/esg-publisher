@@ -162,18 +162,11 @@ sections. This file will be set up during the ESGF installation process.
 	  140.208.31.31               | 5671  |   esgf-pid   | esgf-publisher | <secret> |    true
 
     The ``pid_credentials`` are available on `Confluence <https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config>`_.
-    In case you don't have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:
+    In case you don't have access to that page please contact your tier1 node admin.
+     or fetch the credentials with the ESGF node manager as following:
 
-         #. Ensure that the ``/etc/grid-security/hostcert.pem`` is signed by one of the ESGF root CAs (eg. ANL, IPSL, NSC)
-         #. [Run as root]:
-
-            ::
-
-                $ source /usr/local/conda/bin/activate esgf-pub
-                $ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py <node-server>  # e.g. esgf-node.llnl.gov or esgf-data.dkrz.de
-
-         #. Inspect ``/esg/config/esgcet/esg.ini`` – ``[config:cmip6]`` section should be installed with ``pid_credentials``
-         #. Please change the order of the lines – put the host closest to your location first
+    .. note:: 
+        Please change the order of the lines – put the host closest to your location first
 
     .. note::
         Please ensure that the firewall is open for all PID hosts on port 5671.
