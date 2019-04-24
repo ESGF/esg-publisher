@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; esg-publisher 3.5.11 documentation</title>
+  <title>Configuration &mdash; esg-publisher 3.7.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="esg-publisher 3.5.11 documentation" href="index.html"/>
+    <link rel="top" title="esg-publisher 3.7.0 documentation" href="index.html"/>
         <link rel="next" title="Mapfile preparation" href="mapfiles.html"/>
         <link rel="prev" title="Quick guide to test publication" href="testpublication.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                3.5.11
+                3.7.0
               </div>
             
           
@@ -335,23 +335,11 @@ If PIDs are used by the project, the PID configs are set in that section, the sa
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">pid_credentials</span></code> are available on <a class="reference external" href="https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config">Confluence</a>.
-In case you don’t have access to that page please contact your tier1 node admin or fetch the credentials with the ESGF node manager as following:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p class="first">Ensure that the <code class="docutils literal notranslate"><span class="pre">/etc/grid-security/hostcert.pem</span></code> is signed by one of the ESGF root CAs (eg. ANL, IPSL, NSC)</p>
-</li>
-<li><p class="first">[Run as root]:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source /usr/local/conda/bin/activate esgf-pub
-$ python /usr/local/esgf-node-manager/src/python/client/fetch_pub_credentials.py &lt;node-server&gt;  # e.g. esgf-node.llnl.gov or esgf-data.dkrz.de
-</pre></div>
+In case you don’t have access to that page please contact your tier1 node admin.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please change the order of the lines – put the host closest to your location first</p>
 </div>
-</li>
-<li><p class="first">Inspect <code class="docutils literal notranslate"><span class="pre">/esg/config/esgcet/esg.ini</span></code> – <code class="docutils literal notranslate"><span class="pre">[config:cmip6]</span></code> section should be installed with <code class="docutils literal notranslate"><span class="pre">pid_credentials</span></code></p>
-</li>
-<li><p class="first">Please change the order of the lines – put the host closest to your location first</p>
-</li>
-</ol>
-</div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Please ensure that the firewall is open for all PID hosts on port 5671.</p>
@@ -855,7 +843,7 @@ $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'3.5.11',
+            VERSION:'3.7.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -865,6 +853,7 @@ $ myproxy-logon [ -b ] -s &lt;openid_server&gt; -l &lt;esgf_username&gt; -p 7512
       <script type="text/javascript" src="static/jquery.js"></script>
       <script type="text/javascript" src="static/underscore.js"></script>
       <script type="text/javascript" src="static/doctools.js"></script>
+      <script type="text/javascript" src="static/language_data.js"></script>
 
   
 
