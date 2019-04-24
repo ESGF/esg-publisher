@@ -163,8 +163,7 @@ sections. This file will be set up during the ESGF installation process.
 
     The ``pid_credentials`` are available on `Confluence <https://acme-climate.atlassian.net/wiki/spaces/ESGF/pages/369983978/RabbitMQ+server+config>`_.
     In case you don't have access to that page please contact your tier1 node admin.
-     or fetch the credentials with the ESGF node manager as following:
-
+    
     .. note:: 
         Please change the order of the lines – put the host closest to your location first
 
