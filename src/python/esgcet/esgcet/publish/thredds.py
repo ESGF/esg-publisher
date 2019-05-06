@@ -12,6 +12,7 @@ from esgcet.exceptions import *
 from sqlalchemy.orm import join
 from sqlalchemy import desc
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from utility import check_pid_connection
 
 _nsmap = {
     None : "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
@@ -1064,6 +1065,8 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     # start PID generation
     pid_wizard = None
     if pid_connector:
+        # Check connection
+        check_pid_connection(pid_connector)
         pid_wizard = pid_connector.create_publication_assistant(drs_id=datasetName,
                                                                 version_number=versionNumber,
                                                                 is_replica=is_replica)

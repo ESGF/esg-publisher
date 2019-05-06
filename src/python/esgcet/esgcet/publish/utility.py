@@ -1132,7 +1132,20 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
                                       data_node=pid_data_node,
                                       thredds_service_path=thredds_service_path,
                                       test_publication=test_publication)
+    # Check connection
+    check_pid_connection(pid_connector, send_message=True)
+
     return pid_connector
+
+
+def check_pid_connection(pid_connector, send_message=False):
+    """
+    Check the connection to the PID rabbit MQ
+    Raise an Error if connection fails
+    """
+    pid_queue_return_msg = pid_connector.check_pid_queue_availability(send_message=send_message)
+    if pid_queue_return_msg is not None:
+        ESGPublishError("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
 
 
 def getTableDir(cmor_table_path, ds_version, use_subdirs):
