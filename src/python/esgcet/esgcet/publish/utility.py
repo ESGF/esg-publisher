@@ -1145,7 +1145,7 @@ def check_pid_connection(pid_connector, send_message=False):
     """
     pid_queue_return_msg = pid_connector.check_pid_queue_availability(send_message=send_message)
     if pid_queue_return_msg is not None:
-        ESGPublishError("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
+        raise ESGPublishError("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
 
 
 def getTableDir(cmor_table_path, ds_version, use_subdirs):
