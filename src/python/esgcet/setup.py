@@ -75,7 +75,7 @@ setup(
         "cdf2cim>=0.3.3.0",
     ],
     setup_requires = [
-        "psycopg2>=2.0,<2.7",
+        "psycopg2>=2.0,<2.8",
         "SQLAlchemy>0.5.3,<1.3",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
