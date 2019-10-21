@@ -52,22 +52,9 @@ class CMIP6Handler(BasicHandler):
         force_validation = config.getboolean(project_config_section, "force_validation", default=False)
         cmor_table_subdirs = config.getboolean(project_config_section, "cmor_table_subdirs", default=False)
 
-        if not force_validation:
-
-            if self.replica:
-                info("skipping PrePARE for replica (file %s)" % f)
-                return
-
-            try:
-                file_cmor_version = fileobj.getAttribute('cmor_version', None)
-            except:
-                file_cmor_version = None
-                debug('File %s missing cmor_version attribute; will proceed with PrePARE check' % f)
-
-            passed_cmor = False
-            if compareLibVersions(min_cmor_version, file_cmor_version):
-                debug('File %s cmor-ized at version %s, passed!'%(f, file_cmor_version))
-                passed_cmor = True
+        if (not force_validation) and self.replica:
+            info("skipping PrePARE for replica (file %s)" % f)
+            return
 
         try:
             table = fileobj.getAttribute('table_id', None)
@@ -94,9 +81,6 @@ class CMIP6Handler(BasicHandler):
         # at this point the file has the correct data specs version.
         # if also was CMORized and has the correct version tag, we can exit
 
-        if (not force_validation) and passed_cmor:
-            return
-            
         if data_specs_version == "file":
             data_specs_version = file_data_specs_version
 
