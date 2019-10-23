@@ -875,6 +875,11 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
     dsetVersionObj = dset.getVersionObj(version=versionNumber)
     if dsetVersionObj is None:
         raise "No dataset found: %s, version %d"%(dset.name, versionNumber)
+    # add PID to THREDDS catalog for already published data
+    if pid_connector and not dsetVersionObj.pid:
+        dsetVersionObj.pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=datasetName, version_number=versionNumber)
+        info("Assigned PID to dataset %s.v%s: %s " % (datasetName, versionNumber, dsetVersionObj.pid))
+
     dsetVersion = versionNumber
     if project is None or experiment is None or model is None:
         datasetDesc = datasetName
