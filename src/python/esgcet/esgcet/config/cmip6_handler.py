@@ -50,8 +50,17 @@ class CMIP6Handler(BasicHandler):
         data_specs_version = config.get(project_config_section, "data_specs_version", default="master")
         cmor_table_path = config.get(project_config_section, "cmor_table_path", default=DEFAULT_CMOR_TABLE_PATH)
         force_validation = config.getboolean(project_config_section, "force_validation", default=False)
+        skip_validation = config.getboolean(project_config_section, "skip_validation", default=False)
         cmor_table_subdirs = config.getboolean(project_config_section, "cmor_table_subdirs", default=False)
 
+        if skip_validation:
+
+            if force_validation:
+                raise ESGPublishError("skip_validation and force_validation both enabled in config")                
+
+            info("skipping PrePARE because skip_validation set in config")
+            return
+        
         if not force_validation:
 
             if self.replica:
