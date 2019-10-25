@@ -64,14 +64,14 @@ setup(
     author_email = 'ames4@llnl.gov',
     url = 'http://esgf.llnl.gov',
     install_requires = [
-        "psycopg2>=2.0,<2.7",
+        "psycopg2>=2.0,<2.8",
         "SQLAlchemy>0.5.3,<1.3",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
         "requests>=2.20.0",
         "MyProxyClient>=2.1.0",
         "esgf-pyclient>=0.1.8",
-        "esgfpid>=0.7.14",
+        "esgfpid>=0.7.16",
         "cdf2cim>=0.3.3.0",
     ],
     setup_requires = [
