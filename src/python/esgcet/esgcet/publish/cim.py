@@ -9,7 +9,7 @@ publisher can still be run without it.
 
 import os
 import sys
-from utility import tracebackString
+from .utility import tracebackString
 
 
 class Cdf2cimWrapper:
@@ -40,23 +40,23 @@ class Cdf2cimWrapper:
             if exception_on_fail:
                 raise
             else:
-                print "WARNING: --create-cim failed:\n"
-                print tracebackString(indent=5)
-                print "Continuing after --create-cim failure:\n"
+                print("WARNING: --create-cim failed:\n")
+                print(tracebackString(indent=5))
+                print("Continuing after --create-cim failure:\n")
                 return False
 
         return True
 
     def _create_cim_from_dmap(self, dmap):
         if not dmap:
-            print "WARNING: Empty map file.  cdf2cim will not be run."
+            print("WARNING: Empty map file.  cdf2cim will not be run.")
             return
 
         self._do_import()
 
         if len(dmap) > 1:
-            print "WARNING: Dataset map contains more than one dataset."
-            print "         Will run cdf2cim separately for each."
+            print("WARNING: Dataset map contains more than one dataset.")
+            print("         Will run cdf2cim separately for each.")
 
         failures = ""
         for top_dir in self._yield_starting_directories(dmap):
@@ -70,46 +70,46 @@ class Cdf2cimWrapper:
 
     
     def _yield_starting_directories(self, dmap):
-        for (dsid, version), values in dmap.items():
+        for (dsid, version), values in list(dmap.items()):
             paths = [path for path, size in values]
             # allow for ignoring dataset with no files (though impossible with current map file syntax)
             if not paths:
                 continue
             start_dir = self._deepest_common_parent(paths)
-            print "INFO: for dataset ID %s," % dsid
-            print "      top dir for create-cim is %s" % start_dir
+            print("INFO: for dataset ID %s," % dsid)
+            print("      top dir for create-cim is %s" % start_dir)
             yield start_dir
 
     def _list_files(self, files, title):
         if files:
-            print "    " + title + ":"
+            print("    " + title + ":")
             for f in files:
-                print "        " + f
+                print("        " + f)
 
     def _call_cdf2cim(self, starting_directory):
-        print "=========="
-        print "CIM creation and publication"
-        print "scanning %s" % starting_directory
+        print("==========")
+        print("CIM creation and publication")
+        print("scanning %s" % starting_directory)
         new, queued, published = self.cdf2cim.scan(starting_directory)
         self._list_files(new, "JSON files newly generated and queued for publication")
         self._list_files(queued, "relevant JSON files found already generated but still queued for publication")
         self._list_files(published, "relevant JSON files found already published")
-        print "publishing queued JSON files (if any)"
+        print("publishing queued JSON files (if any)")
         published, errors = self.cdf2cim.publish()
         if not published and not errors:
-            print "    (none found)"
+            print("    (none found)")
         self._list_files(published, "JSON files published")
         self._list_files([path for path, err in errors],
                          "JSON files that failed to publish")
-        print "=========="
+        print("==========")
         if errors:
             if self._verbose_errors:
-                print "========================"
-                print "Web-service responses for failed JSON publication:"
+                print("========================")
+                print("Web-service responses for failed JSON publication:")
                 for path, err in errors:
-                    print "\nPath: %s" % path
-                    print "\nError: %s" % err.message
-                print "========================"
+                    print("\nPath: %s" % path)
+                    print("\nError: %s" % err.message)
+                print("========================")
             raise Exception("some JSON files could not be published")
 
     def _deepest_common_parent(self, paths):

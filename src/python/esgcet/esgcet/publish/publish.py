@@ -1,16 +1,16 @@
 import os
 import socket
-import cStringIO
+import io
 from time import sleep
 from esgcet.model import *
 from esgcet.config import getHandlerByName, getConfig
-from thredds import generateThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, reinitializeThredds
-from las import reinitializeLAS
-from hessianlib import Hessian
+from .thredds import generateThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, reinitializeThredds
+from .las import reinitializeLAS
+from .hessianlib import Hessian
 from esgcet.exceptions import *
-from utility import issueCallback, getHessianServiceURL, getRestServiceURL, getServiceCertsLoc
+from .utility import issueCallback, getHessianServiceURL, getRestServiceURL, getServiceCertsLoc
 from esgcet import messaging
-from rest import RestPublicationService
+from .rest import RestPublicationService
 
 
 class PublicationState(object):
@@ -129,8 +129,8 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session, sche
         else:
             statusId = service.createDataset(parentId, threddsURL, -1, "Published")
         # messaging.info("  Call complete.")
-    except socket.error, e:
-        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
+    except socket.error as e:
+        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(repr(e), service._cert_file))
     # messaging.info("  Getting publication status.")
     status = PublicationStatus(statusId, service)
     # messaging.info("  Publication status received.")
@@ -276,7 +276,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                                 pid_connector=pid_connector)
                 threddsOutput.close()
                 try:
-                    os.chmod(threddsOutputPath, 0664)
+                    os.chmod(threddsOutputPath, 0o664)
                 except:
                     pass
 
@@ -289,14 +289,14 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                 threddsOutput.write(catalogString)
                 threddsOutput.close()
                 try:
-                    os.chmod(threddsOutputPath, 0664)
+                    os.chmod(threddsOutputPath, 0o664)
                 except:
                     pass
 
             # ... otherwise write the catalog in a 'string file'
             else:
                 threddsOutputPath = generateThreddsOutputPath(datasetName, versionno, Session, handler) # Creates catalog entry
-                threddsOutput = cStringIO.StringIO()
+                threddsOutput = io.StringIO()
                 generateThredds(datasetName, Session, threddsOutput, handler, service=service, perVariable=perVariable, versionNumber=versionno,
                                 pid_connector=pid_connector)
                 threddsCatalogDictionary[(datasetName,versionno)] = threddsOutput.getvalue()
@@ -309,7 +309,7 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
     if las:    
         try:
             result = reinitializeLAS()
-        except Exception, e:
+        except Exception as e:
             messaging.error("Error on LAS reinitialization: %s, new datasets not added."%e)
 
     if publish:
@@ -427,8 +427,8 @@ def pollDatasetPublicationStatus(datasetName, Session, service=None):
     
     try:
         statusObj = PublicationStatus(dset.status_id, service)
-    except socket.error, e:
-        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
+    except socket.error as e:
+        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(repr(e), service._cert_file))
 
     # Clear publication errors from dataset_status
     dset.clear_warnings(session, PUBLISH_MODULE)

@@ -85,13 +85,13 @@ def esgpublishWrapper(**kw):
     extraFields = None
     if datasetMapfile is not None:
         dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
-        datasetNames = dmap.keys()
+        datasetNames = list(dmap.keys())
 
     elif rescan:
         # Note: No need to get the extra fields, such as mod_time, since
         # they are already in the database, and will be used for file comparison if necessary.
         dmap, offline = queryDatasetMap(rescanDatasetName, Session)
-        datasetNames = dmap.keys()
+        datasetNames = list(dmap.keys())
 
     # ... otherwise generate the directory map.
     else:
@@ -102,7 +102,7 @@ def esgpublishWrapper(**kw):
                 handler = getHandlerByName(projectName, None, Session)
             else:
                 multiIter = multiDirectoryIterator(directoryList, filefilt=filefilt)
-                firstFile, size = multiIter.next()
+                firstFile, size = next(multiIter)
                 listIter = list(multiIter)
                 handler = getHandler(firstFile, Session, validate=True)
                 if handler is None:
@@ -116,7 +116,7 @@ def esgpublishWrapper(**kw):
             else:
                 directoryMap = handler.generateDirectoryMapFromFiles(directoryList, filefilt, initContext=props, datasetName=datasetName)
 
-            datasetNames = [(item,-1) for item in directoryMap.keys()]
+            datasetNames = [(item,-1) for item in list(directoryMap.keys())]
 
         # Offline dataset. Format the spec as a dataset map : dataset_name => [(path, size), (path, size), ...]
         else:
@@ -128,12 +128,12 @@ def esgpublishWrapper(**kw):
             commandArgs += " ".join(directoryList)
             for dsetName, filepath, sizet in processNodeMatchIterator(offlineLister, commandArgs, handler, filefilt=filefilt, datasetName=datasetName, offline=True):
                 size, mtime = sizet
-                if dmap.has_key((dsetName,-1)):
+                if (dsetName,-1) in dmap:
                     dmap[(dsetName,-1)].append((filepath, str(size)))
                 else:
                     dmap[(dsetName,-1)] = [(filepath, str(size))]
 
-            datasetNames = dmap.keys()
+            datasetNames = list(dmap.keys())
 
     datasetNames.sort()
     if len(datasetNames)==0:
@@ -193,7 +193,7 @@ def esgscanWrapper(directoryList, **kw):
             handler = getHandlerByName(projectName, None, Session)
         else:
             multiIter = multiDirectoryIterator(directoryList, filefilt=filefilt)
-            firstFile, size = multiIter.next()
+            firstFile, size = next(multiIter)
             handler = getHandler(firstFile, Session, validate=True)
             if handler is None:
                 raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
@@ -205,7 +205,7 @@ def esgscanWrapper(directoryList, **kw):
             datasetMap = handler.generateDirectoryMapFromFiles(directoryList, filefilt, datasetName=datasetName)
 
         # Output the map
-        keys = datasetMap.keys()
+        keys = list(datasetMap.keys())
         keys.sort()
         for datasetId in keys:
             direcTuple = datasetMap[datasetId]
@@ -232,8 +232,8 @@ def esgscanWrapper(directoryList, **kw):
                     # - The map is being created, not appended, or
                     # - The existing map does not have the dataset, or
                     # - The existing map has the dataset, but not the file.
-                    if (appendMap is None) or (not appendMap.has_key(datasetId)) or ((filepath, "%d"%size) not in appendMap[datasetId]):
-                        print >>output, "%s | %s | %d | %s"%(datasetId, filepath, size, extraStuff)
+                    if (appendMap is None) or (datasetId not in appendMap) or ((filepath, "%d"%size) not in appendMap[datasetId]):
+                        print("%s | %s | %d | %s"%(datasetId, filepath, size, extraStuff), file=output)
     else:                               # offline
         if projectName is not None:
             handler = getHandlerByName(projectName, None, Session, offline=True)
@@ -248,8 +248,8 @@ def esgscanWrapper(directoryList, **kw):
             extrastuff = ""
             if mtime is not None:
                 extrastuff = "| mod_time=%f"%float(mtime)
-            if (appendMap is None) or (not appendMap.has_key(dsetName)) or ((filepath, "%d"%size) not in appendMap[dsetName]):
-                print >>output, "%s | %s | %d %s"%(dsetName, filepath, size, extrastuff)
+            if (appendMap is None) or (dsetName not in appendMap) or ((filepath, "%d"%size) not in appendMap[dsetName]):
+                print("%s | %s | %d %s"%(dsetName, filepath, size, extrastuff), file=output)
 
     if output is not sys.stdout:
         output.close()

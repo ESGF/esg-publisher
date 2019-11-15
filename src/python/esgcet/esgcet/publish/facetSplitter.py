@@ -1,5 +1,5 @@
 import csv
-from StringIO import StringIO
+from io import StringIO
 
 
 class FacetSplitter:
@@ -97,13 +97,13 @@ if __name__ == '__main__':
             (None, 'whatever...')
         ]:
 
-        print "using delimiter: %s" % repr(delim)
-        print
+        print("using delimiter: %s" % repr(delim))
+        print()
 
         splitter = FacetSplitter(delim)
         #splitter = FacetSplitter(delim, allow_empty_list = True)
 
         for value in (value1, 'onlyThing', ''):
-            print "   splitting '%s'" % value
-            print "   gives %s" % splitter(value)
-            print
+            print("   splitting '%s'" % value)
+            print("   gives %s" % splitter(value))
+            print()

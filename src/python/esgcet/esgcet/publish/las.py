@@ -1,4 +1,4 @@
-from thredds import readThreddsWithAuthentication
+from .thredds import readThreddsWithAuthentication
 from esgcet.config import getConfig
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -19,7 +19,7 @@ def reinitializeLAS():
 
     try:
         reinitResult = readThreddsWithAuthentication(lasReinitUrl, config)
-    except Exception, e:
+    except Exception as e:
         raise ESGPublishError("Error reinitializing the Live Access Server: %s"%e)
         
     return reinitResult

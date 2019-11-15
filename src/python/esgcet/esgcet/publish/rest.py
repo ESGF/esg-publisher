@@ -1,6 +1,6 @@
 import requests
 from lxml import etree
-from urlparse import urljoin
+from urllib.parse import urljoin
 from esgcet.exceptions import *
 import os
 
@@ -205,8 +205,8 @@ class RestPublicationService(object):
 
         try:
             response = requests.post(self.harvestUrl, params=params, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
-        except requests.exceptions.SSLError, e:
-            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
+        except requests.exceptions.SSLError as e:
+            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(repr(e), self.certFile))
 
         root = etree.fromstring(response.content)
         text = root[0].text
@@ -228,8 +228,8 @@ class RestPublicationService(object):
 
         try:
             response = requests.post(self.deleteUrl, data=data, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
-        except requests.exceptions.SSLError, e:
-            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
+        except requests.exceptions.SSLError as e:
+            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(repr(e), self.certFile))
 
         root = etree.fromstring(response.content)
         text = root[0].text
@@ -251,8 +251,8 @@ class RestPublicationService(object):
 
         try:
             response = requests.post(self.retractUrl, data=data, cert=(self.certFile, self.keyFile), verify=self.certs_location, allow_redirects=True)
-        except requests.exceptions.SSLError, e:
-            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, self.certFile))
+        except requests.exceptions.SSLError as e:
+            raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(repr(e), self.certFile))
 
         root = etree.fromstring(response.content)
         text = root[0].text

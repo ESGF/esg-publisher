@@ -7,7 +7,7 @@ from esgcet.messaging import debug, info, warning, error, critical, exception
 from esgcet.model import *
 from esgcet.exceptions import *
 from esgcet.config import splitLine, getConfig
-from utility import getTypeAndLen, issueCallback, compareFiles, checksum, extraFieldsGet
+from .utility import getTypeAndLen, issueCallback, compareFiles, checksum, extraFieldsGet
 from esgcet.model import StandardName
 
 from sqlalchemy.exc import IntegrityError
@@ -226,7 +226,7 @@ def extractFromDataset(datasetName, fileIterator, dbSession, handler, cfHandler,
         eventFlag = UPDATE_DATASET_EVENT
         addNewVersion, fobjs = deleteFilesVersion(dset, versionObj, pathlist, session, cfHandler, configOptions, aggregateDimensionName=aggregateDimensionName, offline=offline, progressCallback=progressCallback, stopEvent=stopEvent, extraFields=extraFields, **context)
     else:
-        raise ESGPublishError("Invalid dataset operation: %s"%`operation`)
+        raise ESGPublishError("Invalid dataset operation: %s"%repr(operation))
 
     # Create a new dataset version if necessary
     if useVersion == -1:
@@ -463,7 +463,7 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
                 oldpath = fromfile
 
         # If the item is in the current dataset version, get the file version obj and add to the list
-        if locdict.has_key(oldpath):
+        if oldpath in locdict:
             del todelete[oldpath]
             fileVersionObj = locdict[oldpath]
             fileObj = fileVersionObj.parent
@@ -518,12 +518,12 @@ def updateDatasetVersion(dset, dsetVersion, pathlist, session, handler, cfHandle
 
     # If updating, add the file version objects ...
     if not replace:
-        for fileVersionObj in todelete.values():
+        for fileVersionObj in list(todelete.values()):
             newFileVersionObjs.append(fileVersionObj)
 
     # ... else if rescanning delete the file object children
     elif haveLatestDsetVersion:
-        for fileVersionObj in todelete.values():
+        for fileVersionObj in list(todelete.values()):
             fileObj = fileVersionObj.parent
             fileObj.deleteChildren(session)
             fileModified = True
@@ -562,7 +562,7 @@ def renameFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOp
             info("No from_file field for file %s, skipping"%path)
             continue
 
-        if locdict.has_key(oldpath):
+        if oldpath in locdict:
             fileVersionObj = locdict[oldpath]
             fileObj = fileVersionObj.parent
             if not os.path.exists(path):
@@ -611,7 +611,7 @@ def deleteFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOp
     for path, size in pathlist:
 
         # If the file exists in the dataset, delete the file children (with cascade), and the file
-        if fobjdict.has_key(path):
+        if path in fobjdict:
             fileVersionObj = fobjdict[path]
             info("Deleting entry for file %s"%path)
 
@@ -638,7 +638,7 @@ def deleteFilesVersion(dset, dsetVersion, pathlist, session, cfHandler, configOp
             session.close()
             raise
 
-    return addNewDatasetVersion, fobjdict.values()
+    return addNewDatasetVersion, list(fobjdict.values())
 
 def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, aggdimName=None, varlocate=None, exclude_variables=None, perVariable=None, **context):
     """
@@ -741,10 +741,10 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
                 continue
 
         varshape = openfile.inquireVariableShape(varname)
-        debug("%s%s"%(varname, `varshape`))
+        debug("%s%s"%(varname, repr(varshape)))
 
         # Check varlocate
-        if varlocatedict.has_key(varname) and not re.match(varlocatedict[varname].strip(), os.path.basename(fileVersion.location)):
+        if varname in varlocatedict and not re.match(varlocatedict[varname].strip(), os.path.basename(fileVersion.location)):
             debug("Skipping variable %s in %s"%(varname, fileVersion.location))
             continue
 
@@ -768,7 +768,7 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
             atttype, attlen = getTypeAndLen(attvalue)
             attribute = FileVariableAttribute(attname, map_to_charset(attvalue), atttype, attlen)
             filevar.attributes.append(attribute)
-            debug('  %s.%s = %s'%(varname, attname, `attvalue`))
+            debug('  %s.%s = %s'%(varname, attname, repr(attvalue)))
 
         # Create dimensions
         seq = 0
@@ -923,7 +923,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
         dset = session.query(Dataset).filter_by(name=datasetName).first()
         for variable in dset.variables:
             session.delete(variable)
-        for attrname, attr in dset.attributes.items():
+        for attrname, attr in list(dset.attributes.items()):
             if not attr.is_category:
                 del dset.attributes[attrname]
         session.commit()
@@ -958,7 +958,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                 dset_target_vars.add(filevar.short_name)
 
             # Get the filevar and variable domain
-            fvdomain = map(lambda x: (x.name, x.length, x.seq), filevar.dimensions)
+            fvdomain = [(x.name, x.length, x.seq) for x in filevar.dimensions]
             fvdomain.sort(lambda x,y: cmp(x[SEQ], y[SEQ]))
             filevar.domain = fvdomain
             if len(fvdomain)>0 and fvdomain[0][0]==aggregateDimensionName:
@@ -1137,8 +1137,8 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                 filevarRanges.sort(lambda x, y: -cmp(x[1], y[1]))
 
             # Check that ranges don't overlap. Aggregate dimension and bounds may be duplicated.
-            lastValues = numpy.array(map(lambda x: x[2], filevarRanges))
-            firstValues = numpy.array(map(lambda x: x[1], filevarRanges))
+            lastValues = numpy.array([x[2] for x in filevarRanges])
+            firstValues = numpy.array([x[1] for x in filevarRanges])
             if (var not in [aggDim, aggDimBounds]):
                 if mono<=0:
                     compare = (lastValues[0:-1] >= firstValues[1:])
@@ -1162,7 +1162,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                     else:
                         compare = (lastValues[0:-1] > lastValues[1:]).all()
                     if not compare:
-                        dset.warning("File aggregate dimension ranges are not monotonic for variable %s: %s"%(var.short_name, `filevarRanges`), WARNING_LEVEL, AGGREGATE_MODULE)
+                        dset.warning("File aggregate dimension ranges are not monotonic for variable %s: %s"%(var.short_name, repr(filevarRanges)), WARNING_LEVEL, AGGREGATE_MODULE)
                         var.has_errors = True
 
             var.aggdim_first = float(firstValues[0])
@@ -1180,7 +1180,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
     for var in timevars:
         timevardict[(var.short_name, var.domain, var.aggdim_first, var.aggdim_last)] = var
 
-    for var in timevardict.values():
+    for var in list(timevardict.values()):
         dset.variables.append(var)
         
     # Validate standard names

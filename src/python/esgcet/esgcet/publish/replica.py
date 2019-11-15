@@ -1,9 +1,9 @@
 """ Publisher / Replica Client API """
 
 from sqlalchemy import create_engine
-from publish import publishDatasetList
+from .publish import publishDatasetList
 from esgcet.config import loadConfig, registerHandlers
-from wrappers import esgpublishWrapper, initdb, esgscanWrapper
+from .wrappers import esgpublishWrapper, initdb, esgscanWrapper
 
 def scanDirectory(directoryList, project, outputMapfile, datasetId=None, append=False, filter='.*\.nc$', offline=False, service=None, readFiles=False):
     """
@@ -118,7 +118,7 @@ def publishCatalogs(threddsCatalogDictionary, parentDatasetIdDictionary, thredds
     # Register project handlers
     registerHandlers()
 
-    datasetNames = threddsCatalogDictionary.keys()
+    datasetNames = list(threddsCatalogDictionary.keys())
     result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parentDatasetIdDictionary, threddsCatalogDictionary=threddsCatalogDictionary, reinitThredds=None, readFromCatalog=True)
     return result
 

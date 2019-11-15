@@ -3,14 +3,14 @@ import socket
 import string
 from esgcet.model import *
 from esgcet.config import getConfig
-from hessianlib import Hessian, RemoteCallException
-from publish import PublicationState, PublicationStatus
+from .hessianlib import Hessian, RemoteCallException
+from .publish import PublicationState, PublicationStatus
 from time import sleep
-from thredds import updateThreddsMasterCatalog, reinitializeThredds
-from las import reinitializeLAS
-from utility import issueCallback, getHessianServiceURL, getRestServiceURL, parseSolrDatasetId, getServiceCertsLoc
+from .thredds import updateThreddsMasterCatalog, reinitializeThredds
+from .las import reinitializeLAS
+from .utility import issueCallback, getHessianServiceURL, getRestServiceURL, parseSolrDatasetId, getServiceCertsLoc
 from esgcet.messaging import debug, info, warning, error, critical, exception
-from rest import RestPublicationService
+from .rest import RestPublicationService
 
 def datasetOrVersionName(name, version, session, deleteAll=False, restInterface=False):
     """
@@ -143,10 +143,10 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
             else:
                 service.retractDataset(versionName, True, 'Retracting dataset')
 
-    except socket.error, e:
-        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(`e`, service._cert_file))
-    except RemoteCallException, e:
-        fields = `e`.split('\n')
+    except socket.error as e:
+        raise ESGPublishError("Socket error: %s\nIs the proxy certificate %s valid?"%(repr(e), service._cert_file))
+    except RemoteCallException as e:
+        fields = repr(e).split('\n')
         if dset is not None:
             dset.warning("Deletion/retraction failed for dataset %s with message: %s"%(versionName, string.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
             event = Event(dset.name, dset.getVersion(), failureEvent)
@@ -277,12 +277,12 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
             try:
                 eventName, stateName = deleteGatewayDatasetVersion(datasetToUnpublish, gatewayOperation, service, session, dset=dset, data_node=data_node)
-            except RemoteCallException, e:
-                fields = `e`.split('\n')
+            except RemoteCallException as e:
+                fields = repr(e).split('\n')
                 error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[0:2], '\n')))
                 continue
-            except ESGPublishError, e:
-                fields = `e`.split('\n')
+            except ESGPublishError as e:
+                fields = repr(e).split('\n')
                 error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[-2:], '\n')))
                 continue
             info("  Result: %s"%stateName)

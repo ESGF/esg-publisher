@@ -1,10 +1,10 @@
 import os
 import logging
-import ssl, httplib
+import ssl, http.client
 from base64 import b64encode
 import string
 import hashlib
-import urlparse
+import urllib.parse
 from lxml.etree import Element, SubElement as SE, ElementTree, Comment
 from esgcet.config import splitLine, splitRecord, getConfig, getThreddsServiceSpecs, getThreddsAuxiliaryServiceSpecs
 from esgcet.model import *
@@ -12,7 +12,7 @@ from esgcet.exceptions import *
 from sqlalchemy.orm import join
 from sqlalchemy import desc
 from esgcet.messaging import debug, info, warning, error, critical, exception
-from utility import check_pid_connection
+from .utility import check_pid_connection
 
 _nsmap = {
     None : "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
@@ -58,9 +58,9 @@ ThreddsBases = ['/thredds/fileServer', '/thredds/dodsC', '/thredds/wcs', '/thred
 ThreddsFileServer = '/thredds/fileServer'
 
 def genLasServiceHash(serviceAddr):
-    p = urlparse.urlparse(serviceAddr[:-1])
+    p = urllib.parse.urlparse(serviceAddr[:-1])
     d = os.path.dirname(p.path)
-    dbase = urlparse.urlunparse((p.scheme, p.netloc, d, None, None, None))
+    dbase = urllib.parse.urlunparse((p.scheme, p.netloc, d, None, None, None))
     s16 = '\xfe\xff'+(dbase.encode('utf-16-be'))
     result = hashlib.md5(s16).hexdigest().upper()
     return result    
@@ -70,7 +70,7 @@ def normTime(filevar, tounits, mdhandler):
     try:
         result = mdhandler.normalizeTime(filevar.aggdim_first, filevar.aggdim_units, tounits)
     except:
-        print filevar
+        print(filevar)
         raise
     return result
 
@@ -81,7 +81,7 @@ def normTimeRange(filevar, tounits, calendarTag, mdhandler):
         rval = mdhandler.normalizeTime(filevar.aggdim_first, filevar.aggdim_units, tounits, calendar=calendar)
         sval = mdhandler.normalizeTime(filevar.aggdim_last, filevar.aggdim_units, tounits, calendar=calendar)
     except:
-        print filevar
+        print(filevar)
         raise
     return rval, sval
 
@@ -169,7 +169,7 @@ def hasThreddsService(serviceName, serviceDict):
     try:
         serviceSpec = serviceDict[serviceName]
     except KeyError:
-        raise ESGPublishError("Invalid service name: %s, must be one of %s"%(serviceName, `serviceDict.keys()`))
+        raise ESGPublishError("Invalid service name: %s, must be one of %s"%(serviceName, repr(list(serviceDict.keys()))))
     if serviceSpec[0]:                  # Simple service
         result = serviceSpec[1]
     else:
@@ -188,10 +188,10 @@ def _getRootPathAndLoc(fileobj, rootDict):
 
     filesRootPath = None
     filesRootLoc = None
-    for rootPath, rootLoc in rootDict.items():
+    for rootPath, rootLoc in list(rootDict.items()):
         if fileFields[:len(rootLoc)] == rootLoc:
             filesRootPath = rootPath
-            filesRootLoc = os.sep+apply(os.path.join, rootLoc)
+            filesRootLoc = os.sep+os.path.join(*rootLoc)
 
     return filesRootPath, filesRootLoc
 
@@ -238,7 +238,7 @@ def _genService(parent, specs, initDictionary=None, serviceApplications=None, se
 
         # Otherwise if a simple service just create the service
         else:
-            if serviceDict.has_key(name):
+            if name in serviceDict:
                 raise ESGPublishError("Duplicate service name in configuration: %s"%name)
             service = SE(parent, "service", name=name, serviceType=serviceType, base=base, desc=desc)
             returnDict[name] = (True, isThreddsService, serviceType, base, isThreddsFileService)
@@ -449,7 +449,7 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
     nvars = 0
     agglen = 0
     for filevar, aggdim_first in filevars:
-        fvdomain = map(lambda x: (x.name, x.length, x.seq), filevar.dimensions)
+        fvdomain = [(x.name, x.length, x.seq) for x in filevar.dimensions]
         fvdomain.sort(lambda x,y: cmp(x[SEQ], y[SEQ]))
         if len(fvdomain)>0 and fvdomain[0][0]==aggdim_name:
             sublen = fvdomain[0][1]
@@ -526,7 +526,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     nfvars = 0
     fvlist = []
     for filevar, aggfirst, agglast in filevars:
-        fvdomain = map(lambda x: (x.name, x.length, x.seq), filevar.dimensions)
+        fvdomain = [(x.name, x.length, x.seq) for x in filevar.dimensions]
         fvdomain.sort(lambda x,y: cmp(x[SEQ], y[SEQ]))
         if len(fvdomain)>0 and fvdomain[0][0]==dataset.aggdim_name:
             ncoords = fvdomain[0][1]
@@ -601,7 +601,7 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
                 del variableElemDict[variable.short_name]
             continue
 
-        if shortNames.has_key(variable.short_name):
+        if variable.short_name in shortNames:
             uniqueName = "%s_%d"%(variable.short_name, shortNames[variable.short_name])
             shortNames[variable.short_name] += 1
         else:
@@ -630,7 +630,7 @@ def _genPerVariableDatasetsV2(parent, dataset, datasetName, resolution, filesRoo
         filesID = variableID
         try:
             filesName = handler.generateNameFromContext('variable_files_dataset_name', project_description=project.description, model_description=model.description, experiment_description=experiment.description, variable=variable.short_name, variable_long_name=variable.long_name, variable_standard_name=variable.standard_name)
-        except Exception, e:
+        except Exception as e:
             filesName = filesID
         hasThreddsServ = hasThreddsService(serviceName, serviceDict)
         for path, size, fileobj in filelist:
@@ -688,7 +688,7 @@ def _genPerTimeDatasetsV2(parent, dataset, datasetName, filesRootLoc, filesRootP
     filesID = datasetName
     try:
         filesName = handler.generateNameFromContext('per_time_files_dataset_name', project_description=project.description, model_description=model.description, experiment_description=experiment.description)
-    except Exception, e:
+    except Exception as e:
         filesName = filesID
 ##     filesDataset = SE(parent, "dataset", name=filesName, ID=filesID)
     hasThreddsServ = hasThreddsService(serviceName, serviceDict)
@@ -982,7 +982,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
         doc_rights = SE(datasetElem, "documentation", type="rights")
         doc_rights.text = rights
 
-    if creator!='' and handler.validMaps.has_key('creator'):
+    if creator!='' and 'creator' in handler.validMaps:
         creator_email, creator_url = handler.validMaps['creator'].get(creator)
         if creator_email is None:
             creator_email = ''
@@ -993,7 +993,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
         creatorName.text = creator
         creatorContact = SE(creatorElem, "contact", email=creator_email, url=creator_url)
         
-    if publisher!='' and handler.validMaps.has_key('publisher'):
+    if publisher!='' and 'publisher' in handler.validMaps:
         publisher_contact, publisher_url = handler.validMaps['publisher'].get(publisher)
         if publisher_contact is None:
             publisher_contact = ''
@@ -1017,7 +1017,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
                 # It is possible for a dataset to have different variables with the same name,
                 # for example if the number of levels is different in one file than another.
                 # Only list a variable name once in the <variables> element.
-                if shortNames.has_key(variable.short_name):
+                if variable.short_name in shortNames:
                     continue
                 shortNames[variable.short_name] = 1
                 variableElem = _genVariable(variables, variable)
@@ -1130,9 +1130,9 @@ def readThreddsWithAuthentication(url, config):
 
     user_pass = b64encode(threddsUsername +":"+threddsPassword)
 
-    pd = urlparse.urlparse(url)
+    pd = urllib.parse.urlparse(url)
 
-    conn = httplib.HTTPSConnection(pd.hostname, port=pd.port, context=ctx)
+    conn = http.client.HTTPSConnection(pd.hostname, port=pd.port, context=ctx)
 
     req_headers = {'Host': pd.hostname,
                'Authorization' : 'Basic %s' % user_pass
@@ -1167,14 +1167,14 @@ def reinitializeThredds():
 
     try:
         reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
-    except Exception, e:
-        msg = `e`
+    except Exception as e:
+        msg = repr(e)
         if msg.find("maximum recursion depth")!=-1:
             msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
         raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
 
     if reinitResult.find(threddsReinitSuccessPattern)==-1:
-        raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%`reinitResult`)
+        raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%repr(reinitResult))
     
     errorResult = readThreddsWithAuthentication(threddsReinitErrorUrl, config)
     index = errorResult.rfind(threddsErrorPattern)
@@ -1188,7 +1188,7 @@ def reinitializeThredds():
     return errorResult[index:]
 
 
-def ensureDirectoryExists(dirPath, mode=0775):
+def ensureDirectoryExists(dirPath, mode=0o775):
     """
     Ensure a specified directory exists, including any parent directories.
     Does not return anything, but raises an exception if it cannot be created.

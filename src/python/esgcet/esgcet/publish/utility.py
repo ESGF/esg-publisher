@@ -12,7 +12,7 @@ import traceback
 import logging
 import subprocess
 import filecmp
-import urlparse
+import urllib.parse
 import OpenSSL
 import getpass
 from esgcet.config import getHandler, getHandlerByName, splitLine, getConfig, getThreddsServiceSpecs
@@ -89,9 +89,9 @@ def getTypeAndLen(att):
     """
     if isinstance(att, numpy.ndarray):
         result = (att.dtype.char, len(att))
-    elif isinstance(att, types.StringType) or isinstance(att, types.UnicodeType):
+    elif isinstance(att, bytes) or isinstance(att, str):
         result = ('S', 1)
-    elif isinstance(att, types.FloatType):
+    elif isinstance(att, float):
         result = ('d', 1)
     else:
         result = ('O', 1)
@@ -169,7 +169,7 @@ def processNodeMatchIterator(command, commandArgs, handler, filefilt=None, datas
             direc = os.path.dirname(path)
 
             # Check if we have already matched this directory
-            if idCache.has_key(direc):
+            if direc in idCache:
                 datasetId = idCache[direc]
                 yield (datasetId, path, size)
                 continue
@@ -183,7 +183,7 @@ def processNodeMatchIterator(command, commandArgs, handler, filefilt=None, datas
 
             if foundOne:
                 groupdict = result.groupdict()
-                if not groupdict.has_key('project'):
+                if 'project' not in groupdict:
                     groupdict['project'] = handler.name
                 datasetId = handler.generateDatasetId('dataset_id', idfields, groupdict, multiformat=formats)
                 idCache[direc] = datasetId
@@ -430,7 +430,7 @@ class StopEvent(object):
 
 def progressCallback(progress):
     """Sample progress callback. ``progress`` is a number in the range [0,100] """
-    print 'Progress: %f'%progress
+    print('Progress: %f'%progress)
 
 def linmap(init, final, frac):
     return (final-init)*frac + init
@@ -575,21 +575,21 @@ def readDatasetMap(mappath, parse_extra_fields=False):
                 for field in fields[3:]:
                     efield, evalue = field.split('=')
                     extraFieldMap[(datasetName, versionno, path, efield.strip())] = evalue.strip()
-            if datasetMap.has_key((datasetName, versionno)):
+            if (datasetName, versionno) in datasetMap:
                 datasetMap[(datasetName, versionno)].append((path, size))
             else:
                 datasetMap[(datasetName, versionno)] = [(path, size)]
         else:
             datasetId, path, size = splitLine(line)[0:3]
             versionId = parseDatasetVersionId(datasetId)
-            if datasetMap.has_key(versionId):
+            if versionId in datasetMap:
                 datasetMap[versionId].append((path, size))
             else:
                 datasetMap[versionId] = [(path, size)]
 
     mapfile.close()
 
-    for value in datasetMap.values():
+    for value in list(datasetMap.values()):
         value.sort()
         
     if parse_extra_fields:
@@ -743,7 +743,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
     """
     from esgcet.publish import extractFromDataset, aggregateVariables
 
-    versionIsMap = (type(newVersion) is types.DictType)
+    versionIsMap = (type(newVersion) is dict)
     if versionIsMap:
         saveVersionMap = newVersion
 
@@ -794,7 +794,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
                 fileiter = fnIterator([sampfile for direc, sampfile in direcTuples])
 
         # If the project is not specified, try to read it from the first file
-        if handlerDictionary is not None and handlerDictionary.has_key(datasetName):
+        if handlerDictionary is not None and datasetName in handlerDictionary:
             handler = handlerDictionary[datasetName]
         elif projectName is not None:
             handler = getHandlerByName(projectName, firstFile, Session, validate=True, offline=offline, **handlerExtraArgs)
@@ -816,7 +816,7 @@ def iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, 
 
         # Add properties from the command line
         fieldNames = handler.getFieldNames()
-        for name, value in properties.items():
+        for name, value in list(properties.items()):
             if name not in fieldNames:
                 warning('Property not configured: %s, was ignored'%name)
             else:
@@ -1075,8 +1075,8 @@ def getRestServiceURL(project_config_section=None):
             hessianServiceURL = config.get(project_config_section, 'hessian_service_url', default=None)
         if not hessianServiceURL:
             hessianServiceURL = config.get('DEFAULT', 'hessian_service_url')
-        host = urlparse.urlparse(hessianServiceURL).netloc
-        serviceURL = urlparse.urlunparse(('https', host, '/esg-search/ws', '', '', ''))
+        host = urllib.parse.urlparse(hessianServiceURL).netloc
+        serviceURL = urllib.parse.urlunparse(('https', host, '/esg-search/ws', '', '', ''))
     return serviceURL
 
 
@@ -1117,7 +1117,7 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
         raise "PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install')."
 
     pid_messaging_service_exchange_name, pid_messaging_service_credentials = handler.get_pid_config(project_config_section, config)
-    pid_data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+    pid_data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
     thredds_service_path = None
     if publish:
         thredds_file_specs = getThreddsServiceSpecs(config, 'DEFAULT', 'thredds_file_services')

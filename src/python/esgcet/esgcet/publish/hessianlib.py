@@ -59,7 +59,7 @@
 # xmlrpclib.py created by Fredrik Lundh at www.pythonware.org
 #
 import string, time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from types import *
 from struct import unpack
 from struct import pack
@@ -97,7 +97,7 @@ class RemoteCallException(Error):
 
     def __repr__(self):
         if type(self.message) is DictType:
-            if self.message.has_key('detail'):  # Java
+            if 'detail' in self.message:  # Java
                 result = ''
                 msg = self.message['message']
                 code = self.message['code']
@@ -108,10 +108,10 @@ class RemoteCallException(Error):
                     result += '\tat %s.%s(%s:%d)\n' % (
                     item['declaringClass'], item['methodName'], item['fileName'], item['lineNumber'])
                 return result
-            elif self.message.has_key('stackTrace'):  # HessianLib
+            elif 'stackTrace' in self.message:  # HessianLib
                 return 'Remote traceback: ' + self.message['stackTrace']
         else:
-            return `self.message`
+            return repr(self.message)
 
 
 # --------------------------------------------------------------------
@@ -171,7 +171,7 @@ class HessianWriter:
         try:
             result = string.join(self.__out, "")
         except UnicodeDecodeError:
-            print "Error joining string %s" % self.__out
+            print("Error joining string %s" % self.__out)
             raise
         del self.__out, self.write, self.refs
         return result
@@ -180,7 +180,7 @@ class HessianWriter:
         try:
             f = self.dispatch[type(value)]
         except KeyError:
-            raise TypeError, "cannot write %s objects" % type(value)
+            raise TypeError("cannot write %s objects" % type(value))
         else:
             f(self, value)
 
@@ -213,7 +213,7 @@ class HessianWriter:
         try:
             svalue = str(value)
         except UnicodeDecodeError:
-            print "Error translating string to ASCII: %s" % value
+            print("Error translating string to ASCII: %s" % value)
             raise
         self.write('S')
         self.write(pack('>H', len(svalue)))
@@ -233,7 +233,7 @@ class HessianWriter:
         # check for and write circular references
         # returns 1 if the object should be written, i.e. not a reference
         i = id(value)
-        if self.refs.has_key(i):
+        if i in self.refs:
             self.write('R')
             self.write(pack(">L", self.refs[i]))
             return 0
@@ -257,7 +257,7 @@ class HessianWriter:
     def write_map(self, value):
         if self.write_reference(value):
             self.write("Mt\x00\x00")
-            for k, v in value.items():
+            for k, v in list(value.items()):
                 self.write_object(k)
                 self.write_object(v)
             self.write("z")
@@ -272,7 +272,7 @@ class HessianWriter:
             fields = value.__dict__
             if self.write_reference(fields):
                 self.write("Mt\x00\x00")
-                for k, v in fields.items():
+                for k, v in list(fields.items()):
                     self.write_object(k)
                     self.write_object(v)
                 self.write("z")
@@ -331,7 +331,7 @@ class HessianParser:
                 result += self.parse_object_code(code)
                 return result
             else:
-                raise "Hessian protocol error: chunked string terminated with code: %s, should have been 'S'" % `code`
+                raise "Hessian protocol error: chunked string terminated with code: %s, should have been 'S'" % repr(code)
 
     def parse_object_code(self, code):
         # parse an object when the code is known
@@ -403,7 +403,7 @@ class HessianParser:
             return RemoteCallException(result)
 
         else:
-            raise "UnknownObjectCode %s" % `code`
+            raise "UnknownObjectCode %s" % repr(code)
 
     def parse_string(self):
         f = self._f
@@ -451,7 +451,7 @@ class ResponseProxy:
     def read(self, len):
         result = self._response.read(len)
         if DEBUG:
-            messaging.info(`result`)
+            messaging.info(repr(result))
         return result
 
     def close(self):
@@ -502,12 +502,12 @@ class Hessian:
             DEBUG = True
 
         # get the uri
-        scheme, uri = urllib.splittype(url)
+        scheme, uri = urllib.parse.splittype(url)
         if scheme not in ["http", "https"]:
-            raise IOError, "unsupported Hessian protocol"
+            raise IOError("unsupported Hessian protocol")
 
         self._scheme = scheme
-        self._host, self._uri = urllib.splithost(uri)
+        self._host, self._uri = urllib.parse.splithost(uri)
 
     def __invoke(self, method, params):
         # call a method on the remote server
@@ -517,28 +517,28 @@ class Hessian:
         # ----------------------------------------------------------------------
         # Patch for HTTP proxy support starts here.  Stephen.Pascoe@stfc.ac.uk
         #
-        import httplib, os, urlparse, ssl
+        import http.client, os, urllib.parse, ssl
 
         if self._scheme == "http":
             proxy_url = os.environ.get('http_proxy')
             if proxy_url is not None:
                 if DEBUG:
                     messaging.info('Proxy detected at %s' % proxy_url)
-                proxy_parts = urlparse.urlparse(proxy_url)
+                proxy_parts = urllib.parse.urlparse(proxy_url)
                 proxy_host = proxy_parts.hostname
                 proxy_port = proxy_parts.port
                 if proxy_port is None:
                     proxy_port = 80
-                h = httplib.HTTPConnection(proxy_host, port=proxy_port)
+                h = http.client.HTTPConnection(proxy_host, port=proxy_port)
             else:
-                h = httplib.HTTPConnection(self._host, port=self._port)
+                h = http.client.HTTPConnection(self._host, port=self._port)
         else:
             ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
             conn_args = {'port' : self._port,
                          'key_file' : self._key_file,
                          'cert_file': self._cert_file,
                          'context': ctx}
-            h = httplib.HTTPSConnection(self._host, **conn_args)
+            h = http.client.HTTPSConnection(self._host, **conn_args)
 
             # test the connection - may need unverified with test index nodes
             # (hopefully not with operational nodes)
@@ -548,7 +548,7 @@ class Hessian:
             except ssl.SSLError:
                 messaging.warning('SSL error - disabling SSL verification')
                 conn_args['context'] = ssl._create_unverified_context()
-                h = httplib.HTTPSConnection(self._host, **conn_args)
+                h = http.client.HTTPSConnection(self._host, **conn_args)
 
         req_headers = {'Host': self._host,
                        'User-Agent': "hessianlib.py/%s" % __version__,
@@ -556,7 +556,7 @@ class Hessian:
                        }
 
         if DEBUG:
-            messaging.info('Sending request: %s' % `request`)
+            messaging.info('Sending request: %s' % repr(request))
         h.request("POST", self._url, request, req_headers)
         #
         # End Patch from Stephen.Pascoe@stfc.ac.uk
@@ -614,6 +614,6 @@ if __name__ == "__main__":
     proxy = Hessian("http://hessian.caucho.com/test/test")
 
     try:
-        print proxy.hello()
-    except Error, v:
-        print "ERROR", v
+        print(proxy.hello())
+    except Error as v:
+        print("ERROR", v)

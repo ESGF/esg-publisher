@@ -24,9 +24,9 @@ def tryint(s):
 def run_config(ex, a):
     try:
         config = subprocess.Popen([ex, a], stdout=subprocess.PIPE)
-    except OSError, e:
-        print 'Error running %s %s'%(ex, a)
-        print 'Make sure that %s is in your path, then rerun setup.py'%ex
+    except OSError as e:
+        print('Error running %s %s'%(ex, a))
+        print('Make sure that %s is in your path, then rerun setup.py'%ex)
         sys.exit(1)
     out = config.stdout.readlines()
     return out
@@ -37,11 +37,11 @@ def check_version(ex, vers, minvers):
     if match is not None:
         version = tuple(map(tryint, match.group(1).split('.')))
         if version<minvers:
-            raise RuntimeError("Found %s version %s, must be at least %s"%(ex, `vers`, `minvers`))
+            raise RuntimeError("Found %s version %s, must be at least %s"%(ex, repr(vers), repr(minvers)))
         else:
-            print "Found %s version %s >= %s: OK"%(ex, vers, minvers)
+            print("Found %s version %s >= %s: OK"%(ex, vers, minvers))
     else:
-        print "Could not find %s version in string '%s'"%(ex, vers)
+        print("Could not find %s version in string '%s'"%(ex, vers))
 
 pgvers = run_config("pg_config", "--version")
 xml2vers = run_config("xml2-config", "--version")
@@ -54,7 +54,7 @@ check_version("libxslt", xsltvers[0], MIN_XSLT_VERSION)
 v = file(os.path.join(os.path.dirname(__file__), 'esgcet', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
-print "esgcet version =", VERSION
+print("esgcet version =", VERSION)
 
 setup(
     name = 'esgcet',
