@@ -103,11 +103,11 @@ def logon(config, myproxy_username=None, myproxy_password=None, myproxy_hostname
         os.mkdir(myproxy_certs_dir)
 
     if myproxy_hostname is None:
-        print '\nEnter myproxy hostname:',
-        myproxy_hostname = raw_input()
+        print('\nEnter myproxy hostname:', end=' ')
+        myproxy_hostname = input()
     if myproxy_username is None:
-        print 'Enter myproxy username:',
-        myproxy_username = raw_input()
+        print('Enter myproxy username:', end=' ')
+        myproxy_username = input()
     if myproxy_password is None:
         myproxy_password = getpass.getpass('Enter password for %s: ' % myproxy_username)
 
