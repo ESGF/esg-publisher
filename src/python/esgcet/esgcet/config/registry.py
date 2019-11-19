@@ -62,16 +62,16 @@ class Registry(object):
                                         #   where distribution_dict: entry_point_name => handler_class
         
         for ep in iter_entry_points(self.entryPointGroup):
-            if distPlugins.has_key(ep.dist):
+            if ep.dist in distPlugins:
                 distPlugins[ep.dist][ep.name] = ep
             else:
                 distPlugins[ep.dist] = {ep.name : ep}
 
-        for dist, v in distPlugins.items():
-            if v.has_key(HANDLER_NAME_ENTRY_POINT):
-                if v.has_key(HANDLER_ENTRY_POINT):
+        for dist, v in list(distPlugins.items()):
+            if HANDLER_NAME_ENTRY_POINT in v:
+                if HANDLER_ENTRY_POINT in v:
                     handlerName = v[HANDLER_NAME_ENTRY_POINT].module_name
-                    if optionDict.has_key(handlerName):
+                    if handlerName in optionDict:
                         handlerValue = v[HANDLER_ENTRY_POINT]
                         handlerClassName, prevDist, mustload = optionDict[handlerName]
                         if handlerValue != handlerClassName:
@@ -80,10 +80,10 @@ class Registry(object):
                         optionDict[handlerName] = (v[HANDLER_ENTRY_POINT], dist, True)
                 else:
                     warning("Distribution %s does not define a %s option."%(k, HANDLER_ENTRY_POINT))
-            elif v.has_key(HANDLER_DICT_ENTRY_POINT):
+            elif HANDLER_DICT_ENTRY_POINT in v:
                 handlerDict = v[HANDLER_DICT_ENTRY_POINT].load()
-                for handlerName, handlerClassName in handlerDict.items():
-                    if optionDict.has_key(handlerName):
+                for handlerName, handlerClassName in list(handlerDict.items()):
+                    if handlerName in optionDict:
                         handlerValue = v[HANDLER_ENTRY_POINT]
                         handlerClassName, prevDist, mustload = optionDict[handlerName]
                         if handlerValue != handlerClassName:
@@ -127,10 +127,10 @@ class Registry(object):
         self.search_order[projectName] = search_order
 
     def keys(self):
-        return self.registry.keys()
+        return list(self.registry.keys())
 
     def items(self):
-        return self.registry.items()
+        return list(self.registry.items())
 
     def get(self, projectName, default=None):
         return self.registry.get(projectName, default)
@@ -160,7 +160,7 @@ def instantiateHandler(cls, *args, **extra_args):
     """
     passed_args = {}
     supported_args = inspect.getargspec(cls.__init__).args
-    for k, v in extra_args.iteritems():
+    for k, v in extra_args.items():
         if k in supported_args:
             passed_args[k] = v
         else:
@@ -184,7 +184,7 @@ def getHandler(path, Session, validate=True, **extra_args):
     """
 
     found = False
-    items = projectRegistry.items()
+    items = list(projectRegistry.items())
     items.sort(lambda x, y: cmp(projectRegistry.order(x[0]), projectRegistry.order(y[0])))
     for name, cls in items:
         try:

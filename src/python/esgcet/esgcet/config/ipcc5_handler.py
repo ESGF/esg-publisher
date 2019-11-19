@@ -3,7 +3,7 @@
 import os
 import re
 
-from cmip5_product import getProduct
+from .cmip5_product import getProduct
 
 from esgcet.exceptions import *
 from esgcet.config import BasicHandler, getConfig
@@ -88,7 +88,7 @@ def validateDRSFieldValues(context, cdfile):
     For example, 'NOAA  GFDL' is mapped to 'NOAA-GFDL'.
     """
 
-    for key in context.keys():
+    for key in list(context.keys()):
         if isDRSField(key):
             value = context[key]
             if drsInvalidValues.search(value) is not None:
@@ -112,7 +112,7 @@ class IPCC5Handler(BasicHandler):
 
         # Enumerated value validation is case-insensitive
         lowerCaseValidValues = {}
-        for field, valueList in self.validValues.items():
+        for field, valueList in list(self.validValues.items()):
             lowerCaseValidList = []
             validDict = {}
             for value in valueList:
@@ -165,10 +165,10 @@ class IPCC5Handler(BasicHandler):
 
     def mapValidFieldOptions(self, field, options):
         caseSensitiveValues = self.caseSensitiveValidValues[field]
-        return caseSensitiveValues.values()
+        return list(caseSensitiveValues.values())
 
     def mapEnumeratedValues(self, context):
-        for key in context.keys():
+        for key in list(context.keys()):
             if self.isEnumerated(key) and key in self.caseSensitiveValidValues:
                 caseSensitiveValues = self.caseSensitiveValidValues[key]
                 lvalue = context[key]
@@ -192,7 +192,7 @@ class IPCC5Handler(BasicHandler):
         result = BasicHandler.readContext(self, cdfile)
         f = cdfile.file
 
-        for key, value in cmorAttributes.items():
+        for key, value in list(cmorAttributes.items()):
             try:
                 result[key] = getattr(f, value)
                 if key in cmorArrayAttributes and type(result[key]) is numpy.ndarray:
@@ -220,7 +220,7 @@ class IPCC5Handler(BasicHandler):
         except:
             warning("File path must have the form varname_XXX: %s"%cdfile.path)
 
-        if not result.has_key('product'):
+        if 'product' not in result:
             result['product'] = 'output'
 
         self.mapEnumeratedValues(result)

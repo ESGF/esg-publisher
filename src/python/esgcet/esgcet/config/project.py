@@ -8,8 +8,9 @@ import re
 
 from esgcet.exceptions import *
 from esgcet.config import getConfig, splitLine, splitRecord, genMap, splitMap, initializeExperiments
-from registry import getHandlerByEntryPointGroup, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
+from .registry import getHandlerByEntryPointGroup, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from functools import reduce
 
 ENUM = 1
 STRING = 2
@@ -216,7 +217,7 @@ class ProjectHandler(object):
 
         # Find any new experiments. This allows experiments to be added to the config file without
         # running esginitialize.
-        if self.fieldNames.has_key('experiment') and self.fieldNames['experiment'][WIDGET_TYPE]==ENUM:
+        if 'experiment' in self.fieldNames and self.fieldNames['experiment'][WIDGET_TYPE]==ENUM:
             initializeExperiments(config, self.name, session)
 
         for category in self.getFieldNames():
@@ -253,7 +254,7 @@ class ProjectHandler(object):
 
         Returns a list of field names for this project, as specified in the initialization file.
         """
-        names = self.fieldNames.keys()
+        names = list(self.fieldNames.keys())
         names.sort(lambda x, y: cmp(self.fieldNames[x][WIDGET_ORDER], self.fieldNames[y][WIDGET_ORDER]))
         return names
 
@@ -309,7 +310,7 @@ class ProjectHandler(object):
         field
           String field name.
         """
-        return self.fieldNames.has_key(field)
+        return field in self.fieldNames
 
     def isThreddsProperty(self, field):
         """Return True if the field will be output as a THREDDS property.
@@ -336,7 +337,7 @@ class ProjectHandler(object):
         session = Session()
         dset = session.query(Dataset).filter_by(name=datasetName).first()
 
-        for key, value in self.context.items():
+        for key, value in list(self.context.items()):
             atttype, attlen = getTypeAndLen(value)
             attribute = DatasetAttribute(key, map_to_charset(value), atttype, attlen, is_category=True, is_thredds_category=self.isThreddsProperty(key))
             dset.attributes[attribute.name] = attribute
@@ -368,7 +369,7 @@ class ProjectHandler(object):
 
     def generateNameFromContext_1(self, parameter, config, section, depth, **tempcontext):
         if depth>MAX_RECURSION_DEPTH:
-            raise ESGPublishError("Recursion level too deep: Cannot generate value of %s for project %s, context = %s"%(parameter, self.name, `self.context`))
+            raise ESGPublishError("Recursion level too deep: Cannot generate value of %s for project %s, context = %s"%(parameter, self.name, repr(self.context)))
 
         generatedName = None
         try:
@@ -386,7 +387,7 @@ class ProjectHandler(object):
                 idfields = re.findall(_patpat, paramvalue)
                 fieldAdded = False
                 for field in idfields:
-                    if tempcontext.has_key(field):
+                    if field in tempcontext:
                         continue
                     value = self.getFieldFromMaps(field, tempcontext)
                     if value is None:
@@ -402,7 +403,7 @@ class ProjectHandler(object):
                 if fieldAdded:
                     generatedName = self.generateNameFromContext_1(parameter, config, section, depth+1, **tempcontext)
             except:
-                raise ESGPublishError("Cannot generate value of %s for project %s, context = %s"%(parameter, self.name, `self.context`))
+                raise ESGPublishError("Cannot generate value of %s for project %s, context = %s"%(parameter, self.name, repr(self.context)))
         if generatedName is None:
             raise ESGPublishError("No %s parameter found for project %s"%(parameter, self.name))
         return generatedName
@@ -427,10 +428,10 @@ class ProjectHandler(object):
             fileContext = {}
 
         self.context['project'] = self.name
-        for key, value in fileContext.items():
+        for key, value in list(fileContext.items()):
             self.context[key] = value
 
-        for key, value in context.items():
+        for key, value in list(context.items()):
             self.context[key] = value
 
         self.generateDerivedContext()
@@ -465,8 +466,8 @@ class ProjectHandler(object):
         section = 'project:'+self.name
         self.context.update(context)
         if addDefaults:
-            for key, pattern in self.categoryDefaults.items():
-                if not self.context.has_key(key) or self.context[key]=='':
+            for key, pattern in list(self.categoryDefaults.items()):
+                if key not in self.context or self.context[key]=='':
                     value = self.generateNameFromContext(key, **{key:pattern})
                     self.context[key] = value
                     
@@ -568,7 +569,7 @@ class ProjectHandler(object):
         if not self.validate:
             return
         
-        for key in context.keys():
+        for key in list(context.keys()):
             fieldType = self.getFieldType(key)
 
             # Ignore non-configured fields
@@ -603,17 +604,17 @@ class ProjectHandler(object):
             if self.isMandatory(key):
                 if value in ['', None]:
                     if isenum:
-                        raise ESGInvalidMandatoryField("Mandatory field '%s' not set, must be one of %s"%(key, `options`))
+                        raise ESGInvalidMandatoryField("Mandatory field '%s' not set, must be one of %s"%(key, repr(options)))
                     else:
                         raise ESGInvalidMandatoryField("Mandatory field '%s' not set"%key)
                 elif isenum and not self.compareEnumeratedValue(value, options, delimiter):
                     validOptions = self.mapValidFieldOptions(key, options)
-                    raise ESGInvalidMandatoryField("Invalid value of mandatory field '%s': %s, must be one of %s"%(key, value, `validOptions`))
+                    raise ESGInvalidMandatoryField("Invalid value of mandatory field '%s': %s, must be one of %s"%(key, value, repr(validOptions)))
             elif isenum:     # non-mandatory field
                 options += ['', None]
                 if not self.compareEnumeratedValue(value, options, delimiter):
                     validOptions = self.mapValidFieldOptions(key, options)
-                    raise ESGPublishError("Invalid value of '%s': %s, must be one of %s"%(key, value, `validOptions`))
+                    raise ESGPublishError("Invalid value of '%s': %s, must be one of %s"%(key, value, repr(validOptions)))
 
     def getResolution(self):
         """
@@ -637,7 +638,7 @@ class ProjectHandler(object):
                 fromcat, tocat, projectMap = splitMap(config.get(section, option))
                 for to_index, field in enumerate(tocat):
                     value = (fromcat, projectMap, to_index)
-                    if mapdict.has_key(field):
+                    if field in mapdict:
                         mapdict[field].append(value)
                     else:
                         mapdict[field] = [value]
@@ -658,7 +659,7 @@ class ProjectHandler(object):
         """
         mapdict = self.getMaps()
         keyset = set(groupdict.keys())
-        if not mapdict.has_key(field):
+        if field not in mapdict:
             return None
         for fromfields, projectMap, to_index in mapdict[field]:
             if set(fromfields).issubset(keyset):
@@ -691,7 +692,7 @@ class ProjectHandler(object):
         config = getConfig()
         section = 'project:'+self.name
         mapdict = self.getMaps()
-        keys = groupdict.keys()
+        keys = list(groupdict.keys())
 
         foundValue = False
         if multiformat is not None:
@@ -819,7 +820,7 @@ class ProjectHandler(object):
             for nodepath, filepath, groupdict in nodeiter:
                 if initContext is not None:
                     groupdict.update(initContext)
-                if not groupdict.has_key('project'):
+                if 'project' not in groupdict:
                     groupdict['project'] = self.name
                 if datasetName is None:
                     try:
@@ -832,11 +833,11 @@ class ProjectHandler(object):
                     except:
                         allfields = reduce(lambda x,y: set(x)+set(y), idfields)
                         missingFields = list((set(allfields)-set(groupdict.keys()))-set(config.options(section)))
-                        raise ESGPublishError("Cannot generate a value for dataset_id. One of the following fields could not be determined from the directory structure: %s\nDirectory = %s"%(`missingFields`, nodepath))
+                        raise ESGPublishError("Cannot generate a value for dataset_id. One of the following fields could not be determined from the directory structure: %s\nDirectory = %s"%(repr(missingFields), nodepath))
                 else:
                     warning("Empty dataset name.  Check that directory hierarchy format matches the configured format string in esg.ini")
                     datasetId = datasetName
-                if datasetMap.has_key(datasetId):
+                if datasetId in datasetMap:
                     datasetMap[datasetId].append((nodepath, filepath))
                 else:
                     datasetMap[datasetId] = [(nodepath, filepath)]
@@ -897,15 +898,15 @@ class ProjectHandler(object):
             else:
                 result = match.groupdict()
                 formatMatched = True
-            for key, value in result.items():
-                if context.has_key(key) and value!=context[key]:
+            for key, value in list(result.items()):
+                if key in context and value!=context[key]:
                     warning("Dataset ID=%s, but %s=%s"%(datasetName, key, context[key]))
                 else:
                     context[str(key)] = value
             break
 
         if not formatMatched:
-            warning("Dataset ID: %s does not match the dataset_id format(s): %s"%(datasetName, `datasetIdFormats`))
+            warning("Dataset ID: %s does not match the dataset_id format(s): %s"%(datasetName, repr(datasetIdFormats)))
 
         return context
 
@@ -981,7 +982,7 @@ class ProjectHandler(object):
                 try:
                     generatedDatasetName = self.generateNameFromContext('dataset_id')
                 except ESGPublishError:
-                    print 'Error generating dataset for file:', path
+                    print('Error generating dataset for file:', path)
                     raise
             else:
                 generatedDatasetName = datasetName

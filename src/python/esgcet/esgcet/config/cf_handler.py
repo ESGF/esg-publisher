@@ -7,7 +7,7 @@ except:
     pass
 import cdtime
 
-from metadata import MetadataHandler
+from .metadata import MetadataHandler
 from cdtime import reltime, DefaultCalendar
 
 # Map between cdtime calendar and CF tags

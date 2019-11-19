@@ -5,11 +5,11 @@ import os
 import string
 import logging
 import re
-import urlparse
-from ConfigParser import SafeConfigParser, NoOptionError, DEFAULTSECT
+import urllib.parse
+from configparser import SafeConfigParser, NoOptionError, DEFAULTSECT
 from xml.etree.ElementTree import parse
 from esgcet.exceptions import *
-from registry import register, registerHandlerName, setRegisterSearchOrder, getRegistry, ESGCET_PROJECT_HANDLER_GROUP, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
+from .registry import register, registerHandlerName, setRegisterSearchOrder, getRegistry, ESGCET_PROJECT_HANDLER_GROUP, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 # SQLAlchemy versions <0.6 have protocol "postgres", >=0.6 use "postgresql"
@@ -39,7 +39,7 @@ class SaneConfigParser(SafeConfigParser):
     def get(self, section, option, raw=False, vars=None, **options):
         if vars is None:
             vars = {'here' : os.getcwd()}
-        elif not vars.has_key('here'):
+        elif 'here' not in vars:
             vars['here'] = os.getcwd()
 
         home = os.environ.get('HOME')
@@ -55,7 +55,7 @@ class SaneConfigParser(SafeConfigParser):
             else:
                 value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
         except NoOptionError:
-            if options.has_key('default'):
+            if 'default' in options:
                 value = options['default']
             else:
                 raise ESGPublishError("Configuration file option missing: %s in section: %s, file=%s"%(option, section, self.name))
@@ -90,13 +90,13 @@ class SaneConfigParser(SafeConfigParser):
 
     def getdburl(self, section, raw=False, vars=None):
         value = SafeConfigParser.get(self, section, 'dburl', raw=raw, vars=vars)
-        fields = list(urlparse.urlparse(value))
+        fields = list(urllib.parse.urlparse(value))
         if fields[0] in ['postgres', 'postgresql']:
             if sqlalchemy_version >= '0.6':
                 fields[0] = 'postgresql'
             else:
                 fields[0] = 'postgres'
-            value = urlparse.urlunparse(fields)
+            value = urllib.parse.urlunparse(fields)
         return value
 
     def write(self, fp):
@@ -105,14 +105,14 @@ class SaneConfigParser(SafeConfigParser):
         """
         if self._defaults:
             fp.write("[%s]\n" % DEFAULTSECT)
-            defaultItems = self._defaults.items()
+            defaultItems = list(self._defaults.items())
             defaultItems.sort()
             for (key, value) in defaultItems:
                 fp.write("%s = %s\n" % (key, str(value).replace('\n', '\n\t')))
             fp.write("\n")
         for section in self._sections:
             fp.write("[%s]\n" % section)
-            sectionItems = self._sections[section].items()
+            sectionItems = list(self._sections[section].items())
             sectionItems.sort()
             for (key, value) in sectionItems:
                 if key != "__name__":
@@ -156,7 +156,7 @@ def splitRecord(option, sep='|'):
     for record in option.split('\n'):
         if record == '':
             continue
-        fields = map(string.strip, record.split(sep))
+        fields = list(map(string.strip, record.split(sep)))
         result.append(fields)
 
     return result
@@ -183,10 +183,10 @@ def splitMap(option, sep='|'):
     for record in lines[1:]:
         if record == '':
             continue
-        fields = map(string.strip, record.split(sep))
+        fields = list(map(string.strip, record.split(sep)))
         fromfields = tuple(fields[0:nfrom])
         tofields = tuple(fields[nfrom:])
-        if result.has_key(fromfields):
+        if fromfields in result:
             raise ESGPublishError("Duplicate 'from' fields in map entry: %s"%record)
         if len(fromfields) != nfrom or len(tofields) != nto:
             raise ESGPublishError("Map entry does not match header: %s"%record)
@@ -211,7 +211,7 @@ def splitLine(line, sep='|'):
     sep
       Separator character.
     """
-    fields = map(string.strip, line.split(sep))
+    fields = list(map(string.strip, line.split(sep)))
     return fields
 
 def loadConfig1(init_dir, project, load_projects):
@@ -340,7 +340,7 @@ def loadStandardNameTable(path):
 
     try:
         tree = parse(path)
-    except Exception, e:
+    except Exception as e:
         raise ESGPublishError("Error parsing %s: %s"%(path, e))
     root = tree.getroot()
     standardNames = {}
@@ -383,7 +383,7 @@ def loadStandardNameTable(path):
             standardName = StandardName(name, entry.units, entry.amip, entry.grib, entry.description)
             standardNames[name] = standardName
 
-    result = standardNames.values()
+    result = list(standardNames.values())
     result.sort(lambda x, y: cmp(x.name, y.name))
     return result
 
@@ -545,7 +545,7 @@ def getThreddsAuxiliaryServiceSpecs(config, section, option, multiValue=False):
     result = {}
     for serviceName, value in threddsSpecs:
         if multiValue:
-            if result.has_key(serviceName):
+            if serviceName in result:
                 result[serviceName].append(value)
             else:
                 result[serviceName] = [value]
@@ -575,7 +575,7 @@ def getThreddsServiceSpecs(config, section, option):
             if item[3].strip() == '':
                 item[3] == None
         else:
-            raise ESGPublishError("Invalid configuration option %s: %s"%(option, `item`))
+            raise ESGPublishError("Invalid configuration option %s: %s"%(option, repr(item)))
         serviceBase = item[1].strip()
         serviceType = item[0].strip()
 

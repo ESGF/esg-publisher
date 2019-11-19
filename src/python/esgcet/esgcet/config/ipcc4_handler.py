@@ -4,8 +4,8 @@ from esgcet.exceptions import *
 from esgcet.config import BasicHandler, getConfig, splitLine, splitRecord, genMap, ENUM, STRING, FIXED, TEXT
 from esgcet.model import Model, Experiment
 
-from ipcc4_table_A1 import dic_A1
-from ipcc4_table_O1 import dic_O1
+from .ipcc4_table_A1 import dic_A1
+from .ipcc4_table_O1 import dic_O1
 import os, string, glob
 import datetime
 
@@ -152,7 +152,7 @@ def experimentDescription(expid):
 
 def experimentKeys(self):
     "Return a list of valid experiment keys"
-    return expdes.keys()
+    return list(expdes.keys())
 
 def tableid(tabledesc):
     "Normalize the table ID from the CMOR table_id global attribute."
@@ -163,7 +163,7 @@ def tableid(tabledesc):
     return tbl
 
 def tableKeys(self):
-    return tables.keys()
+    return list(tables.keys())
 
 def keys2path(keys):
     "Create a directory path from a dictionary of keys."
