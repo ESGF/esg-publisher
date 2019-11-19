@@ -82,14 +82,24 @@ class CdunifFormatHandler(FormatHandler):
         variableName:
           String name of the variable. If None, get a global attribute.
         """
-        if variableName is not None:
-            result = getattr(self.variables[variableName], attributeName, *args)
-        else:
-            result = getattr(self.file, attributeName, *args)
-        # Clean up GFDL time units
-        if attributeName=="units":
-            result = cleanup_time_units(result)
-        return result
+
+        try:
+
+            if variableName is not None:
+                result = getattr(self.variables[variableName], attributeName, *args)
+            else:
+                result = getattr(self.file, attributeName, *args)
+            # Clean up GFDL time units
+            if attributeName=="units":
+                result = cleanup_time_units(result)
+            return result
+        except AttributeError as e:
+            warn("AttributeError encounterd reading file {}".format(str(e)))
+            return None
+        except BaseException as e:
+            warn("Unspecified error encounterd reading file {}".format(str(e)))
+            return None
+
 
     def hasVariable(self, variableName):
         """
