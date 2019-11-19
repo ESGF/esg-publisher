@@ -12,7 +12,7 @@ try:
 except:
     pass
 from cdms2 import Cdunif
-from ipcc4_handler import IPCC4Handler
+from .ipcc4_handler import IPCC4Handler
 
 SUBM = 0
 FREQ = 1
@@ -91,7 +91,7 @@ def experimentDescription(expid):
 
 def experimentKeys():
     "Return a list of valid experiment keys"
-    return expdes.keys()
+    return list(expdes.keys())
 
 def tableid(tabledesc):
     "Normalize the table ID from the CMOR table_id global attribute."
@@ -99,7 +99,7 @@ def tableid(tabledesc):
     return tbl
 
 def tableKeys():
-    return tables.keys()
+    return list(tables.keys())
 
 def keys2path(keys):
     "Create a directory path from a dictionary of keys."
@@ -188,11 +188,11 @@ class CFMIPHandler(IPCC4Handler):
             fileContext = self.file2keys(f, self.path)
             f.close()
             for key in ['experiment', 'submodel', 'run_name']:
-                if not context.has_key(key):
+                if key not in context:
                     context[key] = fileContext[key]
-            if not context.has_key('product'):
+            if 'product' not in context:
                 context['product'] = fileContext['frequency']
-        if not context.has_key('project'):
+        if 'project' not in context:
             context['project'] = self.name
         if self.validate:
             self.validateContext(**context)

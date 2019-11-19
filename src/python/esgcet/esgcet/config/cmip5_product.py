@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from cmip5_tables import cmor_variables, requested_time
+from .cmip5_tables import cmor_variables, requested_time
 from esgcet.messaging import debug, info, warning, error, critical, exception
 
 WARN=False

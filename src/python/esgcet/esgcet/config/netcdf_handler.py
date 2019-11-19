@@ -43,7 +43,7 @@ class CdunifFormatHandler(FormatHandler):
 
         Returns a list of string variable names.
         """
-        return self.variables.keys()
+        return list(self.variables.keys())
 
     def inquireVariableDimensions(self, variableName):
         """
@@ -98,7 +98,7 @@ class CdunifFormatHandler(FormatHandler):
         variableName:
           String name of the variable.
         """
-        return self.variables.has_key(variableName)
+        return variableName in self.variables
 
     def hasAttribute(self, attributeName, variableName=None):
         """
