@@ -35,8 +35,8 @@ def getGatewayDatasetMetadata(datasetName, serviceUrl=None):
     service = getRemoteMetadataService(serviceUrl=serviceUrl)
     try:
         metadata = service.getDatasetMetadata(datasetName);
-    except RemoteCallException, e:
-        line0 = `e`.split('\n')[0]
+    except RemoteCallException as e:
+        line0 = repr(e).split('\n')[0]
         if line0.find('None')!=-1:
             raise ESGQueryError("Dataset not found: %s"%datasetName)
         else:
@@ -60,8 +60,8 @@ def getGatewayDatasetChildren(datasetName, sort=True, serviceUrl=None):
     service = getRemoteMetadataService(serviceUrl=serviceUrl)
     try:
         metadata = service.getDatasetHierarchy(datasetName)
-    except RemoteCallException, e:
-        line0 = `e`.split('\n')[0]
+    except RemoteCallException as e:
+        line0 = repr(e).split('\n')[0]
         if line0.find('None')!=-1:
             raise ESGQueryError("Dataset not found: %s"%datasetName)
         else:

@@ -52,8 +52,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "v", ['echo-sql', 'verbose'])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     echoSql = False
@@ -65,7 +65,7 @@ def main(argv):
             verbose = True
 
     if len(lastargs)!=1:
-        print usage
+        print(usage)
         sys.exit(0)
 
     datasetMapfile = lastargs[0]
@@ -84,7 +84,7 @@ def main(argv):
     # Read the mapfile: (dataset_name, version) => [(path, size), (path, size), ...]
     # and extraFields: (dataset_name, version, path, attribute) => attribute_value
     dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
-    datasetNames = dmap.keys()
+    datasetNames = list(dmap.keys())
     datasetNames.sort()
 
     # Create a dictionary: (dataset_name, version, basename) => file_version_obj
@@ -107,7 +107,7 @@ def main(argv):
     # For each mapfile entry for the dataset:
     # - Find the corresponding file_version object
     # - Update the file_version
-    for key, value in extraFields.items():
+    for key, value in list(extraFields.items()):
         datasetName, version, location, attrname = key
         basename = os.path.basename(location)
         fvobj = dsetdict[(datasetName, version, basename)]
@@ -121,19 +121,19 @@ def main(argv):
             if current_csum not in (None, value):
                 warning("checksum = %s for dataset=%s, file=%s, replacing with new checksum=%s"%(current_csum, datasetName, basename, value))
             if verbose:
-                print "Setting checksum=%s, type=%s for dataset=%s, file=%s"%(value, checksum_type, datasetName, basename)
+                print("Setting checksum=%s, type=%s for dataset=%s, file=%s"%(value, checksum_type, datasetName, basename))
             fvobj.checksum = value
             fvobj.checksum_type = checksum_type
         elif attrname=='tech_notes':
             tech_notes_title = extraFields.get((datasetName, version, location, 'tech_notes_title'))
             if verbose:
-                print "Setting tech_notes=%s, tech_notes_title=%s for dataset=%s, file=%s"%(value, tech_notes_title, datasetName, basename)
+                print("Setting tech_notes=%s, tech_notes_title=%s for dataset=%s, file=%s"%(value, tech_notes_title, datasetName, basename))
             fvobj.tech_notes = value
             fvobj.tech_notes_title = tech_notes_title
         elif attrname=='dataset_tech_notes':
             dataset_tech_notes_title = extraFields.get((datasetName, version, location, 'dataset_tech_notes_title'))
             if verbose:
-                print "Setting dataset_tech_notes=%s, dataset_tech_notes_title=%s for dataset=%s"%(value, dataset_tech_notes_title, datasetName)
+                print("Setting dataset_tech_notes=%s, dataset_tech_notes_title=%s for dataset=%s"%(value, dataset_tech_notes_title, datasetName))
             dsetVersionObj.tech_notes = value
             dsetVersionObj.tech_notes_title = dataset_tech_notes_title
         else:

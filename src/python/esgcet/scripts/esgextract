@@ -95,8 +95,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "a:d:f:hi:p:r:", ['aggregate-only', 'append', 'directory=', 'echo-sql', 'experiment=', 'filter=', 'help', 'map=', 'model=', 'offline', 'product=', 'project=', 'property=', 'publish', 'run=', 'test-progress', 'thredds='])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     aggregateDimension = "time"
@@ -137,7 +137,7 @@ def main(argv):
         elif flag=='--filter':
             filefilt = arg
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
@@ -176,9 +176,9 @@ def main(argv):
     # Create a file iterator
     if datasetMapfile is not None:
         datasetMap = readDatasetMap(datasetMapfile)
-        if len(datasetMap.keys())>1:
+        if len(list(datasetMap.keys()))>1:
             warning("Multiple datasets found, only publishing the first one.")
-        datasetNames = datasetMap.keys()
+        datasetNames = list(datasetMap.keys())
         datasetNames.sort()
         datasetName = datasetNames[0]
         try:
@@ -234,7 +234,7 @@ def main(argv):
 
     # Add properties from the command line
     fieldNames = handler.getFieldNames()
-    for name, value in properties.items():
+    for name, value in list(properties.items()):
         if name not in fieldNames:
             warning('Property not configured: %s, was ignored'%name)
         else:

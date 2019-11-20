@@ -50,8 +50,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "cd:hi:", ['db-version', 'echo-sql', 'version'])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     createTables = False
@@ -70,12 +70,12 @@ def main(argv):
         elif flag=='--echo-sql':
             echoSql = True
         elif flag=='-h':
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
         elif flag=='--version':
-            print __version__
+            print(__version__)
             sys.exit(0)
 
     config = loadConfig(init_dir)
@@ -93,7 +93,7 @@ def main(argv):
         try:
             version = db_version(dburl, repo_path, engine_dict={"echo": echoSql})
         except sqlalchemy.exc.NoSuchTableError:
-            print 'Schema versioning not enabled. Run esgdrop_tables first.'
+            print('Schema versioning not enabled. Run esgdrop_tables first.')
             sys.exit(0)
 
         # Ensure that the repository path is correctly recorded for the current version of Esgcet ...
@@ -123,12 +123,12 @@ def main(argv):
     # Echo db version
     if dbVersion:
         version = db_version(dburl, repo_path, engine_dict={"echo": echoSql})
-        print version
+        print(version)
         sys.exit(0)
 
     # Downgrade to older version
     if dgrade:
-        ans = raw_input("Downgrade the database schema to version %d? (enter 'y' to continue): "%newVersion)
+        ans = input("Downgrade the database schema to version %d? (enter 'y' to continue): "%newVersion)
         if ans.lower()=='y':
             info("Downgrading schema to version %d"%newVersion)
             downgrade(dburl, repo_path, newVersion, engine_dict={"echo": echoSql})

@@ -6,8 +6,10 @@ import re
 
 from lxml import etree
 from lxml.etree import XMLSyntaxError
-from urllib2 import urlopen, HTTPError
-from urlparse import urlsplit
+from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.parse import urlsplit
+from functools import reduce
 
 DEFAULT_CHUNKSIZE = 1000
 DATASET = 1
@@ -76,28 +78,28 @@ class DictionaryDataStore(DataStore):
         """Update utdFiles, and set the current file as archived."""
         for file_id, checksum, size, trackingId in datasetFiles:
             if trackingId in self.utdFiles:
-                print 'Warning: tracking_id %s already in cache'%trackingId
+                print('Warning: tracking_id %s already in cache'%trackingId)
             esg_id, data_node = file_id.split('|')
             dset_id, data_node = dataset_id.split('|')
             archived = (currentTrackingId==trackingId)
             if not archived:
                 path = None
-            self.utdFiles[trackingId] = [esg_id, dset_id, data_node, long(size), archived, path, checksum]
+            self.utdFiles[trackingId] = [esg_id, dset_id, data_node, int(size), archived, path, checksum]
 
     def deprecateFile(self, tracking_id, data_node, size, path):
         self.deprFiles[tracking_id] = [data_node, size, path]
 
     def dump(self):
-        print 'Up-to-date Files:'
+        print('Up-to-date Files:')
 
         i = 0
-        for key, value in self.utdFiles.items():
-            print i, value[DictionaryDataStore.ARCHIVED], value[DictionaryDataStore.ESG_ID]
+        for key, value in list(self.utdFiles.items()):
+            print(i, value[DictionaryDataStore.ARCHIVED], value[DictionaryDataStore.ESG_ID])
             i+=1
 
-        print 'Deprecated Files:'
-        for key, value in self.deprFiles.items():
-            print value[DictionaryDataStore.DEPR_PATH]
+        print('Deprecated Files:')
+        for key, value in list(self.deprFiles.items()):
+            print(value[DictionaryDataStore.DEPR_PATH])
 
 class ShelfDataStore(DictionaryDataStore):
 
@@ -176,10 +178,10 @@ class RDBDataStore(DataStore):
             else:
                 badItem = True
             if badItem:
-                print 'Error: one of checksum, size, or tracking_id missing for file: %s'%`item`
+                print('Error: one of checksum, size, or tracking_id missing for file: %s'%repr(item))
                 continue
             if trackingId in dsetTrackingIds:
-                print 'Error: duplicate tracking ID %s in files %s, %s, skipping'%(trackingId, file_id, dsetTrackingIds[trackingId])
+                print('Error: duplicate tracking ID %s in files %s, %s, skipping'%(trackingId, file_id, dsetTrackingIds[trackingId]))
                 continue
             dsetTrackingIds[trackingId] = file_id
 
@@ -195,10 +197,10 @@ class RDBDataStore(DataStore):
                 path = currentPath
                 result = True
             try:
-                self.cursor.execute("INSERT INTO esgf_replica.utd_files (tracking_id, esg_id, dataset_id, data_node, size, archived, path, checksum, scratch) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (trackingId, esg_id, dset_id, data_node, long(size), archived, path, checksum, scratch))
+                self.cursor.execute("INSERT INTO esgf_replica.utd_files (tracking_id, esg_id, dataset_id, data_node, size, archived, path, checksum, scratch) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (trackingId, esg_id, dset_id, data_node, int(size), archived, path, checksum, scratch))
             except Exception as e:
-                print 'Error inserting: %s'%`(trackingId, esg_id, dset_id, data_node, long(size), archived, path, checksum)`
-                print '     %s'%e
+                print('Error inserting: %s'%repr((trackingId, esg_id, dset_id, data_node, int(size), archived, path, checksum)))
+                print('     %s'%e)
 
         self.connection.commit()
         return result
@@ -206,7 +208,7 @@ class RDBDataStore(DataStore):
     def deprecateFile(self, tracking_id, data_node, size, path):
         if path is not None:
             self.cursor.execute("DELETE FROM esgf_replica.depr_files WHERE path=%s", (path,))
-            self.cursor.execute("INSERT INTO esgf_replica.depr_files VALUES (%s, %s, %s, %s)", (tracking_id, data_node, long(size), path))
+            self.cursor.execute("INSERT INTO esgf_replica.depr_files VALUES (%s, %s, %s, %s)", (tracking_id, data_node, int(size), path))
         self.cursor.execute("DELETE from esgf_replica.utd_files WHERE tracking_id=%s", (tracking_id,))
         self.connection.commit()
 
@@ -220,7 +222,7 @@ class RDBDataStore(DataStore):
             esg_id, dataset_id, data_node, path, checksum, archive, scratch = utdFileDict[item]
             command1, arg1 = ("DELETE FROM esgf_replica.utd_files WHERE tracking_id=%s", (tracking_id,))
             if dryrun:
-                print command1, `arg1`
+                print(command1, repr(arg1))
             else:
                 self.cursor.execute(command1, arg1)
             self.addDeprecatedFile(tracking_id, data_node, size, path, dryrun)
@@ -235,15 +237,15 @@ class RDBDataStore(DataStore):
         for item in newFileSet:
             tracking_id, size = item
             esg_id, data_node, checksum = catalogFileDict[item]
-            command, arg = ("INSERT INTO esgf_replica.utd_files (tracking_id, esg_id, dataset_id, data_node, size, archived, path, checksum, scratch) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (tracking_id, esg_id, dset_id, data_node, long(size), False, None, checksum, None))
+            command, arg = ("INSERT INTO esgf_replica.utd_files (tracking_id, esg_id, dataset_id, data_node, size, archived, path, checksum, scratch) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (tracking_id, esg_id, dset_id, data_node, int(size), False, None, checksum, None))
             if dryrun:
-                print command, `arg`
+                print(command, repr(arg))
             else:
                 try:
                     self.cursor.execute(command, arg)
                 except Exception as e:
-                    print 'Error inserting into utd_files: %s'%`arg`
-                    print '     %s'%e
+                    print('Error inserting into utd_files: %s'%repr(arg))
+                    print('     %s'%e)
 
         if not dryrun:
             self.connection.commit()
@@ -263,7 +265,7 @@ class RDBDataStore(DataStore):
         """
         command, arg = ("UPDATE esgf_replica.utd_files SET archived=%s, path=%s, scratch=%s where tracking_id=%s", (archive, path, scratch, tracking_id))
         if dryrun:
-            print command, `arg`
+            print(command, repr(arg))
         else:
             self.cursor.execute(command, arg)
             self.connection.commit()
@@ -271,19 +273,19 @@ class RDBDataStore(DataStore):
     def addDeprecatedFile(self, tracking_id, data_node, size, path, dryrun):
         """Add an entry to depr_files.
         """
-        print 'Deprecating %s'%path
+        print('Deprecating %s'%path)
         command2, arg2 = ("DELETE FROM esgf_replica.depr_files WHERE path=%s", (path,))
-        command3, arg3 = ("INSERT INTO esgf_replica.depr_files VALUES (%s, %s, %s, %s)", (tracking_id, data_node, long(size), path))
+        command3, arg3 = ("INSERT INTO esgf_replica.depr_files VALUES (%s, %s, %s, %s)", (tracking_id, data_node, int(size), path))
         if dryrun:
-            print command2, `arg2`
-            print command3, `arg3`
+            print(command2, repr(arg2))
+            print(command3, repr(arg3))
         else:
             self.cursor.execute(command2, arg2)
             try:
                 self.cursor.execute(command3, arg3)
             except Exception as e:
-                print 'Error inserting: %s'%`arg3`
-                print '     %s'%e
+                print('Error inserting: %s'%repr(arg3))
+                print('     %s'%e)
             self.connection.commit()
 
     def commit(self):
@@ -297,7 +299,7 @@ class RDBDataStore(DataStore):
         i = 0
         self.cursor.execute("SELECT archived, esg_id FROM esgf_replica.utd_files")
         for archived, esg_id in self.cursor:
-            print i, archived, esg_id
+            print(i, archived, esg_id)
             i+=1
 
 def leng(item):
@@ -310,9 +312,9 @@ def getItemCount(header, tuples):
     itemCount = [len(item) for item in header]
     for item in tuples:
         try:
-            itemCount = map(lambda x,y: max(x,y), itemCount, [leng(t) for t in item])
+            itemCount = list(map(lambda x,y: max(x,y), itemCount, [leng(t) for t in item]))
         except:
-            print item
+            print(item)
             raise
     return itemCount
 
@@ -341,21 +343,21 @@ def printQueryResult(header, tuples, out=sys.stdout, printHeaders=True):
     else:
         format = reduce(lambda x,y: x+' | '+y, ["%%-%ds"%item for item in itemCount])
     if printHeaders:
-        print >>out, breakline
-        print >>out, format%tuple(header)
-        print >>out, breakline
+        print(breakline, file=out)
+        print(format%tuple(header), file=out)
+        print(breakline, file=out)
     count = 0
     for item in tuples:
         count += 1
         try:
-            print >>out, format%item
+            print(format%item, file=out)
         except:
-            print >>out, 'Barf!'
-            print >>out, item
+            print('Barf!', file=out)
+            print(item, file=out)
             sys.exit(0)
     if printHeaders:
-        print >>out, breakline
-        print >>out, '%d results found'%count
+        print(breakline, file=out)
+        print('%d results found'%count, file=out)
 
 try:
     from esgcet.query import printResult
@@ -395,14 +397,14 @@ def readChunk(service, query):
     try:
         tree = etree.parse(query)
     except IOError as xe:
-        print xe
+        print(xe)
         try:
             u = urlopen(query)
         except HTTPError as he:
             errorHtml = he.read()
             m = re.search(r'message.*?<u>(.*?)</u>', errorHtml)
             if m is not None:
-                print 'Error:', m.group(1)
+                print('Error:', m.group(1))
             sys.exit(1)
     return tree
 
@@ -413,7 +415,7 @@ def downloadResult(query, outpath, outpathIsStdout):
         errorHtml = he.read()
         m = re.search(r'message.*?<u>(.*?)</u>', errorHtml)
         if m is not None:
-            print 'Error:', m.group(1)
+            print('Error:', m.group(1))
         sys.exit(1)
     result = u.read()
     outpath.write(result)
@@ -509,10 +511,10 @@ def outputResults(results, format, header=None, prettyPrint=False, printHeaders=
         else:
             if delimiter is not None:
                 for item in results:
-                    print >>out, delimiter.join(item)
+                    print(delimiter.join(item), file=out)
             else:
                 for item in results:
-                    print >>out, item
+                    print(item, file=out)
     elif format=='wide':
         # valuedict: (id, field) => value
         objset = set()
@@ -537,12 +539,12 @@ def outputResults(results, format, header=None, prettyPrint=False, printHeaders=
         else:
             if delimiter is not None:
                 for item in wideResults:
-                    print >>out, delimiter.join(item)
+                    print(delimiter.join(item), file=out)
             else:
                 for item in wideResults:
-                    print >>out, item
+                    print(item, file=out)
     else:
-        print 'Format not yet implemented:', format
+        print('Format not yet implemented:', format)
         sys.exit(1)
 
 # Print facet results.
@@ -554,10 +556,10 @@ def outputFacetResults(results, header, prettyPrint=False, printHeaders=True, de
     else:
         if delimiter is not None:
             for item in results:
-                print delimiter.join(item)
+                print(delimiter.join(item))
         else:
             for item in results:
-                print item
+                print(item)
 
 def querySolr(facets, fields, freetext, objtype, service, userLimit, facetValues, verbose, retries=0, retry_wait=3):
     """
@@ -595,14 +597,14 @@ def querySolr(facets, fields, freetext, objtype, service, userLimit, facetValues
         limit = min(nleft, chunksize)
         query = formulateQuery(facets, fields, freetext, objtype, service, offset, limit, facetValues=facetValues)
         if verbose:
-            print >>sys.stderr, 'Query: ', query
+            print('Query: ', query, file=sys.stderr)
 
         # Read a chunk
         for ntry in range(tries):
             try:
                 chunk = readChunk(service, query)
             except XMLSyntaxError:
-                print 'Error: Bad SOLR response, retrying'
+                print('Error: Bad SOLR response, retrying')
                 time.sleep(retry_wait)
             else:
                 break

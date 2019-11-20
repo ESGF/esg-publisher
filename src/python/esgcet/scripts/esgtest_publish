@@ -5,7 +5,7 @@ import sys
 import time
 import socket
 import getopt
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import logging
 import getpass
 
@@ -90,14 +90,14 @@ def cleanup(session):
     Keep the test file and the myproxy certs for later usage.
     """
 
-    print(bcolors.BOLD + '\nCleaning up' + bcolors.ENDC)
+    print((bcolors.BOLD + '\nCleaning up' + bcolors.ENDC))
     if os.path.isfile(MAPFILE_PATH):
         if check_postgres(session, DATASET_NAME_VERSION):
-            print 'Unpublishing...',
+            print('Unpublishing...', end=' ')
             cmd = ['esgunpublish', '--project', 'test', '--database-delete', '--map', MAPFILE_PATH]
             success, err_msg = execute_cmd(cmd)
             print_res(success, True, session, final_run=True)
-        print 'Deleting mapfile...',
+        print('Deleting mapfile...', end=' ')
         try:
             os.remove(MAPFILE_PATH)
             success = True
@@ -105,21 +105,21 @@ def cleanup(session):
             success = False
         print_res(success, True, session, final_run=True)
     else:
-        print 'Nothing to do...',
+        print('Nothing to do...', end=' ')
         print_res(True, True, session, final_run=True)
 
 
 def print_res(success, skip_error, session, msg=None, final_run=False):
     if success:
-        print(bcolors.OKGREEN + '[OK]' + bcolors.ENDC)
+        print((bcolors.OKGREEN + '[OK]' + bcolors.ENDC))
     else:
-        print(bcolors.FAIL + '[FAIL]' + bcolors.ENDC)
+        print((bcolors.FAIL + '[FAIL]' + bcolors.ENDC))
         if msg:
-            print msg
+            print(msg)
         if not skip_error:
             if not final_run:
                 cleanup(session)
-            print(bcolors.WARNING + 'Aborting... Please solve the above issue before continuing.' + bcolors.ENDC)
+            print((bcolors.WARNING + 'Aborting... Please solve the above issue before continuing.' + bcolors.ENDC))
             sys.exit(0)
 
 
@@ -127,8 +127,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "dh:i:o:p:u:s:x", ['myproxy-host=', 'output=', 'myproxy-pass=', 'myproxy-user=', 'skip-error', 'skip-index', 'skip-thredds', 'skip-unpublish', 'download-test'])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     myproxy_hostname = None
@@ -198,21 +198,21 @@ def main(argv):
     # - Check and/or generate myproxy cert
     # - Make sure current user has write access to data directory and THREDDS catalogs
     # - Download test file
-    print(bcolors.BOLD + '\nSet up Publication Test' + bcolors.ENDC)
-    print 'Checking write permissions for %s, user %s...' % (ESGF_TEST_FILE_LOCATION, getpass.getuser()),
+    print((bcolors.BOLD + '\nSet up Publication Test' + bcolors.ENDC))
+    print('Checking write permissions for %s, user %s...' % (ESGF_TEST_FILE_LOCATION, getpass.getuser()), end=' ')
     success = check_permission(ESGF_TEST_FILE_LOCATION, dir=False)
     print_res(success, skip_error, session)
 
-    print 'Checking write permissions for %s, user %s...' % (thredds_data_directory, getpass.getuser()),
+    print('Checking write permissions for %s, user %s...' % (thredds_data_directory, getpass.getuser()), end=' ')
     success = check_permission(thredds_data_directory)
     print_res(success, skip_error, session)
 
-    print 'Searching for Test File in %s...' % ESGF_TEST_FILE_LOCATION,
+    print('Searching for Test File in %s...' % ESGF_TEST_FILE_LOCATION, end=' ')
     success = get_test_file(ESGF_TEST_FILE_LOCATION, ESGF_TEST_FILE_SHA256)
     print_res(success, skip_error, session)
 
     if not skip_index:
-        print 'Setting up certificates for publication...',
+        print('Setting up certificates for publication...', end=' ')
         try:
             success = check_cert(config, myproxy_username)
             if not success:
@@ -220,18 +220,18 @@ def main(argv):
                 success = check_cert(config, myproxy_username)
             print_res(success, skip_error, session)
         except:
-            print(bcolors.FAIL + '[FAIL]' + bcolors.ENDC)
-            print(bcolors.WARNING + 'Myproxy logon failed. Please generate your myproxy cerificate manually before re-running the script.' + bcolors.ENDC)
+            print((bcolors.FAIL + '[FAIL]' + bcolors.ENDC))
+            print((bcolors.WARNING + 'Myproxy logon failed. Please generate your myproxy cerificate manually before re-running the script.' + bcolors.ENDC))
             sys.exit(0)
 
     # Generate a mapfile to be used for publication and make sure the testfile is part of that mapfile.
-    print(bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC)
+    print((bcolors.BOLD + '\nGenerate mapfile' + bcolors.ENDC))
 
     cmd = ['esgmapfile', '--project', 'test', '--dataset', DATASET_NAME_IN, '--mapfile', MAPFILE_PATH, ESGF_TEST_DATA_DIR]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
 
-    print 'Checking mapfile...',
+    print('Checking mapfile...', end=' ')
     success = check_mapfile(MAPFILE_PATH, DATASET_NAME_IN)
     print_res(success, skip_error, session)
 
@@ -239,8 +239,8 @@ def main(argv):
     # - Publish to each component (Postgres, THREDDS, Solr) in a separate step
     # - Make sure the publication to every component was successful
     # - Unpublish in one single step make sure the dataset was unpublished from all components
-    print(bcolors.BOLD + '\nPublish dataset' + bcolors.ENDC)
-    print 'Step 1: Publish to Postgres,',
+    print((bcolors.BOLD + '\nPublish dataset' + bcolors.ENDC))
+    print('Step 1: Publish to Postgres,', end=' ')
     default_publish_cmd = ['esgpublish', '--project', 'test', '--map', MAPFILE_PATH, '--service', 'fileservice', '--keep-credentials']
     success, err_msg = execute_cmd(default_publish_cmd)
     # Make sure dataset is present in postgres
@@ -249,7 +249,7 @@ def main(argv):
     print_res(success, skip_error, session, err_msg)
 
     if not skip_thredds:
-        print 'Step 2: Publish to THREDDS,',
+        print('Step 2: Publish to THREDDS,', end=' ')
         cmd = default_publish_cmd + ['--noscan', '--thredds']
         success, err_msg = execute_cmd(cmd)
         # Make sure dataset is present in THREDDS
@@ -261,7 +261,7 @@ def main(argv):
         print_res(success, skip_error, session, err_msg)
 
     if not skip_index:
-        print 'Step 3: Publish to Solr Index at %s,' % index_node,
+        print('Step 3: Publish to Solr Index at %s,' % index_node, end=' ')
         cmd = default_publish_cmd + ['--noscan', '--publish']
         success, err_msg = execute_cmd(cmd)
         # Make sure dataset is present in Index
@@ -270,16 +270,16 @@ def main(argv):
         print_res(success, skip_error, session, err_msg)
 
     if dl_test:
-        print 'File Download Test'
+        print('File Download Test')
 
         success = test_download()
         print_res(success, skip_error, session, "")
 
     if skip_unpublish:
-        print(bcolors.BOLD + '\nSkipping unpublication.' + bcolors.ENDC)
+        print((bcolors.BOLD + '\nSkipping unpublication.' + bcolors.ENDC))
         return
 
-    print(bcolors.BOLD + '\nUnpublish dataset' + bcolors.ENDC)
+    print((bcolors.BOLD + '\nUnpublish dataset' + bcolors.ENDC))
     cmd = ['esgunpublish', '--delete', '--project', 'test','--keep-credentials', DATASET_NAME_IN]
     if skip_thredds:
         cmd.append('--skip-thredds')
@@ -290,15 +290,15 @@ def main(argv):
     cmd = ['esgunpublish', '--skip-index', '--database-delete', '--project', 'test','--keep-credentials', DATASET_NAME + ".v1"]
     success, err_msg = execute_cmd(cmd)
     print_res(success, skip_error, session, err_msg)
-    print 'Check 1: Unpublished from Postgres...',
+    print('Check 1: Unpublished from Postgres...', end=' ')
     success = check_postgres(session, DATASET_NAME_VERSION)
     print_res(not success, skip_error, session)
     if not skip_thredds:
-        print 'Check 2: Unpublished from THREDDS...',
+        print('Check 2: Unpublished from THREDDS...', end=' ')
         success = check_thredds(thredds_url)
         print_res(not success, skip_error, session)
     if not skip_index:
-        print 'Check 3: Unpublished from Solr Index...',
+        print('Check 3: Unpublished from Solr Index...', end=' ')
         success = check_index(index_node, DATASET_NAME, False)
         print_res(success, skip_error, session)
 

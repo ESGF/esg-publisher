@@ -140,13 +140,13 @@ def main(argv):
             'filter=', 'help', 'max-threads=', 'offline', 'output=', 'project=', 'property=', 'read-directories', 'read-files',\
             'service=', 'use-version-dir', 'version='])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     if len(lastargs)==0:
-        print 'No directory specified'
-        print usage
+        print('No directory specified')
+        print(usage)
         sys.exit(0)
     else:
         tmp_args = []
@@ -155,10 +155,10 @@ def main(argv):
             if os.path.exists(dn):
                 tmp_args.append(dn)
             else:
-                print "Directory " + dn + " not found!"
+                print("Directory " + dn + " not found!")
         lastargs = tmp_args
     if len(lastargs) == 0:
-        print "No valid directory specified"
+        print("No valid directory specified")
         sys.exit(0)
 
 
@@ -194,7 +194,7 @@ def main(argv):
         elif flag=='--filter':
             filefilt = arg
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='-i':
             init_file = arg
@@ -247,7 +247,7 @@ def main(argv):
         else:
             warning("No project name specified!")
             multiIter = multiDirectoryIterator(lastargs, filefilt=filefilt)
-            firstFile, size = multiIter.next()
+            firstFile, size = next(multiIter)
             handler = getHandler(firstFile, Session, validate=True)
             if handler is None:
                 raise ESGPublishError("No project found in file %s, specify with --project."%firstFile)
@@ -259,7 +259,7 @@ def main(argv):
             datasetMap = handler.generateDirectoryMapFromFiles(lastargs, filefilt, initContext=properties, datasetName=datasetName)
 
         # Output the map
-        keys = datasetMap.keys()
+        keys = list(datasetMap.keys())
         keys.sort()
   
         datasetMapVersion = {}
@@ -282,7 +282,7 @@ def main(argv):
                     error("No version directory found. Skipping dataset %s."%dataset_id)
                     
             if datasetMapVersion:
-                keys = datasetMapVersion.keys()
+                keys = list(datasetMapVersion.keys())
                 keys.sort()
             else:
                 if use_version:
@@ -357,8 +357,8 @@ def main(argv):
                     ds_id = (dataset_id, int(path_version))
                 else:
                     ds_id = (dataset_id, -1)
-                if not skip_dataset and ( (appendMap is None) or (not appendMap.has_key(ds_id)) or (( fpath, "%d"% mapfile_md[fpath][1]) not in appendMap[ds_id]) ):
-                    print >>output, mapfile_line
+                if not skip_dataset and ( (appendMap is None) or (ds_id not in appendMap) or (( fpath, "%d"% mapfile_md[fpath][1]) not in appendMap[ds_id]) ):
+                    print(mapfile_line, file=output)
     
     else:                               # offline
         if projectName is not None:
@@ -374,8 +374,8 @@ def main(argv):
             extrastuff = ""
             if mtime is not None:
                 extrastuff = "| mod_time=%f"%float(mtime)
-            if (appendMap is None) or (not appendMap.has_key(dsetName)) or ((filepath, "%d"%size) not in appendMap[dsetName]):
-                print >>output, "%s | %s | %d %s"%(dsetName, filepath, size, extrastuff)
+            if (appendMap is None) or (dsetName not in appendMap) or ((filepath, "%d"%size) not in appendMap[dsetName]):
+                print("%s | %s | %d %s"%(dsetName, filepath, size, extrastuff), file=output)
 
     if output is not sys.stdout:
         output.close()

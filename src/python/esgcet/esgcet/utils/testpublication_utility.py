@@ -1,7 +1,7 @@
 import os
 import time
 import socket
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import logging
 import getpass
 
@@ -49,7 +49,7 @@ def get_test_file(test_file_location, target_checksum):
     """
     url = 'http://distrib-coffee.ipsl.jussieu.fr/pub/esgf/dist/externals/sftlf.nc'
     if not os.path.isfile(test_file_location) or checksum(test_file_location, 'sha256sum') != target_checksum:
-        print 'Not found.',
+        print('Not found.', end=' ')
         cmd = ['wget', '-O', test_file_location, url]
         success = execute_cmd(cmd)
         if not checksum(test_file_location, 'sha256sum') == target_checksum or not success:
@@ -67,7 +67,7 @@ def execute_cmd(cmd):
     :rtype: *boolean* and *str*
 
     """
-    print 'Running "%s"...' % ' '.join(cmd),
+    print('Running "%s"...' % ' '.join(cmd), end=' ')
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = proc.communicate()
     if ('Traceback' in stderr) or (cmd[1] == 'esgprep' and 'Scan completed' not in stderr):
@@ -119,10 +119,10 @@ def check_thredds(thredds_url):
 
     """
     try:
-        fh = urllib2.urlopen(thredds_url)
+        fh = urllib.request.urlopen(thredds_url)
         response = fh.read()
         return True
-    except urllib2.HTTPError, e:
+    except urllib.error.HTTPError as e:
         return False
 
 
@@ -151,7 +151,7 @@ def check_index(index_node, dataset_name, publish):
         if ctx.hit_count == hit_count_num:
             return True
         elif i < limit:
-            print '.',
+            print('.', end=' ')
             time.sleep(10)
     return False
 

@@ -5,7 +5,7 @@ import os
 import getopt
 import shutil
 import time
-import ConfigParser
+import configparser
 from datetime import datetime
 from subprocess import Popen, PIPE
 from esgcet.exceptions import *
@@ -41,13 +41,13 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "hi:u", ['update-init', 'help', 'project='])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     if len(lastargs)==0:
-        print 'No directory specified'
-        print usage
+        print('No directory specified')
+        print(usage)
         sys.exit(0)
 
     update = False
@@ -56,7 +56,7 @@ def main(argv):
 
     for flag, arg in args:
         if flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
@@ -67,8 +67,8 @@ def main(argv):
 
     # find exclude variables
     if project_name is None:
-        print 'No project_id specified'
-        print usage
+        print('No project_id specified')
+        print(usage)
         sys.exit(0)
 
     # Load the configuration file and the DB Session
@@ -79,7 +79,7 @@ def main(argv):
     Session = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
     project_init_file = os.path.join(init_dir, 'esg.%s.ini'%project_name)
-    projectConfig = ConfigParser.ConfigParser()
+    projectConfig = configparser.ConfigParser()
     projectConfig.read(project_init_file)
 
     if not projectConfig:

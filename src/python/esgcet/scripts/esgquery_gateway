@@ -53,8 +53,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "hi:", ['files=', 'help', 'experiments', 'list=', 'list-experiments', 'metadata=', 'service-url=', 'urls=', 'verbose'])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     datasetName = None
@@ -74,7 +74,7 @@ def main(argv):
             listFiles = True
             filesParent = arg
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
@@ -102,7 +102,7 @@ def main(argv):
         result = getGatewayDatasetChildren(parentDataset, serviceUrl=serviceUrl)
         if not verbose:
             for childid in result:
-                print childid
+                print(childid)
         else:
             fullresult = [getGatewayDatasetMetadata(item, serviceUrl=serviceUrl) for item in result]
             printResult(getGatewayDatasetFields(), fullresult)

@@ -17,10 +17,10 @@ MAX_ABS_COORD_RANGE = 9.9999e+19        # Warning if abs(coord) is larger
 _database = "postgres"
 if _database is None:
     from esgcet.config import loadConfig1
-    import urlparse
+    import urllib.parse
     config1 = loadConfig1(None)
     dburl = config1.get('initialize', 'dburl')
-    urltuple = urlparse.urlparse(dburl)
+    urltuple = urllib.parse.urlparse(dburl)
     _database = urltuple[0]
 
 # For Postgres:
@@ -55,15 +55,15 @@ def validateName(name, cls):
 
 def map_to_charset(value):
     try:
-        result = unicode(str(value), _character_encoding, 'replace')
+        result = str(str(value), _character_encoding, 'replace')
     except:
         rawstring = value.encode('utf-8')
-        result = unicode(rawstring, 'utf-8', 'replace')
+        result = str(rawstring, 'utf-8', 'replace')
     return result
 
 # Restrict characters to the ASCII range <SPC>..'z'
 def cleanup_time_units(units):
-    result = filter(lambda x: 32<=ord(x)<123, units)
+    result = [x for x in units if 32<=ord(x)<123]
     return result
 
 # Decorator for object getter functions. Ensures that the object is persistent
@@ -79,12 +79,12 @@ def persistent_get(getter):
 def generateFileBase(location, basedict, dsetname):
     """Generate a basename that is unique wrt to all files in the dataset."""
     basename = os.path.basename(location)
-    if not basedict.has_key(basename):
+    if basename not in basedict:
         result = basename
     else:
-        for i in xrange(MAX_FILENAME_DUPLICATES):
+        for i in range(MAX_FILENAME_DUPLICATES):
             cand = "%s_%d"%(basename, i)
-            if not basedict.has_key(cand):
+            if cand not in basedict:
                 result = cand
                 break
         else:
@@ -373,7 +373,7 @@ class Project(object):
         self.description = description
 
     def __repr__(self):
-        return "<Project, name=%s, description=%s>"%(self.name, `self.description`)
+        return "<Project, name=%s, description=%s>"%(self.name, repr(self.description))
     
 class Model(object):
 
@@ -740,7 +740,7 @@ class Dataset(object):
         return result
 
     def __repr__(self):
-        return "<Dataset, id=%s, name=%s, project=%s, model=%s, experiment=%s, run_name=%s>"%(`self.id`, self.name, `self.project`, `self.model`, `self.experiment`, self.run_name)
+        return "<Dataset, id=%s, name=%s, project=%s, model=%s, experiment=%s, run_name=%s>"%(repr(self.id), self.name, repr(self.project), repr(self.model), repr(self.experiment), self.run_name)
     
 def DatasetVersionFactory(dset, version=None, name=None, creation_time=None, comment=None, tech_notes=None, tech_notes_title=None, bydate=False,
                           pid=None, citation_url=None):
@@ -795,7 +795,7 @@ class DatasetVersion(object):
         return result
 
     def __repr__(self):
-        return "<DatasetVersion, version=%s, creation_time=%s>"%(`self.version`, `self.creation_time`)
+        return "<DatasetVersion, version=%s, creation_time=%s>"%(repr(self.version), repr(self.creation_time))
     
 class Variable(object):
 
@@ -823,7 +823,7 @@ class Variable(object):
         return result
 
     def __repr__(self):
-        return "<Variable, id=%s, dataset_id=%s, short_name=%s, long_name=%s, standard_name=%s>"%(`self.id`, `self.dataset_id`, self.short_name, self.long_name, `self.standard_name`)
+        return "<Variable, id=%s, dataset_id=%s, short_name=%s, long_name=%s, standard_name=%s>"%(repr(self.id), repr(self.dataset_id), self.short_name, self.long_name, repr(self.standard_name))
 
 def FileFactory(dsetobj, location, basedict, session, format='netCDF'):
     """
@@ -937,7 +937,7 @@ class File(object):
         return self
 
     def __repr__(self):
-        return "<File, id=%s, dataset_id=%s, base=%s, format=%s"%(`self.id`, `self.dataset_id`, self.base, self.format)
+        return "<File, id=%s, dataset_id=%s, base=%s, format=%s"%(repr(self.id), repr(self.dataset_id), self.base, self.format)
 
 def FileVersionFactory(fileObj, path, session, size, mod_time=None, checksum=None, checksum_type=None, tech_notes=None, tech_notes_title=None, version=None):
     if version==None:
@@ -954,7 +954,7 @@ class FileVersion(object):
         if version>0:
             self.version = version
         else:
-            raise ESGPublishError("Version must be positive integer: %s"%`version`)
+            raise ESGPublishError("Version must be positive integer: %s"%repr(version))
         self.location = location        # May differ from previous versions if the file has moved during versioning
         self.size = size
         self.checksum = checksum
@@ -1011,7 +1011,7 @@ class FileVersion(object):
         return self.parent
 
     def __repr__(self):
-        return "<FileVersion, version=%s, location=%s, size=%s, checksum=%s, publication_time=%s, tracking_id=%s, mod_time=%s>"%(`self.version`, self.location, `self.size`, self.checksum, `self.publication_time`, self.tracking_id, `self.mod_time`)
+        return "<FileVersion, version=%s, location=%s, size=%s, checksum=%s, publication_time=%s, tracking_id=%s, mod_time=%s>"%(repr(self.version), self.location, repr(self.size), self.checksum, repr(self.publication_time), self.tracking_id, repr(self.mod_time))
 
 class FileVariable(Variable):
 
@@ -1024,7 +1024,7 @@ class FileVariable(Variable):
         self.is_target_variable = is_target_variable
 
     def __repr__(self):
-        return "<FileVariable, id=%s, file_id=%s, variable_id=%s, short_name=%s, long_name=%s, aggdim_first=%s, aggdim_last=%s>"%(`self.id`, `self.file_id`, `self.variable_id`, `self.short_name`, `self.long_name`, `self.aggdim_first`, `self.aggdim_last`)
+        return "<FileVariable, id=%s, file_id=%s, variable_id=%s, short_name=%s, long_name=%s, aggdim_first=%s, aggdim_last=%s>"%(repr(self.id), repr(self.file_id), repr(self.variable_id), repr(self.short_name), repr(self.long_name), repr(self.aggdim_first), repr(self.aggdim_last))
 
 class Attribute(object):
 
@@ -1046,7 +1046,7 @@ class DatasetAttribute(Attribute):
         self.is_thredds_category = is_thredds_category
 
     def __repr__(self):
-        return "<Attribute, dataset_id=%s, %s>"%(`self.dataset_id`, Attribute.__repr__(self))
+        return "<Attribute, dataset_id=%s, %s>"%(repr(self.dataset_id), Attribute.__repr__(self))
 
 class VariableAttribute(Attribute):
     
@@ -1055,7 +1055,7 @@ class VariableAttribute(Attribute):
         Attribute.__init__(self, name, value, datatype, length)
 
     def __repr__(self):
-        return "<VariableAttribute, variable_id=%s, %s>"%(`self.variable_id`, Attribute.__repr__(self))
+        return "<VariableAttribute, variable_id=%s, %s>"%(repr(self.variable_id), Attribute.__repr__(self))
 
 class FileAttribute(Attribute):
     
@@ -1064,7 +1064,7 @@ class FileAttribute(Attribute):
         Attribute.__init__(self, name, value, datatype, length)
 
     def __repr__(self):
-        return "<FileAttribute, file_id=%s, %s>"%(`self.file_id`, Attribute.__repr__(self))
+        return "<FileAttribute, file_id=%s, %s>"%(repr(self.file_id), Attribute.__repr__(self))
 
 class FileVariableAttribute(Attribute):
     
@@ -1073,7 +1073,7 @@ class FileVariableAttribute(Attribute):
         Attribute.__init__(self, name, value, datatype, length)
 
     def __repr__(self):
-        return "<FileVariableAttribute, filevar_id=%s, %s>"%(`self.filevar_id`, Attribute.__repr__(self))
+        return "<FileVariableAttribute, filevar_id=%s, %s>"%(repr(self.filevar_id), Attribute.__repr__(self))
 
 class VariableDimension(object):
         
@@ -1083,7 +1083,7 @@ class VariableDimension(object):
         self.seq = seq
 
     def __repr__(self):
-        return "<VariableDimension, variable_id=%s, name=%s, length=%d, seq=%d>"%(`self.variable_id`, self.name, self.length, self.seq)
+        return "<VariableDimension, variable_id=%s, name=%s, length=%d, seq=%d>"%(repr(self.variable_id), self.name, self.length, self.seq)
 
 class FileVariableDimension(object):
         
@@ -1093,7 +1093,7 @@ class FileVariableDimension(object):
         self.seq = seq
 
     def __repr__(self):
-        return "<FileDimension, filevar_id=%s, name=%s, length=%d, seq=%d>"%(`self.filevar_id`, self.name, self.length, self.seq)
+        return "<FileDimension, filevar_id=%s, name=%s, length=%d, seq=%d>"%(repr(self.filevar_id), self.name, self.length, self.seq)
 
 class StandardName(object):
 
@@ -1204,7 +1204,7 @@ class Event(object):
         self.datetime = dtime
 
     def __repr__(self):
-        return "<Event, datetime=%s, object_id=%s, object_name=%s, object_version=%d, event=%s>"%(`self.datetime`, `self.object_id`, self.object_name, self.object_version, eventName[self.event])
+        return "<Event, datetime=%s, object_id=%s, object_name=%s, object_version=%d, event=%s>"%(repr(self.datetime), repr(self.object_id), self.object_name, self.object_version, eventName[self.event])
 
 class Catalog(object):
 
@@ -1247,7 +1247,7 @@ class DatasetStatus(object):
         self.datetime = dtime
 
     def __repr__(self):
-        return "<DatasetStatus, datetime=%s, status=%s, level=%s, module=%s>"%(`self.datetime`, self.status, `self.level`, `self.module`)
+        return "<DatasetStatus, datetime=%s, status=%s, level=%s, module=%s>"%(repr(self.datetime), self.status, repr(self.level), repr(self.module))
 
 mapper(Project, projectTable, properties={'models':relation(Model, cascade="all, delete, delete-orphan"),
                                           'experiments':relation(Experiment, cascade="all, delete, delete-orphan")

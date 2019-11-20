@@ -37,23 +37,23 @@ def checkone_a(dimen, f, func, echoifbad=False):
 
     times = f[dimen][:]
     if len(times)==0:
-        raise RuntimeError, "Zero length %s axis."%dimen
+        raise RuntimeError("Zero length %s axis."%dimen)
     t0 = times[:-1]
     t1 = times[1:]
     # check = Numeric.greater_equal(t0,t1)
-    check = apply(func, (t0,t1))
+    check = func(*(t0,t1))
 
-    badinds = Numeric.compress(check,range(len(check)))
+    badinds = Numeric.compress(check,list(range(len(check))))
     if len(badinds)>0:
         firstind = max(badinds[0]-2, 0)
         lastind = min(firstind+20, len(times))
         if echoifbad:
-            print '[Error] %s'%f.id
+            print('[Error] %s'%f.id)
         else:
-            print dimen+'[%d:%d]=%s'%(firstind, lastind,`times[firstind:lastind]`)
+            print(dimen+'[%d:%d]=%s'%(firstind, lastind,repr(times[firstind:lastind])))
 
 def checkone(f, echoifbad=False):
-    print f.id
+    print(f.id)
     checkone_a('time', f, Numeric.greater_equal, echoifbad)
     checkone_a('lev', f, Numeric.less_equal, echoifbad)
 
@@ -62,8 +62,8 @@ def main(argv):
     try:
         opts, lastargs = getopt.getopt(argv[1:],"c:ef:h")
     except:
-        print sys.exc_value
-        print help
+        print(sys.exc_info()[1])
+        print(help)
         sys.exit(0)
 
     checkglob = None
@@ -78,7 +78,7 @@ def main(argv):
         elif opt=='-f':
             filelist = open(arg)
         elif opt=='-h':
-            print usage
+            print(usage)
             sys.exit(0)
 
     if filelist is None:
@@ -94,7 +94,7 @@ def main(argv):
             try:
                 f = cdms.open(line)
             except cdms.error.CDMSError:
-                print '[Error: open] %s'%line
+                print('[Error: open] %s'%line)
                 continue
             checkone(f, echoifbad=echo)
             f.close()
@@ -105,11 +105,11 @@ def main(argv):
         for path in checklist:
             f = cdms.open(path)
             time = f['time']
-            print path, time[0], time[-1], time.units,
+            print(path, time[0], time[-1], time.units, end=' ')
             if time[0]<prevtime:
-                print '(*)'
+                print('(*)')
             else:
-                print
+                print()
             prevtime = time[0] 
             f.close()
 

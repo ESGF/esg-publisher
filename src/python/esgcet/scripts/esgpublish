@@ -311,14 +311,14 @@ Examples:
 
 
 def summarize_errors(Session, datasetNames):
-    print 'Summary of errors:'
+    print('Summary of errors:')
     for name,versionno in datasetNames:
         dset = Dataset.lookup(name, Session)
-        print dset.get_name(Session), dset.get_project(Session), dset.get_model(Session), dset.get_experiment(Session), dset.get_run_name(Session)
+        print(dset.get_name(Session), dset.get_project(Session), dset.get_model(Session), dset.get_experiment(Session), dset.get_run_name(Session))
         if dset.has_warnings(Session):
-            print '=== Dataset: %s ==='%dset.name
+            print('=== Dataset: %s ==='%dset.name)
             for line in dset.get_warnings(Session):
-                print line
+                print(line)
 
 
 def yield_parsed_mapfiles(mapfileDir):
@@ -345,8 +345,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'commit-every=', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'hessian-api', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite', 'version'])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     aggregateDimension = "time"
@@ -427,7 +427,7 @@ def main(argv):
         elif flag=='--filter':
             filefilt = arg
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='--hessian-api':
             restApi = False
@@ -525,7 +525,7 @@ def main(argv):
         elif flag=='--version-list':
             versionList = arg
         elif flag=='--version':
-            print "esg-publisher (esgcet) version {}".format(esgcet.__version__)
+            print("esg-publisher (esgcet) version {}".format(esgcet.__version__))
             sys.exit(0)
 
     if createCimOnly and not mapfileProvided:
@@ -598,8 +598,8 @@ def main(argv):
         try:
             setup_cdf2cim_environment(config, project_config_section)
         except Exception as exc:
-            print exc
-            print "Turning off create_cim because related configuration variables are missing."
+            print(exc)
+            print("Turning off create_cim because related configuration variables are missing.")
             createCim = False
 
     #---------------------------------------------------------------------
@@ -662,7 +662,7 @@ def main(argv):
         # Process all mapfiles in a directory
         if mapfileDir is not None:
             for dmap, extraFields in yield_parsed_mapfiles(mapfileDir):
-                    datasetNames = dmap.keys()
+                    datasetNames = list(dmap.keys())
                     datasetNames.sort()
 
                     if createCim:
@@ -691,7 +691,7 @@ def main(argv):
         else:
             if datasetMapfile is not None:
                 dmap, extraFields = readDatasetMap(datasetMapfile, parse_extra_fields=True)
-                datasetNames = dmap.keys()                
+                datasetNames = list(dmap.keys())                
 
                 if createCim:
                     create_cim_from_dmap(dmap, exception_on_fail=False)
@@ -700,15 +700,15 @@ def main(argv):
                 # Note: No need to get the extra fields, such as mod_time, since
                 # they are already in the database, and will be used for file comparison if necessary.
                 dmap, offline = queryDatasetMap(rescanDatasetName, Session)
-                datasetNames = dmap.keys()
+                datasetNames = list(dmap.keys())
 
             # ... otherwise generate the directory map.
             else:
                 # Online dataset(s)
                 if not offline:
                     if len(lastargs)==0:
-                        print "No directories specified."
-                        print usage
+                        print("No directories specified.")
+                        print(usage)
                         sys.exit(0)
 
                     props = properties.copy()
@@ -717,7 +717,7 @@ def main(argv):
                         directoryMap = handler.generateDirectoryMap(lastargs, filefilt, initContext=props, datasetName=datasetName)
                     else:
                         directoryMap = handler.generateDirectoryMapFromFiles(lastargs, filefilt, initContext=props, datasetName=datasetName)
-                    datasetNames = [(item,-1) for item in directoryMap.keys()]
+                    datasetNames = [(item,-1) for item in list(directoryMap.keys())]
 
                 # Offline dataset. Format the spec as a dataset map : dataset_name => [(path, size), (path, size), ...]
                 else:
@@ -728,12 +728,12 @@ def main(argv):
                     commandArgs += " ".join(lastargs)
                     for dsetName, filepath, sizet in processNodeMatchIterator(offlineLister, commandArgs, handler, filefilt=filefilt, datasetName=datasetName, offline=True):
                         size, mtime = sizet
-                        if dmap.has_key((dsetName,-1)):
+                        if (dsetName,-1) in dmap:
                             dmap[(dsetName,-1)].append((filepath, str(size)))
                         else:
                             dmap[(dsetName,-1)] = [(filepath, str(size))]
 
-                    datasetNames = dmap.keys()
+                    datasetNames = list(dmap.keys())
 
             datasetNames.sort()
             if len(datasetNames)==0:
@@ -767,13 +767,13 @@ def main(argv):
             if thredds:
                 pid_connector.finish_messaging_thread()
             if test_publication:
-                print '\n' + bcolors.WARNING + '********************************************************************' + bcolors.ENDC
-                print bcolors.WARNING + '***                                                              ***' + bcolors.ENDC
-                print bcolors.WARNING + '***                        !!! WARNING !!!                       ***' + bcolors.ENDC
-                print bcolors.WARNING + '***                  Datasets are flagged as TEST                ***' + bcolors.ENDC
-                print bcolors.WARNING + '***  PIDs will be deleted from the Handle Server after a while.  ***' + bcolors.ENDC
-                print bcolors.WARNING + '***                                                              ***' + bcolors.ENDC
-                print bcolors.WARNING + '********************************************************************' + bcolors.ENDC + '\n'
+                print('\n' + bcolors.WARNING + '********************************************************************' + bcolors.ENDC)
+                print(bcolors.WARNING + '***                                                              ***' + bcolors.ENDC)
+                print(bcolors.WARNING + '***                        !!! WARNING !!!                       ***' + bcolors.ENDC)
+                print(bcolors.WARNING + '***                  Datasets are flagged as TEST                ***' + bcolors.ENDC)
+                print(bcolors.WARNING + '***  PIDs will be deleted from the Handle Server after a while.  ***' + bcolors.ENDC)
+                print(bcolors.WARNING + '***                                                              ***' + bcolors.ENDC)
+                print(bcolors.WARNING + '********************************************************************' + bcolors.ENDC + '\n')
     except:
         if pid_connector and thredds:
             pid_connector.force_finish_messaging_thread()

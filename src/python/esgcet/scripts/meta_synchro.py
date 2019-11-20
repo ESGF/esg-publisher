@@ -4,7 +4,7 @@
 import logging
 import sys, os, time, datetime, getopt, stat, string
 import xml.dom, lxml
-import ConfigParser
+import configparser
 import solr
 
 from sqlalchemy import create_engine, func, and_
@@ -99,7 +99,7 @@ rprt_fl = None
 
 HOST = os.environ.get("HOST")
 if HOST is None or len(HOST) ==0:
-	print "ERROR finding 'HOST' environment variable for Solr server. Please, set up it."
+	print("ERROR finding 'HOST' environment variable for Solr server. Please, set up it.")
 	exit(1)
 SOLR_HTTP = "http://" + HOST + ":8983/solr"
 
@@ -114,13 +114,13 @@ def getTDSDatasetDict(config, constr):
 	try:
 		thredd_catalog_path = config.get("DEFAULT","thredds_root")
 	except ESGPublishError:
-		print "ERROR! Configuration file option missing: 'threddds_root' in section: DEFAULT of esg.ini."  
+		print("ERROR! Configuration file option missing: 'threddds_root' in section: DEFAULT of esg.ini.")  
 		exit(1)
 		
 	thredd_catalog_xml = thredd_catalog_path + "/" + "catalog.xml" 
 
 	if not os.path.isfile(thredd_catalog_xml):
-		print "ERROR! Can not find THREDDS catalog.xml. File '" + thredd_catalog_xml + "' does not exist."
+		print("ERROR! Can not find THREDDS catalog.xml. File '" + thredd_catalog_xml + "' does not exist.")
 		exit(1)
 
 	tree = etree.parse(thredd_catalog_xml)
@@ -129,7 +129,7 @@ def getTDSDatasetDict(config, constr):
 	for ch in children:
 		if not ch.tag.endswith("catalogRef"):
 			continue
-		keys = ch.keys()
+		keys = list(ch.keys())
 		k_href = ""
 		for k in keys:
 			if k.endswith("href"):
@@ -140,22 +140,22 @@ def getTDSDatasetDict(config, constr):
 		#print "from getTDSDatasetDict(): ", ref_xml_name_full_pth
 		
 		if not os.path.isfile(ref_xml_name_full_pth) or os.stat(ref_xml_name_full_pth)[6]==0:
-			print "WARNING! THREDDS XML reference catalog " + ref_xml_name_full_pth + " does not exist or empty;"
-			print "dataset =", ch.get("name").strip(), " is excluded from validation."
+			print("WARNING! THREDDS XML reference catalog " + ref_xml_name_full_pth + " does not exist or empty;")
+			print("dataset =", ch.get("name").strip(), " is excluded from validation.")
 			continue
 			
-		if k_href in TDS_Dict.keys() and TDS_Dict_Redund[k_href]!=ref_xml_name:
+		if k_href in list(TDS_Dict.keys()) and TDS_Dict_Redund[k_href]!=ref_xml_name:
 			TDS_Dict_Redund.append((k_href,ref_xml_name))
 			continue
 		fndFlg = True
-		if len(filter(lambda x: x is not None, constr))>0:
+		if len([x for x in constr if x is not None])>0:
 			ds_nm = ch.get("name")
 			fndFlg = filter_TDS_dataset_name(ds_nm, constr, config)	
 		if fndFlg:		
 			TDS_Dict[ch.get("name").strip()] = ref_xml_name
 		
 	# check whether dataset names correspond to reference catalog xml names
-	for d in TDS_Dict.keys():
+	for d in list(TDS_Dict.keys()):
 		v = TDS_Dict[d]
 		_v = v[ v.find("/")+1 : v.rfind(".xml") ]
 		if d != _v:
@@ -168,7 +168,7 @@ def getTDSDatasetDict(config, constr):
 def removeOldVerTDS(TDS_Dict):
 	multiVersions = {}
 	KeyLst = list(TDS_Dict.keys())
-	ds_names = map(lambda k: k[0:k.rfind(".v")], KeyLst)
+	ds_names = [k[0:k.rfind(".v")] for k in KeyLst]
 
 	Indx_lst = []
 	for ds in ds_names:
@@ -177,7 +177,7 @@ def removeOldVerTDS(TDS_Dict):
 		Indx_lst = [indx for indx in range(len(ds_names)) if ds_names[indx]==ds]
 		multiVersions[ds] = Indx_lst
 		del Indx_lst
-	for ds in multiVersions.keys():
+	for ds in list(multiVersions.keys()):
 		Indx = multiVersions[ds] 
 		srtLst = []
 		for i in Indx:
@@ -196,7 +196,7 @@ def removeOldVerSolr(Solr_Lst):
 	multiVersions = {}
 	
 	# datasets names without versions:
-	ds_names = map(lambda k: k[0:k.rfind(".v")], Solr_Lst)
+	ds_names = [k[0:k.rfind(".v")] for k in Solr_Lst]
 	
 	Indx_lst = []
 	for ds in ds_names:
@@ -205,10 +205,10 @@ def removeOldVerSolr(Solr_Lst):
 		# list of indeces of versions of the same dataset: 		
 		Indx_lst = [indx for indx in range(len(ds_names)) if ds_names[indx]==ds]
 		multiVersions[ds] = Indx_lst
-		vrs = map(lambda k: Solr_Lst[k][Solr_Lst[k].rfind(".v")+1:], Indx_lst)
+		vrs = [Solr_Lst[k][Solr_Lst[k].rfind(".v")+1:] for k in Indx_lst]
 		DS_Versions[ds] = vrs
 		del Indx_lst
-	for ds in DS_Versions.keys():
+	for ds in list(DS_Versions.keys()):
 		vrs = DS_Versions[ds]
 		vrs.sort()
 		vrs.pop()
@@ -250,7 +250,7 @@ def getDBDatasetDict(session, constr):
 				   order_by(DatasetVersion.version)
 	for ds_id, ds_nm, ver in result_multi.all():
 		ds_shrt_nm = ds_nm[0:ds_nm.rfind(".v")]
-		if not ds_shrt_nm in DB_Dict_Multi.keys():
+		if not ds_shrt_nm in list(DB_Dict_Multi.keys()):
 			Vers = ["v"+str(ver)]
 		else:
 			Vers = DB_Dict_Multi[ds_shrt_nm]
@@ -281,7 +281,7 @@ def getTDSRefCatalogFiles(config,ref_xml):
 	thredd_ref_catalog_pthname = thredd_catalog_path + "/" + ref_xml
 	if not os.path.isfile(thredd_ref_catalog_pthname):
 		Ref_XML_Errors.append(ref_xml)
-		print "\nWARNING! " + ref_xml + " does not exist. Excluded from comparison."
+		print("\nWARNING! " + ref_xml + " does not exist. Excluded from comparison.")
 		return TDS_Files
 	root_nd = etree.parse(thredd_ref_catalog_pthname).getroot()
 	children = root_nd.getchildren()
@@ -420,8 +420,8 @@ def compare_DB_TDS_DatasetsOnly(TDS_Dict, DB_Dict):
 	
 	DB_TDS_Shared_DS_Dict = {}
 	DB_TDS_DIFF_DS = {}  
-	TDS_DataSets = TDS_Dict.keys()
-	DB_DataSets = DB_Dict.values()	
+	TDS_DataSets = list(TDS_Dict.keys())
+	DB_DataSets = list(DB_Dict.values())	
 	
 	for d1 in TDS_DataSets:
 		fndFlg = False
@@ -435,7 +435,7 @@ def compare_DB_TDS_DatasetsOnly(TDS_Dict, DB_Dict):
 			ds_diff = d1 + " " + rel_pth
 			DB_TDS_DIFF_DS[ds_diff] = ["N","Y"]
 		else:
-			k = DB_Dict.keys()[DB_DataSets.index(d2)] 
+			k = list(DB_Dict.keys())[DB_DataSets.index(d2)] 
 			DB_TDS_Shared_DS_Dict[k + " " + str(rel_pth)] = d1
 	for d1 in DB_DataSets:
 		fndFlg = False
@@ -444,8 +444,8 @@ def compare_DB_TDS_DatasetsOnly(TDS_Dict, DB_Dict):
 				fndFlg = True
 				break
 		if not fndFlg:
-			i2del = DB_Dict.values().index(d1)
-			key2del = DB_Dict.keys()[i2del]
+			i2del = list(DB_Dict.values()).index(d1)
+			key2del = list(DB_Dict.keys())[i2del]
 			ds_diff = d1 + " " +key2del
 			DB_TDS_DIFF_DS[ds_diff] = ["Y","N"]			
 	return (DB_TDS_Shared_DS_Dict, DB_TDS_DIFF_DS)
@@ -455,7 +455,7 @@ def compare_SOLR_DB_DatasetsOnly(Solr_DataSets, DB_Dict):
 # returns tuple of dictionaries - datasets existing in both sources and datasets differences
 	Solr_DB_Shared_DS_Dict = {}
 	Solr_DB_DIFF_DS = {}  
-	DB_DataSets = DB_Dict.values()	
+	DB_DataSets = list(DB_Dict.values())	
 	
 	for d1 in Solr_DataSets:
 		fndFlg = False
@@ -466,7 +466,7 @@ def compare_SOLR_DB_DatasetsOnly(Solr_DataSets, DB_Dict):
 		if not fndFlg:
 			Solr_DB_DIFF_DS[d1] = ["Y","N"]
 		else:
-			k = DB_Dict.keys()[DB_DataSets.index(d2)] 
+			k = list(DB_Dict.keys())[DB_DataSets.index(d2)] 
 			Solr_DB_Shared_DS_Dict[str(k)] = d1
 	for d1 in DB_DataSets:
 		fndFlg = False
@@ -483,7 +483,7 @@ def compare_SOLR_TDS_DatasetsOnly(Solr_DataSets, TDS_Dict):
 # returns tuple of dictionaries - datasets existing in both sources and datasets differences
 	Solr_TDS_Shared_DS_Lst = []
 	Solr_TDS_DIFF_DS = {}  
-	TDS_DataSets = TDS_Dict.keys()
+	TDS_DataSets = list(TDS_Dict.keys())
 	
 	for d1 in Solr_DataSets:
 		fndFlg = False
@@ -516,14 +516,14 @@ def getFiles_DB_TDS_MissedDatasets(DB_TDS_DIFF_DS, config, session):
 	TDS_Only_Files_Dict = {}
 	
 	i = 1		
-	for d in DB_TDS_DIFF_DS.keys():
+	for d in list(DB_TDS_DIFF_DS.keys()):
 		DB_Files = []
 		TDS_Files = []
 		if i%2==0:				
 			sys.stdout.write(".")
 			sys.stdout.flush()
-		if i%100==0:	print ""
-		if i%500==0:	print "\t", i, " out of ",len(DB_TDS_DIFF_DS) 
+		if i%100==0:	print("")
+		if i%500==0:	print("\t", i, " out of ",len(DB_TDS_DIFF_DS)) 
 		i = i + 1
 		v = DB_TDS_DIFF_DS[d]
 		if v[0] == "Y" and v[1] == "N":  # get files from DB
@@ -538,7 +538,7 @@ def getFiles_DB_TDS_MissedDatasets(DB_TDS_DIFF_DS, config, session):
 			DB_Only_Files_Dict[d + " all"] = DB_Files
 		if len(TDS_Files)>0:
 			TDS_Only_Files_Dict[d + " all"] = TDS_Files	
-	print ""
+	print("")
 	return (DB_Only_Files_Dict, TDS_Only_Files_Dict)
 
 
@@ -548,14 +548,14 @@ def getFiles_SOLR_DB_MissedDatasets(Solr_DB_DIFF_DS, session):
 	DB_Only_Files_Dict = {}
 	Solr_Only_Files_Dict = {}
 	i = 1
-	for d in Solr_DB_DIFF_DS.keys():
+	for d in list(Solr_DB_DIFF_DS.keys()):
 		DB_Files = []
 		Solr_Files = []
 		if i%2==0:	
 			sys.stdout.write(".")
 			sys.stdout.flush()
-		if i%100==0:	print ""
-		if i%500==0:	print "\t", i, " out of ",len(Solr_DB_DIFF_DS) 
+		if i%100==0:	print("")
+		if i%500==0:	print("\t", i, " out of ",len(Solr_DB_DIFF_DS)) 
 		i = i + 1
 		v = Solr_DB_DIFF_DS[d]
 		if v[0] == "Y" and v[1] == "N":  # get files from Solr
@@ -567,7 +567,7 @@ def getFiles_SOLR_DB_MissedDatasets(Solr_DB_DIFF_DS, session):
 			DB_Only_Files_Dict[d + " all"] = DB_Files
 		if len(Solr_Files)>0:
 			Solr_Only_Files_Dict[d + " all"] = Solr_Files	
-	print ""
+	print("")
 	s_fl.close()
 	return (Solr_Only_Files_Dict, DB_Only_Files_Dict) 
 
@@ -578,14 +578,14 @@ def getFiles_SOLR_TDS_MissedDatasets(Solr_TDS_DIFF_DS, config):
 	TDS_Only_Files_Dict = {}
 	Solr_Only_Files_Dict = {}
 	i = 1
-	for d in Solr_TDS_DIFF_DS.keys():
+	for d in list(Solr_TDS_DIFF_DS.keys()):
 		TDS_Files = []
 		Solr_Files = []
 		if i%2==0:	
 			sys.stdout.write(".")
 			sys.stdout.flush()
-		if i%100==0:	print ""
-		if i%500==0:	print "\t", i, " out of ",len(Solr_TDS_DIFF_DS) 
+		if i%100==0:	print("")
+		if i%500==0:	print("\t", i, " out of ",len(Solr_TDS_DIFF_DS)) 
 		i = i + 1
 		v = Solr_TDS_DIFF_DS[d]
 		if v[0] == "Y" and v[1] == "N":  # get files from Solr
@@ -598,7 +598,7 @@ def getFiles_SOLR_TDS_MissedDatasets(Solr_TDS_DIFF_DS, config):
 			TDS_Only_Files_Dict[d + " all"] = TDS_Files
 		if len(Solr_Files)>0:
 			Solr_Only_Files_Dict[d + " all"] = Solr_Files	
-	print ""
+	print("")
 	s_fl.close()
 	return (Solr_Only_Files_Dict, TDS_Only_Files_Dict)
 
@@ -608,7 +608,7 @@ def compare_DB_TDS_DatasetsFiles(DB_TDS_Shared_DS_Dict, session, config):
 	#  getting corresponding files and compare them;
 	#  the result will be returned as tuple: (DB_Only_Files_Dict, TDS_Only_Files_Dict)
 	
-	print "\nComparing files in DB/TDS peer datasets:"	
+	print("\nComparing files in DB/TDS peer datasets:")	
 
 	DB_Only_Files_Dict = {}
 	TDS_Only_Files_Dict = {}
@@ -620,8 +620,8 @@ def compare_DB_TDS_DatasetsFiles(DB_TDS_Shared_DS_Dict, session, config):
 		if i%2==0:	
 			sys.stdout.write(".")
 			sys.stdout.flush()
-		if i%100==0:	print ""
-		if i%500==0:	print "\t", i, " out of ",len(DB_TDS_Shared_DS_Dict) 
+		if i%100==0:	print("")
+		if i%500==0:	print("\t", i, " out of ",len(DB_TDS_Shared_DS_Dict)) 
 		i = i + 1
 		DB_Only_Files = []
 		TDS_Only_Files = []		
@@ -637,7 +637,7 @@ def compare_DB_TDS_DatasetsFiles(DB_TDS_Shared_DS_Dict, session, config):
 			DB_Only_Files_Dict[str(ds_id) + " " + dataset_name] = DB_Only_Files
 		if len(TDS_Only_Files)>0:	
 			TDS_Only_Files_Dict[rel_xmlpath + " " +	dataset_name] = TDS_Only_Files
-	print ""		
+	print("")		
 	return (DB_Only_Files_Dict, TDS_Only_Files_Dict)
 
 
@@ -651,14 +651,14 @@ def compare_SOLR_DB_DatasetsFiles(Common_Dict, session):
 	s_fl = solr.SolrConnection(SOLR_HTTP+"/files")
 	Solr_Only_Files_Dict = {}
 	DB_Only_Files_Dict = {}
-	print "Comparing files in Solr/DB peer datasets:"
+	print("Comparing files in Solr/DB peer datasets:")
 	i=1
-	for ds_id in Common_Dict.keys():
+	for ds_id in list(Common_Dict.keys()):
 		if i%2==0:	
 			sys.stdout.write(".")
 			sys.stdout.flush()
-		if i%100==0:	print ""
-		if i%500==0:	print "\t", i, " out of ",len(Common_Dict) 
+		if i%100==0:	print("")
+		if i%500==0:	print("\t", i, " out of ",len(Common_Dict)) 
 		ds_nm = Common_Dict[ds_id]
 		Solr_Fl_Lst = getSolrDatasetFiles(ds_nm, s_fl)
 		DB_Fl_Lst = getDBDatasetFiles(session, ds_id)
@@ -668,7 +668,7 @@ def compare_SOLR_DB_DatasetsFiles(Common_Dict, session):
 		if len(DB_Only_Files)>0:	
 			DB_Only_Files_Dict[ds_id + " " + ds_nm] = DB_Only_Files
 		i = i +1	
-	print ""
+	print("")
 	s_fl.close()
 	return (Solr_Only_Files_Dict, DB_Only_Files_Dict)
 
@@ -683,14 +683,14 @@ def compare_SOLR_TDS_DatasetsFiles(Solr_TDS_Shared_DS_Lst, config):
 	s_fl = solr.SolrConnection(SOLR_HTTP+"/files")
 	Solr_Only_Files_Dict = {}
 	TDS_Only_Files_Dict = {}
-	print "\nComparing files in Solr/TDS peer datasets:"
+	print("\nComparing files in Solr/TDS peer datasets:")
 	i=1
 	for ds_nm in Solr_TDS_Shared_DS_Lst:
 		if i%2==0:	
 			sys.stdout.write(".")
 			sys.stdout.flush()
-		if i%100==0:	print ""
-		if i%500==0:	print "\t", i, " out of ",len(Solr_TDS_Shared_DS_Lst) 
+		if i%100==0:	print("")
+		if i%500==0:	print("\t", i, " out of ",len(Solr_TDS_Shared_DS_Lst)) 
 		Solr_Fl_Lst = getSolrDatasetFiles(ds_nm, s_fl)
 		TDS_Fl_Lst = getTDSRefCatalogFiles(config, TDS_Dict[ds_nm])					
 		(Solr_Only_Files, TDS_Only_Files) = compareLists(Solr_Fl_Lst, TDS_Fl_Lst)
@@ -699,7 +699,7 @@ def compare_SOLR_TDS_DatasetsFiles(Solr_TDS_Shared_DS_Lst, config):
 		if len(TDS_Only_Files)>0:	
 			TDS_Only_Files_Dict[ds_nm] = TDS_Only_Files
 		i = i +1	
-	print ""
+	print("")
 	s_fl.close()
 	return (Solr_Only_Files_Dict, TDS_Only_Files_Dict)
 
@@ -711,10 +711,10 @@ def DB_THREDDS_Comparison(DB_Dict,TDS_Dict, config, session):
 	DB_Only_Files_Dict = {}
 	TDS_Only_Files_Dict = {}
 	
-	print "\n\n==============================================================================="
-	print "===================== Posgresql DB - THREDDS  Comparison ======================"
-	print "==============================================================================="
-	print "DB and TDS comparison started..."
+	print("\n\n===============================================================================")
+	print("===================== Posgresql DB - THREDDS  Comparison ======================")
+	print("===============================================================================")
+	print("DB and TDS comparison started...")
 	
 	# comparing datasets in DB and TDS (without files)
 	(DB_TDS_Shared_DS_Dict, DB_TDS_DIFF_DS) = compare_DB_TDS_DatasetsOnly(TDS_Dict, DB_Dict)
@@ -724,11 +724,11 @@ def DB_THREDDS_Comparison(DB_Dict,TDS_Dict, config, session):
 #	DB_TDS_DIFF_DS["cmip5.output1.NOAA-GFDL.GFDL-CM3.piControl.day.land.day.r1i1p1.v20110601 8"] = ["N","Y"]
 
 	
-	print "\n=================> DB_TDS_Shared_Datasets_Dict.size=" + str(len(DB_TDS_Shared_DS_Dict))
+	print("\n=================> DB_TDS_Shared_Datasets_Dict.size=" + str(len(DB_TDS_Shared_DS_Dict)))
 	if VERBOSE:
-		print "\n".join((k + " : " + DB_TDS_Shared_DS_Dict[k]) for k in DB_TDS_Shared_DS_Dict.keys())		
+		print("\n".join((k + " : " + DB_TDS_Shared_DS_Dict[k]) for k in list(DB_TDS_Shared_DS_Dict.keys())))		
 		
-	print "\nNumber of peer datasets in DB and TDS: " + str(len(DB_TDS_Shared_DS_Dict))
+	print("\nNumber of peer datasets in DB and TDS: " + str(len(DB_TDS_Shared_DS_Dict)))
 #	print "Number of different datasets in DB and TDS: " + str(len(DB_TDS_DIFF_DS.keys()))  
 	
 
@@ -748,58 +748,58 @@ def DB_THREDDS_Comparison(DB_Dict,TDS_Dict, config, session):
 		rprt_fl.write("\n".join(f for f in Ref_XML_Errors))
 
 	if len(DB_TDS_DIFF_DS)>0:
-		rprt_fl.write("\n\n=========> Datasets Difference between DB and TDS (size= " + str(len(DB_TDS_DIFF_DS.keys())) +" ) ===========>\n") 
+		rprt_fl.write("\n\n=========> Datasets Difference between DB and TDS (size= " + str(len(list(DB_TDS_DIFF_DS.keys()))) +" ) ===========>\n") 
 		rprt_fl.write("             shape: {<dataset_name> <dataset_id>|<rel_xmlpath> : ['Y','N'] | ['N','Y']}\n")
 		rprt_fl.write("             (['Y','N'] means dataset exists in DB and does not in TDS and vice versa)\n")
-		rprt_fl.write("\n".join(k+":"+str(DB_TDS_DIFF_DS[k]) for k in DB_TDS_DIFF_DS.keys()))	
+		rprt_fl.write("\n".join(k+":"+str(DB_TDS_DIFF_DS[k]) for k in list(DB_TDS_DIFF_DS.keys())))	
 	else:
-		print "No diferences in DB/TDS datasets."
+		print("No diferences in DB/TDS datasets.")
 		rprt_fl.write("\nNo diferences in DB/TDS datasets.\n") 
 	if len(DB_Only_Files_Dict)>0 or len(TDS_Only_Files_Dict)>0:
 		rprt_fl.write("\n\n\n===========================>  These are the files in missed datasets ===============>")
 	if len(DB_Only_Files_Dict)>0:
 		rprt_fl.write("\n\n===========> In DB only:\n")
-		for k in DB_Only_Files_Dict.keys():
+		for k in list(DB_Only_Files_Dict.keys()):
 			rprt_fl.write("\n"+k.split(" ")[0]+":\n")
 			rprt_fl.write("\n".join(("DB: " + k.split(" ")[0] + "|" + f) for f in DB_Only_Files_Dict[k]))
 		rprt_fl.write("\n<====================\n")
 	if len(TDS_Only_Files_Dict)>0:
 		rprt_fl.write("\n===========> In TDS only:\n")
-		for k in TDS_Only_Files_Dict.keys():
+		for k in list(TDS_Only_Files_Dict.keys()):
 			rprt_fl.write("\n"+k.split(" ")[0]+":\n")
 			rprt_fl.write("\n".join(("TDS: " + k.split(" ")[0] + "|" + f) for f in TDS_Only_Files_Dict[k]))
 		rprt_fl.write("\n<====================\n")
 
 	if VERBOSE:
-		if len(DB_TDS_DIFF_DS.keys()) > 0:
-			print "\n=================> len(Solr_DB_Shared_DS_Dict)=", len(DB_TDS_Shared_DS_Dict)
-			print "\n\n===============> len(Solr_DB_DIFF_DS)=", len(DB_TDS_DIFF_DS)
-			print "\n=========> Datasets Difference between Solr and DB (size= " + str(len(DB_TDS_DIFF_DS.keys())) +" ) ===========>\n" 
-			print "             shape: {<dataset_name dataset_id> <rel_xmlpath> : ['Y','N'] | ['N','Y']}"
-			print "             (['Y','N'] means dataset exists in Solr and does not in DB and vice versa)"
-			print "\n".join(k+":"+str(DB_TDS_DIFF_DS[k]) for k in DB_TDS_DIFF_DS.keys())
+		if len(list(DB_TDS_DIFF_DS.keys())) > 0:
+			print("\n=================> len(Solr_DB_Shared_DS_Dict)=", len(DB_TDS_Shared_DS_Dict))
+			print("\n\n===============> len(Solr_DB_DIFF_DS)=", len(DB_TDS_DIFF_DS))
+			print("\n=========> Datasets Difference between Solr and DB (size= " + str(len(list(DB_TDS_DIFF_DS.keys()))) +" ) ===========>\n") 
+			print("             shape: {<dataset_name dataset_id> <rel_xmlpath> : ['Y','N'] | ['N','Y']}")
+			print("             (['Y','N'] means dataset exists in Solr and does not in DB and vice versa)")
+			print("\n".join(k+":"+str(DB_TDS_DIFF_DS[k]) for k in list(DB_TDS_DIFF_DS.keys())))
     
 	# Walk through all peer datasets for both sources (DB, TDS) getting corresponding files and compare them;
 	
 	DB_Only_Files_Dict.clear()
 	TDS_Only_Files_Dict.clear()
 	
-	N_shared = len(DB_TDS_Shared_DS_Dict.keys())
+	N_shared = len(list(DB_TDS_Shared_DS_Dict.keys()))
 	Ndiff = 0		
 	if N_shared > 0:
 		(DB_Only_Files_Dict, TDS_Only_Files_Dict) = compare_DB_TDS_DatasetsFiles(DB_TDS_Shared_DS_Dict, session, config)	
-		for k in DB_Only_Files_Dict.keys():
+		for k in list(DB_Only_Files_Dict.keys()):
 			Ndiff = Ndiff + len(DB_Only_Files_Dict[k])
-		for k in TDS_Only_Files_Dict.keys():
+		for k in list(TDS_Only_Files_Dict.keys()):
 			Ndiff = Ndiff + len(TDS_Only_Files_Dict[k])
 		
-		print "Total number of files different in DB and TDS: " + str(Ndiff)		
+		print("Total number of files different in DB and TDS: " + str(Ndiff))		
 			
 	if VERBOSE: 
 		if len(DBNoneValueURL)>0:
-			print "\n================> 'None' URL value in DB file_version.url field (N="+ str(len(DBNoneValueURL)) +") =========>"
-			print "\n".join((f[0]+"|"+f[1]) for f in DBNoneValueURL)
-			print "\n"
+			print("\n================> 'None' URL value in DB file_version.url field (N="+ str(len(DBNoneValueURL)) +") =========>")
+			print("\n".join((f[0]+"|"+f[1]) for f in DBNoneValueURL))
+			print("\n")
 		
 	if len(DBNoneValueURL)>0:
 		rprt_fl.write("\n======> Postgress DB issue: ")
@@ -810,22 +810,22 @@ def DB_THREDDS_Comparison(DB_Dict,TDS_Dict, config, session):
 	if Ndiff==0 and N_shared>0:
 		rprt_fl.write("\nNo diferences in DB/TDS files belonging to peer datasets.\n")
 	elif N_shared==0:
-		print "No peer datasets in DB and TDS."
+		print("No peer datasets in DB and TDS.")
 		rprt_fl.write("\nNo peer datasets in DB and TDS.\n\n")
 	else:
 		rprt_fl.write("\nTotal number of different files in existing peer DB-TDS datasets: " + str(Ndiff))
 		if len(DB_Only_Files_Dict)>0:
 			rprt_fl.write("\n\n===========> These DB Datasets differ from those in TDS by these files (missed in TDS): ============>\n")
-			for k in DB_Only_Files_Dict.keys():
+			for k in list(DB_Only_Files_Dict.keys()):
 				rprt_fl.write("\n" + k.split(" ")[1] + ":\n")
 				rprt_fl.write("\n".join("\t"+f for f in DB_Only_Files_Dict[k]))
 		if len(TDS_Only_Files_Dict)>0:
 			rprt_fl.write("\n===========> These TDS Datasets differ from those in DB by these files (missed in DB): ============>\n")
-			for k in TDS_Only_Files_Dict.keys():
+			for k in list(TDS_Only_Files_Dict.keys()):
 				rprt_fl.write("\n" + k.split(" ")[1] + " :\n")
 				rprt_fl.write("\n".join("\t"+f for f in TDS_Only_Files_Dict[k]))
 
-	print "DB and TDS comparison completed."
+	print("DB and TDS comparison completed.")
 
 
 		 	
@@ -836,15 +836,15 @@ def SOLR_DB_Comparison(Solr_DS_Lst, DB_Dict, SOLR_HTTP, session):
 	DB_Only_Files_Dict = {}
 	Solr_Only_Files_Dict = {}
 
-	print "\n\n==============================================================================="
-	print "===================== SOLR - Posgresql DB Comparison =========================="
-	print "==============================================================================="
-	print "Solr and DB comparison started..."
+	print("\n\n===============================================================================")
+	print("===================== SOLR - Posgresql DB Comparison ==========================")
+	print("===============================================================================")
+	print("Solr and DB comparison started...")
 	
 	(Solr_DB_Shared_DS_Dict, Solr_DB_DIFF_DS) = compare_SOLR_DB_DatasetsOnly(Solr_DS_Lst, DB_Dict)
 	
-	print "\n=================> Solr_DB_Shared_Datasets_Dict, size= " + str(len(Solr_DB_Shared_DS_Dict)) 
-	print "\nNumber of peer datasets in Solr and TDS: ", len(Solr_DB_Shared_DS_Dict)
+	print("\n=================> Solr_DB_Shared_Datasets_Dict, size= " + str(len(Solr_DB_Shared_DS_Dict))) 
+	print("\nNumber of peer datasets in Solr and TDS: ", len(Solr_DB_Shared_DS_Dict))
 #	print "Number of different datasets in Solr and DB: " + str(len(Solr_DB_DIFF_DS.keys()))  
 
 	# get list of files from datasets missed in either source:
@@ -859,70 +859,70 @@ def SOLR_DB_Comparison(Solr_DS_Lst, DB_Dict, SOLR_HTTP, session):
 	rprt_fl.write("\n===================== SOLR - Posgresql DB Comparison ======================")		
 	rprt_fl.write("\n===========================================================================\n\n")
 
-	if len(Solr_DB_DIFF_DS.keys()) > 0:
-		rprt_fl.write("\n=========> Datasets Difference between Solr and Postgresql DB (size= " + str(len(Solr_DB_DIFF_DS.keys())) +" ) ===========>\n")
+	if len(list(Solr_DB_DIFF_DS.keys())) > 0:
+		rprt_fl.write("\n=========> Datasets Difference between Solr and Postgresql DB (size= " + str(len(list(Solr_DB_DIFF_DS.keys()))) +" ) ===========>\n")
 		rprt_fl.write("             shape: {<dataset_name> : ['Y','N'] | ['N','Y']}\n")
 		rprt_fl.write("             (['Y','N'] means dataset exists in Solr and does not in DB and vice versa)\n")
-		rprt_fl.write("\n".join(k+":"+str(Solr_DB_DIFF_DS[k]) for k in Solr_DB_DIFF_DS.keys()))	
+		rprt_fl.write("\n".join(k+":"+str(Solr_DB_DIFF_DS[k]) for k in list(Solr_DB_DIFF_DS.keys())))	
 	else:
-		print "No diferences in Solr/DB datasets."
+		print("No diferences in Solr/DB datasets.")
 		rprt_fl.write("\nNo diferences in Solr/DB datasets.\n") 
 	if len(DB_Only_Files_Dict)>0 or len(Solr_Only_Files_Dict)>0:
 		rprt_fl.write("\n\n\n===========================>  These are the files in missed datasets ===============>")
 	if len(DB_Only_Files_Dict)>0:
 		rprt_fl.write("\n\n===========> In DB only:\n")
-		for k in DB_Only_Files_Dict.keys():
+		for k in list(DB_Only_Files_Dict.keys()):
 			rprt_fl.write("\n"+k.split(" ")[0]+":\n")
 			rprt_fl.write("\n".join(("DB: " + k.split(" ")[0] + "|" + f) for f in DB_Only_Files_Dict[k]))
 		rprt_fl.write("\n<====================\n")
 	if len(Solr_Only_Files_Dict)>0:
 		rprt_fl.write("\n===========> In SOLR only:\n")
-		for k in Solr_Only_Files_Dict.keys():
+		for k in list(Solr_Only_Files_Dict.keys()):
 			rprt_fl.write("\n"+k.split(" ")[0]+":\n")
 			rprt_fl.write("\n".join(("SOLR: " + k.split(" ")[0] + "|" + f) for f in Solr_Only_Files_Dict[k]))
 		rprt_fl.write("\n<====================\n")
 
 	if VERBOSE:
-		if len(Solr_DB_DIFF_DS.keys()) > 0:
-			print "\n=================> len(Solr_DB_Shared_DS_Dict)=", len(Solr_DB_Shared_DS_Dict)
-			print "\n\n===============> len(Solr_DB_DIFF_DS)=", len(Solr_DB_DIFF_DS)
-			print "\n=========> Datasets Difference between Solr and DB (size= " + str(len(Solr_DB_DIFF_DS.keys())) +" ) ===========>\n" 
-			print "             shape: {<dataset_name dataset_id> <rel_xmlpath> : ['Y','N'] | ['N','Y']}"
-			print "             (['Y','N'] means dataset exists in Solr and does not in DB and vice versa)"
-			print "\n".join(k+":"+str(Solr_DB_DIFF_DS[k]) for k in Solr_DB_DIFF_DS.keys())
+		if len(list(Solr_DB_DIFF_DS.keys())) > 0:
+			print("\n=================> len(Solr_DB_Shared_DS_Dict)=", len(Solr_DB_Shared_DS_Dict))
+			print("\n\n===============> len(Solr_DB_DIFF_DS)=", len(Solr_DB_DIFF_DS))
+			print("\n=========> Datasets Difference between Solr and DB (size= " + str(len(list(Solr_DB_DIFF_DS.keys()))) +" ) ===========>\n") 
+			print("             shape: {<dataset_name dataset_id> <rel_xmlpath> : ['Y','N'] | ['N','Y']}")
+			print("             (['Y','N'] means dataset exists in Solr and does not in DB and vice versa)")
+			print("\n".join(k+":"+str(Solr_DB_DIFF_DS[k]) for k in list(Solr_DB_DIFF_DS.keys())))
 		
 	DB_Only_Files_Dict.clear()
 	Solr_Only_Files_Dict.clear()
 	
 	Ndiff = 0		
-	N_shared = len(Solr_DB_Shared_DS_Dict.keys())
+	N_shared = len(list(Solr_DB_Shared_DS_Dict.keys()))
 	if N_shared > 0:	
 		(Solr_Only_Files_Dict, DB_Only_Files_Dict) = compare_SOLR_DB_DatasetsFiles(Solr_DB_Shared_DS_Dict, session)				
 
-		for k in DB_Only_Files_Dict.keys():
+		for k in list(DB_Only_Files_Dict.keys()):
 			Ndiff = Ndiff + len(DB_Only_Files_Dict[k])
-		for k in Solr_Only_Files_Dict.keys():
+		for k in list(Solr_Only_Files_Dict.keys()):
 			Ndiff = Ndiff + len(Solr_Only_Files_Dict[k])
-		print "\nTotal number of files different in Solr / Postgresql DB peer datasets: " + str(Ndiff)		
+		print("\nTotal number of files different in Solr / Postgresql DB peer datasets: " + str(Ndiff))		
 
 	if Ndiff==0 and N_shared>0:
 		rprt_fl.write("\nNo diferences in Solr/DB files belonging to peer datasets.") 
 	elif N_shared==0:
-		print "No peer datasets in Solr and DB."
+		print("No peer datasets in Solr and DB.")
 		rprt_fl.write("\nNo peer datasets in Solr and DB.\n\n")
 	else:
 		rprt_fl.write("\nTotal number of different files in existing peer Solr/DB datasets: " + str(Ndiff))
 		if len(Solr_Only_Files_Dict)>0:
 			rprt_fl.write("\n===========> These Solr Datasets differ from those in DB by these files (missed in DB): ============>\n")
-			for k in Solr_Only_Files_Dict.keys():
+			for k in list(Solr_Only_Files_Dict.keys()):
 				rprt_fl.write("\n" + k.split(" ")[1] + " :\n")
 				rprt_fl.write("\n".join("\t"+f for f in Solr_Only_Files_Dict[k]))
 		if len(DB_Only_Files_Dict)>0:
 			rprt_fl.write("\n\n===========> These DB Datasets differ from those in Solr by these files (missed in Solr): ============>\n")
-			for k in DB_Only_Files_Dict.keys():
+			for k in list(DB_Only_Files_Dict.keys()):
 				rprt_fl.write("\n" + k.split(" ")[1] + ":\n")
 				rprt_fl.write("\n".join("\t"+f for f in DB_Only_Files_Dict[k]))
-	print "Solr and DB comparison completed."
+	print("Solr and DB comparison completed.")
 
 	
 
@@ -933,13 +933,13 @@ def SOLR_TDS_Comparison(Solr_DS_Lst, TDS_Dict, SOLR_HTTP, config):
 	Solr_Only_Files_Dict = {}
 	TDS_Only_Files_Dict = {}
 
-	print "\n\n==============================================================================="
-	print "=============================  SOLR - TDS Comparison ========================="
-	print "==============================================================================="
-	print "Solr and TDS comparison started..."
+	print("\n\n===============================================================================")
+	print("=============================  SOLR - TDS Comparison =========================")
+	print("===============================================================================")
+	print("Solr and TDS comparison started...")
 	
 	(Solr_TDS_Shared_DS_Lst, Solr_TDS_DIFF_DS) = compare_SOLR_TDS_DatasetsOnly(Solr_DS_Lst, TDS_Dict)
-	print "\nNumber of peer datasets in Solr and TDS: ", len(Solr_TDS_Shared_DS_Lst)
+	print("\nNumber of peer datasets in Solr and TDS: ", len(Solr_TDS_Shared_DS_Lst))
 
 	# get list of files from datasets missed in either source:
 	(Solr_Only_Files_Dict, TDS_Only_Files_Dict) = getFiles_SOLR_TDS_MissedDatasets(Solr_TDS_DIFF_DS, config)
@@ -953,42 +953,42 @@ def SOLR_TDS_Comparison(Solr_DS_Lst, TDS_Dict, SOLR_HTTP, config):
 		rprt_fl.write("                These TDS xml files do not exist though are referenced in TDS Catalog: =====>\n")
 		rprt_fl.write("\n".join(f for f in Ref_XML_Errors))
 
-	if len(Solr_TDS_DIFF_DS.keys()) > 0:
-		rprt_fl.write("\n\n=========> Datasets Difference between Solr and TDS (size= " + str(len(Solr_TDS_DIFF_DS.keys())) +" ) ===========>\n")
+	if len(list(Solr_TDS_DIFF_DS.keys())) > 0:
+		rprt_fl.write("\n\n=========> Datasets Difference between Solr and TDS (size= " + str(len(list(Solr_TDS_DIFF_DS.keys()))) +" ) ===========>\n")
 		rprt_fl.write("             shape: {<dataset_name> : ['Y','N'] | ['N','Y']}\n")
 		rprt_fl.write("             (['Y','N'] means dataset exists in Solr and does not in TDS and vice versa)\n")
-		rprt_fl.write("\n".join(k+":"+str(Solr_TDS_DIFF_DS[k]) for k in Solr_TDS_DIFF_DS.keys()))	
+		rprt_fl.write("\n".join(k+":"+str(Solr_TDS_DIFF_DS[k]) for k in list(Solr_TDS_DIFF_DS.keys())))	
 	else:
-		print "No diferences in DB/TDS datasets."
+		print("No diferences in DB/TDS datasets.")
 		rprt_fl.write("\nNo diferences in Solr/TDS datasets.\n") 
 
 	if len(TDS_Only_Files_Dict)>0 or len(Solr_Only_Files_Dict)>0:
 		rprt_fl.write("\n\n\n===========================>  These are the files in missed datasets ===============>")
 	if len(TDS_Only_Files_Dict)>0:
 		rprt_fl.write("\n\n===========> In TDS only:\n")
-		for k in TDS_Only_Files_Dict.keys():
+		for k in list(TDS_Only_Files_Dict.keys()):
 			rprt_fl.write("\n"+k.split(" ")[0]+":\n")
 			rprt_fl.write("\n".join(("TDS: " + k.split(" ")[0] + "|" + f) for f in TDS_Only_Files_Dict[k]))
 		rprt_fl.write("\n<====================\n")
 	if len(Solr_Only_Files_Dict)>0:
 		rprt_fl.write("\n===========> In SOLR only:\n")
-		for k in Solr_Only_Files_Dict.keys():
+		for k in list(Solr_Only_Files_Dict.keys()):
 			rprt_fl.write("\n"+k.split(" ")[0]+":\n")
 			rprt_fl.write("\n".join(("SOLR: " + k.split(" ")[0] + "|" + f) for f in Solr_Only_Files_Dict[k]))
 		rprt_fl.write("\n<====================\n")
 
 	if VERBOSE:
-		if len(Solr_TDS_DIFF_DS.keys()) > 0:
-			print "\n=========> Datasets Difference between Solr and TDS (size= " + str(len(Solr_TDS_DIFF_DS.keys())) +" ) ===========>\n" 
-			print "             shape: {<dataset_name dataset_id> <rel_xmlpath> : ['Y','N'] | ['N','Y']}"
-			print "             (['Y','N'] means dataset exists in Solr and does not in TDS and vice versa)"
-			print "\n".join(k+":"+str(Solr_TDS_DIFF_DS[k]) for k in Solr_TDS_DIFF_DS.keys())
+		if len(list(Solr_TDS_DIFF_DS.keys())) > 0:
+			print("\n=========> Datasets Difference between Solr and TDS (size= " + str(len(list(Solr_TDS_DIFF_DS.keys()))) +" ) ===========>\n") 
+			print("             shape: {<dataset_name dataset_id> <rel_xmlpath> : ['Y','N'] | ['N','Y']}")
+			print("             (['Y','N'] means dataset exists in Solr and does not in TDS and vice versa)")
+			print("\n".join(k+":"+str(Solr_TDS_DIFF_DS[k]) for k in list(Solr_TDS_DIFF_DS.keys())))
 		else:
-			print "No diferences in Solr/TDS datasets.\n"
-		if len(Solr_Only_Files_Dict.keys())>0:	
-			print "\nNumber of files in Solr non-peer datasets: ", sum(len(v) for v in Solr_Only_Files_Dict.itervalues()) 
-		if len(TDS_Only_Files_Dict.keys())>0:
-			print "\nNumber of files in TDS non-peer datasets: ", sum(len(v) for v in TDS_Only_Files_Dict.itervalues()) 
+			print("No diferences in Solr/TDS datasets.\n")
+		if len(list(Solr_Only_Files_Dict.keys()))>0:	
+			print("\nNumber of files in Solr non-peer datasets: ", sum(len(v) for v in Solr_Only_Files_Dict.values())) 
+		if len(list(TDS_Only_Files_Dict.keys()))>0:
+			print("\nNumber of files in TDS non-peer datasets: ", sum(len(v) for v in TDS_Only_Files_Dict.values())) 
 
 	
 	TDS_Only_Files_Dict.clear()
@@ -999,35 +999,35 @@ def SOLR_TDS_Comparison(Solr_DS_Lst, TDS_Dict, SOLR_HTTP, config):
 	if N_shared > 0:
 		(Solr_Only_Files_Dict, TDS_Only_Files_Dict) = compare_SOLR_TDS_DatasetsFiles(Solr_TDS_Shared_DS_Lst, config)
 
-		for k in TDS_Only_Files_Dict.keys():
+		for k in list(TDS_Only_Files_Dict.keys()):
 			Ndiff = Ndiff + len(TDS_Only_Files_Dict[k])
-		for k in Solr_Only_Files_Dict.keys():
+		for k in list(Solr_Only_Files_Dict.keys()):
 			Ndiff = Ndiff + len(Solr_Only_Files_Dict[k])
-		print "\nTotal number of files different in Solr and TDS: " + str(Ndiff)		
+		print("\nTotal number of files different in Solr and TDS: " + str(Ndiff))		
 	
 	if Ndiff==0 and N_shared>0:
 		rprt_fl.write("\nNo diferences in Solr/TDS files belonging to peer datasets.\n") 
 	elif N_shared==0:
-		print "No peer datasets in DB and TDS."
+		print("No peer datasets in DB and TDS.")
 		rprt_fl.write("\nNo peer datasets in Solr and TDS.\n\n")
 	else:
 		rprt_fl.write("\nTotal number of different files in peer Solr/TDS datasets: " + str(Ndiff))
 		if len(Solr_Only_Files_Dict)>0:
 			rprt_fl.write("\n===========> These Solr Datasets differ from those in TDS by these files (missed in TDS): ============>\n")
-			for k in Solr_Only_Files_Dict.keys():
+			for k in list(Solr_Only_Files_Dict.keys()):
 				rprt_fl.write("\n" + k.split(" ")[1] + " :\n")
 				rprt_fl.write("\n".join("\t"+f for f in Solr_Only_Files_Dict[k]))
 		if len(TDS_Only_Files_Dict)>0:
 			rprt_fl.write("\n\n===========> These TDS Datasets differ from those in Solr by these files (missed in Solr): ============>\n")
-			for k in TDS_Only_Files_Dict.keys():
+			for k in list(TDS_Only_Files_Dict.keys()):
 				rprt_fl.write("\n" + k.split(" ")[1] + ":\n")
 				rprt_fl.write("\n".join("\t"+f for f in TDS_Only_Files_Dict[k]))
 			
 	if VERBOSE:
-		print "\n=================> len(Solr_TDS_Shared_DS_Lst) = ", len(Solr_TDS_Shared_DS_Lst), " <================="
-		print "\n".join(k for k in Solr_TDS_Shared_DS_Lst)
+		print("\n=================> len(Solr_TDS_Shared_DS_Lst) = ", len(Solr_TDS_Shared_DS_Lst), " <=================")
+		print("\n".join(k for k in Solr_TDS_Shared_DS_Lst))
 		
-	print "Solr and TDS comparison completed."
+	print("Solr and TDS comparison completed.")
 
 
 def constrImposeTDS(dataset_name, constr):
@@ -1040,8 +1040,8 @@ def constrImposeTDS(dataset_name, constr):
 	for i in range(len(dataset_name_flds)):
 		for j in range(i+1,len(dataset_name_flds)):
 			if dataset_name_flds[i]==dataset_name_flds[j]:
-				print "ERROR! 2 identical fields '"+dataset_name_flds[i]+"' found in TDS dataset ", dataset_name
-				print "Using constraints suggested that all fields in dataset are different. Skip constraints."
+				print("ERROR! 2 identical fields '"+dataset_name_flds[i]+"' found in TDS dataset ", dataset_name)
+				print("Using constraints suggested that all fields in dataset are different. Skip constraints.")
 				exit (1)		
 	for c in constr:
 		if c is None:	continue
@@ -1061,7 +1061,7 @@ def filter_TDS_dataset_name(dataset_name, constr, config):
 
 	dataset_name_tkns = dataset_name.split(".")
 
-	if len(filter(lambda x: x is not None, constr))>len(dataset_name_tkns):	return False
+	if len([x for x in constr if x is not None])>len(dataset_name_tkns):	return False
 	
 	if constr[0] is not None and dataset_name_tkns[0]!=constr[0]:	return False
 	elif constr[0] == dataset_name_tkns[0] and constr[1] is None and constr[2] is None:
@@ -1073,25 +1073,25 @@ def filter_TDS_dataset_name(dataset_name, constr, config):
 	try:  # without project
 		ds_frmt_flds = config.get("project:"+ dataset_name_tkns[0], "dataset_id", raw=True).split(".")
 		ds_frmt_flds1 = ds_frmt_flds[1:]
-	except	ConfigParser.NoSectionError:
-		print "WARNING! Can not get dataset_id format from esg.ini for dataset " + dataset_name +". Skip it."
+	except	configparser.NoSectionError:
+		print("WARNING! Can not get dataset_id format from esg.ini for dataset " + dataset_name +". Skip it.")
 		return False
 
 	if len(dataset_name_tkns1)!=len(ds_frmt_flds):
-		print "ERROR! Dataset '" + dataset_name + "' does not correspond to dataset_id format in esg.ini:"
-		print ".".join(f for f in ds_frmt_flds)
-		print "Comparison is stopped."
+		print("ERROR! Dataset '" + dataset_name + "' does not correspond to dataset_id format in esg.ini:")
+		print(".".join(f for f in ds_frmt_flds))
+		print("Comparison is stopped.")
 		exit(1)
 		
-	constr_ctgs1 = map(lambda x, y: None if x is None else y, constr1, ["model","experiment"])  # project is skipped as it's verified directly
-	constr_notnull_ctgs = filter(lambda x: x is not None, constr_ctgs1)  # categories correspondented to notnull constraints
-	constr_notnull = filter(lambda x: x is not None, constr1)
+	constr_ctgs1 = list(map(lambda x, y: None if x is None else y, constr1, ["model","experiment"]))  # project is skipped as it's verified directly
+	constr_notnull_ctgs = [x for x in constr_ctgs1 if x is not None]  # categories correspondented to notnull constraints
+	constr_notnull = [x for x in constr1 if x is not None]
 	
-	impl_ctgs = filter(lambda x: x.find("%(") >=0, ds_frmt_flds1)  # categories of general form (%(categ)s)
+	impl_ctgs = [x for x in ds_frmt_flds1 if x.find("%(") >=0]  # categories of general form (%(categ)s)
 	for c in constr_notnull_ctgs:
-		if len(filter(lambda x: c in x, impl_ctgs))==0:
-			print "ERROR! Can not find facet '" + c + "' in esg.ini dataset_id format ",\
-				 ".".join(f for f in ds_frmt_flds)
+		if len([x for x in impl_ctgs if c in x])==0:
+			print("ERROR! Can not find facet '" + c + "' in esg.ini dataset_id format ",\
+				 ".".join(f for f in ds_frmt_flds))
 			exit(1)
 	fndFlg = False
 	
@@ -1114,8 +1114,8 @@ def main(argv):
 	try:
 		opts, args = getopt.getopt(argv, "ahve:m:p:l:", ['all', 'help', 'verbose', 'DT', 'SD', 'ST', 'log=', 'project=',  'model=', 'experiment='])
 	except getopt.GetoptError:
-		print sys.exc_value
-		print usage
+		print(sys.exc_info()[1])
+		print(usage)
 		sys.exit(1)
 	
 	CMP_FLG = 0	 
@@ -1130,12 +1130,12 @@ def main(argv):
 	rprt_file_name = "meta_synchro." + fl_stmp + ".log"
 	constr_categ = ["project","model","experiment"]
 	if len(args) > 0:
-			print "Wrong argumnet: ",  args[0]
-			print usage
+			print("Wrong argumnet: ",  args[0])
+			print(usage)
 			exit(1)
 
 	if len(opts) == 0:
-		print usage
+		print(usage)
 		exit(0)
 		 
 	for opt, arg in opts:
@@ -1163,11 +1163,11 @@ def main(argv):
 		elif opt in ['-v', '--verbose']:
 			VERBOSE = True
 		elif opt in ['-h', '--help']:
-			print help_message
+			print(help_message)
 			exit(0)
 		else:
-			print "Wrong option: ", opt 
-			print usage
+			print("Wrong option: ", opt) 
+			print(usage)
 			exit(1)
 			
 	rprt_fl = open(rprt_file_name,'w')
@@ -1203,53 +1203,53 @@ def main(argv):
 		for i in range(len(constr)):
 			if constr[i] is not None:	
 				cnstr_msg = cnstr_msg + "\n\t" + constr_categ[i] +": " + constr[i]
-	print st			
-	print "\n=================> Started ", Task_Message
-	print "report ->", rprt_file_name
-	print cnstr_msg	
+	print(st)			
+	print("\n=================> Started ", Task_Message)
+	print("report ->", rprt_file_name)
+	print(cnstr_msg)	
 		
 	rprt_fl.write("\n\n"+Task_Message)
 	rprt_fl.write("\n"+cnstr_msg+"\n")	
 
 	if CMP_FLG != 3:  # PostgreSQL
 		(DB_Dict, DB_Dict_Redund) = getDBDatasetDict(session, constr)
-		print "\n=================> DB Dictionary (size= " + str(len(DB_Dict)) +")"
+		print("\n=================> DB Dictionary (size= " + str(len(DB_Dict)) +")")
 		if VERBOSE:
-			print "\n".join((str(k) + " : " + DB_Dict[k]) for k in DB_Dict.keys())		
+			print("\n".join((str(k) + " : " + DB_Dict[k]) for k in list(DB_Dict.keys())))		
 		rprt_fl.write("\n\n=================> DB Datasets (size= " + str(len(DB_Dict)) +")\n")
 		if VERBOSE:
-			rprt_fl.write( "\n".join((str(k) + " : " + DB_Dict[k]) for k in DB_Dict.keys()) )
+			rprt_fl.write( "\n".join((str(k) + " : " + DB_Dict[k]) for k in list(DB_Dict.keys())) )
 	
 		if len(DB_Dict_Redund)>0:
 			rprt_fl.write("=====> DB table 'dataset' contains records (" + str(len(DB_Dict_Redund)) +\
 						  ") with different ids but the same dataset name/version: =====")
-			rprt_fl.write( "\n".join( (k + " " + DB_Dict_Redund[k]) for k in DB_Dict_Redund.keys() ) ) 
+			rprt_fl.write( "\n".join( (k + " " + DB_Dict_Redund[k]) for k in list(DB_Dict_Redund.keys()) ) ) 
 			
 	if CMP_FLG != 2:   # THREDDS
 		(TDS_Dict, TDS_Dict_Redund, TDS_Dict_Broken) = getTDSDatasetDict(config, constr)
-		print "\n=================> TDS Dictionary (size= " + str(len(TDS_Dict)) +")"		
+		print("\n=================> TDS Dictionary (size= " + str(len(TDS_Dict)) +")")		
 		rprt_fl.write("\n\n=================> TDS Datasets (size= " + str(len(TDS_Dict)) +")\n")
 		if VERBOSE:
-			print "\n".join((k + " : " + TDS_Dict[k]) for k in TDS_Dict.keys())		
-			rprt_fl.write( "\n".join((k + " : " + TDS_Dict[k]) for k in TDS_Dict.keys()) )
+			print("\n".join((k + " : " + TDS_Dict[k]) for k in list(TDS_Dict.keys())))		
+			rprt_fl.write( "\n".join((k + " : " + TDS_Dict[k]) for k in list(TDS_Dict.keys())) )
 		if len(TDS_Dict_Redund)>1:
 			rprt_fl.write("=====> TDS_Dict_Redund: (the same dataset names are listed multple times in main TDS catalog: =====>\n") 
-			rprt_fl.write("\n".join( (k + " : " + TDS_Dict_Redund[k]) for k in TDS_Dict_Redund.keys() ) )
+			rprt_fl.write("\n".join( (k + " : " + TDS_Dict_Redund[k]) for k in list(TDS_Dict_Redund.keys()) ) )
 		if len(TDS_Dict_Broken)>0:
 			rprt_fl.write("=====> TDS_dataset names do not correspond to reference catalog xmls in main catalog. There are " + str (len(TDS_Dict_Broken)) + " records: =====>\n") 
-			rprt_fl.write("\n".join( (k + " " + TDS_Dict_Broken[k]) for k in TDS_Dict_Broken.keys() ) ) 
+			rprt_fl.write("\n".join( (k + " " + TDS_Dict_Broken[k]) for k in list(TDS_Dict_Broken.keys()) ) ) 
 
 	if CMP_FLG != 1:   # Solr
 		(Solr_MultiVersion_DS, Solr_DS_Lst) = getSolrDatasetList(constr)
-		print "\n=================> Solr Dataset List (size= " + str(len(Solr_DS_Lst)) + ")"
+		print("\n=================> Solr Dataset List (size= " + str(len(Solr_DS_Lst)) + ")")
 		if VERBOSE:
-			print "\n".join(ds for ds in Solr_DS_Lst)		
+			print("\n".join(ds for ds in Solr_DS_Lst))		
 		rprt_fl.write("\n\n=================> Solr Datasets (size= " + str(len(Solr_DS_Lst)) + ")\n")
 		if VERBOSE:
 			rprt_fl.write("\n".join(ds for ds in Solr_DS_Lst))
 		if len(Solr_MultiVersion_DS) > 0:
 			rprt_fl.write(" \n\n =======> These Datasets are reperesented in Solr in multiversions (only last version is used in comparison): =====>\n")
-			rprt_fl.write("\n".join( (ds + " : [" + ", ".join(v for v in Solr_MultiVersion_DS[ds]) + "]") for ds in Solr_MultiVersion_DS.keys()))
+			rprt_fl.write("\n".join( (ds + " : [" + ", ".join(v for v in Solr_MultiVersion_DS[ds]) + "]") for ds in list(Solr_MultiVersion_DS.keys())))
 
 	if (CMP_FLG == 1 or CMP_FLG == 0) and (len(DB_Dict)>0 or len(TDS_Dict)>0):
 		DB_THREDDS_Comparison(DB_Dict,TDS_Dict, config, session)
@@ -1260,7 +1260,7 @@ def main(argv):
 		
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-	print "\n",st
+	print("\n",st)
 	rprt_fl.write("\n"+st)
 	rprt_fl.close()
 	session.close()

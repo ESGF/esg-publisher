@@ -27,8 +27,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "i:v")
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     init_dir = '/esg/config/esgcet/'

@@ -6,9 +6,9 @@ import getopt
 import textwrap
 import re
 import getpass
-from ConfigParser import RawConfigParser, SafeConfigParser, DEFAULTSECT, NoOptionError
+from configparser import RawConfigParser, SafeConfigParser, DEFAULTSECT, NoOptionError
 import subprocess
-import urlparse
+import urllib.parse
 import socket
 from esgcet.exceptions import *
 
@@ -85,7 +85,7 @@ minimalSetup = False                   # If True, ask the minimum number of ques
 def askyn(question, default='y'):
     if minimalSetup:
         return (default=='y')
-    answer = raw_input("%s [%s]: "%(question, default))
+    answer = input("%s [%s]: "%(question, default))
     if answer=='':
         result = default
     else:
@@ -120,16 +120,16 @@ def askfor(question, default=None, env=None, silent=False, ignore_minimal=False)
 
 
 def askForMultiple(prompt, displayCurrent=None):
-    print "%s:"%prompt
+    print("%s:"%prompt)
     if displayCurrent is not None:
-        print "Current value is: \n%s\n"%displayCurrent
+        print("Current value is: \n%s\n"%displayCurrent)
         result = displayCurrent+'\n'
     else:
         result = ''
     option = askfor("Replace (r) or Add lines (a)?", default='a')
     if option.lower()[0]=='r':
         result = ''
-    print "Enter lines, or <RETURN> to end"
+    print("Enter lines, or <RETURN> to end")
     #while True:
     #    answer = raw_input("Add new line: ")
     #    if answer!='':
@@ -141,7 +141,7 @@ def askForMultiple(prompt, displayCurrent=None):
 
 def tell(info):
     info = re.sub(r'\n[\t\r\f\v ]+', '\n   ', info)
-    print info
+    print(info)
 
 
 def getconfignames():
@@ -169,7 +169,7 @@ def updateconfig(updates, currentConfig=None):
     else:
         config = currentConfig
     for update in updates:
-        apply(config.set, update)
+        config.set(*update)
     esgini = open(configname, 'w+')
     config.write(esgini)
     esgini.close()
@@ -196,7 +196,7 @@ def setupconfig():
     configdir, configname = getconfignames()
     if not os.path.exists(configdir):
         tell("Creating %s"%configdir)
-        os.mkdir(configdir, 0755)
+        os.mkdir(configdir, 0o755)
 
     # Does esg.ini exist? If so, ask to proceed.
     templatename = os.path.join(configdir, 'template.ini')
@@ -211,7 +211,7 @@ def setupconfig():
     esgini = open(configname, 'w')
     esgini.write(templatestring)
     esgini.close()
-    os.chmod(configname, 0600)
+    os.chmod(configname, 0o600)
     templateini = open(templatename, 'w')
     templateini.write(templatestring)
     templateini.close()
@@ -246,8 +246,8 @@ def fetch_project_ini():
     """)
     try:
         subprocess.call(["esgfetchini", "-k"])
-    except OSError, e:
-        raise OSError("Cannot run esgfetchini: %s. Is $CDAT_HOME/bin in the path?" % `e`)
+    except OSError as e:
+        raise OSError("Cannot run esgfetchini: %s. Is $CDAT_HOME/bin in the path?" % repr(e))
 
 
 def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoints, optionList, handlerGroup, handlerClass, handler=None, handlerBasename=None, handlerTemplate=None, handlerOption=None, handlerPath=None):
@@ -296,7 +296,7 @@ class SaneConfigParser(SafeConfigParser):
     def get(self, section, option, raw=False, vars=None, **options):
         if vars is None:
             vars = {'here' : os.getcwd()}
-        elif not vars.has_key('here'):
+        elif 'here' not in vars:
             vars['here'] = os.getcwd()
 
         home = os.environ.get('HOME')
@@ -309,7 +309,7 @@ class SaneConfigParser(SafeConfigParser):
         try:
             value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
         except NoOptionError:
-            if options.has_key('default'):
+            if 'default' in options:
                 value = options['default']
             else:
                 raise ESGPublishError("Configuration file option missing: %s in section: %s, file=%s"%(option, section, self.name))
@@ -335,14 +335,14 @@ class SaneConfigParser(SafeConfigParser):
         """
         if self._defaults:
             fp.write("[%s]\n" % DEFAULTSECT)
-            defaultItems = self._defaults.items()
+            defaultItems = list(self._defaults.items())
             defaultItems.sort()
             for (key, value) in defaultItems:
                 fp.write("%s = %s\n" % (key, str(value).replace('\n', '\n\t')))
             fp.write("\n")
         for section in self._sections:
             fp.write("[%s]\n" % section)
-            sectionItems = self._sections[section].items()
+            sectionItems = list(self._sections[section].items())
             sectionItems.sort()
             for (key, value) in sectionItems:
                 if key != "__name__":
@@ -357,8 +357,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "h", ['config', 'db', 'db-admin=','db-admin-password=', 'db-user=', 'db-user-password=', 'db-host=', 'db-port=', 'db-name=', 'gateway=', 'handler', 'help', 'index=', 'publish', 'rootid=', 'minimal-setup', 'thredds', 'thredds-password='])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     dbadmin = None
@@ -379,7 +379,7 @@ def main(argv):
     threddsPassword = None
     for flag, arg in args:
         if flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='--config':
             initconfig = True
@@ -418,8 +418,8 @@ def main(argv):
             rootid = arg
 
     if not (initconfig or initdb or initthredds or initpublish or generateHandler):
-        print 'No option specified.'
-        print usage
+        print('No option specified.')
+        print(usage)
         sys.exit(0)
 
     if generateHandler:
@@ -477,7 +477,7 @@ def main(argv):
             try:
                 import psycopg2
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-            except ImportError, e:
+            except ImportError as e:
                 tell("""
 
                 The following error occurred:
@@ -495,7 +495,7 @@ def main(argv):
                 otherwise:
                 - Rerun 'easy_install -f %s esgcet' and check that psycopg2 builds correctly.
 
-                """%(`e`,REPOS))
+                """%(repr(e),REPOS))
                 sys.exit(1)
 
             if dbadmin is None:
@@ -614,11 +614,11 @@ def main(argv):
                 try:
                     cur.execute("drop database if exists %s"%dbname)
                     cur.execute("create database %s with owner %s"%(dbname, esguser))
-                except psycopg2.ProgrammingError, e:
-                    print 'Cannot create database %s: %s'%(dbname, `e`)
-                except psycopg2.OperationalError, e:
-                    print 'Cannot create database %s: %s'%(dbname, `e`)
-                    print 'Try restarting postgres, then rerun esgsetup --db'
+                except psycopg2.ProgrammingError as e:
+                    print('Cannot create database %s: %s'%(dbname, repr(e)))
+                except psycopg2.OperationalError as e:
+                    print('Cannot create database %s: %s'%(dbname, repr(e)))
+                    print('Try restarting postgres, then rerun esgsetup --db')
                     sys.exit(0)
 
             conn.close()
@@ -626,7 +626,7 @@ def main(argv):
             # Test sqlalchemy installation
             try:
                 import sqlalchemy
-            except ImportError, e:
+            except ImportError as e:
                 tell("""
 
                 The following error occurred:
@@ -640,7 +640,7 @@ def main(argv):
 
                 Rerun 'easy_install -f %s esgcet' and check that sqlalchemy built correctly.
 
-                """%(`e`,REPOS))
+                """%(repr(e),REPOS))
                 raise RuntimeError
 
             # SQLAlchemy versions <0.6 have protocol "postgres", >=0.6 use "postgresql"
@@ -660,7 +660,7 @@ def main(argv):
 
             try:
                 from migrate.versioning.api import version_control, db_version, downgrade
-            except ImportError, e:
+            except ImportError as e:
                 tell("""
 
                 The following error occurred:
@@ -671,7 +671,7 @@ def main(argv):
                 the esgcet package was installed.
 
                 Run 'easy_install SQLAlchemy-migrate' and ensure that the package built correctly.
-                """%`e`)
+                """%repr(e))
                 raise RuntimeError
 
             try:
@@ -685,7 +685,7 @@ def main(argv):
             if createdb:
                 try:
                     version_control(dburl, repo_path)
-                    print 'Enabled schema version control.'
+                    print('Enabled schema version control.')
                 except DatabaseAlreadyControlledError:
                     tell("""
 
@@ -717,10 +717,10 @@ def main(argv):
                     """)
                     ans = askyn("Do you want to rebuild the existing node database, and enable schema version control? (THIS WILL DELETE EXISTING DATA)")
                     if ans:
-                        print 'Enabling schema version control ...'
+                        print('Enabling schema version control ...')
                         version_control(dburl, repo_path, version=1)
                         downgrade(dburl, repo_path, 0)
-                        print 'Schema version control enabled.'
+                        print('Schema version control enabled.')
                     else:
                         tell("""
 
@@ -737,8 +737,8 @@ def main(argv):
             """%dbname)
             try:
                 subprocess.call(["esginitialize", "-c"])
-            except OSError, e:
-                raise OSError("Cannot run esginitialize: %s. Is $CDAT_HOME/bin in the path?"%`e`)
+            except OSError as e:
+                raise OSError("Cannot run esginitialize: %s. Is $CDAT_HOME/bin in the path?"%repr(e))
 
         except RuntimeError:
             tell("Script exited.")
@@ -842,13 +842,13 @@ def main(argv):
                 tell("No content directory in %s"%threddsTop)
             threddsRoot = os.path.join(threddsTop, "thredds/esgcet")
             defaultThreddsTopURL = dn(config.get('DEFAULT', 'thredds_url'))
-            urlfields = list(urlparse.urlparse(defaultThreddsTopURL))
+            urlfields = list(urllib.parse.urlparse(defaultThreddsTopURL))
             host = urlfields[1]
             hostfields = host.split()
             if len(hostfields)<3:
                 hostname = socket.getfqdn()
                 urlfields[1] = hostname
-            defaultThreddsTopURL = urlparse.urlunparse(urlfields)
+            defaultThreddsTopURL = urllib.parse.urlunparse(urlfields)
             threddsTopURL = askfor("URL of TDS root directory (this should include the full hostname or IP address, NOT localhost)", default=defaultThreddsTopURL)
             threddsURL = os.path.join(threddsTopURL, "esgcet")
             threddsMasterCatalog = askfor("Title of ESG master catalog (thredds_master_catalog_name)", default=config.get('DEFAULT', 'thredds_master_catalog_name', default="PCMDI Earth System Grid catalog"))
@@ -911,7 +911,7 @@ def main(argv):
                     if compoundName is not None:
                         defaultCompoundName = compoundName
                         break
-                compoundName = askfor("Compound file service name (includes the services: %s)"%`servTypes`, default=defaultCompoundName)
+                compoundName = askfor("Compound file service name (includes the services: %s)"%repr(servTypes), default=defaultCompoundName)
             threddsFileSpecs = ''
             for servtype, servurl, servname, compName in threddsServiceSpecs:
                 if servtype=='GridFTP':
@@ -977,13 +977,13 @@ def main(argv):
 
             # Get the gateway host from ESG_GATEWAY_SVC_ROOT if set
             if gatewayHost is None:
-                gatewayHost = urlparse.urlparse('http://'+svcroot).netloc
+                gatewayHost = urllib.parse.urlparse('http://'+svcroot).netloc
 
             # Get the default gateway URL from the remote metadata service URL
             defaultGatewayURL = "http://"+svcroot
-            URLtuple = urlparse.urlparse(defaultGatewayURL)
+            URLtuple = urllib.parse.urlparse(defaultGatewayURL)
             if gatewayHost is not None:
-                defaultHessianServiceURL = urlparse.urlunparse(("http", gatewayHost, os.path.join(URLtuple[2], METADATA_SERVICE), '', '', ''))
+                defaultHessianServiceURL = urllib.parse.urlunparse(("http", gatewayHost, os.path.join(URLtuple[2], METADATA_SERVICE), '', '', ''))
             else:
                 defaultHessianServiceURL = config.get('DEFAULT', 'hessian_service_remote_metadata_url', default=None)
             if defaultHessianServiceURL is not None:
@@ -992,10 +992,10 @@ def main(argv):
                     defaultGatewayURL = defaultHessianServiceURL[:ind]
 
             gatewayURL = askfor("Gateway home URL", default=defaultGatewayURL)
-            URLtuple = urlparse.urlparse(gatewayURL)
-            hessianServiceURL = urlparse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], PUBLISH_SERVICE), '', '', ''))
-            restServiceURL = urlparse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], REST_WEB_SERVICE), '', '', ''))
-            solrSearchServiceURL = urlparse.urlunparse(("http", URLtuple[1], os.path.join(URLtuple[2], SOLR_SEARCH_SERVICE), '', '', ''))
+            URLtuple = urllib.parse.urlparse(gatewayURL)
+            hessianServiceURL = urllib.parse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], PUBLISH_SERVICE), '', '', ''))
+            restServiceURL = urllib.parse.urlunparse(("https", URLtuple[1], os.path.join(URLtuple[2], REST_WEB_SERVICE), '', '', ''))
+            solrSearchServiceURL = urllib.parse.urlunparse(("http", URLtuple[1], os.path.join(URLtuple[2], SOLR_SEARCH_SERVICE), '', '', ''))
             gatewaySSLPort = askfor("Gateway https port number", default=defaultGatewaySSLPort)
             proxyCertificate = askfor("Proxy certificate path (Hint: the '-o' argument to myproxy-logon)", default=defaultProxyCertificate)
             hessianDebug = askyn("Should protocol debugging be turned on? (This generates a lot of output)", default=defaultHessianDebug)
@@ -1057,15 +1057,15 @@ def main(argv):
         setupThredds = askyn("Set up a THREDDS catalog hook?", default='n')
 
         if not (setupProject or setupFormat or setupMetadata or setupThredds):
-            print 'No handlers initialized.'
+            print('No handlers initialized.')
             sys.exit(0)
 
         # Create the directory if necessary
         if not os.path.exists(dirName):
-            print 'Creating %s'%dirName
+            print('Creating %s'%dirName)
             os.makedirs(dirName)
         if not os.path.exists(packageDir):
-            print 'Creating %s'%packageDir
+            print('Creating %s'%packageDir)
             os.makedirs(packageDir)
 
         handlerList = ""

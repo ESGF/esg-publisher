@@ -68,8 +68,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "hi:p:", ['all', 'echo-sql', 'experiment=', 'help', 'list-projects', 'list-properties', 'model=',  'no-header', 'project=', 'property=', 'select='])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     echoSql = False
@@ -89,7 +89,7 @@ def main(argv):
             name, op, value = parseQuery('experiment=%s'%arg)
             properties['experiment'] = (op, value)
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='-i':
             init_dir = arg
@@ -112,8 +112,8 @@ def main(argv):
         if len(lastargs)==1:
             projectName = lastargs[0]
         else:
-            print "No project specified."
-            print usage
+            print("No project specified.")
+            print(usage)
             sys.exit(0)
 
     # Load the configuration and set up a database connection
@@ -129,12 +129,12 @@ def main(argv):
 
     if listProperties:
         headers = getQueryFields(handler)
-        print headers
+        print(headers)
     elif listProjects:
         projectOption = config.get('initialize', 'project_options')
         projectSpecs = splitRecord(projectOption)
         for projectName, projectDesc, search_order in projectSpecs:
-            print '%s:\t%s'%(projectName, projectDesc)
+            print('%s:\t%s'%(projectName, projectDesc))
     else:
         result, headers = queryDatasets(projectName, handler, Session, properties, select=selectList, listall=listAll)
         printResult(headers, result, printHeaders=printHeaders)

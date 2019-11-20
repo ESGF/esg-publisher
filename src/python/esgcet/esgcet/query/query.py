@@ -8,6 +8,7 @@ from esgcet.config import getHandlerByName
 from esgcet.exceptions import *
 from esgcet.messaging import warning
 from sqlalchemy import or_
+from functools import reduce
 
 # Query operations
 EQ=1
@@ -23,9 +24,9 @@ def getItemCount(header, tuples):
     itemCount = [len(item) for item in header]
     for item in tuples:
         try:
-            itemCount = map(lambda x,y: max(x,y), itemCount, [leng(t) for t in item])
+            itemCount = list(map(lambda x,y: max(x,y), itemCount, [leng(t) for t in item]))
         except:
-            print item
+            print(item)
             raise
     return itemCount
 
@@ -54,21 +55,21 @@ def printResult(header, tuples, out=sys.stdout, printHeaders=True):
     else:
         format = reduce(lambda x,y: x+' | '+y, ["%%-%ds"%item for item in itemCount])
     if printHeaders:
-        print >>out, breakline
-        print >>out, format%tuple(header)
-        print >>out, breakline
+        print(breakline, file=out)
+        print(format%tuple(header), file=out)
+        print(breakline, file=out)
     count = 0
     for item in tuples:
         count += 1
         try:
-            print >>out, format%item
+            print(format%item, file=out)
         except:
-            print >>out, 'Barf!'
-            print >>out, item
+            print('Barf!', file=out)
+            print(item, file=out)
             sys.exit(0)
     if printHeaders:
-        print >>out, breakline
-        print >>out, '%d results found'%count
+        print(breakline, file=out)
+        print('%d results found'%count, file=out)
 
 def parseQuery(arg):
     """Parse a query argument.
@@ -91,7 +92,7 @@ def parseQuery(arg):
     return name, op, value
 
 def filterQuery(query, properties, nullableProperties):
-    for name, opvalue in properties.items():
+    for name, opvalue in list(properties.items()):
         op, value = opvalue
         dsetattr = getattr(Dataset, name)
         if op==EQ:
@@ -179,13 +180,13 @@ def getDerived(dset, dsetVersion, derivedHeaders, handler):
 def setEvent(event, attname, value):
         if attname=='publish_time':
             st = time.strptime(value, "%Y-%m-%d %H:%M:%S")
-            event.datetime = apply(datetime.datetime, st[0:6])
+            event.datetime = datetime.datetime(*st[0:6])
         elif attname=='publish_status':
             try:
                 event.event = eventNumber[value]
             except:
-                validStatus = eventNumber.keys()
-                raise ESGQueryError("Invalid publish status: %s, must be one of %s"%(value, `validStatus`))
+                validStatus = list(eventNumber.keys())
+                raise ESGQueryError("Invalid publish status: %s, must be one of %s"%(value, repr(validStatus)))
         else:
             raise Exception("Unknown event attribute: %s"%attname)
 
@@ -264,7 +265,7 @@ def queryDatasets(projectName, handler, Session, properties, select=None, listal
     for category in categories:
         if category not in basicHeaders+eventHeaders and handler.isMandatory(category):
             attHeaders.append(category)
-    for key, value in properties.items():
+    for key, value in list(properties.items()):
         if key not in basicHeaders+eventHeaders+attHeaders+derivedHeaders:
             attHeaders.append(key)
     headers = basicHeaders+attHeaders+eventHeaders+derivedHeaders
@@ -273,19 +274,19 @@ def queryDatasets(projectName, handler, Session, properties, select=None, listal
         for field in selectHeaders:
             if field not in headers:
                 raise ESGQueryError("Invalid field: %s"%field)
-        headerdict = dict(zip(headers, range(len(headers))))
+        headerdict = dict(list(zip(headers, list(range(len(headers))))))
 
     # Assemble properties
     basicProperties = {}
     eventProperties = {}
     attProperties = {}
     derivedProperties = {}
-    for key, value in properties.items():
+    for key, value in list(properties.items()):
         if key in basicHeaders:
             if key=='offline':
                 testvalue = value[1]
                 if testvalue not in ['t','f','True','False','%']:
-                    raise ESGQueryError("offline value should be one of: 't','f','True','False','%%'; was %s"%`testvalue`)
+                    raise ESGQueryError("offline value should be one of: 't','f','True','False','%%'; was %s"%repr(testvalue))
                 elif testvalue!='%':
                     basicProperties[key] = value
             else:
@@ -323,7 +324,7 @@ def queryDatasets(projectName, handler, Session, properties, select=None, listal
         if dset is not prevDset:
             latestEvents = {}           # version_number => latest event
             for event in dset.events[::-1]:
-                if not latestEvents.has_key(event.object_version):
+                if event.object_version not in latestEvents:
                     latestEvents[event.object_version] = event
         eventResult = getEvents(dset, dsetVersion, eventHeaders, latestEvents)
         if not filterProperties(eventResult, eventProperties, eventHeaders):
@@ -333,7 +334,7 @@ def queryDatasets(projectName, handler, Session, properties, select=None, listal
         if not filterProperties(derivedResult, derivedProperties, derivedHeaders):
             continue
 
-        entry = [`dset.id`, dset.name, dset.project, dset.model, dset.experiment, dset.run_name, `dset.offline`, dset.master_gateway]+attResult+eventResult+derivedResult
+        entry = [repr(dset.id), dset.name, dset.project, dset.model, dset.experiment, dset.run_name, repr(dset.offline), dset.master_gateway]+attResult+eventResult+derivedResult
         if select is None:
             tupleResult.append(tuple(entry))
         else:
@@ -374,7 +375,7 @@ def updateDatasetFromContext(context, datasetName, Session):
     # Set basic and event properties
     session = Session()
     session.add(dset)
-    for key,value in properties.items():
+    for key,value in list(properties.items()):
         if key in basicHeaders:
             if key!='id':
                 if key=='name':
@@ -436,7 +437,7 @@ def queryDatasetMap(datasetNames, Session, extra_fields=False):
         if versionObj is None:
             raise ESGPublishError("Version %d of dataset %s not found, cannot republish."%(useVersion, dset.name))
         filelist = versionObj.getFiles() # file versions
-        dmap[(name,useVersion)] = [(file.getLocation(), `file.getSize()`) for file in filelist]
+        dmap[(name,useVersion)] = [(file.getLocation(), repr(file.getSize())) for file in filelist]
 
         if extra_fields:
             for file in filelist:

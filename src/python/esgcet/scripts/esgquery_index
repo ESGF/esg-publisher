@@ -6,7 +6,9 @@ import string
 import re
 
 from lxml import etree
-from urllib2 import urlopen, HTTPError
+from urllib.request import urlopen
+from urllib.error import HTTPError
+from functools import reduce
 
 DATASET = 1
 FILE = 2
@@ -218,9 +220,9 @@ def getItemCount(header, tuples):
     itemCount = [len(item) for item in header]
     for item in tuples:
         try:
-            itemCount = map(lambda x,y: max(x,y), itemCount, [leng(t) for t in item])
+            itemCount = list(map(lambda x,y: max(x,y), itemCount, [leng(t) for t in item]))
         except:
-            print item
+            print(item)
             raise
     return itemCount
 
@@ -249,21 +251,21 @@ def printQueryResult(header, tuples, out=sys.stdout, printHeaders=True):
     else:
         format = reduce(lambda x,y: x+' | '+y, ["%%-%ds"%item for item in itemCount])
     if printHeaders:
-        print >>out, breakline
-        print >>out, format%tuple(header)
-        print >>out, breakline
+        print(breakline, file=out)
+        print(format%tuple(header), file=out)
+        print(breakline, file=out)
     count = 0
     for item in tuples:
         count += 1
         try:
-            print >>out, format%item
+            print(format%item, file=out)
         except:
-            print >>out, 'Barf!'
-            print >>out, item
+            print('Barf!', file=out)
+            print(item, file=out)
             sys.exit(0)
     if printHeaders:
-        print >>out, breakline
-        print >>out, '%d results found'%count
+        print(breakline, file=out)
+        print('%d results found'%count, file=out)
 
 try:
     from esgcet.query import printResult
@@ -303,14 +305,14 @@ def readChunk(service, query):
     try:
         tree = etree.parse(query)
     except IOError as xe:
-        print xe
+        print(xe)
         try:
             u = urlopen(query)
         except HTTPError as he:
             errorHtml = he.read()
             m = re.search(r'message.*?<u>(.*?)</u>', errorHtml)
             if m is not None:
-                print 'Error:', m.group(1)
+                print('Error:', m.group(1))
             sys.exit(1)
     return tree
 
@@ -321,7 +323,7 @@ def downloadResult(query, outpath, outpathIsStdout):
         errorHtml = he.read()
         m = re.search(r'message.*?<u>(.*?)</u>', errorHtml)
         if m is not None:
-            print 'Error:', m.group(1)
+            print('Error:', m.group(1))
         sys.exit(1)
     result = u.read()
     outpath.write(result)
@@ -417,10 +419,10 @@ def outputResults(results, format, header=None, prettyPrint=False, printHeaders=
         else:
             if delimiter is not None:
                 for item in results:
-                    print >>out, delimiter.join(item)
+                    print(delimiter.join(item), file=out)
             else:
                 for item in results:
-                    print >>out, item
+                    print(item, file=out)
     elif format=='wide':
         # valuedict: (id, field) => value
         objset = set()
@@ -445,12 +447,12 @@ def outputResults(results, format, header=None, prettyPrint=False, printHeaders=
         else:
             if delimiter is not None:
                 for item in wideResults:
-                    print >>out, delimiter.join(item)
+                    print(delimiter.join(item), file=out)
             else:
                 for item in wideResults:
-                    print >>out, item
+                    print(item, file=out)
     else:
-        print 'Format not yet implemented:', format
+        print('Format not yet implemented:', format)
         sys.exit(1)
 
 # Print facet results.
@@ -462,10 +464,10 @@ def outputFacetResults(results, header, prettyPrint=False, printHeaders=True, de
     else:
         if delimiter is not None:
             for item in results:
-                print delimiter.join(item)
+                print(delimiter.join(item))
         else:
             for item in results:
-                print item
+                print(item)
 
 def main(argv):
 
@@ -475,8 +477,8 @@ def main(argv):
     try:
         args, lastargs = getopt.getopt(argv, "d:ho:pq:t:v", ['count', 'delimiter=', 'facet-query=', 'facets=', 'fields=', 'format=', 'free-text=', 'help', 'limit=', 'offset=', 'pretty-print', 'service-url=', 'type=', 'verbose'])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     # Get the search URL from the publisher configuration if possible
@@ -528,7 +530,7 @@ def main(argv):
             if arg=='wget':
                 wgetScript = True
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='--limit':
             try:
@@ -573,7 +575,7 @@ def main(argv):
         facetValues = None
         query = formulateQuery(facets, fields, format, freetext, objtype, wgetService, offset, userLimit, facetValues=facetValues)
         if verbose:
-            print >>sys.stderr, 'Query: ', query
+            print('Query: ', query, file=sys.stderr)
         downloadResult(query, outpath, outpathIsStdout)
         return
 
@@ -582,7 +584,7 @@ def main(argv):
         userLimit = min(userLimit, DEFAULT_CHUNKSIZE)
         query = formulateQuery(facets, fields, format, freetext, objtype, service, offset, userLimit, facetValues=facetValues)
         if verbose:
-            print >>sys.stderr, 'Query: ', query
+            print('Query: ', query, file=sys.stderr)
         downloadResult(query, outpath, outpathIsStdout)
         return
 
@@ -611,7 +613,7 @@ def main(argv):
             limit = 0
         query = formulateQuery(facets, fields, format, freetext, objtype, service, offset, limit, facetValues=facetValues)
         if verbose:
-            print >>sys.stderr, 'Query: ', query
+            print('Query: ', query, file=sys.stderr)
 
         # Read a chunk
         chunk = readChunk(service, query)
@@ -645,7 +647,7 @@ def main(argv):
                 header=(head,'count')
             outputFacetResults(valueList, header, prettyPrint=prettyPrint, printHeaders=True, delimiter=delim, out=outpath)
     else:
-        print numFound
+        print(numFound)
 
     if not outpathIsStdout:
         outpath.close()

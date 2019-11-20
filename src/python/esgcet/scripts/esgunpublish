@@ -3,7 +3,7 @@
 import sys
 import os
 import getopt
-import urlparse
+import urllib.parse
 import logging
 import string
 
@@ -141,10 +141,10 @@ def cleanupCatalogs(arg, dirname, names):
         base, suffix = os.path.splitext(name)
         if suffix==".xml" and name not in ["catalog.xml"]:
             fullname = os.path.join(dirname, name)
-            if not arg.has_key(fullname):
-                ans = raw_input("The catalog %s is 'orphaned', delete? [y|n]: "%fullname)
+            if fullname not in arg:
+                ans = input("The catalog %s is 'orphaned', delete? [y|n]: "%fullname)
                 if ans.lower()=='y':
-                    print "Deleting %s"%fullname
+                    print("Deleting %s"%fullname)
                     os.unlink(fullname)
 
 
@@ -161,7 +161,7 @@ def republishDataset(result, Session, thredds, gatewayOp):
         info("Republishing modified datasets:")
         republishDatasetNames = [generateDatasetVersionId(dsetTuple) for dsetTuple in republishList]
         dmap, offline, extraFields = queryDatasetMap(republishDatasetNames, Session, True)
-        datasetNames = dmap.keys()
+        datasetNames = list(dmap.keys())
         datasets = iterateOverDatasets(None, dmap, None, republishList, Session, "time", UPDATE_OP, None, {}, offline, {}, forceAggregate=True, extraFields=extraFields)
         republishOp = (gatewayOp != NO_OPERATION) # Don't republish if skipping the gateway op
         result = publishDatasetList(datasetNames, Session, publish=republishOp, thredds=thredds)
@@ -174,8 +174,8 @@ def main(argv):
                                                      'keep-credentials', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index',
                                                      'las', 'log=', 'project=', 'rest-api', 'retract', 'skip-thredds', 'sync-thredds', 'test', 'use-list='])
     except getopt.error:
-        print sys.exc_value
-        print usage
+        print(sys.exc_info()[1])
+        print(usage)
         sys.exit(0)
 
     deleteAll = False
@@ -212,7 +212,7 @@ def main(argv):
         elif flag=='--echo-sql':
             echoSql = True
         elif flag in ['-h', '--help']:
-            print usage
+            print(usage)
             sys.exit(0)
         elif flag=='--hessian-api':
             rest_api = False
@@ -234,12 +234,12 @@ def main(argv):
             gatewayOp = NO_OPERATION
         elif flag=='--delete':
             if gatewayOp == UNPUBLISH:
-                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                print("Error: invalid arguments: must use either --delete or --retract but not both!")
                 exit(1)
             gatewayOp = DELETE
         elif flag=='--retract':
             if gatewayOp == DELETE:
-                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                print("Error: invalid arguments: must use either --delete or --retract but not both!")
                 exit(1)
             gatewayOp = UNPUBLISH
         elif flag=='--las':
@@ -293,8 +293,8 @@ def main(argv):
 
 
     if gatewayOp == UNINITIALIZED:
-        print "esgunpublish usage error:  index unpublication mode not set.  Must use one of following options:"
-        print "--skip-index, --database-only, --delete, --retract"      
+        print("esgunpublish usage error:  index unpublication mode not set.  Must use one of following options:")
+        print("--skip-index, --database-only, --delete, --retract")      
         exit(1)  
 
     # Get the default publication interface (REST or Hessian)
@@ -302,12 +302,12 @@ def main(argv):
         restApi = config.getboolean('DEFAULT', 'use_rest_api', default=restApiDefault)
 
     if not data_node:
-        data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+        data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
     elif data_node == 'all':
         if not restApi:
             data_node = None
         else:
-            data_node = urlparse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+            data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
             warning('Cannot unpublish from multiple data nodes using REST, unpublishing from %s.' % (data_node))
 
     # Register project handlers
@@ -348,7 +348,7 @@ def main(argv):
                     except:
                         error("Skipping %s: File does not match ESGF mapfile format." %os.path.join(root, mapfile))
                         continue
-                    datasetNames = datasetMap.keys()
+                    datasetNames = list(datasetMap.keys())
                     datasetNames.sort()
                     result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset,
                                                deleteAll=deleteAll, republish=republish, reinitThredds=False,
@@ -364,7 +364,7 @@ def main(argv):
                 result = reinitializeThredds()
 
         else:
-            datasetNames = datasetMap.keys()
+            datasetNames = list(datasetMap.keys())
             datasetNames.sort()
 
             result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
