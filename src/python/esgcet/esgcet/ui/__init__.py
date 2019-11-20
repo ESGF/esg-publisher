@@ -1,2 +1,0 @@
-# Publisher user interface
-pass
