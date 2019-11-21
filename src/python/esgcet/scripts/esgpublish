@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from esgcet.publish import extractFromDataset, aggregateVariables, filelistIterator, fnmatchIterator, fnIterator, directoryIterator, \
     multiDirectoryIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets, publishDatasetList, \
     processIterator, processNodeMatchIterator, CREATE_OP, DELETE_OP, RENAME_OP, UPDATE_OP, REPLACE_OP, reinitializeThredds, \
-    updateThreddsMasterCatalog, establish_pid_connection, bcolors, create_cim_from_dmap, setup_cdf2cim_environment, set_verbose_cim_errors
+    updateThreddsMasterCatalog, establish_pid_connection, bcolors,   create_cim_from_dmap, setup_cdf2cim_environment, set_verbose_cim_errors
 from esgcet.config import loadConfig, getHandler, getHandlerByName, initLogging, registerHandlers, splitLine, getOfflineLister, getThreddsServiceSpecs
 from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
@@ -534,6 +534,8 @@ def main(argv):
     if createCim and not mapfileProvided:
         raise ESGPublishError("--create-cim can only be used with --map")
 
+    createCim = False  
+    createCimOnly = False 
 
     # The project must be specified
     if projectName is None:

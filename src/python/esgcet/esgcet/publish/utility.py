@@ -1090,6 +1090,7 @@ def tracebackString(indent=0):
 
 
 def establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=True):
+
     """Establish a connection to the PID service
 
     pid_prefix
@@ -1110,6 +1111,8 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     publish
         Flag to trigger publication and unpublication
     """
+
+    return
 
     try:
         import esgfpid
@@ -1143,6 +1146,7 @@ def check_pid_connection(pid_connector, send_message=False):
     Check the connection to the PID rabbit MQ
     Raise an Error if connection fails
     """
+    return
     pid_queue_return_msg = pid_connector.check_pid_queue_availability(send_message=send_message)
     if pid_queue_return_msg is not None:
         raise ESGPublishError("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")

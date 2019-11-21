@@ -71,8 +71,8 @@ setup(
         "requests>=2.20.0",
         "MyProxyClient>=2.1.0",
         "esgf-pyclient>=0.1.8",
-        "esgfpid>=0.7.16",
-        "cdf2cim>=0.3.3.0",
+        # "esgfpid>=0.7.16",
+         "cdf2cim>=0.3.3.0",
     ],
     setup_requires = [
         "psycopg2>=2.0,<2.8",
@@ -94,7 +94,6 @@ setup(
     scripts = [
         'scripts/esgcheck_times',
         'scripts/esgextract',
-        'scripts/esgcopy_files',
         'scripts/esgcreate_tables',
         'scripts/esgdrop_tables',
         'scripts/esginitialize',
@@ -111,11 +110,6 @@ setup(
         'scripts/esgfind_excludes',
         'scripts/esgtest_publish',
         'scripts/meta_synchro.py',
-        'scripts/gen_versions.py',
-        'scripts/hsils.py',
-        'scripts/ls.py',
-        'scripts/msls.py',
-        'scripts/srmls.py',
     ],
     zip_safe = False,                   # Migration repository must be a directory
     entry_points = """
