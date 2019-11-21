@@ -20,9 +20,6 @@ from esgcet.exceptions import *
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from time import time
 
-# Force stat modification times to be returned as integers for consistency.
-# By default, os.stat(path).st_mtime returns a float.
-os.stat_float_times(False)
 
 UPDATE_TIMESTAMP = "/tmp/publisher-last-check"
 DEFAULT_CERTS_LOCATION_SUFFIX = "/.globus/certificates"

@@ -46,12 +46,12 @@ def check_version(ex, vers, minvers):
 pgvers = run_config("pg_config", "--version")
 xml2vers = run_config("xml2-config", "--version")
 xsltvers = run_config("xslt-config", "--version")
-check_version("Postgres", pgvers[0], MIN_PG_VERSION)
-check_version("libxml2", xml2vers[0], MIN_XML2_VERSION)
-check_version("libxslt", xsltvers[0], MIN_XSLT_VERSION)
+check_version("Postgres", pgvers[0].decode('utf-8'), MIN_PG_VERSION)
+check_version("libxml2", xml2vers[0].decode('utf-8'), MIN_XML2_VERSION)
+check_version("libxslt", xsltvers[0].decode('utf-8'), MIN_XSLT_VERSION)
 
 # Set the version string in esgcet.esgcet.__init__.py
-v = file(os.path.join(os.path.dirname(__file__), 'esgcet', '__init__.py'))
+v = open(os.path.join(os.path.dirname(__file__), 'esgcet', '__init__.py'))
 VERSION = re.compile(r".*__version__ = '(.*?)'", re.S).match(v.read()).group(1)
 v.close()
 print("esgcet version =", VERSION)
@@ -68,7 +68,7 @@ setup(
         "SQLAlchemy>0.5.3,<1.3",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
-        "requests>=2.20.0",
+        "requests==2.20.0",
         "MyProxyClient>=2.1.0",
         "esgf-pyclient>=0.1.8",
         # "esgfpid>=0.7.16",
@@ -79,7 +79,7 @@ setup(
         "SQLAlchemy>0.5.3,<1.3",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
-        "requests>=2.20.0",
+        "requests==2.20.0",
     ],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
@@ -87,7 +87,6 @@ setup(
     # Install the CF standard name table, ESG init file, etc.
     package_data = {
         'esgcet.config.etc': ['*.ini', '*.xml', '*.txt', '*.tmpl'],
-        'esgcet.ui': ['*.gif'],
         'esgcet.schema_migration': ['migrate.cfg'],
         'esgcet.schema_migration.versions': ['*.sql'],
     },
@@ -99,7 +98,6 @@ setup(
         'scripts/esginitialize',
         'scripts/esglist_datasets',
         'scripts/esglist_files',
-        'scripts/esgpublish_gui',
         'scripts/esgsetup',
         'scripts/esgpublish',
         'scripts/esgquery_gateway',
