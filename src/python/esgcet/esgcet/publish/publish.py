@@ -6,9 +6,8 @@ from esgcet.model import *
 from esgcet.config import getHandlerByName, getConfig
 from .thredds import generateThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, reinitializeThredds
 from .las import reinitializeLAS
-from .hessianlib import Hessian
 from esgcet.exceptions import *
-from .utility import issueCallback, getHessianServiceURL, getRestServiceURL, getServiceCertsLoc
+from .utility import issueCallback,  getRestServiceURL, getServiceCertsLoc
 from esgcet import messaging
 from .rest import RestPublicationService
 
@@ -319,21 +318,14 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
         threddsRootURL = config.get('DEFAULT', 'thredds_url')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        if not restInterface:
-            serviceURL = getHessianServiceURL(project_config_section=project_config_section)
-            servicePort = config.getint('DEFAULT','hessian_service_port')
-            serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
-            servicePollingDelay = config.getfloat('DEFAULT','hessian_service_polling_delay')
-            spi = servicePollingIterations = config.getint('DEFAULT','hessian_service_polling_iterations')
-            service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
-        else:                   # REST service
-            spi = 1
+               # REST service
+        spi = 1
 
-            service_certs_location = getServiceCertsLoc()
+        service_certs_location = getServiceCertsLoc()
 
-            serviceURL = getRestServiceURL(project_config_section=project_config_section)
-            serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
-            service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
+        serviceURL = getRestServiceURL(project_config_section=project_config_section)
+        serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
+        service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
 
         results = []
         lenresults = len(datasetNames)

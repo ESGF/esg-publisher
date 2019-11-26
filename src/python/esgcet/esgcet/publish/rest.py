@@ -17,13 +17,10 @@ class RestPublicationService(object):
         supports both the current and legacy publication services.
 
         The current API is defined at:
-        http://esgf.org/wiki/ESGF_Publishing_Services
-
-        See http://esgf.org/esg-search-site/LegacyPublishingService.html
-        for definition of the legacy API.
+        http://esgf.github.io/esg-search/REST_Publishing_Services.html
 
         url
-          Publication service URL. For example, 'https://pcmdi9.llnl.gov/esg-search/ws/'.
+          Publication service URL. For example, 'https://esgf-node.llnl.gov/esg-search/ws/'.
           Note that the actual service operation will be appended to the URL.
 
         certFile

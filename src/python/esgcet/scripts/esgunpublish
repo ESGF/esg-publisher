@@ -75,8 +75,6 @@ Options:
 
     -h, --help: Print a help message.
 
-    --hessian-api: Use the legacy publishing API. See also --rest-api.
-
     -i init_dir:
         Directory containing all initialization files.
         Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
@@ -106,17 +104,6 @@ Options:
 
     --project project_id:
         Project identifier. This option is mandatory.
-
-    --rest-api
-        Publish using the RESTful publication services. The configuration file option ``rest_service_url''
-        defines the service location. If it is undefined, the service location is
-        https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
-
-        Note: With this option, the dataset_name should have the form 'dataset_id|data_node'.
-
-        If neither --rest-api nor --hessian-api are specified, then config file option use_rest_api is used,
-        and if this option is not found, the **legacy** API is used by default.
-        ** This contrasts with 'esgpublish' but it is intended to change this behavior in future. **
 
     --skip-index: Perform local (node) operations, skip SOLR index dataset delete.
 
@@ -170,9 +157,8 @@ def republishDataset(result, Session, thredds, gatewayOp):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "hi:", ['data-node=', 'database-delete', 'database-only', 'delete', 'echo-sql', 'help', 'hessian-api',
-                                                     'keep-credentials', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index',
-                                                     'las', 'log=', 'project=', 'rest-api', 'retract', 'skip-thredds', 'sync-thredds', 'test', 'use-list='])
+        args, lastargs = getopt.getopt(argv, "hi:", ['data-node=', 'database-delete', 'database-only', 'delete', 'echo-sql', 'help',                                                      'keep-credentials', 'map=', 'no-republish', 'no-thredds-reinit', 'skip-gateway', 'skip-index',
+                                                     'las', 'log=', 'project=',  'retract', 'skip-thredds', 'sync-thredds', 'test', 'use-list='])
     except getopt.error:
         print(sys.exc_info()[1])
         print(usage)
@@ -189,8 +175,6 @@ def main(argv):
     las = False
     log_filename = None
     republish = True
-    restApi = None
-    restApiDefault = True
     thredds = True
     syncThredds = False
     useList = False
@@ -214,9 +198,6 @@ def main(argv):
         elif flag in ['-h', '--help']:
             print(usage)
             sys.exit(0)
-        elif flag=='--hessian-api':
-            rest_api = False
-            restApiDefault = False
         elif flag=='-i':
             init_dir = arg
         elif flag == '--keep-credentials':
@@ -252,8 +233,6 @@ def main(argv):
             threddsReinit = False
         elif flag == '--project':
             projectName = arg
-        elif flag=='--rest-api':
-            restApi = True
         elif flag=='--skip-thredds':
             thredds = False
         elif flag=='--sync-thredds':
@@ -297,18 +276,11 @@ def main(argv):
         print("--skip-index, --database-only, --delete, --retract")      
         exit(1)  
 
-    # Get the default publication interface (REST or Hessian)
-    if restApi is None:
-        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=restApiDefault)
-
     if not data_node:
         data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
     elif data_node == 'all':
-        if not restApi:
-            data_node = None
-        else:
-            data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
-            warning('Cannot unpublish from multiple data nodes using REST, unpublishing from %s.' % (data_node))
+        data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
+        warning('Cannot unpublish from multiple data nodes using REST, unpublishing from %s.' % (data_node))
 
     # Register project handlers
     registerHandlers(projectName)
@@ -336,7 +308,7 @@ def main(argv):
                     versionId = parseDatasetVersionId(line.strip())
                     datasetNames.append(versionId)
             result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
-                                       republish=republish, reinitThredds=threddsReinit, restInterface=restApi,
+                                       republish=republish, reinitThredds=threddsReinit, restInterface=True,
                                        pid_connector=pid_connector, project_config_section=project_config_section,
                                        data_node=data_node)
 
@@ -352,7 +324,7 @@ def main(argv):
                     datasetNames.sort()
                     result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset,
                                                deleteAll=deleteAll, republish=republish, reinitThredds=False,
-                                               restInterface=restApi, pid_connector=pid_connector,
+                                               restInterface=True, pid_connector=pid_connector,
                                                project_config_section=project_config_section, data_node=data_node)
 
                     if republish:
@@ -368,7 +340,7 @@ def main(argv):
             datasetNames.sort()
 
             result = deleteDatasetList(datasetNames, Session, gatewayOp, thredds, las, deleteDset, deleteAll=deleteAll,
-                                       republish=republish, reinitThredds=threddsReinit, restInterface=restApi,
+                                       republish=republish, reinitThredds=threddsReinit, restInterface=True,
                                        pid_connector=pid_connector, project_config_section=project_config_section,
                                        data_node=data_node)
 

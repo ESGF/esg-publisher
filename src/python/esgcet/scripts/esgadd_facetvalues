@@ -168,11 +168,6 @@ Options:
         DEPRECATED: Use --set-replica instead.
         Flag the dataset(s) as replicated. master_gateway_id is ignored.
 
-    --rest-api
-        Publish using the RESTful publication services. The configuration file option ``rest_service_url''
-        defines the service location. If it is undefined, the service location is
-        https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
-
     --service service_name
         Specify a THREDDS service name to associate with an offline dataset. If omitted, the name of the
         first offline service in the configuration ''thredds_offline_services'' is used. This determines
@@ -313,7 +308,6 @@ def main(argv):
 
     rescanDatasetName = []
 
-    restApi = None
     schema = None
     service = None
     summarizeErrors = False
@@ -395,8 +389,6 @@ def main(argv):
         elif flag=='--replica':
             masterGateway = arg
             warning("The --replica option is deprecated. Use --set-replica instead")
-        elif flag=='--rest-api':
-            restApi = True
         elif flag=='--service':
             service = arg
         elif flag=='--set-replica':
@@ -424,7 +416,6 @@ def main(argv):
                     rescanDatasetName.append(line)
         elif flag=='--validate':
             schema = arg
-            restApi = True
         elif flag=='--version-list':
             versionList = arg
 
@@ -446,10 +437,6 @@ def main(argv):
     # Register project handlers
     registerHandlers()
 
-    # Get the default publication interface (REST or Hessian)
-    if restApi is None:
-        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=False)
-
     # If the dataset map is input, just read it ...
     dmap = None
     directoryMap = None
@@ -469,7 +456,7 @@ def main(argv):
 #    datasets = iterateOverDatasets(projectName, dmap, directoryMap, datasetNames, Session, aggregateDimension, publishOp, filefilt, initcontext, offline, properties, keepVersion=keepVersion, newVersion=version, extraFields=extraFields, masterGateway=masterGateway, comment=message, readFiles=readFiles, nodbwrite=nodbwrite)
 
 
-    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema)
+    result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service, perVariable=perVariable, reinitThredds=threddsReinit, restInterface=True, schema=schema)
 
     # print `result`
 

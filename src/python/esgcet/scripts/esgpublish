@@ -113,8 +113,6 @@ Options:
 
     -h, --help: Print a help message.
 
-    --hessian-api: Use the legacy publishing API. See also --rest-api.
-
     -i init_dir:
         Directory containing all initialization files.
         Recommended: one initialization file for the default sections (esg.ini) and one per project, must match the name format esg.<project>.ini
@@ -218,14 +216,6 @@ Options:
     --replica master_gateway_id
         DEPRECATED: Use --set-replica instead.
         Flag the dataset(s) as replicated. master_gateway_id is ignored.
-
-    --rest-api
-        Publish using the RESTful publication services. The configuration file option ``rest_service_url''
-        defines the service location. If it is undefined, the service location is
-        https://HOST/esg-search/ws, where HOST is derived from configuration option ``hessian_service_url''.
-
-        If neither --rest-api nor --hessian-api are specified, then config file option use_rest_api is used,
-        and if this option is not found, the REST API is used by default.
 
     --service service_name
         Specify a THREDDS service name to associate with an offline dataset. If omitted, the name of the
@@ -343,7 +333,7 @@ def yield_parsed_mapfiles(mapfileDir):
 def main(argv):
 
     try:
-        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'commit-every=', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help', 'hessian-api', 'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'rest-api', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite', 'version'])
+        args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'commit-every=', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help',  'keep-credentials', 'keep-version', 'log=', 'map=', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=',  'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite', 'version'])
     except getopt.error:
         print(sys.exc_info()[1])
         print(usage)
@@ -378,8 +368,6 @@ def main(argv):
     readFiles = False
     rescan = False
     rescanDatasetName = []
-    restApi = None
-    restApiDefault = True
     schema = None
     service = None
     summarizeErrors = False
@@ -429,8 +417,6 @@ def main(argv):
         elif flag in ['-h', '--help']:
             print(usage)
             sys.exit(0)
-        elif flag=='--hessian-api':
-            restApi = False
         elif flag=='-i':
             init_dir = arg
         elif flag == '--keep-credentials':
@@ -490,8 +476,6 @@ def main(argv):
         elif flag=='--replica':
             masterGateway = arg
             warning("The --replica option is deprecated. Use --set-replica instead")
-        elif flag=='--rest-api':
-            restApi = True
         elif flag=='--service':
             service = arg
         elif flag=='--set-replica':
@@ -521,7 +505,6 @@ def main(argv):
                     rescanDatasetName.append(line)
         elif flag=='--validate':
             schema = arg
-            restApi = True
         elif flag=='--version-list':
             versionList = arg
         elif flag=='--version':
@@ -621,10 +604,6 @@ def main(argv):
     # Register project handlers
     registerHandlers(projectName)
 
-    # Get the default publication interface (REST or Hessian)
-    if restApi is None:
-        restApi = config.getboolean('DEFAULT', 'use_rest_api', default=restApiDefault)
-
     # Set up dictionary of extra handler args.
     # (Any not supported by the handler will be filtered out.)
     handler_extra_args = {'replica': (masterGateway != None)}        
@@ -680,7 +659,7 @@ def main(argv):
 
                     if (not nodbwrite):
                         result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
-                                                    perVariable=perVariable, reinitThredds=False, restInterface=restApi, schema=schema,
+                                                    perVariable=perVariable, reinitThredds=False, restInterface=True, schema=schema,
                                                     pid_connector=pid_connector, project_config_section=project_config_section)
                     if summarizeErrors:
                         summarize_errors(Session, datasetNames)
@@ -758,7 +737,7 @@ def main(argv):
 
             if (not nodbwrite):
                 result = publishDatasetList(datasetNames, Session, publish=publish, thredds=thredds, las=las, parentId=parent, service=service,
-                                            perVariable=perVariable, reinitThredds=threddsReinit, restInterface=restApi, schema=schema,
+                                            perVariable=perVariable, reinitThredds=threddsReinit, restInterface=True, schema=schema,
                                             pid_connector=pid_connector, project_config_section=project_config_section)
 
             if summarizeErrors:

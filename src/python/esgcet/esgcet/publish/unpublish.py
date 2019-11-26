@@ -3,12 +3,11 @@ import socket
 import string
 from esgcet.model import *
 from esgcet.config import getConfig
-from .hessianlib import Hessian, RemoteCallException
 from .publish import PublicationState, PublicationStatus
 from time import sleep
 from .thredds import updateThreddsMasterCatalog, reinitializeThredds
 from .las import reinitializeLAS
-from .utility import issueCallback, getHessianServiceURL, getRestServiceURL, parseSolrDatasetId, getServiceCertsLoc
+from .utility import issueCallback,  getRestServiceURL, parseSolrDatasetId, getServiceCertsLoc
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from .rest import RestPublicationService
 
@@ -255,16 +254,11 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
         threddsRootURL = config.get('DEFAULT', 'thredds_url')
         serviceCertfile = config.get('DEFAULT', 'hessian_service_certfile')
         serviceKeyfile = config.get('DEFAULT', 'hessian_service_keyfile')
-        if not restInterface:
-            serviceURL = getHessianServiceURL(project_config_section=project_config_section)
-            servicePort = config.getint('DEFAULT','hessian_service_port')
-            serviceDebug = config.getboolean('DEFAULT', 'hessian_service_debug')
-            service = Hessian(serviceURL, servicePort, key_file=serviceKeyfile, cert_file=serviceCertfile, debug=serviceDebug)
-        else:
-            service_certs_location = getServiceCertsLoc()
-            serviceURL = getRestServiceURL(project_config_section=project_config_section)
-            serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
-            service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
+
+        service_certs_location = getServiceCertsLoc()
+        serviceURL = getRestServiceURL(project_config_section=project_config_section)
+        serviceDebug = config.getboolean('DEFAULT', 'rest_service_debug', default=False)
+        service = RestPublicationService(serviceURL, serviceCertfile, service_certs_location, keyFile=serviceKeyfile, debug=serviceDebug)
 
         for datasetName,version in datasetNames:
             if version > -1:
