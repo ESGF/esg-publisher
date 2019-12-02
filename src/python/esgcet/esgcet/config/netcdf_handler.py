@@ -3,6 +3,7 @@
 from esgcet.model import cleanup_time_units
 from esgcet.exceptions import *
 from esgcet.config import ProjectHandler, FormatHandler, getConfig, splitLine
+from esgcet.messaging import warning
 try:
     import cdat_info
     cdat_info.ping = False
@@ -82,14 +83,24 @@ class CdunifFormatHandler(FormatHandler):
         variableName:
           String name of the variable. If None, get a global attribute.
         """
-        if variableName is not None:
-            result = getattr(self.variables[variableName], attributeName, *args)
-        else:
-            result = getattr(self.file, attributeName, *args)
-        # Clean up GFDL time units
-        if attributeName=="units":
-            result = cleanup_time_units(result)
-        return result
+
+        try:
+
+            if variableName is not None:
+                result = getattr(self.variables[variableName], attributeName, *args)
+            else:
+                result = getattr(self.file, attributeName, *args)
+            # Clean up GFDL time units
+            if attributeName=="units":
+                result = cleanup_time_units(result)
+            return result
+        except AttributeError as e:
+            warning("AttributeError encounterd reading file {}".format(str(e)))
+            return None
+        except BaseException as e:
+            warning("Unspecified error encounterd reading file {}".format(str(e)))
+            return None
+
 
     def hasVariable(self, variableName):
         """
