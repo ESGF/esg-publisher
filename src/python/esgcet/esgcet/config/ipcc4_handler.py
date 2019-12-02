@@ -174,7 +174,7 @@ def keys2path(keys):
 
 def path2keys(path):
     "Create a dictionary of keys from an absolute file path (including base path)."
-    scenario, submodel, frequency, variable, model, run, basepath = string.split(path,'/')[-7:]
+    scenario, submodel, frequency, variable, model, run, basepath = str.split(path,'/')[-7:]
     result = {'experiment': scenario,
               'submodel': submodel,
               'frequency': frequency,

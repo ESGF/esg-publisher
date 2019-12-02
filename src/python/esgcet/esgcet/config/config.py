@@ -156,7 +156,7 @@ def splitRecord(option, sep='|'):
     for record in option.split('\n'):
         if record == '':
             continue
-        fields = list(map(string.strip, record.split(sep)))
+        fields = list(map(str.strip, record.split(sep)))
         result.append(fields)
 
     return result
