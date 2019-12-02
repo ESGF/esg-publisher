@@ -236,7 +236,7 @@ def filelistIterator_1(f, filefilt, offline=False):
         elif len(fields)==2:
             try:
                 path = fields[0]
-                size = string.atol(fields[1])
+                size = str.atol(fields[1])
                 if not offline:
                     mtime = os.stat(path)[stat.ST_MTIME]
                 else:
@@ -482,7 +482,7 @@ def parseDatasetVersionId(datasetVersionId):
     if len(fields)==1:
         result = (datasetVersionId, -1)
     elif len(fields)==2:
-        result = (fields[0], string.atoi(fields[1]))
+        result = (fields[0], str.atoi(fields[1]))
     else:
         raise ESGPublishError("Invalid dataset ID:%s"%datasetVersionId)
     return result
@@ -507,7 +507,7 @@ def parseSolrDatasetId(datasetId):
     if sversion[0] in ('v', 'V'):
         sversion = sversion[1:]
     try:
-        version = string.atoi(sversion)
+        version = str.atoi(sversion)
     except:
         version = -1
         masterId = datasetVersionId
@@ -621,7 +621,7 @@ def datasetMapIterator(datasetMap, datasetId, versionNumber, extraFields=None, o
         if csize=="":
             size = os.stat(path)[stat.ST_SIZE]
         else:
-            size = string.atol(csize)
+            size = str.atol(csize)
         mtime = None
         if extraFields is not None:
             mtime = extraFields.get((datasetId, versionNumber, path, 'mod_time'))

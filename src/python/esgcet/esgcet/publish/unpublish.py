@@ -147,7 +147,7 @@ def deleteGatewayDatasetVersion(versionName, gatewayOperation, service, session,
     except RemoteCallException as e:
         fields = repr(e).split('\n')
         if dset is not None:
-            dset.warning("Deletion/retraction failed for dataset %s with message: %s"%(versionName, string.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
+            dset.warning("Deletion/retraction failed for dataset %s with message: %s"%(versionName, str.join(fields[0:2])), ERROR_LEVEL, PUBLISH_MODULE)
             event = Event(dset.name, dset.getVersion(), failureEvent)
         eventName = failureEvent
         stateName = 'UNSUCCESSFUL'
@@ -273,11 +273,11 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
                 eventName, stateName = deleteGatewayDatasetVersion(datasetToUnpublish, gatewayOperation, service, session, dset=dset, data_node=data_node)
             except RemoteCallException as e:
                 fields = repr(e).split('\n')
-                error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[0:2], '\n')))
+                error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, str.join(fields[0:2], '\n')))
                 continue
             except ESGPublishError as e:
                 fields = repr(e).split('\n')
-                error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, string.join(fields[-2:], '\n')))
+                error("Deletion/retraction failed for dataset/version %s with message: %s"%(datasetToUnpublish, str.join(fields[-2:], '\n')))
                 continue
             info("  Result: %s"%stateName)
             resultDict[datasetName] = eventName
