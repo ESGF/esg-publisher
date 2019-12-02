@@ -3,6 +3,7 @@
 from esgcet.model import cleanup_time_units
 from esgcet.exceptions import *
 from esgcet.config import ProjectHandler, FormatHandler, getConfig, splitLine
+from esgcet.messaging import warning
 try:
     import cdat_info
     cdat_info.ping = False
@@ -94,10 +95,10 @@ class CdunifFormatHandler(FormatHandler):
                 result = cleanup_time_units(result)
             return result
         except AttributeError as e:
-            warn("AttributeError encounterd reading file {}".format(str(e)))
+            warning("AttributeError encounterd reading file {}".format(str(e)))
             return None
         except BaseException as e:
-            warn("Unspecified error encounterd reading file {}".format(str(e)))
+            warning("Unspecified error encounterd reading file {}".format(str(e)))
             return None
 
 
