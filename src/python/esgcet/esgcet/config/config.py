@@ -156,7 +156,7 @@ def splitRecord(option, sep='|'):
     for record in option.split('\n'):
         if record == '':
             continue
-        fields = list(map(string.strip, record.split(sep)))
+        fields = list(map(str.strip, record.split(sep)))
         result.append(fields)
 
     return result
@@ -183,7 +183,7 @@ def splitMap(option, sep='|'):
     for record in lines[1:]:
         if record == '':
             continue
-        fields = list(map(string.strip, record.split(sep)))
+        fields = list(map(str.strip, record.split(sep)))
         fromfields = tuple(fields[0:nfrom])
         tofields = tuple(fields[nfrom:])
         if fromfields in result:
@@ -211,7 +211,7 @@ def splitLine(line, sep='|'):
     sep
       Separator character.
     """
-    fields = list(map(string.strip, line.split(sep)))
+    fields = list(map(str.strip, line.split(sep)))
     return fields
 
 def loadConfig1(init_dir, project, load_projects):
@@ -523,7 +523,7 @@ def getThreddsAuxiliaryServiceSpecs(config, section, option, multiValue=False):
     """Get the specs for an THREDDS service option, such as thredds_service_applications.
 
     Return a dictionary: service_name => value. If multiValue is true, value is a list of strings,
-    otherwise is a string. If the option is not set in the configuration file, return None
+    otherwise is a str. If the option is not set in the configuration file, return None
 
     config
       Configuration instance, e.g. from getConfig().
