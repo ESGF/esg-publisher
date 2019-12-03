@@ -6,7 +6,7 @@ from .utility import filelistIterator, fnmatchIterator, fnIterator, directoryIte
     nodeIterator, progressCallback, StopEvent, readDatasetMap, datasetMapIterator, iterateOverDatasets,\
     processIterator, processNodeMatchIterator, checksum, extraFieldsGet, parseDatasetVersionId,\
     generateDatasetVersionId, compareFilesByPath, establish_pid_connection, bcolors, checkAndUpdateRepo, getTableDir,\
-    tracebackString, check_pid_connection
+    tracebackString, check_pid_connection, atoi
 from .thredds import generateThredds, reinitializeThredds, generateThreddsOutputPath, updateThreddsMasterCatalog, updateThreddsRootCatalog
 from .unpublish import deleteDatasetList, DELETE, UNPUBLISH, NO_OPERATION, UNINITIALIZED
 from .replica import scanDirectory, generateReplicaThreddsCatalog, publishCatalogs

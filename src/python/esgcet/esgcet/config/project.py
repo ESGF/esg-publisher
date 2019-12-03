@@ -10,6 +10,7 @@ from esgcet.exceptions import *
 from esgcet.config import getConfig, splitLine, splitRecord, genMap, splitMap, initializeExperiments
 from .registry import getHandlerByEntryPointGroup, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
 from esgcet.messaging import debug, info, warning, error, critical, exception
+from esgcet.utility import atoi
 from functools import reduce
 
 ENUM = 1
@@ -204,7 +205,7 @@ class ProjectHandler(object):
             categoryType = getCategoryType(categoryTypeS)
             isMandatory = getBoolean(isMandatoryS)
             isThreddsProperty = getBoolean(isThreddsPropertyS)
-            displayOrder = string.atoi(displayOrderS)
+            displayOrder = atoi(displayOrderS)
             self.fieldNames[category] = (categoryType, isMandatory, isThreddsProperty, displayOrder)
 
         categoryDefaultsOption = config.get(projectSection, 'category_defaults', default=None, raw=True)
