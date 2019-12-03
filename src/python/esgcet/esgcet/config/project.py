@@ -10,7 +10,7 @@ from esgcet.exceptions import *
 from esgcet.config import getConfig, splitLine, splitRecord, genMap, splitMap, initializeExperiments
 from .registry import getHandlerByEntryPointGroup, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
 from esgcet.messaging import debug, info, warning, error, critical, exception
-from esgcet.utility import atoi
+
 from functools import reduce
 
 ENUM = 1
@@ -205,7 +205,7 @@ class ProjectHandler(object):
             categoryType = getCategoryType(categoryTypeS)
             isMandatory = getBoolean(isMandatoryS)
             isThreddsProperty = getBoolean(isThreddsPropertyS)
-            displayOrder = atoi(displayOrderS)
+            displayOrder = int(displayOrderS)
             self.fieldNames[category] = (categoryType, isMandatory, isThreddsProperty, displayOrder)
 
         categoryDefaultsOption = config.get(projectSection, 'category_defaults', default=None, raw=True)
@@ -215,7 +215,6 @@ class ProjectHandler(object):
                 self.categoryDefaults[category] = categoryDefault
 
         session = Session()
-
         # Find any new experiments. This allows experiments to be added to the config file without
         # running esginitialize.
         if 'experiment' in self.fieldNames and self.fieldNames['experiment'][WIDGET_TYPE]==ENUM:
