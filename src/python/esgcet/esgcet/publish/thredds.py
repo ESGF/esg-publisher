@@ -90,7 +90,7 @@ def parseLASTimeDelta(unitsString):
     fields = unitsString.split()
     if len(fields)!=2:
         raise ESGPublishError("Invalid LAS units string: %s, should have the form 'value units'"%unitsString)
-    value = str.atof(fields[0])
+    value = float(fields[0])
     units = fields[1].lower()
     return value, units
 
