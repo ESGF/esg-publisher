@@ -255,8 +255,7 @@ class ProjectHandler(object):
         Returns a list of field names for this project, as specified in the initialization file.
         """
         names = list(self.fieldNames.keys())
-        names.sort(lambda x, y: cmp(self.fieldNames[x][WIDGET_ORDER], self.fieldNames[y][WIDGET_ORDER]))
-        return names
+        return sorted(names, key=lambda x: self.fieldNames[x][WIDGET_ORDER])
 
     def getFieldType(self, field):
         """Get the field type, either:
