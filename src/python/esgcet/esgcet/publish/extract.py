@@ -703,7 +703,10 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
     # Create global attribute
     target_variable = None
     for attname in openfile.inquireAttributeList():
+        if attname[0:2] == '__' and attname[-2:] == "__":
+            continue
         attvalue = openfile.getAttribute(attname, None)
+        debug('.%s = %s' % (attname, attvalue))
         atttype, attlen = getTypeAndLen(attvalue)
         attribute = FileAttribute(attname, map_to_charset(attvalue), atttype, attlen)
         fileobj.attributes.append(attribute)
@@ -713,7 +716,7 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
         if attname == 'variable_id' and perVariable:
             target_variable = attvalue
             debug('Extracted target variable from global attributes: %s' % target_variable)
-        debug('.%s = %s' % (attname, attvalue))
+
 
     # try to get target_variable from DRS if not found in global attributes
     if not target_variable and perVariable:
@@ -732,7 +735,8 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
 
     # For each variable in the file:
     for varname in openfile.inquireVariableList():
-
+        if varname[0:2] == '__' and varname[-2:] == "__":
+            continue
         # we need to extract only target, aggregation and coverage variables
         if target_variable:
             is_coverage_variable = check_coverage_variable(varname, openfile)
@@ -764,6 +768,8 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
 
         # Create attributes:
         for attname in openfile.inquireAttributeList(varname):
+            if attname[0:2] == '__' and attname[-2:] == "__":
+                continue
             attvalue = openfile.getAttribute(attname, varname)
             atttype, attlen = getTypeAndLen(attvalue)
             attribute = FileVariableAttribute(attname, map_to_charset(attvalue), atttype, attlen)
@@ -959,7 +965,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
 
             # Get the filevar and variable domain
             fvdomain = [(x.name, x.length, x.seq) for x in filevar.dimensions]
-            fvdomain.sort(lambda x,y: cmp(x[SEQ], y[SEQ]))
+            sorted(fvdomain, key=lambda x: x[SEQ])
             filevar.domain = fvdomain
             if len(fvdomain)>0 and fvdomain[0][0]==aggregateDimensionName:
                 vardomain = ((aggregateDimensionName, 0, 0),)+tuple(fvdomain[1:]) # Zero out aggregate dimension length
@@ -1132,9 +1138,10 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
 
             mono = cmp(filevarRanges[0][1], filevarRanges[0][2])
             if mono<=0:
-                filevarRanges.sort(lambda x, y: cmp(x[1], y[1]))
+                sorted(filevarRanges, key=lambda x: x[1])
             else:
-                filevarRanges.sort(lambda x, y: -cmp(x[1], y[1]))
+                sorted(filevarRanges, key=lambda x: -x[1])
+
 
             # Check that ranges don't overlap. Aggregate dimension and bounds may be duplicated.
             lastValues = numpy.array([x[2] for x in filevarRanges])

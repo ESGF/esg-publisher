@@ -3,7 +3,7 @@
 from esgcet.model import cleanup_time_units
 from esgcet.exceptions import *
 from esgcet.config import ProjectHandler, FormatHandler, getConfig, splitLine
-from esgcet.messaging import warning
+from esgcet.messaging import warning, debug
 try:
     import cdat_info
     cdat_info.ping = False
@@ -30,7 +30,7 @@ class CdunifFormatHandler(FormatHandler):
 
     @staticmethod
     def open(path, mode='r'):
-        cf = Cdunif.CdunifFile(path)
+        cf = Cdunif.CdunifFile(path) # cdms_open(path)
         f = CdunifFormatHandler(cf, path)
         return f
 
@@ -69,6 +69,7 @@ class CdunifFormatHandler(FormatHandler):
         else:
             attset = set(dir(self.file))
             attlist = list(attset.difference(_invalidGlobalAttrs))
+#        debug(str(attlist))
         return attlist
 
     def getAttribute(self, attributeName, variableName, *args):

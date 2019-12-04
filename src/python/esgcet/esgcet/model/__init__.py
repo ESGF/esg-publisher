@@ -8,6 +8,10 @@ from sqlalchemy.orm import mapper, relation
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from esgcet.exceptions import *
 
+import numpy
+
+import traceback
+
 MAX_FILENAME_DUPLICATES = 1000          # Maximum number of duplicate file basenames in a dataset
 MAX_STANDARD_NAME_LENGTH = 255
 MAX_COORD_RANGE_LENGTH = 32
@@ -54,12 +58,26 @@ def validateName(name, cls):
     pass
 
 def map_to_charset(value):
-    try:
-        result = str(str(value), _character_encoding, 'replace')
-    except:
-        rawstring = value.encode('utf-8')
-        result = str(rawstring, 'utf-8', 'replace')
-    return result
+#    try:
+#        result = str(str(value), _character_encoding, 'replace')
+#        print("Normal Encoding")
+
+        if (type(value) is list and type(value[0]) is str):
+            return ''.join(value)
+
+        if (type(value) is str):
+            rawstring = value.encode('utf-8')
+            return str(rawstring, 'utf-8', 'replace')
+
+        if (type(value) is numpy.ndarray):
+            return str(value[0])
+        if (type(value) is int):
+            return str(value)
+        print(type(value))
+        print(dir(value))
+        print (str(value))
+        traceback.print_stack()
+        exit()
 
 # Restrict characters to the ASCII range <SPC>..'z'
 def cleanup_time_units(units):
