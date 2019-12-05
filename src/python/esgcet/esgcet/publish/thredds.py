@@ -1094,7 +1094,7 @@ def _generateThreddsV2(datasetName, outputFile, handler, session, dset, context,
         info('Calling catalog hook')
         catalogHook(doc, dset, dsetVersionObj, catalogObj, config, section, perVariable)
 
-    doc.write(outputFile, xml_declaration=True, encoding='UTF-8', pretty_print=True)
+    doc.write(outputFile.name, xml_declaration=True, encoding='UTF-8', pretty_print=True)
     event = Event(dset.name, versionNumber, WRITE_THREDDS_CATALOG_EVENT)
     dset.events.append(event)
 
@@ -1128,7 +1128,7 @@ def readThreddsWithAuthentication(url, config):
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
 
 
-    user_pass = b64encode(threddsUsername +":"+threddsPassword)
+    user_pass = b64encode(bytes(threddsUsername +":"+threddsPassword, 'utf-8'))
 
     pd = urllib.parse.urlparse(url)
 
@@ -1168,12 +1168,14 @@ def reinitializeThredds():
     try:
         reinitResult = readThreddsWithAuthentication(threddsReinitUrl, config)
     except Exception as e:
+
         msg = repr(e)
         if msg.find("maximum recursion depth")!=-1:
             msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
         raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
-
-    if reinitResult.find(threddsReinitSuccessPattern)==-1:
+    print(type(reinitResult))
+    print(type(threddsReinitSuccessPattern))
+    if reinitResult.find(bytes(threddsReinitSuccessPattern,'ascii'))==-1:
         raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%repr(reinitResult))
     
     errorResult = readThreddsWithAuthentication(threddsReinitErrorUrl, config)
