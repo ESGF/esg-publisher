@@ -703,6 +703,8 @@ def extractFromFile(dataset, openfile, fileobj, session, handler, cfHandler, agg
     # Create global attribute
     target_variable = None
     for attname in openfile.inquireAttributeList():
+        # for now, the list of attributes contains the special Python methods, and we 
+        # want to skip those
         if attname[0:2] == '__' and attname[-2:] == "__":
             continue
         attvalue = openfile.getAttribute(attname, None)
