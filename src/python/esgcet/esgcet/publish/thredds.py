@@ -1,10 +1,7 @@
 import os
 import logging
-<<<<<<< HEAD
-import ssl, http.client
-from base64 import b64encode
-=======
->>>>>>> feature
+
+
 import string
 import hashlib
 import urllib.parse
