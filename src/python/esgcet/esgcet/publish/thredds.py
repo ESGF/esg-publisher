@@ -1,7 +1,10 @@
 import os
 import logging
+<<<<<<< HEAD
 import ssl, http.client
 from base64 import b64encode
+=======
+>>>>>>> feature
 import string
 import hashlib
 import urllib.parse
@@ -13,6 +16,8 @@ from sqlalchemy.orm import join
 from sqlalchemy import desc
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from .utility import check_pid_connection
+
+from requests import get as req_get
 
 _nsmap = {
     None : "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
@@ -1120,31 +1125,11 @@ def readThreddsWithAuthentication(url, config):
 #    threddsAuthenticationRealm = config.get('DEFAULT', 'thredds_authentication_realm')
     threddsUsername = config.get('DEFAULT', 'thredds_username')
     threddsPassword = config.get('DEFAULT', 'thredds_password')
+            
+    res = req_get(url, verify=False, auth=(threddsUsername, threddsPassword))
 
-    # Create an OpenerDirector with support for Basic HTTP Authentication...
-    try:
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    except AttributeError:
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    return res.text
 
-
-    user_pass = b64encode(bytes(threddsUsername +":"+threddsPassword, 'utf-8'))
-
-    pd = urllib.parse.urlparse(url)
-
-    conn = http.client.HTTPSConnection(pd.hostname, port=pd.port, context=ctx)
-
-    req_headers = {'Host': pd.hostname,
-               'Authorization' : 'Basic %s' % user_pass
-               }
-    
-    conn.request('GET', url, headers=req_headers)
-
-    res = conn.getresponse()
-
-    page = res.read()
-
-    return page
 
 
 def reinitializeThredds():
