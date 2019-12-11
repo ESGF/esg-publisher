@@ -1157,7 +1157,7 @@ def reinitializeThredds():
         raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
     print(type(reinitResult))
     print(type(threddsReinitSuccessPattern))
-    if reinitResult.find(bytes(threddsReinitSuccessPattern,'ascii'))==-1:
+    if reinitResult.find(threddsReinitSuccessPattern)==-1:
         raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%repr(reinitResult))
     
     errorResult = readThreddsWithAuthentication(threddsReinitErrorUrl, config)
