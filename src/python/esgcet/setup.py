@@ -71,7 +71,7 @@ setup(
         "requests==2.20.0",
         "MyProxyClient>=2.1.0",
         "esgf-pyclient>=0.1.8",
-        # "esgfpid>=0.7.16",
+         "esgfpid>=0.7.16",
          "cdf2cim>=0.3.3.0",
     ],
     setup_requires = [
@@ -79,7 +79,7 @@ setup(
         "SQLAlchemy>0.5.3,<1.3",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
-        "requests==2.20.0",
+        "requests>=2.22.0",
     ],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,

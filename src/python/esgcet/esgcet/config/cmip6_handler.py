@@ -138,8 +138,8 @@ class CMIP6Handler(BasicHandler):
             warning('Version %s, skipping PID generation.' % version)
             return None
 
-            #return '21.14100'
-            return None
+        return '21.14100'
+
 
     def get_pid_config(self, project_config_section, config):
         """ Returns the project specific pid config
