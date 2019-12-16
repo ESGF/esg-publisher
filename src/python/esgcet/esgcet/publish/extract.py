@@ -1138,7 +1138,7 @@ def aggregateVariables(datasetName, dbSession, aggregateDimensionName=None, cfHa
                         error("path=%s, Invalid aggregation dimension value or units: first_value=%f, last_value=%f, units=%s"%(fv.file.getLocation(), fv.aggdim_first, fv.aggdim_last, fv.aggdim_units))
                         raise
 
-            mono = cmp(filevarRanges[0][1], filevarRanges[0][2])
+            mono = int(filevarRanges[0][1] - filevarRanges[0][2])
             if mono<=0:
                 sorted(filevarRanges, key=lambda x: x[1])
             else:
