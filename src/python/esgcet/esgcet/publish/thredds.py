@@ -446,13 +446,13 @@ def _genAggregationsV2(parent, variable, variableID, handler, dataset, project, 
         filevars.append((filevar, normTime(filevar, dataset.aggdim_units, mdhandler)))
     if has_null_aggdim:
         return
-    filevars.sort(lambda x,y: cmp(x[1], y[1]))
+    sorted(filevars, key=lambda x: x[1])
 
     nvars = 0
     agglen = 0
     for filevar, aggdim_first in filevars:
         fvdomain = [(x.name, x.length, x.seq) for x in filevar.dimensions]
-        fvdomain.sort(lambda x,y: cmp(x[SEQ], y[SEQ]))
+        sorted(fvdomain, key=lambda x: x[SEQ]) 
         if len(fvdomain)>0 and fvdomain[0][0]==aggdim_name:
             sublen = fvdomain[0][1]
             fileNetcdf = SE(aggElem, "netcdf", location=filevar.file.getLocation(), ncoords="%d"%sublen)
@@ -521,7 +521,7 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
         filevars.append((filevar, r2, s2))
     if has_null_aggdim:
         return                          # No aggregation added
-    filevars.sort(lambda x,y: cmp(x[1], y[1]))
+    sorted(filevars, key=lambda x: x[1])
 
     # Add aggregation dimension coordinate length to filevars list
     ntot = 0
@@ -529,7 +529,8 @@ def _genLASAggregations(parent, variable, variableID, handler, dataset, project,
     fvlist = []
     for filevar, aggfirst, agglast in filevars:
         fvdomain = [(x.name, x.length, x.seq) for x in filevar.dimensions]
-        fvdomain.sort(lambda x,y: cmp(x[SEQ], y[SEQ]))
+        sorted(fvdomain, key=lambda x: x[SEQ]) 
+
         if len(fvdomain)>0 and fvdomain[0][0]==dataset.aggdim_name:
             ncoords = fvdomain[0][1]
             ntot += ncoords
