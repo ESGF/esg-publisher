@@ -1,26 +1,32 @@
-prefix=$HOME/pub-test/maps
+prefix=$1
 
-for fn in `cat $1` ; do
+for lfn in `ls $prefix` ; do
 
-    
-    esgpublish --project cmip6 --test --map $prefix/$fn
-
-    if [ $? != 0 ] ; 
-	then
-
-	continue
+    stop=`cat /tmp/pub_status`
+    if [ $stop == "true" ] ; then
+        exit    
     fi
+
+    for mfn in `cat $lfn` ; do    
+        esgpublish --project cmip6 --test --map $prefix/$mfn
+
+        if [ $? != 0 ] ; 
+    	then
+
+    	continue
+        fi
+    done
+
+
+    for mfn in `cat $1` ; do
+
+        esgpublish --project cmip6 --test --map $prefix/$mfn --noscan --thredds --no-thredds-reinit --service fileservice
+        if [ $? != 0 ] ; 
+    	then
+
+    	continue
+        fi
+    done
+
+    esgpublish --project cmip6 --test --thredds-reinit
 done
-
-
-for fn in `cat $1` ; do
-
-    esgpublish --project cmip6 --test --map $prefix/$fn --noscan --thredds --no-thredds-reinit --service fileservice
-    if [ $? != 0 ] ; 
-	then
-
-	continue
-    fi
-done
-
-esgpublish --project cmip6 --test --thredds-reinit
