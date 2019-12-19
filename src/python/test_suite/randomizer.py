@@ -16,7 +16,7 @@ arr = get_rand_lines(open(sys.argv[1]), NUM_BATCHES * NUM_PER_BATCH)
 for i in range(NUM_BATCHES):
 
 
-    outf=open("map_batch_{}.lst".format(i+1))
+    outf=open("map_batch_{}.lst".format(i+1), 'w')
 
     for j in range(NUM_PER_BATCH):
 
