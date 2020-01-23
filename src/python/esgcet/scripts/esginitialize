@@ -116,7 +116,7 @@ def main(argv):
         if storedRepoPath!=repo_path:
             info("Updating schema version directory to %s"%repo_path)
             updatestmt = migrationTable.update(
-                whereclause="repository_id='%s'"%repositoryId,
+                whereclause=sqlalchemy.sql.text("repository_id='%s'"%repositoryId),
                 values={'repository_path':repo_path})
             updatestmt.execute()
 
