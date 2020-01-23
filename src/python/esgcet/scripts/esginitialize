@@ -17,6 +17,8 @@ from esgcet.config import loadConfig, splitLine, splitRecord, loadStandardNameTa
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from migrate.versioning.api import version_control, upgrade, db_version, downgrade
 
+from sqlalchemy.sql import text
+
 usage = """Usage:
     esginitialize [Options]
 
