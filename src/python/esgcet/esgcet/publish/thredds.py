@@ -1156,8 +1156,6 @@ def reinitializeThredds():
         if msg.find("maximum recursion depth")!=-1:
             msg = "Invalid thredds password. Check the value of thredds_password in esg.ini"
         raise ESGPublishError("Error reinitializing the THREDDS Data Server: %s"%msg)
-    print(type(reinitResult))
-    print(type(threddsReinitSuccessPattern))
     if reinitResult.find(threddsReinitSuccessPattern)==-1:
         raise ESGPublishError("Error reinitializing the THREDDS Data Server. Result=%s"%repr(reinitResult))
     
