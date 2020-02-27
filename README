@@ -36,7 +36,7 @@ popd
 
 # install publisher
 # clone this repo
-git clon https://github.com/sashakames/esg-publisher
+git clone https://github.com/ESGF/esg-publisher
 cd esg-publisher
 # checkout the branch
 git checkout python3-pid
