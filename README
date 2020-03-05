@@ -22,7 +22,7 @@ Python 3 testing info:
 
 # create test environment - assumes conda activated
 
-conda create -n pub-py3 -c condo-forge cdms2 cmor 'python>3'
+conda create -n pub-py3 -c conda-forge cdms2 cmor 'python>3'
 # activate
 conda activate pub-py3
 # install python3 compliant cdf2cim
