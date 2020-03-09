@@ -17,6 +17,8 @@ from esgcet.config import loadConfig, splitLine, splitRecord, loadStandardNameTa
 from esgcet.messaging import debug, info, warning, error, critical, exception
 from migrate.versioning.api import version_control, upgrade, db_version, downgrade
 
+from sqlalchemy.sql import text
+
 usage = """Usage:
     esginitialize [Options]
 
@@ -116,7 +118,7 @@ def main(argv):
         if storedRepoPath!=repo_path:
             info("Updating schema version directory to %s"%repo_path)
             updatestmt = migrationTable.update(
-                whereclause="repository_id='%s'"%repositoryId,
+                whereclause=text("repository_id='%s'"%repositoryId),
                 values={'repository_path':repo_path})
             updatestmt.execute()
 

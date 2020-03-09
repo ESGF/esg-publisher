@@ -22,9 +22,11 @@ Python 3 testing info:
 
 # create test environment - assumes conda activated
 
-conda create -n pub-py3 -c condo-forge cdms2 cmor 'python>3'
-# activate
+conda create -n pub-py3-2 -c conda-forge cmor cdms2 numpy=1.17 python=3.7
+# activate and get pip
 conda activate pub-py3
+conda install pip
+
 # install python3 compliant cdf2cim
 pushd <working-dir>
 git clone https://github.com/sashakames/esdoc-cdf2cim.git

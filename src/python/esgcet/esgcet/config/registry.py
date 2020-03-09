@@ -185,7 +185,7 @@ def getHandler(path, Session, validate=True, **extra_args):
 
     found = False
     items = list(projectRegistry.items())
-    items.sort(lambda x, y: cmp(projectRegistry.order(x[0]), projectRegistry.order(y[0])))
+    sorted(items, key=lambda x: projectRegistry.order(x[0]))
     for name, cls in items:
         try:
             handler = instantiateHandler(cls, name, path, Session, validate, **extra_args)
