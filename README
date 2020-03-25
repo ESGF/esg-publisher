@@ -34,7 +34,7 @@ cd esdoc-cdf2cim
 python setup.py install
 popd
 # install python3 esgf-pid 
-# example: see https://github.com/mauzey1/esgf-pid/ python_3.7 branch
+# example: see https://github.com/IS-ENES/esgf-pid/ python_3.7 (or devel) branch
 
 # install publisher
 # clone this repo
