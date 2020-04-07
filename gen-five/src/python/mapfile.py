@@ -1,3 +1,4 @@
+import sys, json
 
 def normalize_path(path, project):
     pparts = path.split('/')
@@ -7,13 +8,14 @@ def normalize_path(path, project):
     return('/'.join(pparts[idx:]))
 
 
-def parse_map(map_data, project):
+def parse_map(map_data, project, normalize=False):
 
     ret = []    
     for line in map_data:
 
         parts = line.split('|')
-        parts[1] = normalize_path(parts[1])
+        if normalize:
+            parts[1] = normalize_path(parts[1])
         ret.append(parts)
 
     return ret
@@ -31,3 +33,16 @@ def map_entry(map_json, project, fs_root):
             outarr.append("{}={}".format(x,map_json[x]))
     return ' | '.join(outarr)
 
+def main(args):
+
+    if (len(args) < 2):
+        print("Missing required arguments!")
+        exit(0)
+
+    map_data = json.load(open(args[0]))
+    ret = parse_map(map_data, args[1])
+    print(json.dumps(ret, indent=1))
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

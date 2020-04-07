@@ -123,9 +123,10 @@ def main(args):
         exit(0)
     if len(args) > 2:
 
-        ret = get_records(args[0], args[1], xattr=xargs[2])
-        print(json.dumps(ret, indent=1))
-
+        ret = get_records(args[0], args[1], xattr=args[2])
+    else
+        ret = get_records(args[0], args[1])
+    print(json.dumps(ret, indent=1))
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])
