@@ -124,7 +124,7 @@ def main(args):
     if len(args) > 2:
 
         ret = get_records(args[0], args[1], xattr=args[2])
-    else
+    else:
         ret = get_records(args[0], args[1])
     print(json.dumps(ret, indent=1))
 
