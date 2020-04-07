@@ -13,7 +13,7 @@ def parse_map(map_data, project, normalize=False):
     ret = []    
     for line in map_data:
 
-        parts = line.split(' | ')
+        parts = line.rstrip().split(' | ')
         if normalize:
             parts[1] = normalize_path(parts[1])
         ret.append(parts)
