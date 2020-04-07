@@ -39,7 +39,7 @@ def main(args):
         print("Missing required arguments!")
         exit(0)
 
-    with map_data as open(args[0]):
+    with open(args[0]) as map_data:
         ret = parse_map(map_data, args[1])
     print(json.dumps(ret, indent=1))
 
