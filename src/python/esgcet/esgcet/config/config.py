@@ -384,7 +384,7 @@ def loadStandardNameTable(path):
             standardNames[name] = standardName
 
     result = list(standardNames.values())
-    result.sort(lambda x, y: cmp(x.name, y.name))
+    sorted(result, key=lambda x: x.name)
     return result
 
 def loadModelsTable(path):

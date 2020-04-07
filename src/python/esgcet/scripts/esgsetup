@@ -515,8 +515,8 @@ def main(argv):
                 conn = psycopg2.connect(connectString)
                 cur = conn.cursor()
                 tell("Connection succeeded")
-            except:
-                tell("Cannot connect to the database")
+            except Exception as e:
+                tell("Cannot connect to the database: {}".format(str(e)))
                 sys.exit(1)
 
             # Update the configuration
