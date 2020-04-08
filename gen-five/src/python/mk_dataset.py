@@ -1,6 +1,8 @@
 import sys, json
 from mapfile import *
 
+DEBUG = False
+
 DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'] }
 GA = { 'CMIP6' : ['frequency',
                      'realm',
@@ -145,7 +147,7 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
         print('scandict = ')
         print(scandict)
         print()
-    ret = [rec] + iterate_files(rec, mapdict, scanobj, project)
+    ret = [rec] + iterate_files(rec, mapdict, scandict, project)
     return ret
 
 def main(args):
