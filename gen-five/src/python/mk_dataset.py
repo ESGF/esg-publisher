@@ -56,19 +56,6 @@ def get_dataset(mapdata, scandata):
 
     return d
 
-#Just tracking id for now, other file-specific metadata
-def get_fname_trid(scandata, project):
-
-    ret = {}
-    for rec in scandata:
-        fullpath = rec["name"] 
-        parts = fullpath.split('/')
-        relpath = normalize_path(fullpath, project)
-        ret[fullpath] = {"tracking_id": rec["tracking_id"], 
-        "title": parts[-1], "rel_path": relpath}
-
-    return ret
-
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer"]
 
 def gen_urls(proj_root, rel_path):
@@ -92,8 +79,8 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
     for kn in mapdata:
         if kn not in ("id", "path"):
             ret[kn] = mapdata[kn]
-
-    ret["url"] = gen_urls(proj_root, fn_trid["rel_path"])
+    rel_path = normalize_path(fullfn, proj_root)
+    ret["url"] = gen_urls(proj_root, rel_path)
 
     return ret
     # need to match up the 
