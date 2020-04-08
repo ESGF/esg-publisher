@@ -71,7 +71,7 @@ def get_fname_trid(scandata, project):
 
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer"]
 
-def genUrls(proj_root, rel_path):
+def gen_urls(proj_root, rel_path):
     return  [template.format(DATA_NODE, proj_root, rel_path) for template in URL_Templates]
 
 
