@@ -109,7 +109,7 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
     mapobj = json.load(open(mapfilename))
     scanobj = json.load(open(scanfilename))
 
-    rec = get_dataset(mapobj[0][0], scanobj)
+    rec = get_dataset(mapobj[0][0], scanobj['dataset'])
 
     if xattrfn:
         xattrobj = json.load(open(xattrfn))
