@@ -77,7 +77,7 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
     ret["tracking_id"] = fn_trid["tracking_id"]
 
     for kn in mapdata:
-        if kn not in ("id", "path"):
+        if kn not in ("id", "file"):
             ret[kn] = mapdata[kn]
     rel_path = normalize_path(fullfn, proj_root)
     ret["url"] = gen_urls(proj_root, rel_path)
