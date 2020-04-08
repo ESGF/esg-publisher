@@ -46,7 +46,7 @@ def get_dataset(mapdata, scandata):
     d['instance_id'] = master_id + '.' + version
     d['id'] = d['instance_id'] + '|' + d['data_node']
     if not 'title' in d:
-        d['title'] = instance_id
+        d['title'] = d['instance_id']]
     d['replica'] = 'false' # set replica
     d['latest'] = 'true'
     d['type'] = 'Dataset'
