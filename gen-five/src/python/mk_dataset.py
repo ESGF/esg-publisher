@@ -28,15 +28,15 @@ def get_dataset(mapdata, scandata):
     facets = DRS[key]
     d = {}
     for i, f in enumerate(facets):
-        if f in scandata['dataset']:
-            ga_val = scandata['dataset'][f]
+        if f in scandata:
+            ga_val = scandata[f]
             if not parts[i] == ga_val:
                 print("WARNING: {} does not agree!".format(f))
         d[f] = parts[i]
 
     for val in GA[key]:
-        if val in scandata['dataset']:
-            d[val] = scandata['dataset'][val]
+        if val in scandata:
+            d[val] = scandata[val]
 
 
     d['data_node'] = DATA_NODE
@@ -73,6 +73,7 @@ def genUrls(proj_root, rel_path):
     return  [template.format(DATA_NODE, proj_root, rel_path) for template in URL_Templates]
 
 
+
 def get_file(dataset_rec, mapdata, fn_trid, proj_root):
     ret = dataset_rec.copy()
     dataset_id = dataset_rec["id"]
@@ -92,6 +93,14 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
 
     return ret
     # need to match up the 
+
+def get_scanfile_dict(scandata):
+
+    ret = {}
+    for key in scandata:
+        rec = scandata[key]
+        ret[rec['name']] = rec
+    return ret
 
 def iterate_files(dataset_rec, mapdata, scandata, proj_root):
 
@@ -116,10 +125,24 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
     else:
         xattrobj = {}
 
+    if DEBUG:
+        print("rec = ")
+        print(rec)
+        print()
     for key in xattrobj:
         rec[key] = xattrobj[key]
+
     project = rec['project']
     mapdict = parse_map_arr(mapobj)
+    if DEBUG:
+        print('mapdict = ')
+        print(mapdict)
+        print()
+    scandict = get_scanfile_dict(scanobj['file'])
+    if DEBUG:
+        print('scandict = ')
+        print(scandict)
+        print()
     ret = [rec] + iterate_files(rec, mapdict, scanobj, project)
     return ret
 
