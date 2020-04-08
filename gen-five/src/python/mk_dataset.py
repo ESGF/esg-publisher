@@ -23,7 +23,7 @@ def get_dataset(mapdata, scandata):
 
     master_id, version = mapdata.split('#')
 
-    parts = master_id.split('')
+    parts = master_id.split('.')
     key = parts[0]
     facets = DRS[key]
     d = {}
@@ -44,7 +44,7 @@ def get_dataset(mapdata, scandata):
     DRSlen = len(DRS[key])
     d['master_id'] = master_id
     d['instance_id'] = master_id + '.' + version
-    d['id'] = instance_id + '|' + d['data_node']
+    d['id'] = d['instance_id'] + '|' + d['data_node']
     if not 'title' in d:
         d['title'] = instance_id
     d['replica'] = 'false' # set replica
@@ -104,14 +104,20 @@ def iterate_files(dataset_rec, mapdata, scandata, proj_root):
         ret.append(get_file())
 
 
-def get_records(mapfilename, scanfilename, xattrfn={}):
+def get_records(mapfilename, scanfilename, xattrfn=None):
 
     mapobj = json.load(open(mapfilename))
     scanobj = json.load(open(scanfilename))
-    xattrobj = json.load(open(xattrfn))
+
     rec = get_dataset(mapobj[0][0], scanobj)
-    for key in xattr:
-        rec[key] = xattr[key]
+
+    if xattrfn:
+        xattrobj = json.load(open(xattrfn))
+    else:
+        xattrobj = {}
+
+    for key in xattrobj:
+        rec[key] = xattrobj[key]
     project = rec['project']
     mapdict = parse_map_arr(mapobj)
     ret = [rec] + iterate_files(rec, mapdict, scanobj, project)
@@ -122,9 +128,9 @@ def main(args):
     if (len(args) < 2):
         print("Missing required arguments!")
         exit(0)
-    if len(args) > 2:
 
-        ret = get_records(args[0], args[1], xattr=args[2])
+    if len(args) > 2:
+        ret = get_records(args[0], args[1], xattrfn=args[2])
     else:
         ret = get_records(args[0], args[1])
     print(json.dumps(ret, indent=1))
