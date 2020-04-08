@@ -80,8 +80,10 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
     ret['type'] = "File"
     fullfn = mapdata['file']
 
-    ret['id'] = "{}.{}".format(ret['instance_id'].fn_trid("title"))
-    ret['title'] = fn_trid["title"]
+    fparts = fullfn.split('/')
+    title = fparts[-1]
+    ret['id'] = "{}.{}".format(ret['instance_id'],title)
+    ret['title'] = title
     ret["dataset_id"] = dataset_id
     ret["tracking_id"] = fn_trid["tracking_id"]
 
