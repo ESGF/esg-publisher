@@ -16,9 +16,24 @@ def parse_map(map_data, project, normalize=False):
         parts = line.rstrip().split(' | ')
         if normalize:
             parts[1] = normalize_path(parts[1])
+
         ret.append(parts)
 
     return ret
+
+def parse_map_arr(map_data):
+    ret = []
+    for lst in map_data:
+        rec = {}
+        rec['file'] = lst[1]
+        rec['size'] = lst[2]
+        for x in lst[3:]:
+            parts = x.split('=')
+            rec[parts[0]] = parts[1]
+        ret.append(rec)
+    return ret
+
+
 
 def map_entry(map_json, project, fs_root):
     norm_path = normalize_path(map_json['file'], project)

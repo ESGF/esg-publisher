@@ -1,7 +1,7 @@
 import sys, json
-from mapfile import normalize_path
+from mapfile import *
 
-DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label', 'version' ] }
+DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'] }
 GA = { 'CMIP6' : ['frequency',
                      'realm',
                      'product',
@@ -21,8 +21,9 @@ ROOT = {'esgf_data': '/esg/data'}
 
 def get_dataset(mapdata, scandata):
 
-    parts = mapdata[0]['id'].split('.')
+    master_id, version = mapdata.split('#')
 
+    parts = master_id.split('')
     key = parts[0]
     facets = DRS[key]
     d = {}
@@ -41,10 +42,9 @@ def get_dataset(mapdata, scandata):
     d['data_node'] = DATA_NODE
     d['index_node'] = INDEX_NODE
     DRSlen = len(DRS[key])
-
-    d['instance_id'] = '.'.join(parts[0:DRSlen])
-    d['master_id'] = '.'.join(parts[0:DRSlen-1])
-    d['id'] = instance_id + '|' + node
+    d['master_id'] = master_id
+    d['instance_id'] = master_id + '.' + version
+    d['id'] = instance_id + '|' + d['data_node']
     if not 'title' in d:
         d['title'] = instance_id
     d['replica'] = 'false' # set replica
@@ -52,6 +52,7 @@ def get_dataset(mapdata, scandata):
     d['type'] = 'Dataset'
     d['project'] = key
 
+    return d
 
 #Just tracking id for now, other file-specific metadata
 def get_fname_trid(scandata, project):
@@ -77,7 +78,6 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
     dataset_id = dataset_rec["id"]
     ret['type'] = "File"
     fullfn = mapdata['file']
-
 
     ret['id'] = "{}.{}".format(ret['instance_id'].fn_trid("title"))
     ret['title'] = fn_trid["title"]
@@ -109,11 +109,12 @@ def get_records(mapfilename, scanfilename, xattrfn={}):
     mapobj = json.load(open(mapfilename))
     scanobj = json.load(open(scanfilename))
     xattrobj = json.load(open(xattrfn))
-    rec = get_dataset(mapobj, scanobj)
+    rec = get_dataset(mapobj[0][0], scanobj)
     for key in xattr:
         rec[key] = xattr[key]
     project = rec['project']
-    ret = [rec] + iterate_files(rec, scanobj)
+    mapdict = parse_map_arr(mapobj)
+    ret = [rec] + iterate_files(rec, mapdict, scanobj, project)
     return ret
 
 def main(args):
