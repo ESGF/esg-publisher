@@ -110,8 +110,8 @@ def iterate_files(dataset_rec, mapdata, scandata, proj_root):
 
         fullpath = maprec['file']
         scanrec = scandata[fullpath]
-        ret.append(get_file())
-
+        ret.append(get_file(dataset_rec, maprec, scanrec, proj_root))
+    return ret
 
 def get_records(mapfilename, scanfilename, xattrfn=None):
 
