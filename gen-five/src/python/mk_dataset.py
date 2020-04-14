@@ -1,6 +1,8 @@
 import sys, json
 from mapfile import *
 
+from datetime import datetime, timedelta
+
 DEBUG = False
 
 DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'] }
@@ -20,6 +22,8 @@ GA = { 'CMIP6' : ['frequency',
 DATA_NODE = "greyworm1-rh7.llnl.gov"
 INDEX_NODE = "esgf-fedtest.llnl.gov"
 ROOT = {'esgf_data': '/esg/data'}
+
+EXCLUDES = [""]
 
 def get_dataset(mapdata, scandata):
 
@@ -92,6 +96,60 @@ def get_scanfile_dict(scandata):
         rec = scandata[key]
         ret[rec['name']] = rec
     return ret
+
+def update_metadata(record, scanobj):
+    if "variables" in scanobj:
+        if "variable_id" in record:
+
+            vid = record["variable_id"]
+            var_rec = scanobj["variables"][vid]
+            record["variable_long_name"] = var_rec["long_name"]
+            record["cf_standard_name"] = var_rec["standard_name"]
+            record["variable_units"] = var_rec["units"]
+        else:
+            print("TODO check project settings for variable extraction")
+    else:
+        print("WARNING: no variables were extracted (is this CF compliant?)")
+
+    geo_units = []
+    if "axes" in scanobj:
+        axes = scanobj["axes"]
+        if "lat" in axes:
+            lat = axes["lat"]
+            geo_units.append(lat["units"])
+            record["north_degrees"] = lat["values"][-1]
+            record["south_degrees"] = lat["values"][0]
+        if "lon" in axes:
+            lon = axes["lon"]
+            geo_units.append(lon["units"])
+            record["east_degrees"] = lat["values"][-1]
+            record["west_degrees"] = lat["values"][0]
+        if "time" in axes:
+            time_obj = axes["time"]
+            if "subaxes" in time_obj:
+                subaxes = time_obj["subaxes"]
+                sub_values = sorted([x['values'] for x in subaxes.values()])
+            time_units = time_obj["units"]
+            tu_parts = time_units.split()
+            if tu_parts[0] == "days" and tu_parts[1] == "since":
+                tu_date = tu_parts[2] # can we ignore time component?
+                tu_start_inc = int(sub_values[0][0])
+                tu_end_inc = int(sub_values[-1][-1])
+
+                days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                dt_start = days_since_dt + timedelta(days=tu_start_inc) 
+                dt_end = days_since_dt  + timedelta(days=tu_end_inc) 
+                record["datetime_start"] = "{}Z".format(dt_start.isoformat())
+                record["datetime_end"] = "{}Z".format(dt_end.isoformat())
+
+        if "plev" in axes:
+            plev = axes["plev"]
+            if "units" in plev and "values" in plev:
+                record["height_units"] = plev["units"]
+                record["height_top"] = plev["values"][0]
+                record["height_bottom"] = plev["values"][-1]
+    else:
+        print("WARNING: No axes extracted from data files")
 
 def iterate_files(dataset_rec, mapdata, scandata, proj_root):
 
