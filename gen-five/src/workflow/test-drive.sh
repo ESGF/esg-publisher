@@ -13,7 +13,9 @@ mkds_cmd=$py_src_path/mk_dataset.py  # make dataset from sources
 
 cert_path=$HOME/cert.pem
 
+
 #ls $maps_in | head -n $num_todo | sed s:^:${maps_in}/:g > $target_file
+
 
 if [ $? != 0 ] ; then
     echo No Mapfiles exiting 1
@@ -24,7 +26,6 @@ target_file=$1
 dir=/export/ames4/pub-test/maps
 
 
-
 for fn in `cat $target_file`; do
 
     fullmap=$dir/$fn
@@ -33,12 +34,15 @@ for fn in `cat $target_file`; do
     datasetdir=`dirname ${path}`/'*.nc'
     basefn=`basename $fn`
 
+
     strfn="${basefn%.*}"
     scanfn=$strfn.scan.json
     convmapfn=$strfn.map.json
 
-    $autocur_cmd --out_file $scanfn --files "$val"
+    $autocur_cmd --out_json $scanfn --files "$datasetdir"
+
     python $mapconv_cmd $fullmap $proj
 
+    python $mkds_cmd $scanfn $convmapfn
 
 done

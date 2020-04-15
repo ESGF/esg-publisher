@@ -2,7 +2,7 @@ from pub_client import publisherClient
 
 import list2json, sys, json
 
-hostname = "pcmdi8vm.llnl.gov"
+hostname = "esgf-fedtest.llnl.gov"
 cert_fn = "cert.pem"
 
 ARGS = 1
