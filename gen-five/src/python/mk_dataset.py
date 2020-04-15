@@ -168,7 +168,7 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
     scanobj = json.load(open(scanfilename))
 
     rec = get_dataset(mapobj[0][0], scanobj['dataset'])
-
+    update_metadata(rec, scanobj)
     if xattrfn:
         xattrobj = json.load(open(xattrfn))
     else:
