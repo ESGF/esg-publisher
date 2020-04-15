@@ -1,6 +1,7 @@
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 
 NUM_TODO=20
+proj=CMIP6
 
 maps_in=$1
 dt=`date +%y%m%d_%H%M`
@@ -12,25 +13,32 @@ mkds_cmd=$py_src_path/mk_dataset.py  # make dataset from sources
 
 cert_path=$HOME/cert.pem
 
-ls $maps_in | head -n $num_todo | sed s:^:${maps_in}/:g > $target_file
+#ls $maps_in | head -n $num_todo | sed s:^:${maps_in}/:g > $target_file
 
 if [ $? != 0 ] ; then
     echo No Mapfiles exiting 1
     exit
 fi
 
+target_file=$1
+dir=/export/ames4/pub-test/maps
+
+
+
 for fn in `cat $target_file`; do
 
-path=`head -n1 $dir/$fn | awk '{print $3}'`
-datasetdir=`dirname ${path}`/'*.nc'
-basefn=`basename $fn`
+    fullmap=$dir/$fn
 
-strfn="${basefn%.*}"
-scanfn=$strfn.scan.json
-convmapfn=$strfn.map.json
+    path=`head -n1 $fullmap | awk '{print $3}'`
+    datasetdir=`dirname ${path}`/'*.nc'
+    basefn=`basename $fn`
 
-$autocur_cmd --out_file $scanfn --files "$val"
-#python $mapconv_cmd 
+    strfn="${basefn%.*}"
+    scanfn=$strfn.scan.json
+    convmapfn=$strfn.map.json
+
+    $autocur_cmd --out_file $scanfn --files "$val"
+    python $mapconv_cmd $fullmap $proj
 
 
 done
