@@ -126,21 +126,30 @@ def update_metadata(record, scanobj):
             record["west_degrees"] = lat["values"][0]
         if "time" in axes:
             time_obj = axes["time"]
-            if "subaxes" in time_obj:
-                subaxes = time_obj["subaxes"]
-                sub_values = sorted([x['values'] for x in subaxes.values()])
             time_units = time_obj["units"]
             tu_parts = time_units.split()
             if tu_parts[0] == "days" and tu_parts[1] == "since":
+                proc_time = True
                 tu_date = tu_parts[2] # can we ignore time component?
-                tu_start_inc = int(sub_values[0][0])
-                tu_end_inc = int(sub_values[-1][-1])
+                if "subaxes" in time_obj:
+                    subaxes = time_obj["subaxes"]
+                    sub_values = sorted([x['values'] for x in subaxes.values()])
 
-                days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
-                dt_start = days_since_dt + timedelta(days=tu_start_inc) 
-                dt_end = days_since_dt  + timedelta(days=tu_end_inc) 
-                record["datetime_start"] = "{}Z".format(dt_start.isoformat())
-                record["datetime_end"] = "{}Z".format(dt_end.isoformat())
+
+                    tu_start_inc = int(sub_values[0][0])
+                    tu_end_inc = int(sub_values[-1][-1])
+                elif "values" in time_obj:
+                    tu_start_inc = time_obj["values"][0]
+                    tu_end_inc = time_obj["values"][-1]
+                else:
+                    print("WARNING: not sure where time values are...")
+                    proc_time = False
+                if proc_time:
+                    days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                    dt_start = days_since_dt + timedelta(days=tu_start_inc) 
+                    dt_end = days_since_dt  + timedelta(days=tu_end_inc) 
+                    record["datetime_start"] = "{}Z".format(dt_start.isoformat())
+                    record["datetime_end"] = "{}Z".format(dt_end.isoformat())
 
         if "plev" in axes:
             plev = axes["plev"]
