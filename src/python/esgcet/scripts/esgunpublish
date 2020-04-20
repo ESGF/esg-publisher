@@ -60,6 +60,7 @@ Options:
 
     --delete
     --retract
+    NOTE: By default datasets are retracted (the --retract flag is accepted but does not affect behavior unless --delete + --retract / --skip-index are activated]
 
     --data-node data_node:
         Unpublish only from the given data_node, only for Solr publication.
@@ -171,7 +172,7 @@ def main(argv):
     unpublishOnGateway = False
     echoSql = False
     init_dir = '/esg/config/esgcet/'
-    gatewayOp = UNINITIALIZED
+    gatewayOp = UNPUBLISH
     las = False
     log_filename = None
     republish = True
@@ -183,6 +184,8 @@ def main(argv):
     keep_credentials = False
     test_publication = False
     data_node = None
+    set_retract = False
+    
 
     for flag, arg in args:
         if flag == '--data-node':
@@ -214,7 +217,7 @@ def main(argv):
         elif flag=='--skip-index':
             gatewayOp = NO_OPERATION
         elif flag=='--delete':
-            if gatewayOp == UNPUBLISH:
+            if set_retract:
                 print("Error: invalid arguments: must use either --delete or --retract but not both!")
                 exit(1)
             gatewayOp = DELETE
@@ -222,7 +225,7 @@ def main(argv):
             if gatewayOp == DELETE:
                 print("Error: invalid arguments: must use either --delete or --retract but not both!")
                 exit(1)
-            gatewayOp = UNPUBLISH
+            set_retract=True
         elif flag=='--las':
             las = True
         elif flag=='--log':
@@ -247,6 +250,7 @@ def main(argv):
     if projectName is None:
         raise ESGPublishError("Must specify project with --project")
 
+    
 
     # Load the configuration and set up a database connection
     config = loadConfig(init_dir)
@@ -269,12 +273,8 @@ def main(argv):
                     logon(config, myproxy_username, myproxy_password, myproxy_hostname)
                 except:
                     warning('Certificate generation failed, please try to run myproxy-logon manually...')
-
-
-    if gatewayOp == UNINITIALIZED:
-        print("esgunpublish usage error:  index unpublication mode not set.  Must use one of following options:")
-        print("--skip-index, --database-only, --delete, --retract")      
-        exit(1)  
+    if gatewayOp == UNPUBLISH and (not set_retract):
+        info("Using default mode to retract dataset (no option specified)")
 
     if not data_node:
         data_node = urllib.parse.urlparse(config.get('DEFAULT', 'thredds_url')).netloc
