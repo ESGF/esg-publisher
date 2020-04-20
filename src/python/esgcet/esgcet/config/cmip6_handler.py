@@ -67,11 +67,6 @@ class CMIP6Handler(BasicHandler):
                 info("skipping PrePARE for replica (file %s)" % f)
                 return
 
-            try:
-                file_cmor_version = fileobj.getAttribute('cmor_version', None)
-            except:
-                file_cmor_version = None
-                debug('File %s missing cmor_version attribute; will proceed with PrePARE check' % f)
 
         try:
             table = fileobj.getAttribute('table_id', None)
