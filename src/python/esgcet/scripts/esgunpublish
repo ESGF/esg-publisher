@@ -218,7 +218,7 @@ def main(argv):
             gatewayOp = NO_OPERATION
         elif flag=='--delete':
             if set_retract:
-                print "Error: invalid arguments: must use either --delete or --retract but not both!"
+                print("Error: invalid arguments: must use either --delete or --retract but not both!")
                 exit(1)
             gatewayOp = DELETE
         elif flag=='--retract':
