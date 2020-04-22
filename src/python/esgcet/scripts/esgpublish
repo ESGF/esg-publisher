@@ -361,7 +361,7 @@ def yield_parsed_mapfiles(mapfileDir):
                 continue
             yield dmap, extraFields
 
-def version():
+def print_version():
     print("esg-publisher (esgcet) version {}".format(esgcet.__version__))
     print()
 
@@ -373,7 +373,7 @@ def missing_req():
 def main(argv):
 
     if  (len(argv) < 1):
-        version()
+        print_version()
         missing_req()
 
     try:
@@ -561,7 +561,7 @@ def main(argv):
         elif flag=='--version-list':
             versionList = arg
         elif flag=='--version':
-            version()
+            print_version()
             sys.exit(0)
 
     if createCimOnly and not mapfileProvided:
