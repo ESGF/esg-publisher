@@ -1110,9 +1110,6 @@ def establish_pid_connection(pid_prefix, test_publication, project_config_sectio
     publish
         Flag to trigger publication and unpublication
     """
-
-    return
-
     try:
         import esgfpid
     except ImportError:
