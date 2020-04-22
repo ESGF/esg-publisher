@@ -22,7 +22,7 @@ Python 3 testing info:
 
 # create test environment - assumes conda activated
 
-conda create -n pub-py3-2 -c conda-forge cmor cdms2 numpy=1.17 python=3.7
+conda create -n pub-py3 -c conda-forge cmor cdms2 numpy=1.17 python=3.7
 # activate and get pip
 conda activate pub-py3
 conda install pip
@@ -34,7 +34,7 @@ cd esdoc-cdf2cim
 python setup.py install
 popd
 # install python3 esgf-pid 
-# example: see https://github.com/IS-ENES/esgf-pid/ python_3.7 (or devel) branch
+# example: see https://github.com/IS-ENES-Data/esgf-pid/ python_3.7 (or devel) branch
 
 # install publisher
 # clone this repo
