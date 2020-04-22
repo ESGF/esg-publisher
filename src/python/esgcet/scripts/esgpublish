@@ -361,8 +361,20 @@ def yield_parsed_mapfiles(mapfileDir):
                 continue
             yield dmap, extraFields
 
+def version():
+    print("esg-publisher (esgcet) version {}".format(esgcet.__version__))
+    print()
+
+def missing_req():
+    print("Missing Required Arguments")
+    print("See 'esgpublish --usage' for command usage information")
+    exit(1)
 
 def main(argv):
+
+    if  (len(argv < 1)):
+        version()
+        missing_req()
 
     try:
         args, lastargs = getopt.getopt(argv, "a:cdehi:m:p:ru", ['append', 'commit-every=', 'create', 'create-cim', 'create-cim-only', 'dataset=', 'delete-files', 'echo-sql', 'experiment=', 'filter=', 'help',  'keep-credentials', 'keep-version', 'log=', 'map=', 'master-catalog', 'message=', 'model=', 'offline',  'parent=', 'per-time', 'per-variable', 'project=', 'property=', 'publish', 'new-version=', 'no-create-cim', 'no-thredds-reinit', 'no-thredds-reload', 'noscan', 'read-directories', 'read-files', 'rename-files', 'replace', 'replica=', 'service=', 'set-replica', 'summarize-errors', 'test', 'thredds', 'thredds-reinit', 'thredds-reload', 'update', 'use-existing=', 'use-list=', 'validate=', 'version-list=', 'verbose-cim-errors', 'nodbwrite', 'version'])
@@ -549,7 +561,7 @@ def main(argv):
         elif flag=='--version-list':
             versionList = arg
         elif flag=='--version':
-            print("esg-publisher (esgcet) version {}".format(esgcet.__version__))
+            version()
             sys.exit(0)
 
     if createCimOnly and not mapfileProvided:
