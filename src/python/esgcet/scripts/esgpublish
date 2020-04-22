@@ -372,7 +372,7 @@ def missing_req():
 
 def main(argv):
 
-    if  (len(argv < 1)):
+    if  (len(argv) < 1):
         version()
         missing_req()
 
