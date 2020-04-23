@@ -34,7 +34,6 @@ popd
 # install python3 esgf-pid 
 # example: see https://github.com/IS-ENES-Data/esgf-pid/ python_3.7 (or devel) branch
 
-
 # install publisher
 # clone this repo
 git clone https://github.com/ESGF/esg-publisher
