@@ -67,7 +67,8 @@ setup(
         "psycopg2>=2.0",
         "SQLAlchemy>=0.5.3",
         "lxml>=2.0",
-        "sqlalchemy_migrate>=0.6,<0.12",
+        "sqlalchemy_migrate>=0.6",
+
         "requests>=2.22.0",
         "MyProxyClient>=2.1.0",
         "esgf-pyclient>=0.1.8",
@@ -78,7 +79,7 @@ setup(
         "psycopg2>=2.8",
         "SQLAlchemy>=1.3",
         "lxml>=2.0",
-        "sqlalchemy_migrate>=0.6,<0.12",
+        "sqlalchemy_migrate>=0.6",
         "requests>=2.22.0",
     ],
     packages = find_packages(exclude=['ez_setup']),
