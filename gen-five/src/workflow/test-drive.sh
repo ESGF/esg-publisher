@@ -1,3 +1,4 @@
+
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 
 NUM_TODO=20
@@ -10,6 +11,7 @@ py_src_path=/export/ames4/git/esg-publisher/gen-five/src/python
 autocur_cmd="/export/ames4/git/autocurator/bin/autocurator --out_pretty true"
 mapconv_cmd=$py_src_path/mapfile.py  # convert mapfile to json
 mkds_cmd=$py_src_path/mk_dataset.py  # make dataset from sources
+idx_pub_cmd=$py_src_path/pub_test.py
 
 cert_path=$HOME/cert.pem
 
@@ -40,9 +42,7 @@ for fn in `cat $target_file`; do
     convmapfn=$strfn.map.json
 
     $autocur_cmd --out_json $scanfn --files "$datasetdir"
-
-    python $mapconv_cmd $fullmap $proj
-
-    python $mkds_cmd $scanfn $convmapfn
-
+    python $mapconv_cmd $fullmap $proj > $convmapfn
+    python $mkds_cmd $convmapfn $scanfn > $strfn.out.json
+    python $idx_pub_cmd $strfn.out.json
 done
