@@ -86,6 +86,7 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
             ret[kn] = mapdata[kn]
     rel_path = normalize_path(fullfn, proj_root)
     ret["url"] = gen_urls(proj_root, rel_path)
+    assert()
 
     return ret
     # need to match up the 
@@ -164,13 +165,14 @@ def update_metadata(record, scanobj):
 def iterate_files(dataset_rec, mapdata, scandata, proj_root):
 
     ret = []
-
+    sz = 0
     for maprec in mapdata:
 
         fullpath = maprec['file']
         scanrec = scandata[fullpath]
         ret.append(get_file(dataset_rec, maprec, scanrec, proj_root))
-    return ret
+        sz += ret[]
+    return ret, sz
 
 def get_records(mapfilename, scanfilename, xattrfn=None):
 

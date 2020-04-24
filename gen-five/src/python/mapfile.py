@@ -26,7 +26,7 @@ def parse_map_arr(map_data):
     for lst in map_data:
         rec = {}
         rec['file'] = lst[1]
-        rec['size'] = lst[2]
+        rec['size'] = int(lst[2])
         for x in lst[3:]:
             parts = x.split('=')
             rec[parts[0]] = parts[1]
