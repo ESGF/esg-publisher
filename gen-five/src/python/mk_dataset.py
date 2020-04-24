@@ -57,6 +57,7 @@ def get_dataset(mapdata, scandata):
     d['latest'] = 'true'
     d['type'] = 'Dataset'
     d['project'] = key
+    d['version'] = version
 
     return d
 
@@ -178,6 +179,8 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
 
     rec = get_dataset(mapobj[0][0], scanobj['dataset'])
     update_metadata(rec, scanobj)
+    rec["number_of_files"] = len(mapobj)  # place this better
+
     if xattrfn:
         xattrobj = json.load(open(xattrfn))
     else:
@@ -201,7 +204,9 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
         print('scandict = ')
         print(scandict)
         print()
-    ret = [rec] + iterate_files(rec, mapdict, scandict, project)
+    ret, sz = iterate_files(rec, mapdict, scandict, project)
+    rec["size"] = sz
+    ret.append(rec)
     return ret
 
 def main(args):
