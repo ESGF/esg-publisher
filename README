@@ -28,7 +28,7 @@ popd
 
 # install python3 esgf-pid with correct dependencies (eg pika==1.1.0)
 pushd <working-dir>
-git clone https://github.com/IS-ENES-Data/esgf-pid/ python_3.7 branch
+git clone https://github.com/IS-ENES-Data/esgf-pid/
 cd esgf-pid
 git checkout python_3.7
 python setup.py install
