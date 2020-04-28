@@ -432,7 +432,7 @@ def main(argv):
             publishOp = UPDATE_OP
         elif flag=='--commit-every':
             try:
-                commitEvery = string.atoi(arg)
+                commitEvery = int(arg)
                 if commitEvery <= 0:
                     raise ValueError
             except ValueError:
