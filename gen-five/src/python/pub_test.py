@@ -2,8 +2,10 @@ from pub_client import publisherClient
 
 import list2json, sys, json
 
-hostname = "esgf-fedtest.llnl.gov"
-cert_fn = "cert.pem"
+from settings import INDEX_NODE, CERT_FN
+
+hostname = INDEX_NODE
+cert_fn = CERT_FN
 
 ARGS = 1
 

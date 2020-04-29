@@ -3,25 +3,8 @@ from mapfile import *
 
 from datetime import datetime, timedelta
 
-DEBUG = False
+from settings import DEBUG, DRS, GA, DATA_NODE, INDEX_NODE, URL_Templates
 
-DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'] }
-GA = { 'CMIP6' : ['frequency',
-                     'realm',
-                     'product',
-                     'nominal_resolution',
-                     'source_type',
-                     'grid',
-                     'creation_date',
-                     'variant_label',
-                     'sub_experiment_id',
-                     'further_info_url',
-                     'activity_id',
-                     'data_specs_version', 'title']}
-
-DATA_NODE = "greyworm1-rh7.llnl.gov"
-INDEX_NODE = "esgf-fedtest.llnl.gov"
-ROOT = {'esgf_data': '/esg/data'}
 
 EXCLUDES = [""]
 
@@ -60,8 +43,6 @@ def get_dataset(mapdata, scandata):
     d['version'] = version
 
     return d
-
-URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer"]
 
 def gen_urls(proj_root, rel_path):
     return  [template.format(DATA_NODE, proj_root, rel_path) for template in URL_Templates]
