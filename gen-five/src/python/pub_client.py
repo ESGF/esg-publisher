@@ -12,6 +12,8 @@ class publisherClient(object):
         self.retractUrl = '{}/retract'.format(urlbase)
         self.updateUrl = '{}/update'.format(urlbase)
         self.publishUrl = '{}/publish'.format(urlbase)
+        self.deleteUrl = '{}/retract'.format(urlbase)
+
 
     def post_data(self, url, data):
         resp =  requests.post(url, data=data, cert=(self.certFile, self.keyFile), \
@@ -50,3 +52,10 @@ verify=False, allow_redirects=True)
         # root = etree.fromstring(response.content)
         # text = root[0].text
         # return (response.status_code, text)
+    def delete(self, object_id):
+        try:
+            response = self.post_data(self.deleteUrl, data)
+        except requests.exceptions.SSLError as e:
+            print("SSL error!", e )
+        except Exception as e:
+            print("Some other error!", e )

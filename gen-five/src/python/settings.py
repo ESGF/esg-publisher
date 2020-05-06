@@ -35,8 +35,10 @@ ROOT = {'esgf_data': '/esg/data'}
 # a certificate file for the index, assumes in the CWD
 CERT_FN = "cert.pem"
 
+# for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX
 # Note these are netCDF specific and will need to change if other formats are considered
+# TODO - add Globus , GridFTP
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
 "https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP"]
 
