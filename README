@@ -21,6 +21,8 @@ wget https://raw.githubusercontent.com/ESGF/esg-publisher/python3/install-publis
 # run the installer
 bash install-publisher.sh
 # now you can test the publisher commands in the environment
+conda activate pub-py3
+esgpublish --version  # verify that this is v4.x
 
 #####
 

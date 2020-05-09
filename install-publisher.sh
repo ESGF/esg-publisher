@@ -22,7 +22,7 @@ else
     source activate
 fi
 check_error
-conda create -y -n pub-py3 -c conda-forge cmor cdms2 pip git python=3.7
+conda create -y -n pub-py3 -c conda-forge cmor cdms2 pip git python=3.7 numpy=1.17
 check_error
 conda activate pub-py3
 check_error
