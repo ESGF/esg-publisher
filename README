@@ -15,33 +15,11 @@ Requirements:  most requirements are listed in requirements.txt.  Other requirem
 
 Python 3 testing info:
 
-# create test environment - assumes conda activated
-
-conda create -n pub-py3 -c conda-forge cmor cdms2 numpy=1.17 python=3.7 pip
-conda activate pub-py3
-# install python3 compliant cdf2cim
-pushd <working-dir>
-git clone https://github.com/sashakames/esdoc-cdf2cim.git
-cd esdoc-cdf2cim
-python setup.py install
-popd
-
-# install python3 esgf-pid with correct dependencies (eg pika==1.1.0)
-pushd <working-dir>
-git clone https://github.com/IS-ENES-Data/esgf-pid/
-cd esgf-pid
-git checkout python_3.7
-python setup.py install
-popd
-
-# install publisher
-# clone this repo
-git clone https://github.com/ESGF/esg-publisher
-cd esg-publisher
-# checkout the branch
-git checkout python3-pid
-cd src/python/esgcet
-python setup.py install
+# We have created a shell script to execute all setup commands.  If you are on a data node, it should use the default conda, or check if conda is already in your environment
+# fetch the script with wget if you haven't already cloned this repo
+wget https://raw.githubusercontent.com/ESGF/esg-publisher/python3/install-publisher.sh
+# run the installer
+bash install-publisher.sh
 # now you can test the publisher commands in the environment
 
 #####
