@@ -30,7 +30,7 @@ pip install 'git+https://github.com/IS-ENES-Data/esgf-pid@python_3.7' 'git+https
 check_error
 pip install  'git+https://github.com/ESGF/esg-publisher@python3#subdirectory=src/python/esgcet'
 check_error
- 
+esgpublish --version
 echo all done!
 
 
