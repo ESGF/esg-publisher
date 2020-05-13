@@ -1,5 +1,7 @@
 import sys, json
 
+ARGS = 1
+
 def normalize_path(path, project):
     pparts = path.split('/')
     idx = pparts.index(project)
@@ -7,20 +9,25 @@ def normalize_path(path, project):
         raise(BaseException("Incorrect Project in File Path!"))
     return('/'.join(pparts[idx:]))
 
-
-def parse_map(map_data, project, normalize=False):
+'''  Input: 
+'''
+def parse_map(map_data, project=None, normalize=False):
 
     ret = []    
     for line in map_data:
 
         parts = line.rstrip().split(' | ')
         if normalize:
-            parts[1] = normalize_path(parts[1])
+            parts[1] = normalize_path(parts[1], project)
 
         ret.append(parts)
 
     return ret
 
+
+''' Input: Takes a 2-D array representation of the parsed map. 
+Returns: file records.  assumes that the files all belong to the same dataset
+'''
 def parse_map_arr(map_data):
     ret = []
     for lst in map_data:
@@ -50,12 +57,12 @@ def map_entry(map_json, project, fs_root):
 
 def main(args):
 
-    if (len(args) < 2):
+    if (len(args) < ARGS):
         print("Missing required arguments!")
         exit(0)
 
     with open(args[0]) as map_data:
-        ret = parse_map(map_data, args[1])
+        ret = parse_map(map_data)
     print(json.dumps(ret, indent=1))
 
 
