@@ -9,9 +9,8 @@ cert_fn = CERT_FN
 
 ARGS = 1
 
-SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&\
-                 format=application%2Fsolr%2Bjson&data_node={}&master_id={}&\
-                 fields=version,id'
+SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
+
 ''' The xml to hide the previous version
 '''
 def gen_hide_xml(id, *args):
@@ -58,9 +57,17 @@ def main(args):
     dnode = input_rec[dset_idx]['data_node']
 
     # query for 
-    url = SEARCH_TEMPLATE.format(INDEX_NODE, data_node, mst)
-    res = requests.get(url)
+    url = SEARCH_TEMPLATE.format(INDEX_NODE, dnode, mst)
 
+    print(url)
+    resp = requests.get(url)
+
+    print (resp.text)
+    if not resp.status_code == 200:
+        print('Error')
+        exit(1)
+    
+    res = json.loads(resp.text)
 
     if res['response']['num_found'] > 0:
         docs = res['response']
