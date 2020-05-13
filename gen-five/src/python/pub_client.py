@@ -2,7 +2,7 @@ import requests
 
 class publisherClient(object):
 
-    def __init__(self, cert_fn, hostname):
+    def __init__(self, cert_fn, hostname, silent=False):
 
         self.certFile = cert_fn
         self.keyFile = cert_fn
@@ -13,12 +13,13 @@ class publisherClient(object):
         self.updateUrl = '{}/update'.format(urlbase)
         self.publishUrl = '{}/publish'.format(urlbase)
         self.deleteUrl = '{}/retract'.format(urlbase)
-
+        self.silent = silent
 
     def post_data(self, url, data):
         resp =  requests.post(url, data=data, cert=(self.certFile, self.keyFile), \
 verify=False, allow_redirects=True)
-        print(resp.text)
+        if not self.silent:
+            print(resp.text)
         return resp
 
     def publish(self, xmldata):

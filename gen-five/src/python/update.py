@@ -69,7 +69,7 @@ def main(args):
     
     res = json.loads(resp.text)
 
-    if res['response']['num_found'] > 0:
+    if res['response']['numFound'] > 0:
         docs = res['response']
 
         update_rec = gen_hide_xml(docs[0]['id'])
