@@ -20,7 +20,7 @@ def gen_hide_xml(id, *args):
     ts = now.strftime(dateFormat)
     txt =  """<updates core="datasets" action="set">
         <update>
-          <query>instance_id={}</query>
+          <query>id={}</query>
           <field name="latest">
              <value>false</value>
           </field>
@@ -70,12 +70,13 @@ def main(args):
     res = json.loads(resp.text)
 
     if res['response']['numFound'] > 0:
-        docs = res['response']
-
-        update_rec = gen_hide_xml(docs[0]['id'])
+        docs = res['response']["docs"]
+        dsetid = docs[0]['id']
+        update_rec = gen_hide_xml( dsetid )
         pubCli = publisherClient(cert_fn, hostname)
+        print (update_rec)
         pubCli.update(update_rec)
-        print('INFO: Found previous version, updating the record: {}',format(id))
+        print('INFO: Found previous version, updating the record: {}'.format(dsetid))
 
     else:
         print('INFO: First dataset version for {}.'.format(mst))
