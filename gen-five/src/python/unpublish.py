@@ -15,7 +15,7 @@ def main(args):
 
     if len(args) > 1 and '--delete' in args:
         do_delete = True
-    else
+    else:
         do_delete = False
 
     dset_id =  args[-1]
