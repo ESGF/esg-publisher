@@ -10,6 +10,8 @@ mapconv_cmd=$py_src_path/mapfile.py  # convert mapfile to json
 mkds_cmd=$py_src_path/mk_dataset.py  # make dataset from sources
 idx_pub_cmd=$py_src_path/pub_test.py
 
+update_cmd=$py_src_path/update.py
+
 cert_path=./cert.pem
 
 
@@ -33,4 +35,6 @@ convmapfn=$strfn.map.json
 $autocur_cmd --out_json $scanfn --files "$datasetdir"
 python $mapconv_cmd $fullmap $proj > $convmapfn
 python $mkds_cmd $convmapfn $scanfn > $strfn.out.json
+python $update_cmd $strfn.out.json
 python $idx_pub_cmd $strfn.out.json
+
