@@ -1,16 +1,16 @@
 import sys, json
 
 
-CMIPCV="/export/ames4/git-repos/CMIP6_CVs"
+CMIPCV="/Users/ames4/git-repos/CMIP6_CVs"
 SRC_ID_JSON="CMIP6_source_id.json"
 
 IDX = -1  # index for the dataset record
-
+ARGS = 1
 class FieldCheck(object):
 
-    def FieldCheck(self, cv_path):
+    def __init__(self, cv_path):
 
-        jobj = json.load(open(cv_path))json.load(open(cv_path))
+        jobj = json.load(open(cv_path))
         self.sid_dict = jobj["source_id"]
 
 
@@ -37,9 +37,9 @@ def main(args):
         exit(1)
 
     src_id = input_rec[IDX]['source_id']
-    act_id = input_rec[IDX]['activity_drs']:
+    act_id = input_rec[IDX]['activity_drs']
  
-    if fc.check_fields(src_id, act_id)
+    if fc.check_fields(src_id, act_id):
         print("INFO: passed source_id registration test for {}".format(src_id))
     else:
         print("ERROR: source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))
