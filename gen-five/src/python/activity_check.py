@@ -1,7 +1,7 @@
 import sys, json
 
 
-CMIPCV="/Users/ames4/git-repos/CMIP6_CVs"
+CMIPCV="/export/ames4/git/CMIP6_CVs"
 SRC_ID_JSON="CMIP6_source_id.json"
 
 IDX = -1  # index for the dataset record
@@ -14,7 +14,7 @@ class FieldCheck(object):
         self.sid_dict = jobj["source_id"]
 
 
-    def check_fields(source_id, activity_id):
+    def check_fields(self, source_id, activity_id):
 
         rec = self.sid_dict[source_id]
 
@@ -33,7 +33,7 @@ def main(args):
     try:
         input_rec = json.load(open(args[0]))
     except Exception as e:
-        print("Error opening input json format {}".format(e))
+        print("Error opening input json format for {}: ".format(args[0],e))
         exit(1)
 
     src_id = input_rec[IDX]['source_id']
