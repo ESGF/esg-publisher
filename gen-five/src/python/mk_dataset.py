@@ -3,7 +3,7 @@ from mapfile import *
 
 from datetime import datetime, timedelta
 
-from settings import DEBUG, DRS, GA, DATA_NODE, INDEX_NODE, URL_Templates
+from settings import DEBUG, DRS, GA, DATA_NODE, INDEX_NODE, URL_Templates, DATA_ROOTS
 
 
 EXCLUDES = [""]
@@ -49,7 +49,7 @@ def gen_urls(proj_root, rel_path):
 
 
 
-def get_file(dataset_rec, mapdata, fn_trid, proj_root):
+def get_file(dataset_rec, mapdata, fn_trid):
     ret = dataset_rec.copy()
     dataset_id = dataset_rec["id"]
     ret['type'] = "File"
@@ -65,8 +65,14 @@ def get_file(dataset_rec, mapdata, fn_trid, proj_root):
     for kn in mapdata:
         if kn not in ("id", "file"):
             ret[kn] = mapdata[kn]
-    rel_path = normalize_path(fullfn, proj_root)
-    ret["url"] = gen_urls(proj_root, rel_path)
+
+    rel_path, proj_root = normalize_path(fullfn, dataset_rec["project"])
+
+    if not proj_root in DATA_ROOTS:
+        print('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
+        exit(1)
+    
+    ret["url"] = gen_urls(DATA_ROOTS[proj_root], rel_path)
 
     return ret
     # need to match up the 
@@ -142,15 +148,17 @@ def update_metadata(record, scanobj):
     else:
         print("WARNING: No axes extracted from data files")
 
-def iterate_files(dataset_rec, mapdata, scandata, proj_root):
+def iterate_files(dataset_rec, mapdata, scandat):
 
     ret = []
     sz = 0
+
+
     for maprec in mapdata:
 
         fullpath = maprec['file']
         scanrec = scandata[fullpath]
-        file_rec = get_file(dataset_rec, maprec, scanrec, proj_root)
+        file_rec = get_file(dataset_rec, maprec, scanrec)
         sz += file_rec["size"]
         ret.append(file_rec)
         
@@ -188,7 +196,7 @@ def get_records(mapfilename, scanfilename, xattrfn=None):
         print('scandict = ')
         print(scandict)
         print()
-    ret, sz = iterate_files(rec, mapdict, scandict, project)
+    ret, sz = iterate_files(rec, mapdict, scandict)
     rec["size"] = sz
     ret.append(rec)
     return ret

@@ -7,7 +7,8 @@ DEBUG = False
 #    Then, set by the workflow at reasonable intervals
 
 # For each project these become the . delimited components of the dataset_id
-DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'] }
+DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'],
+         'E3SM' : ['project', ] }
 
 # Global attributes expected to be read for a particular project.  For now a simple list.  
 GA = { 'CMIP6' : ['frequency',
@@ -29,7 +30,7 @@ DATA_NODE = "greyworm1-rh7.llnl.gov"
 INDEX_NODE = "esgf-fedtest.llnl.gov"
 
 # the prefix is found in the published urls that are backed by the path prefix below
-ROOT = {'esgf_data': '/esg/data'}
+DATA_ROOTS = {'esgf_data': '/esg/data', 'user_pub_work': '/p/user_pub/work', 'css03_data' : '/p/css03/esgf_publish' }
 
 
 # a certificate file for the index, assumes in the CWD
