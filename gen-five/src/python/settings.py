@@ -30,7 +30,9 @@ DATA_NODE = "greyworm1-rh7.llnl.gov"
 INDEX_NODE = "esgf-fedtest.llnl.gov"
 
 # the prefix is found in the published urls that are backed by the path prefix below
-DATA_ROOTS = {'esgf_data': '/esg/data', 'user_pub_work': '/p/user_pub/work', 'css03_data' : '/p/css03/esgf_publish' }
+DATA_ROOTS = {'/esg/data' : 'esgf_data',
+ '/p/user_pub/work' :  'user_pub_work', 
+ '/p/css03/esgf_publish' : 'css03_data' }
 
 
 # a certificate file for the index, assumes in the CWD

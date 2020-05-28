@@ -7,7 +7,7 @@ def normalize_path(path, project):
     idx = pparts.index(project)
     if idx < 0:
         raise(BaseException("Incorrect Project in File Path!"))
-    proj_root = '/{}'.format('/'.join(pparts[0:idx]))
+    proj_root = '/'.join(pparts[0:idx])
     return('/'.join(pparts[idx:]), proj_root)
 
 '''  Input: 
