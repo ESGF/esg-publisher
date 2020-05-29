@@ -25,7 +25,7 @@ fullmap=$1
 
 path=`head -n1 $fullmap | awk '{print $3}'`
 datasetdir=`dirname ${path}`/'*.nc'
-basefn=`basename $fn`
+basefn=`basename $fullmap`
 
 
 strfn="${basefn%.*}"

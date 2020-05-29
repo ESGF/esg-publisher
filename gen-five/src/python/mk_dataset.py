@@ -150,7 +150,7 @@ def update_metadata(record, scanobj):
     else:
         print("WARNING: No axes extracted from data files")
 
-def iterate_files(dataset_rec, mapdata, scandat):
+def iterate_files(dataset_rec, mapdata, scandata):
 
     ret = []
     sz = 0
