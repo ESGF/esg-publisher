@@ -43,3 +43,22 @@ CERT_FN = "cert.pem"
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
 "https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP"]
 
+#        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 
+
+PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
+             'port': 5671,
+             'vhost': 'esgf-pid',
+             'user': 'esgf-publisher',
+             'password': '',
+             'ssl_enabled': True,
+             'priority': 1}] 
+
+PID_PREFIX = '21.14100'
+PID_EXCHANGE = 'esgffed-exchange'
+HTTP_SERVICE = '/thredds/fileServer/'
+
+CITATION_URLS = { 'CMIP6' : {'test' :
+'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
+        'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
+
+PID_URL = 'http://hdl.handle.net/{}|PID|pid'

@@ -32,10 +32,12 @@ def get_dataset(mapdata, scandata):
     d['index_node'] = INDEX_NODE
     DRSlen = len(DRS[key])
     d['master_id'] = master_id
-    d['instance_id'] = master_id + '.' + version
+    d['instance_id'] = master_id + '.v' + version
     d['id'] = d['instance_id'] + '|' + d['data_node']
     if not 'title' in d:
-        d['title'] = d['instance_id']
+        d['title'] = d['master_id']
+    else:
+        d['title'] = '{}: {}'.format(d['title'], d['master_id'])
     d['replica'] = 'false' # set replica
     d['latest'] = 'true'
     d['type'] = 'Dataset'
