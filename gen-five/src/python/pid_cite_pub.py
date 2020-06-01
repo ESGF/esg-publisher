@@ -51,7 +51,7 @@ def check_pid_connection(pid_prefix, pid_connector, send_message=False):
         raise Exception("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
 
     pid_connector = establish_pid_connection(pid_prefix, TEST_PUB,  publish=True)
-    pid_connector.start_messaging_thread()
+
 
 
 def get_url(arr):
@@ -68,6 +68,7 @@ def pid_flow_code(dataset_recs):
 
     pid_connector = establish_pid_connection(PID_PREFIX, TEST_PUB, publish=False)
     pid_connector.start_messaging_thread()
+
     dataset_pid = None
     if pid_connector:
         dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
@@ -98,16 +99,15 @@ def pid_flow_code(dataset_recs):
 
         if pid_wizard:
             pid_wizard.dataset_publication_finished()
-            pid_connector.finish_messaging_thread()
-            return dataset_pid
+            return pid_connector, dataset_pid
         else:
             print("WARNING, empty pid_wizard!")
 
     except Exception as e:
-        print("WANING: PID module exception encountered!{}".format(str(e)))
+        print("WANING: PID module exception encountered! {}".format(str(e)))
 
     pid_connector.force_finish_messaging_thread()
-    return None
+    return None, None
 
 def update_dataset(dset_rec, pid, test_publication):
 
@@ -117,7 +117,7 @@ def update_dataset(dset_rec, pid, test_publication):
         keystr = 'test'
     else:
         keystr = 'prod'
-    citation_url = CITATION_URLS['project'][keystr]
+    citation_url = CITATION_URLS[project][keystr]
 
     dset_rec['citation_url'] = citation_url
     dset_rec['xlink'] = ['{}|citation|Citation'.format(citation_url)]
@@ -134,10 +134,22 @@ def main(args):
 
     fname = args[0]
     res = json.load(open(fname))
-    pid = pid_flow_code(res)
-    update_dataset(res[-1], pid, TEST_PUB)
-    rewrite_json(fname, res)
+    pid_connector, pid = pid_flow_code(res)
 
+    if pid_connector is None:
+        exit(-1)
+
+    try:
+        update_dataset(res[-1], pid, TEST_PUB)
+        rewrite_json(fname, res)
+    except Exception as e:
+        print("WANING: Some exception encountered! {}".format(str(e)))
+        pid_connector.force_finish_messaging_thread()
+        exit(-1)
+
+#    print("before finish"). DEBUG
+    pid_connector.finish_messaging_thread()
+#    print("after finish") DEBUG
 
 if __name__ == '__main__':
     main(sys.argv[1:])
