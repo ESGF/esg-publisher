@@ -63,4 +63,5 @@ CITATION_URLS = { 'CMIP6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
 
-PID_URL = 'http://hdl.handle.net/{}|PID|pid'
+PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
+TEST_PUB = True

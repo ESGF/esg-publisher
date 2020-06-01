@@ -1,6 +1,5 @@
 import sys, json
-from settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_TEMPLATES, HTTP_SERVICE, CITATION_URLS
-
+from settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 
 
 def establish_pid_connection(pid_prefix, test_publication,  publish=True):
@@ -12,15 +11,6 @@ def establish_pid_connection(pid_prefix, test_publication,  publish=True):
 
     test_publication
         Boolean to flag PIDs as test
-
-     project_config_section
-        The name of the project config section in esg.ini
-
-    config
-        Loaded config file(s)
-
-    handler
-        Project handler to be used for given project
 
     publish
         Flag to trigger publication and unpublication
@@ -66,54 +56,27 @@ def check_pid_connection(pid_connector, send_message=False):
     pid_connector.start_messaging_thread()
 
 
+def get_url(arr):
 
+    return arr[0].split('|')[0]
 
-def get_citation_url(self, project_config_section, config, dataset_name, dataset_version, test_publication):
-    """ Returns the citation_url if a project uses citation, otherwise returns None
-
-     project_section
-        The name of the project section in the ini file
-
-    config
-        The configuration (ini files)
-
-    dataset_name
-        Name of the dataset
-
-    dataset_version
-        Version of the dataset
-    """
-    if config.has_option(project_config_section, 'citation_url'):
-        try:
-            pattern = self.getFilters(option='dataset_id')
-            attributes = re.match(pattern[0], dataset_name).groupdict()
-            if 'version' not in attributes:
-                attributes['version'] = str(dataset_version)
-            if 'dataset_id' not in attributes:
-                attributes['dataset_id'] = dataset_name
-            return config.get(project_config_section, 'citation_url', 0, attributes)
-        except:
-            warning('Unable to generate a citation url for %s' % dataset_name)
-            return None
-    else:
-        return None
-
-
-def pid_flow_code(pid_connector, dataset_recs, is_replica):
+def pid_flow_code(dataset_recs):
 
 
     dsrec = dataset_recs[-1]
     dset = dsrec['master_id']
     version_number = dsrec['version']
+    is_replica = dsrec["replica"]
+
+    pid_connector = establish_pid_connection(PID_PREFIX, TEST_PUB, publish=False)
 
     dataset_pid = None
     if pid_connector:
-        dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=datasetName, version_number=newVersion)
-        info("Assigned PID to dataset %s.v%s: %s " % (datasetName, newVersion, dataset_pid))
+        dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version)
+        print("Assigned PID to dataset %s.v%s: %s " % (datasetName, newVersion, dataset_pid))
     else:
         print('warning no connection')
     # if project uses citation, build citation url
-
 
 
     pid_wizard = None
@@ -123,28 +86,21 @@ def pid_flow_code(pid_connector, dataset_recs, is_replica):
                                                                 version_number=versionNumber,
                                                                 is_replica=is_replica)
 # Iterate this over all the files:
-    
-    pid_wizard.add_file(file_name=name,
-                file_handle=trackingID,
-                checksum=checksum,
-                file_size=size,
-                publish_path=publishPath,
-                checksum_type=checksumType,
-                file_version=fileVersion)
+    for file_rec in dataset_recs[0:-1]: 
+
+        pid_wizard.add_file(file_name=file_rec['title'],
+                    file_handle=file_rec['tracking_id'],
+                    checksum=file_rec['checksum'],
+                    file_size=file_rec['size'],
+                    publish_path=get_url(file_rec['url']),
+                    checksum_type=file_rec['checksumType'],
+                    file_version=file_rec['version'] )
 
     if pid_wizard:
         pid_wizard.dataset_publication_finished()
-
-
-
-
-def get_dataset_pid()
-
-
-    dset_rec = res[-1]
-    if dset_rec
-
-    pid_connector = establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=False)
+    else:
+        print("WARNING, empty pid_wizard!")
+    return dataset_pid
 
 
 def update_dataset(dset_rec, pid, test_publication):
@@ -158,13 +114,27 @@ def update_dataset(dset_rec, pid, test_publication):
     citation_url = CITATION_URLS['project'][keystr]
 
     dset_rec['citation_url'] = citation_url
-    dset_rec['xlink'] = '{}|citation|Citation'.format(citation_url)
+    dset_rec['xlink'] = ['{}|citation|Citation'.format(citation_url)]
+    dset_rec['pid'] = pid
+    dset_rec['xlink'].append(PID_URL.format(pid))
 
+
+def rewrite_json(fname, recs):
+
+    with open(fname, 'w') as f:
+        f.write(json.dumps(recs, indent=1))
 
 def main(args):
 
-    res = json.load(open(args[0]))
+    fname = args[0]
+    res = json.load(open(fname))
+    pid = pid_flow_code(res)
+    update_dataset(res[-1], pid, TEST_PUB)
+    rewrite_json(fname, res)
 
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
 
 
 #    "xlink":["http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.RFMIP.MOHC.HadGEM3-GC31-LL.rad-irf.r1i1p3f3.Efx.rld.gn.v20191030.json|Citation|citation",
