@@ -117,7 +117,7 @@ def update_dataset(dset_rec, pid, test_publication):
         keystr = 'test'
     else:
         keystr = 'prod'
-    citation_url = CITATION_URLS[project][keystr]
+    citation_url = CITATION_URLS[project][keystr].format(dset_rec['master_id'], dset_rec['version'])
 
     dset_rec['citation_url'] = citation_url
     dset_rec['xlink'] = ['{}|citation|Citation'.format(citation_url)]
@@ -143,7 +143,7 @@ def main(args):
         update_dataset(res[-1], pid, TEST_PUB)
         rewrite_json(fname, res)
     except Exception as e:
-        print("WANING: Some exception encountered! {}".format(str(e)))
+        print("WARNING: Some exception encountered! {}".format(str(e)))
         pid_connector.force_finish_messaging_thread()
         exit(-1)
 

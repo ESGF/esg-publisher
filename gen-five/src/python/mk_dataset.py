@@ -23,9 +23,11 @@ def get_dataset(mapdata, scandata):
                 print("WARNING: {} does not agree!".format(f))
         d[f] = parts[i]
 
-    for val in GA[key]:
-        if val in scandata:
-            d[val] = scandata[val]
+
+    if key in GA:
+        for val in GA[key]:
+            if val in scandata:
+                d[val] = scandata[val]
 
 
     d['data_node'] = DATA_NODE

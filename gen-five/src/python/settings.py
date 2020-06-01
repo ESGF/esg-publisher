@@ -8,7 +8,7 @@ DEBUG = False
 
 # For each project these become the . delimited components of the dataset_id
 DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'],
-         'E3SM' : ['project', ] }
+         'E3SM' : [ 'source', 'model_version', 'experiment', 'grid_resolution', 'realm', 'regridding', 'data_type', 'time_frequency', 'ensemble_member'] }
 
 # Global attributes expected to be read for a particular project.  For now a simple list.  
 GA = { 'CMIP6' : ['frequency',
