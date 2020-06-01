@@ -51,11 +51,11 @@ PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
              'port': 5671,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
-             'password': '',
+             'password': "",
              'ssl_enabled': True,
              'priority': 1}] 
 
-PID_PREFIX = '21.14100'
+PID_PREFIX = '21.14100' # for testing use CMIP6,  need to be project-specific
 PID_EXCHANGE = 'esgffed-exchange'
 HTTP_SERVICE = '/thredds/fileServer/'
 

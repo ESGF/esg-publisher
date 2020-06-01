@@ -38,21 +38,20 @@ def establish_pid_connection(pid_prefix, test_publication,  publish=True):
                                       http_service_path=http_service_path,
                                       test_publication=test_publication)
     # Check connection
-    check_pid_connection(pid_connector, send_message=True)
 
     return pid_connector
 
 
-def check_pid_connection(pid_connector, send_message=False):
+def check_pid_connection(pid_prefix, pid_connector, send_message=False):
     """
     Check the connection to the PID rabbit MQ
     Raise an Error if connection fails
     """
     pid_queue_return_msg = pid_connector.check_pid_queue_availability(send_message=send_message)
     if pid_queue_return_msg is not None:
-        raise ESGPublishError("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
+        raise Exception("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
 
-    pid_connector = establish_pid_connection(pid_prefix, test_publication, project_config_section, config, handler, publish=True)
+    pid_connector = establish_pid_connection(pid_prefix, TEST_PUB,  publish=True)
     pid_connector.start_messaging_thread()
 
 
@@ -72,16 +71,16 @@ def pid_flow_code(dataset_recs):
 
     dataset_pid = None
     if pid_connector:
-        dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version)
-        print("Assigned PID to dataset %s.v%s: %s " % (datasetName, newVersion, dataset_pid))
+        dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
+        print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, dataset_pid))
     else:
         print('warning no connection')
     # if project uses citation, build citation url
 
+    check_pid_connection(PID_PREFIX, pid_connector, send_message=True)
 
     pid_wizard = None
         # Check connection
-    check_pid_connection(pid_connector)
     pid_wizard = pid_connector.create_publication_assistant(drs_id=datasetName,
                                                                 version_number=versionNumber,
                                                                 is_replica=is_replica)
