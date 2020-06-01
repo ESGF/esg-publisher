@@ -24,18 +24,17 @@ def establish_pid_connection(pid_prefix, test_publication,  publish=True):
     pid_messaging_service_credentials = PID_CREDS
     pid_data_node = DATA_NODE
 
-    http_service_path = None
+    # http_service_path = None
 
-    if publish:
-        http_service_path = HTTP_SERVICE 
-
+    # if publish:
+    http_service_path = HTTP_SERVICE 
 
 
     pid_connector = esgfpid.Connector(handle_prefix=pid_prefix,
                                       messaging_service_exchange_name=pid_messaging_service_exchange_name,
                                       messaging_service_credentials=pid_messaging_service_credentials,
                                       data_node=pid_data_node,
-                                      http_service_path=http_service_path,
+                                      thredds_service_path=http_service_path,
                                       test_publication=test_publication)
     # Check connection
 
@@ -68,7 +67,7 @@ def pid_flow_code(dataset_recs):
     is_replica = dsrec["replica"]
 
     pid_connector = establish_pid_connection(PID_PREFIX, TEST_PUB, publish=False)
-
+    pid_connector.start_messaging_thread()
     dataset_pid = None
     if pid_connector:
         dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
@@ -77,30 +76,38 @@ def pid_flow_code(dataset_recs):
         print('warning no connection')
     # if project uses citation, build citation url
 
-    check_pid_connection(PID_PREFIX, pid_connector, send_message=True)
 
-    pid_wizard = None
-        # Check connection
-    pid_wizard = pid_connector.create_publication_assistant(drs_id=datasetName,
-                                                                version_number=versionNumber,
-                                                                is_replica=is_replica)
-# Iterate this over all the files:
-    for file_rec in dataset_recs[0:-1]: 
+    try:
+        check_pid_connection(PID_PREFIX, pid_connector, send_message=True)
 
-        pid_wizard.add_file(file_name=file_rec['title'],
-                    file_handle=file_rec['tracking_id'],
-                    checksum=file_rec['checksum'],
-                    file_size=file_rec['size'],
-                    publish_path=get_url(file_rec['url']),
-                    checksum_type=file_rec['checksumType'],
-                    file_version=file_rec['version'] )
+        pid_wizard = None
+            # Check connection
+        pid_wizard = pid_connector.create_publication_assistant(drs_id=dset,
+                                                                    version_number=version_number,
+                                                                    is_replica=is_replica)
+    # Iterate this over all the files:
+        for file_rec in dataset_recs[0:-1]: 
 
-    if pid_wizard:
-        pid_wizard.dataset_publication_finished()
-    else:
-        print("WARNING, empty pid_wizard!")
-    return dataset_pid
+            pid_wizard.add_file(file_name=file_rec['title'],
+                        file_handle=file_rec['tracking_id'],
+                        checksum=file_rec['checksum'],
+                        file_size=file_rec['size'],
+                        publish_path=get_url(file_rec['url']),
+                        checksum_type=file_rec['checksum_type'],
+                        file_version=file_rec['version'] )
 
+        if pid_wizard:
+            pid_wizard.dataset_publication_finished()
+            pid_connector.finish_messaging_thread()
+            return dataset_pid
+        else:
+            print("WARNING, empty pid_wizard!")
+
+    except Exception as e:
+        print("WANING: PID module exception encountered!{}".format(str(e)))
+
+    pid_connector.force_finish_messaging_thread()
+    return None
 
 def update_dataset(dset_rec, pid, test_publication):
 
