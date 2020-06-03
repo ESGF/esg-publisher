@@ -64,7 +64,8 @@ def get_file(dataset_rec, mapdata, fn_trid):
     ret['id'] = "{}.{}".format(ret['instance_id'],title)
     ret['title'] = title
     ret["dataset_id"] = dataset_id
-    ret["tracking_id"] = fn_trid["tracking_id"]
+    if "tracking_id" in fn_trid:
+        ret["tracking_id"] = fn_trid["tracking_id"]
 
     for kn in mapdata:
         if kn not in ("id", "file"):
@@ -100,6 +101,7 @@ def update_metadata(record, scanobj):
             record["variable_units"] = var_rec["units"]
         else:
             print("TODO check project settings for variable extraction")
+            record["variable"] = "Multiple"
     else:
         print("WARNING: no variables were extracted (is this CF compliant?)")
 
