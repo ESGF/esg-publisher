@@ -20,7 +20,7 @@ def get_dataset(mapdata, scandata):
         if f in scandata:
             ga_val = scandata[f]
             if not parts[i] == ga_val:
-                print("WARNING: {} does not agree!".format(f))
+                eprint("WARNING: {} does not agree!".format(f))
         d[f] = parts[i]
 
 
@@ -74,7 +74,7 @@ def get_file(dataset_rec, mapdata, fn_trid):
     rel_path, proj_root = normalize_path(fullfn, dataset_rec["project"])
 
     if not proj_root in DATA_ROOTS:
-        print('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
+        eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
         exit(1)
     
     ret["url"] = gen_urls(DATA_ROOTS[proj_root], rel_path)
@@ -100,10 +100,10 @@ def update_metadata(record, scanobj):
             record["cf_standard_name"] = var_rec["standard_name"]
             record["variable_units"] = var_rec["units"]
         else:
-            print("TODO check project settings for variable extraction")
+            eprint("TODO check project settings for variable extraction")
             record["variable"] = "Multiple"
     else:
-        print("WARNING: no variables were extracted (is this CF compliant?)")
+        eprint("WARNING: no variables were extracted (is this CF compliant?)")
 
     geo_units = []
     if "axes" in scanobj:
@@ -136,7 +136,7 @@ def update_metadata(record, scanobj):
                     tu_start_inc = time_obj["values"][0]
                     tu_end_inc = time_obj["values"][-1]
                 else:
-                    print("WARNING: not sure where time values are...")
+                    eprint("WARNING: not sure where time values are...")
                     proc_time = False
                 if proc_time:
                     days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
@@ -152,7 +152,7 @@ def update_metadata(record, scanobj):
                 record["height_top"] = plev["values"][0]
                 record["height_bottom"] = plev["values"][-1]
     else:
-        print("WARNING: No axes extracted from data files")
+        eprint("WARNING: No axes extracted from data files")
 
 def iterate_files(dataset_rec, mapdata, scandata):
 
