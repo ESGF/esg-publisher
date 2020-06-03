@@ -8,6 +8,11 @@ from settings import DEBUG, DRS, GA, DATA_NODE, INDEX_NODE, URL_Templates, DATA_
 
 EXCLUDES = [""]
 
+def eprint(*a):
+
+    print(*a, file=sys.stderr)
+
+
 def get_dataset(mapdata, scandata):
 
     master_id, version = mapdata.split('#')
