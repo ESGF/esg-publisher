@@ -13,6 +13,13 @@ def eprint(*a):
     print(*a, file=sys.stderr)
 
 
+def unpack_values(invals):
+
+    for x in invals:
+        if x['values']:
+            yield x['values']
+
+
 def get_dataset(mapdata, scandata):
 
     master_id, version = mapdata.split('#')
@@ -132,7 +139,7 @@ def update_metadata(record, scanobj):
                 tu_date = tu_parts[2] # can we ignore time component?
                 if "subaxes" in time_obj:
                     subaxes = time_obj["subaxes"]
-                    sub_values = sorted([x['values'] for x in subaxes.values()])
+                    sub_values = sorted([x for x in unpack_values(subaxes.values())])
 
 
                     tu_start_inc = int(sub_values[0][0])

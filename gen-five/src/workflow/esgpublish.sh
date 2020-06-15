@@ -4,6 +4,7 @@ proj=CMIP6
 
 dt=`date +%y%m%d_%H%M`
 
+cmor_tables=/path/to/cmip6-cmor_tables/Tables
 py_src_path=/path/to/esg-publisher/gen-five/src/python
 autocur_cmd="/path/to/autocurator/bin/autocurator --out_pretty true"
 mapconv_cmd=$py_src_path/mapfile.py  # convert mapfile to json
@@ -23,6 +24,13 @@ fi
 
 fullmap=$1
 
+for fn in `awk '{print $3}' $fullmap` ; do
+
+  PrePARE --table-path $cmor_tables $fn
+
+  done
+
+
 path=`head -n1 $fullmap | awk '{print $3}'`
 datasetdir=`dirname ${path}`/'*.nc'
 basefn=`basename $fullmap`
@@ -31,6 +39,7 @@ basefn=`basename $fullmap`
 strfn="${basefn%.*}"
 scanfn=$strfn.scan.json
 convmapfn=$strfn.map.json
+
 
 $autocur_cmd --out_json $scanfn --files "$datasetdir"
 python $mapconv_cmd $fullmap $proj > $convmapfn
