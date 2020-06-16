@@ -4,6 +4,8 @@ proj=CMIP6
 
 dt=`date +%y%m%d_%H%M`
 
+path_pre=$HOME/git
+
 cmor_tables=/path/to/cmip6-cmor_tables/Tables
 py_src_path=/path/to/esg-publisher/gen-five/src/python
 autocur_cmd="/path/to/autocurator/bin/autocurator --out_pretty true"
@@ -12,6 +14,7 @@ mkds_cmd=$py_src_path/mk_dataset.py  # make dataset from sources
 idx_pub_cmd=$py_src_path/pub_test.py
 
 update_cmd=$py_src_path/update.py
+pid_cite_cmd=$py_src_path/pid_cite_pub.py
 
 cert_path=./cert.pem
 
@@ -39,11 +42,13 @@ basefn=`basename $fullmap`
 strfn="${basefn%.*}"
 scanfn=$strfn.scan.json
 convmapfn=$strfn.map.json
+outfn=$strfn.out.json
 
 
 $autocur_cmd --out_json $scanfn --files "$datasetdir"
 python $mapconv_cmd $fullmap $proj > $convmapfn
-python $mkds_cmd $convmapfn $scanfn > $strfn.out.json
-python $update_cmd $strfn.out.json
-python $idx_pub_cmd $strfn.out.json
+python $mkds_cmd $convmapfn $scanfn > $outfn
+python $pid_cite_cmd $outfn
+python $update_cmd $outfn
+python $idx_pub_cmd $outfn
 
