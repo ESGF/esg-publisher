@@ -1,6 +1,6 @@
 import sys, json
 from settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
-
+import traceback
 
 def establish_pid_connection(pid_prefix, test_publication,  publish=True):
 
@@ -104,8 +104,9 @@ def pid_flow_code(dataset_recs):
             print("WARNING, empty pid_wizard!")
 
     except Exception as e:
-        print("WANING: PID module exception encountered! {}".format(str(e)))
-
+        print("WARNING: PID module exception encountered! {}".format(str(e)))
+        traceback.print_exc()
+        
     pid_connector.force_finish_messaging_thread()
     return None, None
 
