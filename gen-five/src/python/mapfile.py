@@ -64,8 +64,4 @@ def main(args):
 
     with open(args[0]) as map_data:
         ret = parse_map(map_data)
-    print(json.dumps(ret, indent=1))
-
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
+    return ret

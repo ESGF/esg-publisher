@@ -33,14 +33,10 @@ def gen_hide_xml(id, *args):
 
     return txt
 
-def main(args):
-
-    if len(args) < (ARGS):
-        print("Missing required arguments")
-        exit(0)
+def main(outfile):
 
     try:
-        input_rec = json.load(open(args[0]))
+        input_rec = json.load(open(outfile))
     except Exception as e:
         print("Error opening input json format {}".format(e))
         exit(1)
@@ -81,8 +77,3 @@ def main(args):
     else:
         print('INFO: First dataset version for {}.'.format(mst))
 
-
-
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
