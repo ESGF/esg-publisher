@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 
 # these settings are presently managed within esg.ini and esg.<project>.ini
 
@@ -51,7 +51,7 @@ PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
              'port': 5671,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
-             'password': "",
+             'password': "B8a*:!*6$7oWG'`3!G",
              'ssl_enabled': True,
              'priority': 1}] 
 

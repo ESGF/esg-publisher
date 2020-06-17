@@ -33,10 +33,10 @@ def gen_hide_xml(id, *args):
 
     return txt
 
-def main(outfile):
+def main(outdata):
 
     try:
-        input_rec = json.load(open(outfile))
+        input_rec = outdata
     except Exception as e:
         print("Error opening input json format {}".format(e))
         exit(1)

@@ -182,9 +182,9 @@ def iterate_files(dataset_rec, mapdata, scandata):
         
     return ret, sz
 
-def get_records(mapfilename, scanfilename, xattrfn=None):
+def get_records(mapdata, scanfilename, xattrfn=None):
 
-    mapobj = json.load(open(mapfilename))
+    mapobj = mapdata
     scanobj = json.load(open(scanfilename))
 
     rec = get_dataset(mapobj[0][0], scanobj['dataset'])

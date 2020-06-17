@@ -14,8 +14,6 @@ fullmap = sys.argv[1]
 proj = "CMIP6"
 basename = str(os.path.basename(fullmap))
 scanfn = basename + ".scan.json"
-convmapfn = basename + ".map.json"
-outfn = basename + ".out.json"
 
 cmor_tables = input("Path to cmor tables: ")
 autocurator = input("Path to autocurator: ")
@@ -43,23 +41,17 @@ autoc_command += " --files " + dataset_test
 os.system(autoc_command)
 
 print("Done.\nConverting mapfile...")
-map_file = open(convmapfn, 'w+')
-json.dump(mp.main([fullmap, proj]), map_file, indent=1)
+map_json_data = mp.main([fullmap, proj])
 
 print("Done.\nMaking dataset...")
-out_file = open(outfn, 'w+')
-# PROBLEM: mk_dataset is seemingly reading nothing from scanfn--
-# cont: AUTOCURATOR not working... not putting anything in scanfn, but not producing any errors
-json.dump(mkd.main([convmapfn, scanfn]), out_file, indent=1)
+out_json_data = mkd.main([map_json_data, scanfn])
 
 print("Done.\nUpdating...")
-up.main(outfn)
+up.main(out_json_data)
 
 print("Done.\nRunning pub test...")
-pt.main(outfn)
+pt.main(out_json_data)
 
 print("Done. Cleaning up.")
-out_file.close()
-map_file.close()
 scan_file.close()
 

@@ -7,7 +7,7 @@ from settings import INDEX_NODE, CERT_FN
 hostname = INDEX_NODE
 cert_fn = CERT_FN
 
-def main(outfile):
+def main(outdata):
 
 
 
@@ -16,7 +16,7 @@ def main(outfile):
 
     pubCli = publisherClient(cert_fn, hostname)
 
-    d = json.load(open(outfile))
+    d = outdata
 
     for rec in d:
 
