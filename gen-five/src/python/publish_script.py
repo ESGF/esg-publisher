@@ -5,6 +5,7 @@ import pub_test as pt
 import os
 import json
 import sys
+import tempfile
 
 
 if len(sys.argv) < 1:
@@ -13,11 +14,14 @@ if len(sys.argv) < 1:
 fullmap = sys.argv[1]
 proj = "CMIP6"
 basename = str(os.path.basename(fullmap))
-scanfn = basename + ".scan.json"
+scan_file = tempfile.NamedTemporaryFile()
+scanfn = scan_file.name
 
 cmor_tables = input("Path to cmor tables: ")
 autocurator = input("Path to autocurator: ")
 autoc_command = autocurator + "/bin/autocurator --out_pretty --out_json " + scanfn
+
+os.system("cert_path=./cert.pem")
 
 fullmap_file = open(fullmap, 'r')
 os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")
@@ -54,4 +58,3 @@ pt.main(out_json_data)
 
 print("Done. Cleaning up.")
 scan_file.close()
-
