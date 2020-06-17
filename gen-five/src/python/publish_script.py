@@ -36,10 +36,10 @@ for line in fullmap_file:
 fullmap_file.close()
 
 datasetdir = os.path.dirname(path) + "/*.nc"
-dataset_test = os.path.dirname(path) + "/CMIP6.CMIP.E3SM-Project.E3SM-1-0.historical.r2i1p1f1.Amon.ps.gr.v20190729.ps_Amon_E3SM-1-0_historical_r2i1p1f1_gr_200001-201412.nc"
+dataset_test = "/p/css03/esgf_publish/CMIP6/CMIP/NCAR/CESM2/historical/r2i1p1f1/Emon/cTotFireLut/gn/v20190308/cTotFireLut_Emon_CESM2_historical_r2i1p1f1_gn_185001-201412.nc"
 
 print("Running autocurator...")
-autoc_command += " --files " + datasetdir
+autoc_command += " --files " + dataset_test
 os.system(autoc_command)
 
 print("Done.\nConverting mapfile...")
