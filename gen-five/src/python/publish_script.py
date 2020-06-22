@@ -7,8 +7,11 @@ import os
 import json
 import sys
 import tempfile
-sys.path.insert(1, '../../../src/python/esgcet/esgcet/config')
-import cmip6_handler as prep
+import subprocess
+# from my-publisher.gen-five.src.esgcet.config import cmip6_handler as prep
+# import cmip6_handler as prep
+# TODO: running into file dependency errors with internal representation of PrePARE
+
 
 def prepare(fm_file):
     save = True
@@ -20,11 +23,11 @@ def prepare(fm_file):
         if save:
             path = filename
             save = False
-        # command = "PrePARE --table-path " + cmor_tables + " " + filename
-        # os.system(command)  # subprocess module?? change this perhaps
-        prep.validateFile(filename)
-
+        command = "PrePARE --table-path " + cmor_tables + " " + filename
+        os.system(command)  # subprocess module?? change this perhaps
+        # prep.validateFile(fm_file)
     return path
+
 
 def exit_cleanup():
     scan_file.close()
@@ -52,7 +55,7 @@ os.system("cert_path=./cert.pem")  # TODO: fix this
 
 os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
 
-fullmap_file = open(fullmap, 'r')  # open file object for PrePARE
+fullmap_file = open(fullmap, 'r+')  # open file object for PrePARE
 try:
     path = prepare(fullmap_file)
 except Exception as ex:
@@ -67,7 +70,10 @@ dataset_test = "/p/css03/esgf_publish/CMIP6/CMIP/NCAR/CESM2/historical/r2i1p1f1/
 
 # Run autocurator and all python scripts
 print("Done.\nRunning autocurator...")
-os.system(autoc_command + " --files " + dataset_test)
+args = [autocurator + '/bin/autocurator', '--out_pretty', '--out_json', scanfn, '--files', datasetdir]
+autoc_command += " --files " + datasetdir
+subprocess.run(args)
+os.system('cat ' + scanfn)
 
 # print("Printing contents of scanfn")
 # os.system("cat " + scanfn)
