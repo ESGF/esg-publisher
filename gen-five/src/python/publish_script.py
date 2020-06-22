@@ -7,8 +7,8 @@ import os
 import json
 import sys
 import tempfile
+sys.path.insert(1, '../../../src/python/esgcet/esgcet/config')
 import cmip6_handler as prep
-
 
 def prepare(fm_file):
     save = True
