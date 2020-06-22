@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 
 # these settings are presently managed within esg.ini and esg.<project>.ini
 
@@ -36,7 +36,7 @@ DATA_ROOTS = {'/esg/data' : 'esgf_data',
 
 
 # a certificate file for the index, assumes in the CWD
-CERT_FN = "cert.pem"
+CERT_FN = "./cert.pem"
 
 # for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX

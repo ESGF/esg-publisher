@@ -2,6 +2,7 @@ import mapfile as mp
 import mk_dataset as mkd
 import update as up
 import pub_test as pt
+import pid_cite_pub as pid
 import os
 import json
 import sys
@@ -30,6 +31,7 @@ os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for 
 fullmap_file = open(fullmap, 'r')  # open file object for PrePARE
 path = ""
 save = True
+print("Iterating through filenames for PrePARE and Autocurator...")
 for line in fullmap_file:  # iterate through mapfile files for PrePARE
     split_line = line.split(" | ")
     filename = split_line[2]
@@ -38,6 +40,7 @@ for line in fullmap_file:  # iterate through mapfile files for PrePARE
         save = False
     command = "PrePARE --table-path " + cmor_tables + " " + filename
     os.system(command)
+    os.system(autoc_command + " --files " + filename)
 fullmap_file.close()
 
 datasetdir = os.path.dirname(path) + "/*.nc"  # TODO: fix -- autocurator having issues with *
@@ -45,15 +48,15 @@ datasetdir = os.path.dirname(path) + "/*.nc"  # TODO: fix -- autocurator having 
 dataset_test = "/p/css03/esgf_publish/CMIP6/CMIP/NCAR/CESM2/historical/r2i1p1f1/Emon/cTotFireLut/gn/v20190308/cTotFireLut_Emon_CESM2_historical_r2i1p1f1_gn_185001-201412.nc"
 
 # Run autocurator and all python scripts
-print("Running autocurator...")
-autoc_command += " --files " + dataset_test
-os.system(autoc_command)
 
 print("Done.\nConverting mapfile...")
 map_json_data = mp.main([fullmap, proj])
 
 print("Done.\nMaking dataset...")
 out_json_data = mkd.main([map_json_data, scanfn])
+
+print("Done.\nRunning pid cite...")
+out_json_data = pid.main(out_json_data)
 
 print("Done.\nUpdating...")
 up.main(out_json_data)
