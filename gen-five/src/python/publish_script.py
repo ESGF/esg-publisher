@@ -25,6 +25,7 @@ def prepare(fm_file):
             save = False
         command = "PrePARE --table-path " + cmor_tables + " " + filename
         os.system(command)  # subprocess module?? change this perhaps
+        # issue with subprocess: output not as easily shown
         # prep.validateFile(fm_file)
     return path
 
@@ -36,6 +37,8 @@ def exit_cleanup():
 
 if len(sys.argv) < 1:
     print("Usage: python3 publish_script.py </path/to/mapfile>")
+
+os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
 
 fullmap = sys.argv[1]  # full mapfile path
 # allow handling of multiple mapfiles later
@@ -49,11 +52,10 @@ scanfn = scan_file.name  # name to refer to tmp file
 cmor_tables = input("Path to cmor tables: ")  # interactive script, should require no internal editing
 autocurator = input("Path to autocurator: ")  # so we just get variable paths from user
 
-autoc_command = autocurator + "/bin/autocurator --out_pretty --out_json " + scanfn  # concatenate autocurator command
+
+autoc_command = autocurator + "/bin/autocurator --out_pretty"  # concatenate autocurator command
 
 os.system("cert_path=./cert.pem")  # TODO: fix this
-
-os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
 
 fullmap_file = open(fullmap, 'r+')  # open file object for PrePARE
 try:
@@ -70,13 +72,8 @@ dataset_test = "/p/css03/esgf_publish/CMIP6/CMIP/NCAR/CESM2/historical/r2i1p1f1/
 
 # Run autocurator and all python scripts
 print("Done.\nRunning autocurator...")
-args = [autocurator + '/bin/autocurator', '--out_pretty', '--out_json', scanfn, '--files', datasetdir]
-autoc_command += " --files " + datasetdir
-subprocess.run(args)
+os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 os.system('cat ' + scanfn)
-
-# print("Printing contents of scanfn")
-# os.system("cat " + scanfn)
 
 print("Done.\nConverting mapfile...")
 map_json_data = mp.main([fullmap, proj])
