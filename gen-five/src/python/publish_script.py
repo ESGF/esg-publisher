@@ -36,7 +36,7 @@ def main(args):
 
     os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
 
-    fullmap = args[0]  # full mapfile path
+    fullmap = args[1]  # full mapfile path
     # allow handling of multiple mapfiles later
 
     proj = "CMIP6"
