@@ -39,10 +39,8 @@ def main(args):
     fullmap = args[0]  # full mapfile path
     # allow handling of multiple mapfiles later
 
-    proj = args[1]
-    cmip6 = False
-    if proj == "CMIP6":
-        cmip6 = True
+    proj = "CMIP6"
+    cmip6 = True
 
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
     scanfn = scan_file.name  # name to refer to tmp file
