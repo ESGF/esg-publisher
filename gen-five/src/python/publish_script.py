@@ -25,7 +25,7 @@ def prepare(fm_file, cmor_tables):
         # prep.validateFile(fm_file)
     print("Done.")
 
-def exit_cleanup():
+def exit_cleanup(scan_file, fullmap_file):
     scan_file.close()
     fullmap_file.close()
 
@@ -59,8 +59,8 @@ def main(args):
         try:
             prepare(fullmap_file, cmor_tables)
         except Exception as ex:
-            print("Error with PrePARE: " + ex)
-            exit_cleanup()
+            print("Error with PrePARE: " + str(ex))
+            exit_cleanup(scan_file, fullmap_file)
             exit(1)
 
     # Run autocurator and all python scripts
@@ -71,16 +71,16 @@ def main(args):
     try:
         map_json_data = mp.main([fullmap, proj])
     except Exception as ex:
-        print("Error with converting mapfile: " + ex)
-        exit_cleanup()
+        print("Error with converting mapfile: " + str(ex))
+        exit_cleanup(scan_file, fullmap_file)
         exit(1)
 
     print("Done.\nMaking dataset...")
     try:
         out_json_data = mkd.main([map_json_data, scanfn])
     except Exception as ex:
-        print("Error making dataset: " + ex)
-        exit_cleanup()
+        print("Error making dataset: " + str(ex))
+        exit_cleanup(scan_file, fullmap_file)
         exit(1)
 
     if cmip6:
@@ -88,26 +88,27 @@ def main(args):
         try:
             out_json_data = pid.main(out_json_data)
         except Exception as ex:
-            print("Error running pid cite: " + ex)
+            print("Error running pid cite: " + str(ex))
+            exit_cleanup(scan_file, fullmap_file)
 
     print("Done.\nUpdating...")
     try:
         up.main(out_json_data)
     except Exception as ex:
-        print("Error updating: " + ex)
-        exit_cleanup()
+        print("Error updating: " + str(ex))
+        exit_cleanup(scan_file, fullmap_file)
         exit(1)
 
     print("Done.\nRunning pub test...")
     try:
         pt.main(out_json_data)
     except Exception as ex:
-        print("Error running pub test: " + ex)
-        exit_cleanup()
+        print("Error running pub test: " + str(ex))
+        exit_cleanup(scan_file, fullmap_file)
         exit(1)
 
     print("Done. Cleaning up.")
-    exit_cleanup()
+    exit_cleanup(scan_file, fullmap_file)
 
 
 if __name__ == '__main__':
