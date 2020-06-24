@@ -73,7 +73,7 @@ def main(args):
 
     if cmip6:
         try:
-            prepare(map_json_data, cmor_tables)
+            prepare_internal(map_json_data, cmor_tables)
         except Exception as ex:
             print("Error with PrePARE: " + str(ex))
             exit_cleanup(scan_file, fullmap_file)
@@ -98,6 +98,7 @@ def main(args):
         except Exception as ex:
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file, fullmap_file)
+            exit(1)
 
     print("Done.\nUpdating...")
     try:
@@ -123,6 +124,7 @@ if __name__ == '__main__':
     args = sys.argv
     if len(args) < 3 or args[1] != "--map":
         print("Usage: python3 publish_script.py --map </path/to/mapfile>")
+        exit(1)
 
     # os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
 

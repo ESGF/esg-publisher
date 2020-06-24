@@ -60,8 +60,11 @@ def get_url(arr):
 
 def pid_flow_code(dataset_recs):
 
-
-    dsrec = dataset_recs[-1]
+    try:
+        dsrec = dataset_recs[-1]
+    except:
+        print(dataset_recs)
+        exit(-1)
     dset = dsrec['master_id']
     version_number = dsrec['version']
     is_replica = dsrec["replica"]
@@ -154,7 +157,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main(sys.argv)
 
 
 #    "xlink":["http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.RFMIP.MOHC.HadGEM3-GC31-LL.rad-irf.r1i1p3f3.Efx.rld.gn.v20191030.json|Citation|citation",
