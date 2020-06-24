@@ -8,9 +8,24 @@ import json
 import sys
 import tempfile
 import subprocess
+from cmip6_cv import PrePARE
 # from my-publisher.gen-five.src.esgcet.config import cmip6_handler as prep
 # import cmip6_handler as prep
 # TODO: running into file dependency errors with internal representation of PrePARE
+
+
+def prepare_internal(fm_file, cmor_tables):
+    print("iterating through filenames for PrePARE (internal version)...")
+    validator = PrePARE.PrePARE
+    path = fm_file.path
+    for line in fm_file:
+        split_line = line.split(" | ")
+        filename = split_line[2]
+        # file_cmor_version = fm_file.getAttribute('cmor_version', None) skipping for now
+        # data_specs_version = fm_file.getAttribute('data_specs_version', None) might not be necessary
+        process = validator.checkCMIP6(cmor_tables)
+        process.ControlVocab(path)
+
 
 
 def prepare(fm_file, cmor_tables):

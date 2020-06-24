@@ -1,4 +1,4 @@
-
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 autocur_cmd=$1
 fullmap=$2
 scanfn=$3
