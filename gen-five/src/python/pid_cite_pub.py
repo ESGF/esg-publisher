@@ -58,8 +58,9 @@ def get_url(arr):
 
     return arr[0].split('|')[0]
 
-def pid_flow_code(dataset_recs):
+def pid_flow_code(ds_recs):
 
+    dataset_recs = [ds_recs, ]
     try:
         dsrec = dataset_recs[-1]
     except:

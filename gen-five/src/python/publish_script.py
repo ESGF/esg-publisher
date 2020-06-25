@@ -93,12 +93,12 @@ def main(args):
 
     if cmip6:
         print("Done.\nRunning pid cite...")
-        try:
-            out_json_data = pid.main(out_json_data)
-        except Exception as ex:
+        # try:
+        out_json_data = pid.main(out_json_data)
+        """except Exception as ex:
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file, fullmap_file)
-            exit(1)
+            exit(1)"""
 
     print("Done.\nUpdating...")
     try:
