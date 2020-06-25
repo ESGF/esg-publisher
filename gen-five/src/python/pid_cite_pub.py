@@ -1,17 +1,14 @@
 import sys, json
 from settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
-
+import traceback
 
 def establish_pid_connection(pid_prefix, test_publication,  publish=True):
 
     """Establish a connection to the PID service
-
     pid_prefix
         PID prefix to be used for given project
-
     test_publication
         Boolean to flag PIDs as test
-
     publish
         Flag to trigger publication and unpublication
     """
@@ -27,7 +24,7 @@ def establish_pid_connection(pid_prefix, test_publication,  publish=True):
     # http_service_path = None
 
     # if publish:
-    http_service_path = HTTP_SERVICE 
+    http_service_path = HTTP_SERVICE
 
 
     pid_connector = esgfpid.Connector(handle_prefix=pid_prefix,
@@ -58,7 +55,7 @@ def get_url(arr):
 
     return arr[0].split('|')[0]
 
-def pid_flow_code(ds_recs):
+def pid_flow_code(dataset_recs):
 
     dataset_recs = [ds_recs, ]
     try:
@@ -91,7 +88,7 @@ def pid_flow_code(ds_recs):
                                                                     version_number=version_number,
                                                                     is_replica=is_replica)
     # Iterate this over all the files:
-        for file_rec in dataset_recs[0:-1]: 
+        for file_rec in dataset_recs[0:-1]:
 
             pid_wizard.add_file(file_name=file_rec['title'],
                         file_handle=file_rec['tracking_id'],
@@ -108,7 +105,8 @@ def pid_flow_code(ds_recs):
             print("WARNING, empty pid_wizard!")
 
     except Exception as e:
-        print("WANING: PID module exception encountered! {}".format(str(e)))
+        print("WARNING: PID module exception encountered! {}".format(str(e)))
+        traceback.print_exc()
 
     pid_connector.force_finish_messaging_thread()
     return None, None
@@ -134,11 +132,10 @@ def rewrite_json(fname, recs):
     with open(fname, 'w') as f:
         f.write(json.dumps(recs, indent=1))
 
-
 def main(args):
 
     fname = args[0]
-    res = fname
+    res = json.load(open(fname))
     pid_connector, pid = pid_flow_code(res)
 
     if pid_connector is None:
@@ -146,6 +143,7 @@ def main(args):
 
     try:
         update_dataset(res[-1], pid, TEST_PUB)
+        rewrite_json(fname, res)
     except Exception as e:
         print("WARNING: Some exception encountered! {}".format(str(e)))
         pid_connector.force_finish_messaging_thread()
@@ -154,15 +152,13 @@ def main(args):
 #    print("before finish"). DEBUG
     pid_connector.finish_messaging_thread()
 #    print("after finish") DEBUG
-    return res
-
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])
 
 
 #    "xlink":["http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.RFMIP.MOHC.HadGEM3-GC31-LL.rad-irf.r1i1p3f3.Efx.rld.gn.v20191030.json|Citation|citation",
- #         "http://hdl.handle.net/hdl:21.14100/2720a03c-479a-3cdf-99e2-1265d90d51ae|PID|pid"],
+ #         "http://hdl.handle.net/hdl:21.14100/2720a03c-479a-3cdf-99e2-1265d90d51ae|PID|pid"],,
 
 
 
