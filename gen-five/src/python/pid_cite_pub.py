@@ -134,8 +134,8 @@ def rewrite_json(fname, recs):
 
 def main(args):
 
-    fname = args[0]
-    res = json.load(open(fname))
+
+    res = args[0]
     pid_connector, pid = pid_flow_code(res)
 
     if pid_connector is None:
@@ -143,7 +143,7 @@ def main(args):
 
     try:
         update_dataset(res[-1], pid, TEST_PUB)
-        rewrite_json(fname, res)
+
     except Exception as e:
         print("WARNING: Some exception encountered! {}".format(str(e)))
         pid_connector.force_finish_messaging_thread()
@@ -151,6 +151,7 @@ def main(args):
 
 #    print("before finish"). DEBUG
     pid_connector.finish_messaging_thread()
+    return res
 #    print("after finish") DEBUG
 
 if __name__ == '__main__':
