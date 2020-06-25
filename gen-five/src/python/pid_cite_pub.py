@@ -55,7 +55,7 @@ def get_url(arr):
 
     return arr[0].split('|')[0]
 
-def pid_flow_code(dataset_recs):
+def pid_flow_code(ds_recs):
 
     dataset_recs = [ds_recs, ]
     try:
@@ -88,16 +88,25 @@ def pid_flow_code(dataset_recs):
                                                                     version_number=version_number,
                                                                     is_replica=is_replica)
     # Iterate this over all the files:
-        for file_rec in dataset_recs[0:-1]:
+        if len(dataset_recs) > 1:
+            for file_rec in dataset_recs[0:-1]:
 
+                pid_wizard.add_file(file_name=file_rec['title'],
+                                    file_handle=file_rec['tracking_id'],
+                                    checksum=file_rec['checksum'],
+                                    file_size=file_rec['size'],
+                                    publish_path=get_url(file_rec['url']),
+                                    checksum_type=file_rec['checksum_type'],
+                                    file_version=file_rec['version'] )
+        else:
+            file_rec = dsrec
             pid_wizard.add_file(file_name=file_rec['title'],
-                        file_handle=file_rec['tracking_id'],
-                        checksum=file_rec['checksum'],
-                        file_size=file_rec['size'],
-                        publish_path=get_url(file_rec['url']),
-                        checksum_type=file_rec['checksum_type'],
-                        file_version=file_rec['version'] )
-
+                               file_handle=file_rec['tracking_id'],
+                               checksum=file_rec['checksum'],
+                               file_size=file_rec['size'],
+                               publish_path=get_url(file_rec['url']),
+                               checksum_type=file_rec['checksum_type'],
+                               file_version=file_rec['version'])
         if pid_wizard:
             pid_wizard.dataset_publication_finished()
             return pid_connector, dataset_pid
