@@ -51,7 +51,7 @@ PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
              'port': 5671,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
-             'password': "B8a*:!*6$7oWG'`3!G",
+             'password': "",
              'ssl_enabled': True,
              'priority': 1}] 
 
@@ -62,6 +62,6 @@ HTTP_SERVICE = '/thredds/fileServer/'
 CITATION_URLS = { 'CMIP6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
-
+        # from my-publisher.gen-five.src.esgcet.config import cmip6_handler as prep
 PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
 TEST_PUB = True
