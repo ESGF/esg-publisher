@@ -59,7 +59,7 @@ def main(args):
 
     autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
 
-    os.system("cert_path=./cert.pem")  # TODO: fix this
+    os.system("cert_path=./cert.pem")
 
     print("Converting mapfile...")
     try:
@@ -92,9 +92,9 @@ def main(args):
         exit(1)
 
     if cmip6:
-        print("Done.\nRunning pid cite...")
+        print("Done.\nSkipping pid cite...")
         # try:
-        out_json_data = pid.main(out_json_data)
+        # out_json_data = pid.main(out_json_data)
         """except Exception as ex:
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file, fullmap_file)
