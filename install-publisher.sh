@@ -26,7 +26,7 @@ conda create -y -n pub-py3 -c conda-forge cmor cdms2 pip git python=3.7 numpy=1.
 check_error
 conda activate pub-py3
 check_error
-pip install 'git+https://github.com/IS-ENES-Data/esgf-pid@python_3.7' 'git+https://github.com/sashakames/esdoc-cdf2cim.git'
+pip install esgfpid 'git+https://github.com/sashakames/esdoc-cdf2cim.git'
 check_error
 pip install  'git+https://github.com/ESGF/esg-publisher@python3#subdirectory=src/python/esgcet'
 check_error
