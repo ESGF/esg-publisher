@@ -86,7 +86,7 @@ def main(args):
     print("Done.\nMaking dataset...")
 
     out_json_data = mkd.main([map_json_data, scanfn])
-    assert out_json_data is list
+    # assert out_json_data is list
     """except Exception as ex:
         print("Error making dataset: " + str(ex))
         exit_cleanup(scan_file, fullmap_file)

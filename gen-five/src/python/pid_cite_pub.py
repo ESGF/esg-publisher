@@ -55,9 +55,9 @@ def get_url(arr):
 
     return arr[0].split('|')[0]
 
-def pid_flow_code(ds_recs):
+def pid_flow_code(dataset_recs):
 
-    dataset_recs = [ds_recs, ]
+
     try:
         dsrec = dataset_recs[-1]
     except:
@@ -143,8 +143,7 @@ def rewrite_json(fname, recs):
 
 def main(args):
 
-
-    res = args[0]
+    res = args
     pid_connector, pid = pid_flow_code(res)
 
     if pid_connector is None:
