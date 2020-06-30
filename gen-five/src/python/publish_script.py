@@ -40,9 +40,8 @@ def exit_cleanup(scan_file, fullmap_file):
     fullmap_file.close()
 
 
-def main(args):
+def main(fullmap):
 
-    fullmap = args[2]  # full mapfile path
     split_map = fullmap.split("/")
     fname = split_map[-1]
     fname_split = fname.split(".")
@@ -131,8 +130,11 @@ if __name__ == '__main__':
 
     fullmap = args[2]  # full mapfile path
     # allow handling of multiple mapfiles later
-    if fullmap[-1] == "/":
-        pass
-        # iterate through file in directory calling mai
+    if fullmap[-4:] != ".map":
+        split_map = fullmap.split("/")
+        myfile = open(split_map[-1])
+        for line in myfile:
+            main(line)
+        # iterate through file in directory calling main
     else:
-        main(args)
+        main(fullmap)
