@@ -132,7 +132,8 @@ if __name__ == '__main__':
     # allow handling of multiple mapfiles later
     if fullmap[-4:] != ".map":
         split_map = fullmap.split("/")
-        myfile = open(split_map[-1])
+        real_map = split_map.split("\n")
+        myfile = open(real_map[-1])
         for line in myfile:
             main(line)
         # iterate through file in directory calling main
