@@ -84,17 +84,18 @@ def main(args):
     os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
     print("Done.\nMaking dataset...")
-    try:
-        out_json_data = mkd.main([map_json_data, scanfn])
-    except Exception as ex:
+
+    out_json_data = mkd.main([map_json_data, scanfn])
+    assert out_json_data is list
+    """except Exception as ex:
         print("Error making dataset: " + str(ex))
         exit_cleanup(scan_file, fullmap_file)
-        exit(1)
+        exit(1)"""
 
     if cmip6:
         print("Done.\nRunning pid cite...")
         # try:
-        out_json_data = pid.main(out_json_data)
+        new_json_data = pid.main(out_json_data)
         """except Exception as ex:
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file, fullmap_file)
@@ -102,7 +103,7 @@ def main(args):
 
     print("Done.\nUpdating...")
     try:
-        up.main(out_json_data)
+        up.main(new_json_data)
     except Exception as ex:
         print("Error updating: " + str(ex))
         exit_cleanup(scan_file, fullmap_file)
