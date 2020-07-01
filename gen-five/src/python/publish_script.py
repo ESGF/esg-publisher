@@ -35,6 +35,38 @@ def prepare(fm_file, cmor_tables):
     print("Done.")
 
 
+def get_args(args):
+    parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
+
+    parser.add_argument("--map", dest="map", required=True, help="mapfile or file containing a list of mapfiles.")
+    parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
+    parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication for this dataset(s).")
+    parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
+    parser.add_argument("--json", dest="json", action="store_true", help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
+    parser.add_argument("--data-node", dest="data_node", default="replace", help="Specify data node.")
+    parser.add_argument("--index-node", dest="index_node", help="Specify index node.")
+    parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem", help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
+
+    pub = parser.parse_args()
+
+    if pub.test:
+        pass
+    if pub.set_replica and not pub.no_replica:
+        pass
+    elif pub.no_replica and not pub.set_replica:
+        pass
+    else:
+        print("ERROR: Replica simultaneously set and disabled.")
+        exit(1)
+    if pub.json:
+        # set attributes according to this file
+        pass
+    data_node = pub.data_node
+    index_node = pub.index_node
+    cert = pub.cert
+    return data_node, index_node, cert
+
+
 def exit_cleanup(scan_file, fullmap_file):
     scan_file.close()
     fullmap_file.close()
@@ -131,11 +163,10 @@ if __name__ == '__main__':
     fullmap = args[2]  # full mapfile path
     # allow handling of multiple mapfiles later
     if fullmap[-4:] != ".map":
-        split_map = fullmap.split("/")
-        real_map = split_map.split("\n")
-        myfile = open(real_map[-1])
+        myfile = open(fullmap)
         for line in myfile:
-            main(line)
+            length = len(line)
+            main(line[0:length-2])
         # iterate through file in directory calling main
     else:
         main(fullmap)
