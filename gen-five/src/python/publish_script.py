@@ -9,7 +9,7 @@ import sys
 import tempfile
 import subprocess
 from cmip6_cv import PrePARE
-import argparse
+import args
 
 
 def prepare_internal(json_map, cmor_tables):
@@ -34,47 +34,6 @@ def prepare(fm_file, cmor_tables):
         # issue with subprocess: output not as easily shown
         # prep.validateFile(fm_file)
     print("Done.")
-
-
-def get_args(args):
-    parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
-
-    # ANY FILE NAME INPUT: check first to make sure it exists
-    # add project flag: cmip6 or CMIP6 is fine, case insensitive
-    parser.add_argument("--map", dest="map", required=True, help="mapfile or file containing a list of mapfiles.")
-    # for test see settings
-    parser.add_argument("--autocurator", dest="autocurator_path", required=True, help="Path to autocurator repository folder.")
-    parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
-    # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
-    parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication for this dataset(s).")
-    parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
-    parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
-    parser.add_argument("--data-node", dest="data_node", default="greyworm1-rh7.llnl.gov", help="Specify data node.")
-    parser.add_argument("--index-node", dest="index_node", default="esgf-fedtest.llnl.gov", help="Specify index node.")
-    parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem", help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
-    parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
-    parser.add_argument("--cmor-tables", dest="cmor_path", default="", help="Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.")
-
-    pub = parser.parse_args()
-
-    return pub
-
-
-def get_nodes():
-    pub = get_args(sys.argv)
-    dnode = pub.data_node
-    inode = pub.index_node
-    if pub.set_replica:
-        replica = True
-    else:
-        replica = False
-    return dnode, inode, replica
-
-
-def get_cert():
-    pub = get_args(sys.argv)
-    cert = pub.cert
-    return cert
 
 
 def check_files(files):
@@ -104,7 +63,7 @@ def main(fullmap):
     files = []
     files.append(fullmap)
 
-    pub = get_args(sys.argv)
+    pub = args.get_args()
     third_arg_mkd = False
     if pub.json is not None:
         json_file = pub.json
