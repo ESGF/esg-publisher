@@ -41,7 +41,7 @@ def get_dataset(mapdata, scandata):
             if val in scandata:
                 d[val] = scandata[val]
 
-    data_node, index_node = ps.get_nodes()
+    data_node, index_node, replica = ps.get_nodes()
     d['data_node'] = data_node
     d['index_node'] = index_node
     DRSlen = len(DRS[key])
@@ -52,7 +52,7 @@ def get_dataset(mapdata, scandata):
         d['title'] = d['master_id']
     else:
         d['title'] = '{}: {}'.format(d['title'], d['master_id'])
-    d['replica'] = 'false' # set replica
+    d['replica'] = replica
     d['latest'] = 'true'
     d['type'] = 'Dataset'
     d['project'] = key
