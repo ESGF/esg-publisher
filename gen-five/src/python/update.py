@@ -1,11 +1,11 @@
 from pub_client import publisherClient
 import sys, json, requests
 from settings import INDEX_NODE, CERT_FN
-
+import publish_script as ps
 from datetime import datetime
 
-hostname = INDEX_NODE
-cert_fn = CERT_FN
+data_node, hostname, replica = ps.get_nodes()
+cert_fn = ps.get_cert()
 
 ARGS = 1
 

@@ -49,8 +49,8 @@ def get_args(args):
     parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication for this dataset(s).")
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
     parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
-    parser.add_argument("--data-node", dest="data_node", default="", help="Specify data node.")
-    parser.add_argument("--index-node", dest="index_node", default="", help="Specify index node.")
+    parser.add_argument("--data-node", dest="data_node", default="greyworm1-rh7.llnl.gov", help="Specify data node.")
+    parser.add_argument("--index-node", dest="index_node", default="esgf-fedtest.llnl.gov", help="Specify index node.")
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem", help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
     parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
     parser.add_argument("--cmor-tables", dest="cmor_path", default="", help="Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.")
@@ -114,11 +114,7 @@ def main(fullmap):
     check_files(files)
     # TODO: check settings, maybe look at old config file
 
-    if pub.set_replica and not pub.no_replica:
-        pass
-    elif pub.no_replica and not pub.set_replica:
-        pass
-    else:
+    if pub.set_replica and pub.no_replica:
         print("ERROR: Replica simultaneously set and disabled.")
         exit(1)
     cert = pub.cert
