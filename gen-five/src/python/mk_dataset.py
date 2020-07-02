@@ -1,6 +1,6 @@
 import sys, json
 from mapfile import *
-
+import publish_script as ps
 from datetime import datetime, timedelta
 
 from settings import DEBUG, DRS, GA, DATA_NODE, INDEX_NODE, URL_Templates, DATA_ROOTS
@@ -41,9 +41,9 @@ def get_dataset(mapdata, scandata):
             if val in scandata:
                 d[val] = scandata[val]
 
-
-    d['data_node'] = DATA_NODE
-    d['index_node'] = INDEX_NODE
+    data_node, index_node = ps.get_nodes()
+    d['data_node'] = data_node
+    d['index_node'] = index_node
     DRSlen = len(DRS[key])
     d['master_id'] = master_id
     d['instance_id'] = master_id + '.v' + version
