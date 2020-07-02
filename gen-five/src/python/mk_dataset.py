@@ -42,6 +42,10 @@ def get_dataset(mapdata, scandata):
                 d[val] = scandata[val]
 
     pub = args.get_args()
+    if pub.set_replica:
+        replica = True
+    else:
+        replica = False
     d['data_node'] = pub.data_node
     d['index_node'] = pub.index_node
     DRSlen = len(DRS[key])
@@ -52,7 +56,7 @@ def get_dataset(mapdata, scandata):
         d['title'] = d['master_id']
     else:
         d['title'] = '{}: {}'.format(d['title'], d['master_id'])
-    d['replica'] = pub.replica
+    d['replica'] = replica
     d['latest'] = 'true'
     d['type'] = 'Dataset'
     d['project'] = key
