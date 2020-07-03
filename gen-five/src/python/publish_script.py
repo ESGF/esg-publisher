@@ -154,8 +154,8 @@ def main(fullmap):
 if __name__ == '__main__':
 
     # os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
-    args.get_args()
-    fullmap = sys.argv[2]  # full mapfile path
+    pub = args.get_args()
+    fullmap = pub.map  # full mapfile path
     # allow handling of multiple mapfiles later
     if fullmap[-4:] != ".map":
         myfile = open(fullmap)
