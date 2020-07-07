@@ -8,7 +8,7 @@ def get_args():
     # for test see settings
     parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
     # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
-    parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication for this dataset(s).")
+    parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
     parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
     parser.add_argument("--data-node", dest="data_node", default="greyworm1-rh7.llnl.gov", help="Specify data node.")
