@@ -18,24 +18,8 @@ def prepare_internal(json_map, cmor_tables):
     validator = PrePARE.PrePARE
     for info in json_map:
         filename = info[1]
-        # file_cmor_version = fm_file.getAttribute('cmor_version', None) skipping for now
-        # data_specs_version = fm_file.getAttribute('data_specs_version', None) might not be necessary
         process = validator.checkCMIP6(cmor_tables)
         process.ControlVocab(filename)
-
-
-# this function no longer in use
-def prepare(fm_file, cmor_tables):
-    print("Iterating through filenames for PrePARE...")
-    for line in fm_file:  # iterate through mapfile files for PrePARE -- import PrePARE and run natively
-        # see cmip6_handler.py for help -- error with file dependencies
-        split_line = line.split(" | ")
-        filename = split_line[1]
-        command = "PrePARE --table-path " + cmor_tables + " " + filename
-        os.system(command)  # subprocess module?? change this perhaps
-        # issue with subprocess: output not as easily shown
-        # prep.validateFile(fm_file)
-    print("Done.")
 
 
 def check_files(files):
@@ -58,7 +42,7 @@ def wrapper(func, *args, **kwargs):
     return wrapped
 
 
-def autocuratorf():
+def autocuratorf(autoc_command, fullmap, scanfn):
     os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
 
@@ -75,7 +59,6 @@ def main(fullmap):
 
     files = []
     files.append(fullmap)
-    print(timeit.timeit(args.get_args, number=1))
     pub = args.get_args()
     third_arg_mkd = False
     if pub.json is not None:
@@ -83,7 +66,7 @@ def main(fullmap):
         third_arg_mkd = True
         files.append(json_file)
 
-    if cmip6 and pub.proj == "":
+    if cmip6 and pub.cmor_path == "":
         print("Error: No CMOR tables for PrePARE. Required for CMIP6.")
         exit(1)
     check_files(files)
@@ -106,8 +89,6 @@ def main(fullmap):
 
     print("Converting mapfile...")
     try:
-        mymap = wrapper(mp.main, [fullmap, proj])
-        print(timeit.timeit(mymap, number=1))
         map_json_data = mp.main([fullmap, proj])
     except Exception as ex:
         print("Error with converting mapfile: " + str(ex))
@@ -117,8 +98,6 @@ def main(fullmap):
 
     if cmip6:
         try:
-            prep = wrapper(prepare_internal, map_json_data, cmor_tables)
-            print(timeit.timeit(prep, number=1))
             prepare_internal(map_json_data, cmor_tables)
         except Exception as ex:
             print("Error with PrePARE: " + str(ex))
@@ -127,7 +106,6 @@ def main(fullmap):
 
     # Run autocurator and all python scripts
     print("Running autocurator...")
-    print(timeit.timeit(autocuratorf, number=1))
     os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
     print("Done.\nMaking dataset...")
@@ -135,8 +113,6 @@ def main(fullmap):
         if third_arg_mkd:
             out_json_data = mkd.main([map_json_data, scanfn, json_file])
         else:
-            makedata = wrapper(mkd.main, [map_json_data, scanfn])
-            print(timeit.timeit(makedata, number=1))
             out_json_data = mkd.main([map_json_data, scanfn])
 
     except Exception as ex:
@@ -147,8 +123,6 @@ def main(fullmap):
     if cmip6:
         print("Done.\nRunning pid cite...")
         try:
-            pidc = wrapper(pid.main, out_json_data)
-            print(timeit.timeit(pidc, number=1))
             new_json_data = pid.main(out_json_data)
         except Exception as ex:
             print("Error running pid cite: " + str(ex))
@@ -157,8 +131,6 @@ def main(fullmap):
 
     print("Done.\nUpdating...")
     try:
-        upd = wrapper(up.main, new_json_data)
-        print(timeit.timeit(upd, number=1))
         up.main(new_json_data)
     except Exception as ex:
         print("Error updating: " + str(ex))
@@ -167,8 +139,6 @@ def main(fullmap):
 
     print("Done.\nRunning pub test...")
     try:
-        pubt = wrapper(pt.main, out_json_data)
-        print(timeit.timeit(pubt, number=1))
         pt.main(out_json_data)
     except Exception as ex:
         print("Error running pub test: " + str(ex))
