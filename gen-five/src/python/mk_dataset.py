@@ -35,11 +35,11 @@ def get_dataset(mapdata, scandata):
                 eprint("WARNING: {} does not agree!".format(f))
         d[f] = parts[i]
 
-
     if key in GA:
         for val in GA[key]:
             if val in scandata:
-                d[val] = scandata[val]
+                if val in GA_DELIMITED[key]:
+                    d[val] = scandata[val]
 
     pub = args.get_args()
     if pub.set_replica:
@@ -52,10 +52,9 @@ def get_dataset(mapdata, scandata):
     d['master_id'] = master_id
     d['instance_id'] = master_id + '.v' + version
     d['id'] = d['instance_id'] + '|' + d['data_node']
-    if not 'title' in d:
-        d['title'] = d['master_id']
-    else:
-        d['title'] = '{}: {}'.format(d['title'], d['master_id'])
+    if 'title' in d:
+        d['short_description'] = d['title']
+    d['title'] = d['master_id']
     d['replica'] = replica
     d['latest'] = 'true'
     d['type'] = 'Dataset'
@@ -64,9 +63,9 @@ def get_dataset(mapdata, scandata):
 
     return d
 
-def gen_urls(proj_root, rel_path):
-    return  [template.format(DATA_NODE, proj_root, rel_path) for template in URL_Templates]
 
+def gen_urls(proj_root, rel_path):
+    return [template.format(DATA_NODE, proj_root, rel_path) for template in URL_Templates]
 
 
 def get_file(dataset_rec, mapdata, fn_trid):
@@ -77,7 +76,7 @@ def get_file(dataset_rec, mapdata, fn_trid):
 
     fparts = fullfn.split('/')
     title = fparts[-1]
-    ret['id'] = "{}.{}".format(ret['instance_id'],title)
+    ret['id'] = "{}.{}".format(ret['instance_id'], title)
     ret['title'] = title
     ret["dataset_id"] = dataset_id
     if "tracking_id" in fn_trid:
@@ -92,19 +91,27 @@ def get_file(dataset_rec, mapdata, fn_trid):
     if not proj_root in DATA_ROOTS:
         eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
         exit(1)
-    
+
     ret["url"] = gen_urls(DATA_ROOTS[proj_root], rel_path)
+    if "number_of_files" in ret:
+        ret.pop("number_of_files")
+    else:
+        eprint("WARNING: no files present")
+    if "datetime_start" in ret:
+        ret.pop("datetime_start")
+        ret.pop("datetime_end")
 
     return ret
-    # need to match up the 
+    # need to match up the
+
 
 def get_scanfile_dict(scandata):
-
     ret = {}
     for key in scandata:
         rec = scandata[key]
         ret[rec['name']] = rec
     return ret
+
 
 def update_metadata(record, scanobj):
     if "variables" in scanobj:
@@ -137,14 +144,15 @@ def update_metadata(record, scanobj):
         if "time" in axes:
             time_obj = axes["time"]
             time_units = time_obj["units"]
-            tu_parts = time_units.split()
-            if tu_parts[0] == "days" and tu_parts[1] == "since":
+            tu_parts = []
+            if type(time_units) is str:
+                tu_parts = time_units.split()
+            if len(tu_parts) > 2 and tu_parts[0] == "days" and tu_parts[1] == "since":
                 proc_time = True
-                tu_date = tu_parts[2] # can we ignore time component?
+                tu_date = tu_parts[2]  # can we ignore time component?
                 if "subaxes" in time_obj:
                     subaxes = time_obj["subaxes"]
                     sub_values = sorted([x for x in unpack_values(subaxes.values())])
-
 
                     tu_start_inc = int(sub_values[0][0])
                     tu_end_inc = int(sub_values[-1][-1])
@@ -156,8 +164,8 @@ def update_metadata(record, scanobj):
                     proc_time = False
                 if proc_time:
                     days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
-                    dt_start = days_since_dt + timedelta(days=tu_start_inc) 
-                    dt_end = days_since_dt  + timedelta(days=tu_end_inc) 
+                    dt_start = days_since_dt + timedelta(days=tu_start_inc)
+                    dt_end = days_since_dt + timedelta(days=tu_end_inc)
                     record["datetime_start"] = "{}Z".format(dt_start.isoformat())
                     record["datetime_end"] = "{}Z".format(dt_end.isoformat())
 
@@ -170,20 +178,18 @@ def update_metadata(record, scanobj):
     else:
         eprint("WARNING: No axes extracted from data files")
 
-def iterate_files(dataset_rec, mapdata, scandata):
 
+def iterate_files(dataset_rec, mapdata, scandata):
     ret = []
     sz = 0
 
-
     for maprec in mapdata:
-
         fullpath = maprec['file']
         scanrec = scandata[fullpath]
         file_rec = get_file(dataset_rec, maprec, scanrec)
         sz += file_rec["size"]
         ret.append(file_rec)
-        
+
     return ret, sz
 
 def get_records(mapdata, scanfilename, xattrfn=None):
