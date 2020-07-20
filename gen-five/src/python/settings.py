@@ -23,7 +23,7 @@ GA = { 'CMIP6' : ['frequency',
                      'further_info_url',
                      'activity_id',
                      'data_specs_version', 'title']}
-
+GA_DELIMITED = { 'CMIP6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
 
 # These below are server-specific settings
 DATA_NODE = "greyworm1-rh7.llnl.gov"
@@ -62,6 +62,9 @@ HTTP_SERVICE = '/thredds/fileServer/'
 CITATION_URLS = { 'CMIP6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
-        # from my-publisher.gen-five.src.esgcet.config import cmip6_handler as prep
+
 PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
 TEST_PUB = True
+
+PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
+SET_REPLICA = False
