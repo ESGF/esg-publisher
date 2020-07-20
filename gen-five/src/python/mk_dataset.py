@@ -37,13 +37,15 @@ def get_dataset(mapdata, scandata):
 
     if projkey in GA:
         for facetkey in GA[projkey]:
+            # did we find a GA in the data by the the key name
             if facetkey in scandata:
                 facetval = scandata[facetkey]
-                if facet in GA_DELIMITED[projkey]:
+                # is this a delimited attribute ?
+                if facetkey in GA_DELIMITED[projkey]:
                     delimiter = GA_DELIMITED[projkey][facetkey]
-                    d[val] = facetval.split(delimiter)
+                    d[facetkey] = facetval.split(delimiter)
                 else:
-                    d[val] = facetval
+                    d[facetkey] = facetval
 
     pub = args.get_args()
     if pub.set_replica:
