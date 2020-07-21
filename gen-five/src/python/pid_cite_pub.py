@@ -151,8 +151,8 @@ def main(args):
         exit(-1)
 
     try:
-        res[-1] = update_dataset(res[-1], pid, TEST_PUB)
-        assert('pid' in res[-1])
+        for i in range(len(res)):
+            res[i] = update_dataset(res[i], pid, TEST_PUB)
 
     except Exception as e:
         print("WARNING: Some exception encountered! {}".format(str(e)))
