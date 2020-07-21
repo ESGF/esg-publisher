@@ -250,5 +250,4 @@ def main(args):
         ret = get_records(args[0], args[1], xattrfn=args[2])
     else:
         ret = get_records(args[0], args[1])
-    print(json.dumps(ret, indent=1))
-
+    return ret

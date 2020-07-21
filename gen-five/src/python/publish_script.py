@@ -139,7 +139,7 @@ def main(fullmap):
 
     print("Done.\nRunning pub test...")
     try:
-        pt.main(out_json_data)
+        pt.main(new_json_data)
     except Exception as ex:
         print("Error running pub test: " + str(ex))
         exit_cleanup(scan_file)
