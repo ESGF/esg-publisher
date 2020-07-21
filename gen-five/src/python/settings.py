@@ -25,6 +25,10 @@ GA = { 'CMIP6' : ['frequency',
                      'data_specs_version', 'title']}
 GA_DELIMITED = { 'CMIP6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
 
+CONST_ATTR =  { 'CMIP6' : { 'model_cohort' : 'registered' }}
+
+GA_MAPPED = { 'CMIP6' : { 'experiment' : 'experiment_title'} }
+
 # These below are server-specific settings
 DATA_NODE = "greyworm1-rh7.llnl.gov"
 INDEX_NODE = "esgf-fedtest.llnl.gov"

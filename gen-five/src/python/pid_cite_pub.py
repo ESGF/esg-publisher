@@ -152,6 +152,7 @@ def main(args):
 
     try:
         res[-1] = update_dataset(res[-1], pid, TEST_PUB)
+        assert('pid' in res[-1])
 
     except Exception as e:
         print("WARNING: Some exception encountered! {}".format(str(e)))
