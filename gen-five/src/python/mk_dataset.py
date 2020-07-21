@@ -1,9 +1,11 @@
 import sys, json
 from mapfile import *
 import args
+
 from datetime import datetime, timedelta
 
 from settings import DEBUG, DRS, GA, DATA_NODE, INDEX_NODE, URL_Templates, DATA_ROOTS, GA_DELIMITED
+
 
 
 EXCLUDES = [""]
@@ -22,6 +24,11 @@ def unpack_values(invals):
 
 def get_dataset(mapdata, scandata):
 
+    if DATA_NODE == "":
+        raise BaseException("Missing data node!")
+    if INDEX_NODE == "":
+        raise BaseException("Missing index node!")
+
     master_id, version = mapdata.split('#')
 
     parts = master_id.split('.')
@@ -35,6 +42,7 @@ def get_dataset(mapdata, scandata):
                 eprint("WARNING: {} does not agree!".format(f))
         d[f] = parts[i]
 
+    # handle Global attributes if defined for the project
     if projkey in GA:
         for facetkey in GA[projkey]:
             # did we find a GA in the data by the the key name
@@ -46,6 +54,15 @@ def get_dataset(mapdata, scandata):
                     d[facetkey] = facetval.split(delimiter)
                 else:
                     d[facetkey] = facetval
+        # would we ever combine mapped and delimited facets?
+        for facetkey in GA_MAPPED[projkey]:
+            if facetkey in scandata:
+                facetval = scandata[facetkey]
+                d[facetkey] = facetval
+            else:
+                eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+        for facetkey in CONST_ATTR[projkey]:
+            d[facetkey] = CONST_ATTR[projkey][facetkey]
 
     pub = args.get_args()
     if pub.set_replica:
@@ -133,6 +150,7 @@ def update_metadata(record, scanobj):
             record["variable_long_name"] = var_rec["long_name"]
             record["cf_standard_name"] = var_rec["standard_name"]
             record["variable_units"] = var_rec["units"]
+            record["variable"] = vid
         else:
             eprint("TODO check project settings for variable extraction")
             record["variable"] = "Multiple"
