@@ -134,6 +134,7 @@ def update_dataset(dset_rec, pid, test_publication):
     dset_rec['xlink'] = ['{}|citation|Citation'.format(citation_url)]
     dset_rec['pid'] = pid
     dset_rec['xlink'].append(PID_URL.format(pid))
+    return dset_rec
 
 
 def rewrite_json(fname, recs):
@@ -150,7 +151,7 @@ def main(args):
         exit(-1)
 
     try:
-        update_dataset(res[-1], pid, TEST_PUB)
+        res[-1] = update_dataset(res[-1], pid, TEST_PUB)
 
     except Exception as e:
         print("WARNING: Some exception encountered! {}".format(str(e)))
