@@ -87,8 +87,8 @@ def get_dataset(mapdata, scandata):
 
     fmat_list = ['%({})s'.format(x) for x in DRS[projkey]]
 
-    d['dataset_id_template_'] = ".".join(fmat_list)
-    d['directory_format_template_'] = '/root' + '/'.join(fmat_list)
+    d['dataset_id_template_'] = '.'.join(fmat_list)
+    d['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
 
     return d
 
