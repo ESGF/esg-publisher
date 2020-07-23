@@ -22,7 +22,7 @@ def unpack_values(invals):
             yield x['values']
 
 
-def get_dataset(mapdata, scandata):
+def get_dataset(mapdata, time, scandata):
 
     if DATA_NODE == "":
         raise BaseException("Missing data node!")
@@ -33,6 +33,7 @@ def get_dataset(mapdata, scandata):
 
     parts = master_id.split('.')
     projkey = parts[0]
+    ftime = time  # fix and format it right later
     facets = DRS[projkey]
     d = {}
     for i, f in enumerate(facets):
@@ -84,6 +85,7 @@ def get_dataset(mapdata, scandata):
     d['type'] = 'Dataset'
     d['project'] = projkey
     d['version'] = version
+    d['timestamp'] = ftime
 
     fmat_list = ['%({})s'.format(x) for x in DRS[projkey]]
 
@@ -227,7 +229,7 @@ def get_records(mapdata, scanfilename, xattrfn=None):
     mapobj = mapdata
     scanobj = json.load(open(scanfilename))
 
-    rec = get_dataset(mapobj[0][0], scanobj['dataset'])
+    rec = get_dataset(mapobj[0][0], mapobj[0][3], scanobj['dataset'])
     update_metadata(rec, scanobj)
     rec["number_of_files"] = len(mapobj)  # place this better
 
