@@ -38,11 +38,7 @@ def parse_map_arr(map_data):
         rec['size'] = int(lst[2])
         for x in lst[3:]:
             parts = x.split('=')
-            if parts[0] == 'mod_time':
-                # TODO:  format this correctly
-                rec["timestamp"] = datetime.utcfromtimestamp(parts[1]).isoformat()
-            else:
-                rec[parts[0]] = parts[1]
+            rec[parts[0]] = parts[1]
         ret.append(rec)
     return ret
 

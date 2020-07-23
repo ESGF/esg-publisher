@@ -21,5 +21,6 @@ def main(outdata):
     for rec in d:
 
         new_xml = list2json.gen_xml(rec)
+        print(new_xml)
         pubCli.publish(new_xml)
 #        print(new_xml)
