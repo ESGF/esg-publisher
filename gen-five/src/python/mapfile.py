@@ -1,4 +1,5 @@
 import sys, json
+from datetime import datetime
 
 ARGS = 1
 
@@ -39,7 +40,7 @@ def parse_map_arr(map_data):
             parts = x.split('=')
             if parts[0] == 'mod_time':
                 # TODO:  format this correctly
-                rec["timestamp"] = parts[1]
+                rec["timestamp"] = datetime.utcfromtimestamp(parts[1]).isoformat()
             else:
                 rec[parts[0]] = parts[1]
         ret.append(rec)
