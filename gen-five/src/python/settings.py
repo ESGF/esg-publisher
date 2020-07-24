@@ -54,7 +54,7 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # TODO - add Globus , GridFTP
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
 "https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
-                 "gsiftp:{}/{}/{}|application/gridftp|GridFTP",
+                 "gsiftp:{}:2811/{}/{}|application/gridftp|GridFTP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 
@@ -80,3 +80,5 @@ TEST_PUB = True
 
 PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = True
+
+GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
