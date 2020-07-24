@@ -4,9 +4,8 @@ from settings import INDEX_NODE, CERT_FN
 import args
 from datetime import datetime
 
-pub = args.get_args()
-hostname = pub.index_node
-cert_fn = pub.cert
+hostname = INDEX_NODE
+cert_fn = CERT_FN
 
 ARGS = 1
 

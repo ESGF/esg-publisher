@@ -1,6 +1,5 @@
 import sys, json
 from mapfile import *
-import args
 
 from datetime import datetime, timedelta
 
@@ -65,13 +64,8 @@ def get_dataset(mapdata, scandata):
         for facetkey in CONST_ATTR[projkey]:
             d[facetkey] = CONST_ATTR[projkey][facetkey]
 
-    pub = args.get_args()
-    if pub.set_replica:
-        replica = True
-    else:
-        replica = False
-    d['data_node'] = pub.data_node
-    d['index_node'] = pub.index_node
+    d['data_node'] = DATA_NODE
+    d['index_node'] = INDEX_NODE
     DRSlen = len(DRS[projkey])
     d['master_id'] = master_id
     d['instance_id'] = master_id + '.v' + version
@@ -79,7 +73,7 @@ def get_dataset(mapdata, scandata):
     if 'title' in d:
         d['short_description'] = d['title']
     d['title'] = d['master_id']
-    d['replica'] = replica
+    d['replica'] = True
     d['latest'] = 'true'
     d['type'] = 'Dataset'
     d['project'] = projkey

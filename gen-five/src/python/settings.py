@@ -30,8 +30,14 @@ CONST_ATTR =  { 'CMIP6' : { 'model_cohort' : 'Registered' }}
 GA_MAPPED = { 'CMIP6' : { 'experiment' : 'experiment_title'} }
 
 # These below are server-specific settings
-DATA_NODE = "greyworm1-rh7.llnl.gov"
-INDEX_NODE = "esgf-fedtest.llnl.gov"
+"""DATA_NODE = "greyworm1-rh7.llnl.gov"
+INDEX_NODE = "esgf-fedtest.llnl.gov" """
+
+DATA_NODE = "esgf-data1.llnl.gov"
+INDEX_NODE = "esgf-node.llnl.gov"
+
+CMOR_PATH = "/export/witham3/cmor"
+AUTOC_PATH = "/export/witham3/autocurator"
 
 # the prefix is found in the published urls that are backed by the path prefix below
 DATA_ROOTS = {'/esg/data' : 'esgf_data',
@@ -40,14 +46,16 @@ DATA_ROOTS = {'/esg/data' : 'esgf_data',
 
 
 # a certificate file for the index, assumes in the CWD
-CERT_FN = "./cert.pem"
+CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 
 # for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX
 # Note these are netCDF specific and will need to change if other formats are considered
 # TODO - add Globus , GridFTP
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
-"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP"]
+"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
+                 "gsiftp:{}/{}/{}|application/gridftp|GridFTP",
+                 "globus:{}/{}/{}|Globus|Globus"]
 
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 
 
@@ -71,4 +79,4 @@ PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
 TEST_PUB = True
 
 PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
-SET_REPLICA = False
+SET_REPLICA = True
