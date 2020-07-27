@@ -131,9 +131,11 @@ def update_dataset(dset_rec, pid, test_publication):
     citation_url = CITATION_URLS[project][keystr].format(dset_rec['master_id'], dset_rec['version'])
 
     dset_rec['citation_url'] = citation_url
-    dset_rec['xlink'] = ['{}|citation|Citation'.format(citation_url)]
+    if not (dset_rec['type'] == 'File'):
+        dset_rec['xlink'] = ['{}|Citation|citation'.format(citation_url)]
     dset_rec['pid'] = pid
-    dset_rec['xlink'].append(PID_URL.format(pid))
+    if not (dset_rec['type'] == 'File'):
+        dset_rec['xlink'].append(PID_URL.format(pid))
     return dset_rec
 
 

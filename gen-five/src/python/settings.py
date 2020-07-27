@@ -30,8 +30,8 @@ CONST_ATTR =  { 'CMIP6' : { 'model_cohort' : 'Registered' }}
 GA_MAPPED = { 'CMIP6' : { 'experiment' : 'experiment_title'} }
 
 # These below are server-specific settings
-"""DATA_NODE = "greyworm1-rh7.llnl.gov"
-INDEX_NODE = "esgf-fedtest.llnl.gov" """
+""" DATA_NODE = "greyworm1-rh7.llnl.gov"
+INDEX_NODE = "esgf-fedtest.llnl.gov" """ 
 
 DATA_NODE = "esgf-data1.llnl.gov"
 INDEX_NODE = "esgf-node.llnl.gov"
@@ -53,8 +53,8 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # Note these are netCDF specific and will need to change if other formats are considered
 # TODO - add Globus , GridFTP
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
-"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
-                 "gsiftp:{}:2811/{}/{}|application/gridftp|GridFTP",
+"https://{}/thredds/dodsC/{}/{}.html|application/opendap-html|OPENDAP",
+                 "gsiftp://{}:2811/{}/{}|application/gridftp|GridFTP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 
@@ -63,7 +63,7 @@ PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
              'port': 5671,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
-             'password': "",
+             'password': "B8a*:!*6$7oW$G'`3!:G",
              'ssl_enabled': True,
              'priority': 1}] 
 
@@ -76,9 +76,10 @@ CITATION_URLS = { 'CMIP6' : {'test' :
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
 
 PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
-TEST_PUB = True
+TEST_PUB = False
 
 PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = True
 
 GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
+DATA_TRANSFER_NODE = "aimsdtn4.llnl.gov"

@@ -90,6 +90,8 @@ def get_dataset(mapdata, scandata):
 def format_template(template, root, rel):
     if "Globus" in template:
         return template.format(GLOBUS_UUID, root, rel)
+    elif "gsiftp" in template:
+        return template.format(DATA_TRANSFER_NODE, root, rel)
     else:
         return template.format(DATA_NODE, root, rel)
 
@@ -170,8 +172,8 @@ def update_metadata(record, scanobj):
         if "lon" in axes:
             lon = axes["lon"]
             geo_units.append(lon["units"])
-            record["east_degrees"] = lat["values"][-1]
-            record["west_degrees"] = lat["values"][0]
+            record["east_degrees"] = lon["values"][-1]
+            record["west_degrees"] = lon["values"][0]
         if "time" in axes:
             time_obj = axes["time"]
             time_units = time_obj["units"]
@@ -213,15 +215,19 @@ def update_metadata(record, scanobj):
 def iterate_files(dataset_rec, mapdata, scandata):
     ret = []
     sz = 0
+    last_file = None
 
     for maprec in mapdata:
         fullpath = maprec['file']
         scanrec = scandata[fullpath]
         file_rec = get_file(dataset_rec, maprec, scanrec)
+        last_file = file_rec
         sz += file_rec["size"]
         ret.append(file_rec)
+   
+    access = [x.split("|")[2] for x in last_file["url"]]
 
-    return ret, sz
+    return ret, sz, access
 
 def get_records(mapdata, scanfilename, xattrfn=None):
 
@@ -255,8 +261,9 @@ def get_records(mapdata, scanfilename, xattrfn=None):
         print('scandict = ')
         print(scandict)
         print()
-    ret, sz = iterate_files(rec, mapdict, scandict)
+    ret, sz, access = iterate_files(rec, mapdict, scandict)
     rec["size"] = sz
+    rec["access"] = access
     ret.append(rec)
     return ret
 

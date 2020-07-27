@@ -75,13 +75,13 @@ def main(fullmap):
     os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
     print("Done.\nMaking dataset...")
-    try:
-        out_json_data = mkd.main([map_json_data, scanfn])
+  #  try:
+    out_json_data = mkd.main([map_json_data, scanfn])
 
-    except Exception as ex:
+    """except Exception as ex:
         print("Error making dataset: " + str(ex))
         exit_cleanup(scan_file)
-        exit(1)
+        exit(1)"""
 
     if cmip6:
         print("Done.\nRunning pid cite...")
