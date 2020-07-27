@@ -63,7 +63,7 @@ PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
              'port': 5671,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
-             'password': "B8a*:!*6$7oW$G'`3!:G",
+             'password': ""
              'ssl_enabled': True,
              'priority': 1}] 
 
