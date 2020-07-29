@@ -31,7 +31,7 @@ GA_MAPPED = { 'CMIP6' : { 'experiment' : 'experiment_title'} }
 
 # These below are server-specific settings
 """ DATA_NODE = "greyworm1-rh7.llnl.gov"
-INDEX_NODE = "esgf-fedtest.llnl.gov" """ 
+INDEX_NODE = "esgf-fedtest.llnl.gov" """
 
 DATA_NODE = "esgf-data1.llnl.gov"
 INDEX_NODE = "esgf-node.llnl.gov"
@@ -63,7 +63,7 @@ PID_CREDS = [ {'url': 'handle-esgf-trusted.dkrz.de',
              'port': 5671,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
-             'password': ""
+             'password': "B8a*:!*6$7oW$G'`3!:G",
              'ssl_enabled': True,
              'priority': 1}] 
 

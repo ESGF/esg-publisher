@@ -167,8 +167,12 @@ def update_metadata(record, scanobj):
         if "lat" in axes:
             lat = axes["lat"]
             geo_units.append(lat["units"])
-            record["north_degrees"] = lat["values"][-1]
-            record["south_degrees"] = lat["values"][0]
+            if 'values' not in lat.keys():
+                record["north_degrees"] = lat['subaxes']['0']["values"][-1]
+                record["south_degrees"] = lat['subaxes']['0']["values"][0]
+            else:
+                record["north_degrees"] = lat["values"][-1]
+                record["south_degrees"] = lat["values"][0]
         if "lon" in axes:
             lon = axes["lon"]
             geo_units.append(lon["units"])
