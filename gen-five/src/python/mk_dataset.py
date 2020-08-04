@@ -151,7 +151,8 @@ def update_metadata(record, scanobj):
 
             vid = record["variable_id"]
             var_rec = scanobj["variables"][vid]
-            record["variable_long_name"] = var_rec["long_name"]
+            if "long_name" in var_rec.keys():
+            	record["variable_long_name"] = var_rec["long_name"]
             record["cf_standard_name"] = var_rec["standard_name"]
             record["variable_units"] = var_rec["units"]
             record["variable"] = vid
@@ -200,9 +201,16 @@ def update_metadata(record, scanobj):
                     eprint("WARNING: not sure where time values are...")
                     proc_time = False
                 if proc_time:
-                    days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                    try:
+                        days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                    except:
+                        tu_date = '0' + tu_date
+                        days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
                     dt_start = days_since_dt + timedelta(days=tu_start_inc)
                     dt_end = days_since_dt + timedelta(days=tu_end_inc)
+                    if dt_start.microsecond >= 500000:
+                        dt_start = dt_start + timedelta(seconds=1)
+                    dt_start = dt_start.replace(microsecond=0)
                     record["datetime_start"] = "{}Z".format(dt_start.isoformat())
                     record["datetime_end"] = "{}Z".format(dt_end.isoformat())
 
