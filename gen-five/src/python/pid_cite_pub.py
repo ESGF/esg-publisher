@@ -45,7 +45,7 @@ def check_pid_connection(pid_prefix, pid_connector, send_message=False):
     """
     pid_queue_return_msg = pid_connector.check_pid_queue_availability(send_message=send_message)
     if pid_queue_return_msg is not None:
-        raise Exception("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
+        raise Exception("Unable to establish connection to PID Messaging Service. Please check your .esg/publisher.cfg for correct pid_credentials.")
 
     pid_connector = establish_pid_connection(pid_prefix, TEST_PUB,  publish=True)
 
