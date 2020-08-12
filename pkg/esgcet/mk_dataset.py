@@ -280,7 +280,7 @@ def get_records(mapdata, scanfilename, xattrfn=None):
     return ret
 
 
-def main(args):
+def run(args):
     if (len(args) < 2):
         print("Missing required arguments!")
         exit(0)
@@ -290,3 +290,10 @@ def main(args):
     else:
         ret = get_records(args[0], args[1])
     return ret
+
+def main():
+    run(sys.argv[1:])
+
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()

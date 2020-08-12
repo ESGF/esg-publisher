@@ -1,9 +1,10 @@
 import esgcet.mapfile as mp
 import esgcet.mk_dataset as mkd
 import esgcet.update as up
-import esgcet.pub_test as pt
+import esgcet.index_pub as ip
 import esgcet.pid_cite_pub as pid
 import esgcet.activity_check as act
+import esgcet.args as args
 import os
 import json
 import sys
@@ -11,6 +12,7 @@ import tempfile
 from cmip6_cv import PrePARE
 from settings import *
 
+AC = False
 
 def prepare_internal(json_map, cmor_tables):
     print("iterating through filenames for PrePARE (internal version)...")
@@ -77,7 +79,7 @@ def main(fullmap):
 
     print("Done.\nMaking dataset...")
   #  try:
-    out_json_data = mkd.main([map_json_data, scanfn])
+    out_json_data = mkd.run([map_json_data, scanfn])
 
     """except Exception as ex:
         print("Error making dataset: " + str(ex))
@@ -87,12 +89,20 @@ def main(fullmap):
     if cmip6:
         print("Done.\nRunning pid cite...")
         try:
-            new_json_data = pid.main(out_json_data)
+            new_json_data = pid.run(out_json_data)
         except Exception as ex:
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file)
             exit(1)
 
+    if AC:
+        print("Done.\nRunning activity check...")
+        try:
+            act.main(new_json_data)
+        except Exception as ex:
+            print("Error running activity check: " + str(ex))
+            exit_cleanup(scan_file)
+            exit(1)
     print("Done.\nUpdating...")
     try:
         up.main(new_json_data)
@@ -101,9 +111,9 @@ def main(fullmap):
         exit_cleanup(scan_file)
         exit(1)
 
-    print("Done.\nRunning pub test...")
+    print("Done.\nRunning index pub...")
     try:
-        pt.main(new_json_data)
+        ip.run(new_json_data)
     except Exception as ex:
         print("Error running pub test: " + str(ex))
         exit_cleanup(scan_file)
