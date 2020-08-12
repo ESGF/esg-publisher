@@ -1,11 +1,29 @@
 from esgcet.pub_client import publisherClient
 import sys, json, requests
 from esgcet.settings import INDEX_NODE, CERT_FN
-import esgcet.args
+import esgcet.args as args
+import configparser as cfg
 from datetime import datetime
 
-hostname = INDEX_NODE
-cert_fn = CERT_FN
+pub = args.get_args()
+config = cfg.ConfigParser()
+config.read('esg.ini')
+
+if pub.index_node is None:
+    try:
+        hostname = config['user']['index_node']
+    except:
+        print("Index node not defined. Use the --index-node option or define in esg.ini.")
+else:
+    hostname = pub.index_node
+
+if pub.cert == "./cert.pem":
+    try:
+        cert_fn = config['user']['cert']
+    except:
+        cert_fn = pub.cert
+else:
+    cert_fn = pub.cert
 
 ARGS = 1
 
@@ -33,7 +51,7 @@ def gen_hide_xml(id, *args):
 
     return txt
 
-def main(outdata):
+def run(outdata):
 
     try:
         input_rec = outdata
@@ -77,3 +95,11 @@ def main(outdata):
     else:
         print('INFO: First dataset version for {}.'.format(mst))
 
+
+def main():
+    run(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()

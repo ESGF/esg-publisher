@@ -11,8 +11,7 @@ import sys
 import tempfile
 from cmip6_cv import PrePARE
 from settings import *
-
-AC = False
+import configparser as cfg
 
 def prepare_internal(json_map, cmor_tables):
     print("iterating through filenames for PrePARE (internal version)...")
@@ -37,7 +36,7 @@ def exit_cleanup(scan_file):
     scan_file.close()
 
 
-def main(fullmap):
+def run(fullmap):
 
     split_map = fullmap.split("/")
     fname = split_map[-1]
@@ -52,13 +51,33 @@ def main(fullmap):
 
     check_files(files)
 
-    cert = CERT_FN
+    pub = args.get_args()
+    third_arg_mkd = False
+    if pub.json is not None:
+        json_file = pub.json
+        third_arg_mkd = True
+    config = cfg.ConfigParser()
+    config.read('esg.ini')
+
+    if pub.cert == "./cert.pem":
+        try:
+            cert = config['user']['cert']
+        except:
+            cert = pub.cert
+    else:
+        cert = pub.cert
+
+    if pub.autocurator_path is None:
+        try:
+            autocurator = config['user']['autoc_path']
+        except:
+            print("No autocurator path defined. Use --autocurator option or define in config file.")
+            exit(1)
+    else:
+        autocurator = pub.autocurator_path
 
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
     scanfn = scan_file.name  # name to refer to tmp file
-
-    # add these as command line args
-    autocurator = AUTOC_PATH
 
     autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
 
@@ -66,25 +85,43 @@ def main(fullmap):
 
     print("Converting mapfile...")
     try:
-        map_json_data = mp.main([fullmap, proj])
+        map_json_data = mp.run([fullmap, proj])
     except Exception as ex:
         print("Error with converting mapfile: " + str(ex))
         exit_cleanup(scan_file)
         exit(1)
     print("Done.")
 
+    if cmip6:
+        if pub.cmor_path is None:
+            try:
+                cmor_tables = config['user']['cmor_path']
+            except:
+                print("No path for CMOR tables defined. Use --cmor-tables option or define in config file.")
+                exit(1)
+        else:
+            cmor_tables = pub.cmor_path
+        try:
+            prepare_internal(map_json_data, cmor_tables)
+        except Exception as ex:
+            print("Error with PrePARE: " + str(ex))
+            exit_cleanup(scan_file)
+            exit(1)
+
     # Run autocurator and all python scripts
     print("Running autocurator...")
     os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
     print("Done.\nMaking dataset...")
-  #  try:
-    out_json_data = mkd.run([map_json_data, scanfn])
-
-    """except Exception as ex:
+    try:
+        if third_arg_mkd:
+            out_json_data = mkd.run([map_json_data, scanfn, json_file])
+        else:
+            out_json_data = mkd.run([map_json_data, scanfn])
+    except Exception as ex:
         print("Error making dataset: " + str(ex))
         exit_cleanup(scan_file)
-        exit(1)"""
+        exit(1)
 
     if cmip6:
         print("Done.\nRunning pid cite...")
@@ -95,17 +132,16 @@ def main(fullmap):
             exit_cleanup(scan_file)
             exit(1)
 
-    if AC:
-        print("Done.\nRunning activity check...")
-        try:
-            act.main(new_json_data)
-        except Exception as ex:
-            print("Error running activity check: " + str(ex))
-            exit_cleanup(scan_file)
-            exit(1)
+    print("Done.\nRunning activity check...")
+    try:
+        act.main(new_json_data)
+    except Exception as ex:
+        print("Error running activity check: " + str(ex))
+        exit_cleanup(scan_file)
+        exit(1)
     print("Done.\nUpdating...")
     try:
-        up.main(new_json_data)
+        up.run(new_json_data)
     except Exception as ex:
         print("Error updating: " + str(ex))
         exit_cleanup(scan_file)
@@ -122,18 +158,20 @@ def main(fullmap):
     print("Done. Cleaning up.")
     exit_cleanup(scan_file)
 
-
-if __name__ == '__main__':
-
-    # os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")  # this isn't working for some reason ...
-    fullmap = sys.argv[2]  # full mapfile path
+def main():
+    pub = args.get_args()
+    fullmap = pub.map  # full mapfile path
     # allow handling of multiple mapfiles later
     if fullmap[-4:] != ".map":
         myfile = open(fullmap)
         for line in myfile:
             length = len(line)
-            main(line[0:length-2])
+            run(line[0:length - 2])
         myfile.close()
         # iterate through file in directory calling main
     else:
-        main(fullmap)
+        run(fullmap)
+
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()

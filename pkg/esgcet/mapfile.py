@@ -60,7 +60,7 @@ def map_entry(map_json, project, fs_root):
             outarr.append("{}={}".format(x,map_json[x]))
     return ' | '.join(outarr)
 
-def main(args):
+def run(args):
 
     if (len(args) < ARGS):
         print("Missing required arguments!")
@@ -69,3 +69,10 @@ def main(args):
     with open(args[0]) as map_data:
         ret = parse_map(map_data)
     return ret
+
+def main():
+    run(sys.argv[1:])
+
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()

@@ -1,7 +1,12 @@
 import sys, json
 from esgcet.settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 import traceback
+import esgcet.args as args
+import configparser as cfg
 
+pub = args.get_args()
+config = cfg.ConfigParser()
+config.read('esg.ini')
 def establish_pid_connection(pid_prefix, test_publication,  publish=True):
 
     """Establish a connection to the PID service
@@ -19,7 +24,15 @@ def establish_pid_connection(pid_prefix, test_publication,  publish=True):
 
     pid_messaging_service_exchange_name = PID_EXCHANGE
     pid_messaging_service_credentials = PID_CREDS
-    pid_data_node = DATA_NODE
+    if pub.data_node is None:
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Data node not defined. Use --data-node or define in esg.ini.")
+            exit(1)
+    else:
+        data_node = pub.data_node
+    pid_data_node = data_node
 
     # http_service_path = None
 
@@ -166,8 +179,10 @@ def run(args):
     return res
 #    print("after finish") DEBUG
 
+
 def main():
     run(sys.argv[1:])
+
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

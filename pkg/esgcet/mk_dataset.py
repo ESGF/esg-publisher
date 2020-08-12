@@ -1,10 +1,15 @@
 import sys, json
 from esgcet.mapfile import *
+import esgcet.args as args
+import configparser as cfg
 
 from datetime import datetime, timedelta
 
 from esgcet.settings import *
 
+pub = args.get_args()
+config = cfg.ConfigParser()
+config.read('esg.ini')
 
 
 EXCLUDES = [""]
@@ -23,10 +28,20 @@ def unpack_values(invals):
 
 def get_dataset(mapdata, scandata):
 
-    if DATA_NODE == "":
-        raise BaseException("Missing data node!")
-    if INDEX_NODE == "":
-        raise BaseException("Missing index node!")
+    if pub.data_node is None:
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Data node not defined. Use --data-node option or define in esg.ini.")
+            exit(1)
+    else:
+        data_node = pub.data_node
+
+    if pub.index_node is None:
+        try:
+            index_node = config['user']['index_node']
+        except:
+            print("Index node not defined. Use --index-node option or define in esg.ini")
 
     master_id, version = mapdata.split('#')
 
@@ -64,8 +79,8 @@ def get_dataset(mapdata, scandata):
         for facetkey in CONST_ATTR[projkey]:
             d[facetkey] = CONST_ATTR[projkey][facetkey]
 
-    d['data_node'] = DATA_NODE
-    d['index_node'] = INDEX_NODE
+    d['data_node'] = data_node
+    d['index_node'] = index_node
     DRSlen = len(DRS[projkey])
     d['master_id'] = master_id
     d['instance_id'] = master_id + '.v' + version
@@ -89,11 +104,37 @@ def get_dataset(mapdata, scandata):
 
 def format_template(template, root, rel):
     if "Globus" in template:
-        return template.format(GLOBUS_UUID, root, rel)
+        try:
+            globus = config['user']['globus_uuid']
+            if globus != 'none':
+                return template.format(globus, root, rel)
+            else:
+                print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID)
+                return template.format(GLOBUS_UUID, root, rel)
+        except:
+            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID)
+            return template.format(GLOBUS_UUID, root, rel)
     elif "gsiftp" in template:
-        return template.format(DATA_TRANSFER_NODE, root, rel)
+        try:
+            dtn = config['user']['data_transfer_node']
+            if dtn != 'none':
+                return template.format(dtn, root, rel)
+            else:
+                print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE)
+                return template.format(DATA_TRANSFER_NODE, root, rel)
+        except:
+            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE)
+            return template.format(DATA_TRANSFER_NODE, root, rel)
     else:
-        return template.format(DATA_NODE, root, rel)
+        if pub.data_node is None:
+            try:
+                data_node = config['user']['data_node']
+            except:
+                print("Data node not defined. Use --data-node option or define in esg.ini.")
+                exit(1)
+        else:
+            data_node = pub.data_node
+        return template.format(data_node, root, rel)
 
 
 def gen_urls(proj_root, rel_path):
@@ -120,11 +161,19 @@ def get_file(dataset_rec, mapdata, fn_trid):
 
     rel_path, proj_root = normalize_path(fullfn, dataset_rec["project"])
 
-    if not proj_root in DATA_ROOTS:
+    try:
+        data_roots = json.loads(config['user']['data_roots'])
+        if data_roots == 'none':
+            print("Data roots undefined. Define in esg.ini to create file metadata.")
+            exit(1)
+    except:
+        print("Data roots undefined. Define in esg.ini to create file metadata.")
+        exit(1)
+    if not proj_root in data_roots:
         eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
         exit(1)
 
-    ret["url"] = gen_urls(DATA_ROOTS[proj_root], rel_path)
+    ret["url"] = gen_urls(data_roots[proj_root], rel_path)
     if "number_of_files" in ret:
         ret.pop("number_of_files")
     else:
@@ -152,7 +201,7 @@ def update_metadata(record, scanobj):
             vid = record["variable_id"]
             var_rec = scanobj["variables"][vid]
             if "long_name" in var_rec.keys():
-            	record["variable_long_name"] = var_rec["long_name"]
+                record["variable_long_name"] = var_rec["long_name"]
             record["cf_standard_name"] = var_rec["standard_name"]
             record["variable_units"] = var_rec["units"]
             record["variable"] = vid

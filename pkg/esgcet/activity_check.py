@@ -1,7 +1,7 @@
 import sys, json
 
 
-CMIPCV="/export/ames4/git/CMIP6_CVs"
+CMIPCV="/export/ames4/git/CMIP6_CVs" # TODO: this will need to be changed
 SRC_ID_JSON="CMIP6_source_id.json"
 
 IDX = -1  # index for the dataset record
@@ -24,7 +24,7 @@ class FieldCheck(object):
         return activity_id in rec["activity_participation"]
 
 
-def main(args):
+def run(args):
 
     cv_path = "{}/{}".format(CMIPCV, SRC_ID_JSON)
     fc = FieldCheck(cv_path)
@@ -50,7 +50,10 @@ def main(args):
         print("ERROR: source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))
         print("If you think this message has been received in error, please update your CV source repository")
 
+def main():
+    run(sys.argv[1:])
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()

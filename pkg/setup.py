@@ -36,7 +36,10 @@ setup(
     zip_safe = False,                   # Migration repository must be a directory
     entry_points={'console_scripts': ['esgpidcitepub=esgcet.pid_cite_pub:main',
                                       'esgmkpubrec=esgcet.mk_dataset:main',
-                                      'esgindexpub=esgcet.index_pub:main']}
+                                      'esgindexpub=esgcet.index_pub:main',
+                                      'esgpublish=esgcet.pub-internal:main',
+                                      'esgupdate=esgcet.update:main',
+                                      'esgmapconv=esgcet.mapfile:main']}
 )
 
 
