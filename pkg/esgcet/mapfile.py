@@ -68,6 +68,7 @@ def run(args):
 
     with open(args[0]) as map_data:
         ret = parse_map(map_data)
+    print(json.dumps(ret))
     return ret
 
 def main():

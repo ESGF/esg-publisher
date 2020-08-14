@@ -40,7 +40,7 @@ def establish_pid_connection(pid_prefix, test_publication, data_node, publish=Tr
     return pid_connector
 
 
-def check_pid_connection(pid_prefix, pid_connector, send_message=False):
+def check_pid_connection(pid_prefix, pid_connector, data_node, send_message=False):
     """
     Check the connection to the PID rabbit MQ
     Raise an Error if connection fails
@@ -49,7 +49,7 @@ def check_pid_connection(pid_prefix, pid_connector, send_message=False):
     if pid_queue_return_msg is not None:
         raise Exception("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
 
-    pid_connector = establish_pid_connection(pid_prefix, TEST_PUB,  publish=True)
+    pid_connector = establish_pid_connection(pid_prefix, TEST_PUB, data_node, publish=True)
 
 
 
@@ -75,14 +75,14 @@ def pid_flow_code(dataset_recs, data_node):
     dataset_pid = None
     if pid_connector:
         dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
-        print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, dataset_pid))
+        print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, dataset_pid), file=sys.stderr)
     else:
         print('warning no connection')
     # if project uses citation, build citation url
 
 
     try:
-        check_pid_connection(PID_PREFIX, pid_connector, send_message=True)
+        check_pid_connection(PID_PREFIX, pid_connector, data_node, send_message=True)
 
         pid_wizard = None
             # Check connection
@@ -113,10 +113,10 @@ def pid_flow_code(dataset_recs, data_node):
             pid_wizard.dataset_publication_finished()
             return pid_connector, dataset_pid
         else:
-            print("WARNING, empty pid_wizard!")
+            print("WARNING, empty pid_wizard!", file=sys.stderr)
 
     except Exception as e:
-        print("WARNING: PID module exception encountered! {}".format(str(e)))
+        print("WARNING: PID module exception encountered! {}".format(str(e)), file=sys.stderr)
         traceback.print_exc()
 
     pid_connector.force_finish_messaging_thread()
@@ -149,15 +149,20 @@ def rewrite_json(fname, recs):
 def run(args):
 
     if len(args) < 1:
-        print("usage: esgpidcitepub <JSON file with dataset output>")
+        print("usage: esgpidcitepub <JSON file with dataset output>", file=sys.stderr)
+        exit(1)
 
+    config = cfg.ConfigParser()
+    config.read('esg.ini')
+    p = False
     if len(args) == 2:
         data_node = args[1]
     else:
+        p = True
         try:
             data_node = config['user']['data_node']
         except:
-            print("Data node not defined. Define in esg.ini.")
+            print("Data node not defined. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
     if isinstance(args[0], str):
@@ -175,14 +180,14 @@ def run(args):
             res[i] = update_dataset(res[i], pid, TEST_PUB)
 
     except Exception as e:
-        print("WARNING: Some exception encountered! {}".format(str(e)))
+        print("WARNING: Some exception encountered! {}".format(str(e)), file=sys.stderr)
         pid_connector.force_finish_messaging_thread()
         exit(-1)
 
-#    print("before finish"). DEBUG
     pid_connector.finish_messaging_thread()
+    if p:
+        print(json.dumps(res))
     return res
-#    print("after finish") DEBUG
 
 
 def main():

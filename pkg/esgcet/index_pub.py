@@ -8,6 +8,7 @@ def run(args):
 
     if len(args) < 1:
         print("usage: esgindexpub <JSON file with dataset output>")
+        exit(1)
     config = cfg.ConfigParser()
     config.read('esg.ini')
 

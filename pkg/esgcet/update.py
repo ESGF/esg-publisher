@@ -34,6 +34,7 @@ def run(args):
 
     if len(args) < 1:
         print("usage: esgupdate <JSON file with dataset output>")
+        exit(1)
     try:
         if isinstance(args, list):
             input_rec = json.load(open(args[0]))
@@ -42,7 +43,8 @@ def run(args):
     except Exception as e:
         print("Error opening input json format {}".format(e))
         exit(1)
-
+    config = cfg.ConfigParser()
+    config.read('esg.ini')
     if len(args) == 3:
         index_node = args[1]
         cert_fn = args[2]

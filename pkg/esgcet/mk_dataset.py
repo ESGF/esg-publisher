@@ -91,10 +91,10 @@ def format_template(template, root, rel):
             if globus != 'none':
                 return template.format(globus, root, rel)
             else:
-                print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID)
+                print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
                 return template.format(GLOBUS_UUID, root, rel)
         except:
-            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID)
+            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
             return template.format(GLOBUS_UUID, root, rel)
     elif "gsiftp" in template:
         try:
@@ -102,20 +102,17 @@ def format_template(template, root, rel):
             if dtn != 'none':
                 return template.format(dtn, root, rel)
             else:
-                print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE)
+                print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
                 return template.format(DATA_TRANSFER_NODE, root, rel)
         except:
-            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE)
+            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
             return template.format(DATA_TRANSFER_NODE, root, rel)
     else:
-        if pub.data_node is None:
-            try:
-                data_node = config['user']['data_node']
-            except:
-                print("Data node not defined. Use --data-node option or define in esg.ini.")
-                exit(1)
-        else:
-            data_node = pub.data_node
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Data node not defined. Define in esg.ini.")
+            exit(1)
         return template.format(data_node, root, rel)
 
 
@@ -318,12 +315,20 @@ def run(args):
     if (len(args) < 2):
         print("usage: esgmkpubrec <JSON file with map data> <scan file>")
         exit(0)
-
-    if len(args) >= 5:
+    p = False
+    if len(args) >= 5 and args[3] != '>':
         data_node = args[2]
         index_node = args[3]
-        replica = args[4]
+        r = args[4]
+        if 'true' in r or 'yes' in r:
+             replica = True
+        elif 'false' in r or 'no' in r:
+             replica = False
+        else:
+             print("Invalid replica: must be type bool.")
+             exit(1)
     else:
+        p = True
         try:
             data_node = config['user']['data_node']
         except:
@@ -337,14 +342,21 @@ def run(args):
             exit(1)
 
         try:
-            replica = config['user'].getboolean['replica']
+            r = config['user']['set_replica']
+            if 'true' in r or 'yes' in r:
+                replica = True
+            else:
+                replica = False
         except:
-            print("Replica ")
+            print("Replica not defined. Define in esg.ini")
+            exit(1)
 
     if len(args) > 5:
         ret = get_records(args[0], args[1], data_node, index_node, replica, xattrfn=args[5])
     else:
         ret = get_records(args[0], args[1], data_node, index_node, replica)
+    if p:
+        print(json.dumps(ret))
     return ret
 
 def main():
