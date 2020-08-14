@@ -1,13 +1,10 @@
 import sys, json
 from esgcet.settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 import traceback
-import esgcet.args as args
 import configparser as cfg
 
-pub = args.get_args()
-config = cfg.ConfigParser()
-config.read('esg.ini')
-def establish_pid_connection(pid_prefix, test_publication,  publish=True):
+
+def establish_pid_connection(pid_prefix, test_publication, data_node, publish=True):
 
     """Establish a connection to the PID service
     pid_prefix
@@ -24,14 +21,6 @@ def establish_pid_connection(pid_prefix, test_publication,  publish=True):
 
     pid_messaging_service_exchange_name = PID_EXCHANGE
     pid_messaging_service_credentials = PID_CREDS
-    if pub.data_node is None:
-        try:
-            data_node = config['user']['data_node']
-        except:
-            print("Data node not defined. Use --data-node or define in esg.ini.")
-            exit(1)
-    else:
-        data_node = pub.data_node
     pid_data_node = data_node
 
     # http_service_path = None
@@ -68,7 +57,7 @@ def get_url(arr):
 
     return arr[0].split('|')[0]
 
-def pid_flow_code(dataset_recs):
+def pid_flow_code(dataset_recs, data_node):
 
 
     try:
@@ -80,7 +69,7 @@ def pid_flow_code(dataset_recs):
     version_number = dsrec['version']
     is_replica = dsrec["replica"]
 
-    pid_connector = establish_pid_connection(PID_PREFIX, TEST_PUB, publish=False)
+    pid_connector = establish_pid_connection(PID_PREFIX, TEST_PUB, data_node, publish=False)
     pid_connector.start_messaging_thread()
 
     dataset_pid = None
@@ -159,11 +148,24 @@ def rewrite_json(fname, recs):
 
 def run(args):
 
-    if isinstance(args, list):
+    if len(args) < 1:
+        print("usage: esgpidcitepub <JSON file with dataset output>")
+
+    if len(args) == 2:
+        data_node = args[1]
+    else:
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Data node not defined. Define in esg.ini.")
+            exit(1)
+
+    if isinstance(args[0], str):
         res = json.load(open(args[0]))
     else:
-        res = args
-    pid_connector, pid = pid_flow_code(res)
+        res = args[0]
+
+    pid_connector, pid = pid_flow_code(res, data_node)
 
     if pid_connector is None:
         exit(-1)

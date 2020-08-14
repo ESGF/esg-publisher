@@ -63,7 +63,7 @@ def map_entry(map_json, project, fs_root):
 def run(args):
 
     if (len(args) < ARGS):
-        print("Missing required arguments!")
+        print("usage: esgmapconv <mapfile>")
         exit(0)
 
     with open(args[0]) as map_data:

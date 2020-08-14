@@ -1,16 +1,13 @@
 import sys, json
 from esgcet.mapfile import *
-import esgcet.args as args
 import configparser as cfg
 
 from datetime import datetime, timedelta
 
 from esgcet.settings import *
 
-pub = args.get_args()
 config = cfg.ConfigParser()
 config.read('esg.ini')
-
 
 EXCLUDES = [""]
 
@@ -26,22 +23,7 @@ def unpack_values(invals):
             yield x['values']
 
 
-def get_dataset(mapdata, scandata):
-
-    if pub.data_node is None:
-        try:
-            data_node = config['user']['data_node']
-        except:
-            print("Data node not defined. Use --data-node option or define in esg.ini.")
-            exit(1)
-    else:
-        data_node = pub.data_node
-
-    if pub.index_node is None:
-        try:
-            index_node = config['user']['index_node']
-        except:
-            print("Index node not defined. Use --index-node option or define in esg.ini")
+def get_dataset(mapdata, scandata, data_node, index_node, replica):
 
     master_id, version = mapdata.split('#')
 
@@ -88,7 +70,7 @@ def get_dataset(mapdata, scandata):
     if 'title' in d:
         d['short_description'] = d['title']
     d['title'] = d['master_id']
-    d['replica'] = True
+    d['replica'] = replica
     d['latest'] = 'true'
     d['type'] = 'Dataset'
     d['project'] = projkey
@@ -290,7 +272,7 @@ def iterate_files(dataset_rec, mapdata, scandata):
 
     return ret, sz, access
 
-def get_records(mapdata, scanfilename, xattrfn=None):
+def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=None):
 
     if isinstance(mapdata, str):
         mapobj = json.load(open(mapdata))
@@ -298,7 +280,7 @@ def get_records(mapdata, scanfilename, xattrfn=None):
         mapobj = mapdata
     scanobj = json.load(open(scanfilename))
 
-    rec = get_dataset(mapobj[0][0], scanobj['dataset'])
+    rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica)
     update_metadata(rec, scanobj)
     rec["number_of_files"] = len(mapobj)  # place this better
 
@@ -334,13 +316,35 @@ def get_records(mapdata, scanfilename, xattrfn=None):
 
 def run(args):
     if (len(args) < 2):
-        print("Missing required arguments!")
+        print("usage: esgmkpubrec <JSON file with map data> <scan file>")
         exit(0)
 
-    if len(args) > 2:
-        ret = get_records(args[0], args[1], xattrfn=args[2])
+    if len(args) >= 5:
+        data_node = args[2]
+        index_node = args[3]
+        replica = args[4]
     else:
-        ret = get_records(args[0], args[1])
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Data node not defined. Define in esg.ini.")
+            exit(1)
+
+        try:
+            index_node = config['user']['index_node']
+        except:
+            print("Index node not defined. Define in esg.ini.")
+            exit(1)
+
+        try:
+            replica = config['user'].getboolean['replica']
+        except:
+            print("Replica ")
+
+    if len(args) > 5:
+        ret = get_records(args[0], args[1], data_node, index_node, replica, xattrfn=args[5])
+    else:
+        ret = get_records(args[0], args[1], data_node, index_node, replica)
     return ret
 
 def main():

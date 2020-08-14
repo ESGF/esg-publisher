@@ -76,6 +76,39 @@ def run(fullmap):
     else:
         autocurator = pub.autocurator_path
 
+    if pub.index_node is None:
+        try:
+            index_node = config['user']['index_node']
+        except:
+            print("Index node not defined. Use the --index-node option or define in esg.ini.")
+            exit(1)
+    else:
+        index_node = pub.index_node
+
+    if pub.data_node is None:
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Data node not defined. Use --data-node option or define in esg.ini.")
+            exit(1)
+    else:
+        data_node = pub.data_node
+
+    if pub.set_replica and pub.no_replica:
+        print("Error: replica publication simultaneously set and disabled.")
+        exit(1)
+    elif pub.set_replica:
+        replica = True
+    elif pub.no_replica:
+        replica = False
+    else:
+        try:
+            replica = config['user'].getboolean(['set_replica'])
+        except:
+            print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.")
+            exit(1)
+
+
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
     scanfn = scan_file.name  # name to refer to tmp file
 
@@ -115,9 +148,9 @@ def run(fullmap):
     print("Done.\nMaking dataset...")
     try:
         if third_arg_mkd:
-            out_json_data = mkd.run([map_json_data, scanfn, json_file])
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file])
         else:
-            out_json_data = mkd.run([map_json_data, scanfn])
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica])
     except Exception as ex:
         print("Error making dataset: " + str(ex))
         exit_cleanup(scan_file)
@@ -126,7 +159,7 @@ def run(fullmap):
     if cmip6:
         print("Done.\nRunning pid cite...")
         try:
-            new_json_data = pid.run(out_json_data)
+            new_json_data = pid.run([out_json_data, data_node])
         except Exception as ex:
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file)
@@ -141,7 +174,7 @@ def run(fullmap):
         exit(1)
     print("Done.\nUpdating...")
     try:
-        up.run(new_json_data)
+        up.run([new_json_data, index_node, cert])
     except Exception as ex:
         print("Error updating: " + str(ex))
         exit_cleanup(scan_file)
@@ -149,7 +182,7 @@ def run(fullmap):
 
     print("Done.\nRunning index pub...")
     try:
-        ip.run(new_json_data)
+        ip.run([new_json_data, index_node, cert])
     except Exception as ex:
         print("Error running pub test: " + str(ex))
         exit_cleanup(scan_file)
