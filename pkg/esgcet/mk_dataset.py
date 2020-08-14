@@ -292,7 +292,10 @@ def iterate_files(dataset_rec, mapdata, scandata):
 
 def get_records(mapdata, scanfilename, xattrfn=None):
 
-    mapobj = mapdata
+    if isinstance(mapdata, str):
+        mapobj = json.load(open(mapdata))
+    else:
+        mapobj = mapdata
     scanobj = json.load(open(scanfilename))
 
     rec = get_dataset(mapobj[0][0], scanobj['dataset'])

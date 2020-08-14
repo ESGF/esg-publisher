@@ -54,7 +54,10 @@ def gen_hide_xml(id, *args):
 def run(outdata):
 
     try:
-        input_rec = outdata
+        if isinstance(outdata, list):
+            input_rec = json.load(open(outdata[0]))
+        else:
+            input_rec = outdata
     except Exception as e:
         print("Error opening input json format {}".format(e))
         exit(1)

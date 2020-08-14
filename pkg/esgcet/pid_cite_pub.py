@@ -159,7 +159,10 @@ def rewrite_json(fname, recs):
 
 def run(args):
 
-    res = args
+    if isinstance(args, list):
+        res = json.load(open(args[0]))
+    else:
+        res = args
     pid_connector, pid = pid_flow_code(res)
 
     if pid_connector is None:

@@ -34,7 +34,10 @@ def run(args):
         exit(0)
 
     try:
-        input_rec = json.load(open(args[0]))
+        if isinstance(args, list):
+            input_rec = json.load(open(args[0]))
+        else:
+            input_rec = args
     except Exception as e:
         print("Error opening input json format for {}: ".format(args[0],e))
         exit(1)

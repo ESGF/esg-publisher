@@ -29,8 +29,11 @@ def run(outdata):
         cert_fn = pub.cert
 
     pubCli = publisherClient(cert_fn, hostname)
-
-    d = outdata
+    
+    if isinstance(outdata, list):
+        d = json.load(open(outdata[0]))
+    else:
+        d = outdata
 
     for rec in d:
 

@@ -10,7 +10,7 @@ import json
 import sys
 import tempfile
 from cmip6_cv import PrePARE
-from settings import *
+from esgcet.settings import *
 import configparser as cfg
 
 def prepare_internal(json_map, cmor_tables):
@@ -110,7 +110,7 @@ def run(fullmap):
 
     # Run autocurator and all python scripts
     print("Running autocurator...")
-    os.system("bash gen-five/src/python/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
+    os.system("bash " + autocurator + "/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
     print("Done.\nMaking dataset...")
     try:
@@ -134,7 +134,7 @@ def run(fullmap):
 
     print("Done.\nRunning activity check...")
     try:
-        act.main(new_json_data)
+        act.run(new_json_data)
     except Exception as ex:
         print("Error running activity check: " + str(ex))
         exit_cleanup(scan_file)
@@ -161,7 +161,9 @@ def run(fullmap):
 def main():
     pub = args.get_args()
     fullmap = pub.map  # full mapfile path
-    # allow handling of multiple mapfiles later
+    if fullmap is None:
+        print("Missing argument --map, use " + sys.argv[0] + " --help for usage.")
+        exit(1)
     if fullmap[-4:] != ".map":
         myfile = open(fullmap)
         for line in myfile:
