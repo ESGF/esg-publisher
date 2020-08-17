@@ -7,12 +7,15 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 from pathlib import Path
+from os import mkdir
 
 
 
 VERSION = '5.0.0a'
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
+FULLPATH = HOME + '/.esg'
+mkdir(FULLPATH)
 
 setup(
     name = 'esgcet',
@@ -41,7 +44,7 @@ setup(
                                       'esgpublish=esgcet.pub_internal:main',
                                       'esgupdate=esgcet.update:main',
                                       'esgmapconv=esgcet.mapfile:main']},
-    data_files=[(HOME, ['esg.ini'])] 
+    data_files=[(FULLPATH, ['esg.ini'])] 
 )
 
 
