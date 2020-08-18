@@ -3,24 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to esgcet's documentation!
-==================================
+The esgcet package for ESGF Publication
+=======================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-Esgcet is a package of publisher commands for publishing to the ESGF search database. For more info about ESGF, see `here`_.
-.. _here: https://esgf-node.llnl.gov/projects/esgf-llnl/
+.. sidebar:: ESGCET
+   :subtitle: Navigation
+   
+   This is my side bar.
+   This is a link to installation.
+   .. _installation:
+
+Esgcet is a package of publisher commands for publishing to the `ESGF
+<https://esgf-node.llnl.gov/projects/esgf-llnl/>`_ search database.
+
 
 Installation
 ------------
 
-Install esgcet by running (not yet working)::
-
-        pip install esgcet
-
-or ::
+Install esgcet by running ::
 
         git clone http://github.com/lisi-w/esg-publisher.git -b gen-five-pkg
         cd pkg
@@ -61,11 +65,11 @@ You can also use ``--help`` to see::
           --map MAP             mapfile or file containing a list of mapfiles.
 
 This command publishes a data record from start to finish using the mapfile passed to it, or a file containing a list of mapfiles (with full paths). The next 5 commands break up the several steps and give the option to execute them one at a time:
-#. ``esgmapconv``
-#. ``esgmkpubrec``
-#. ``esgpidcitepub``
-#. ``esgupdate``
-#. ``esgindexpub``
+1. ``esgmapconv``
+2. ``esgmkpubrec``
+3. ``esgpidcitepub``
+4. ``esgupdate``
+5. ``esgindexpub``
 
 The usage for each of these can be seen by executing each command without arguments.
 

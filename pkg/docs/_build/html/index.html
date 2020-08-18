@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to esgcet’s documentation! &#8212; esgcet 5.0.0a documentation</title>
+    <title>The esgcet package for ESGF Publication &#8212; esgcet 5.0.0a documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -31,19 +31,21 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="welcome-to-esgcet-s-documentation">
-<h1>Welcome to esgcet’s documentation!<a class="headerlink" href="#welcome-to-esgcet-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="the-esgcet-package-for-esgf-publication">
+<h1>The esgcet package for ESGF Publication<a class="headerlink" href="#the-esgcet-package-for-esgf-publication" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<p>Esgcet is a package of publisher commands for publishing to the ESGF search database. For more info about ESGF, see <a href="#id1"><span class="problematic" id="id2">`here`_</span></a>.
-.. _here: <a class="reference external" href="https://esgf-node.llnl.gov/projects/esgf-llnl/">https://esgf-node.llnl.gov/projects/esgf-llnl/</a></p>
+<div class="sidebar">
+<p class="sidebar-title">ESGCET</p>
+<p class="sidebar-subtitle">Navigation</p>
+<p>This is my side bar.
+This is a link to installation.
+.. _installation:</p>
+</div>
+<p>Esgcet is a package of publisher commands for publishing to the <a class="reference external" href="https://esgf-node.llnl.gov/projects/esgf-llnl/">ESGF</a> search database.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Install esgcet by running (not yet working):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">esgcet</span>
-</pre></div>
-</div>
-<p>or</p>
+<p>Install esgcet by running</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">lisi</span><span class="o">-</span><span class="n">w</span><span class="o">/</span><span class="n">esg</span><span class="o">-</span><span class="n">publisher</span><span class="o">.</span><span class="n">git</span> <span class="o">-</span><span class="n">b</span> <span class="n">gen</span><span class="o">-</span><span class="n">five</span><span class="o">-</span><span class="n">pkg</span>
 <span class="n">cd</span> <span class="n">pkg</span>
 <span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
@@ -84,11 +86,11 @@ optional arguments:
 </pre></div>
 </div>
 <p>This command publishes a data record from start to finish using the mapfile passed to it, or a file containing a list of mapfiles (with full paths). The next 5 commands break up the several steps and give the option to execute them one at a time:
-#. <code class="docutils literal notranslate"><span class="pre">esgmapconv</span></code>
-#. <code class="docutils literal notranslate"><span class="pre">esgmkpubrec</span></code>
-#. <code class="docutils literal notranslate"><span class="pre">esgpidcitepub</span></code>
-#. <code class="docutils literal notranslate"><span class="pre">esgupdate</span></code>
-#. <code class="docutils literal notranslate"><span class="pre">esgindexpub</span></code></p>
+1. <code class="docutils literal notranslate"><span class="pre">esgmapconv</span></code>
+2. <code class="docutils literal notranslate"><span class="pre">esgmkpubrec</span></code>
+3. <code class="docutils literal notranslate"><span class="pre">esgpidcitepub</span></code>
+4. <code class="docutils literal notranslate"><span class="pre">esgupdate</span></code>
+5. <code class="docutils literal notranslate"><span class="pre">esgindexpub</span></code></p>
 <p>The usage for each of these can be seen by executing each command without arguments.</p>
 </div>
 </div>
