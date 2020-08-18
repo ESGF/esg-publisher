@@ -1,16 +1,36 @@
-esg-publisher documentation
-===========================
-
-Contents:
+The esgcet package for ESGF Publication
+=======================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
-   installation
-   testpublication
-   configuration
-   mapfiles
-   usage
-   faq
-   advanced
-   
+   install
+   esgpublish
+   esgmapconv
+   esgmkpubrec
+   esgpidcitepub
+   esgupdate
+   esgindexpub
+
+Esgcet is a package of publisher commands for publishing to the `ESGF
+<https://esgf-node.llnl.gov/projects/esgf-llnl/>`_ search database.
+
+
+Table of Contents
+=================
+
+* :ref:`install`
+* :ref:`esgpublish`
+* :ref:`esgmapconv`
+* :ref:`esgmkpubrec`
+* :ref:`esgpidcitepub`
+* :ref:`esgupdate`
+* :ref:`esgindexpub`
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
