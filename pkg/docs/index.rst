@@ -31,7 +31,7 @@ Install esgcet by running ::
         python3 setup.py install
 
 Usage
------
+=====
 
 There are 6 commands. The first one, ``esgpublish`` is used with the following syntax::
 
@@ -65,13 +65,11 @@ You can also use ``--help`` to see::
           --map MAP             mapfile or file containing a list of mapfiles.
 
 This command publishes a data record from start to finish using the mapfile passed to it, or a file containing a list of mapfiles (with full paths). The next 5 commands break up the several steps and give the option to execute them one at a time:
-1. ``esgmapconv``
-2. ``esgmkpubrec``
-3. ``esgpidcitepub``
-4. ``esgupdate``
-5. ``esgindexpub``
-
-The usage for each of these can be seen by executing each command without arguments.
+- ``esgmapconv``
+- ``esgmkpubrec``
+- ``esgpidcitepub``
+- ``esgupdate``
+- ``esgindexpub``
 
 
 Indices and tables
