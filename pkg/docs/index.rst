@@ -10,16 +10,21 @@ The esgcet package for ESGF Publication
    :maxdepth: 2
    :caption: Contents:
 
-.. sidebar:: ESGCET
-   :subtitle: Navigation
-   
-   This is my side bar.
-   This is a link to installation.
-   .. _installation:
 
 Esgcet is a package of publisher commands for publishing to the `ESGF
 <https://esgf-node.llnl.gov/projects/esgf-llnl/>`_ search database.
 
+
+Table of Contents
+=================
+
+* :ref:`Installation`
+* :ref:`esgpublish`
+* :ref:`esgmapconv`
+* :ref:`esgmkpubrec`
+* :ref:`esgpidcitepub`
+* :ref:`esgupdate`
+* :ref:`esgindexpub`
 
 Installation
 ------------
@@ -29,6 +34,15 @@ Install esgcet by running ::
         git clone http://github.com/lisi-w/esg-publisher.git -b gen-five-pkg
         cd pkg
         python3 setup.py install
+
+Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
+
+Config
+------
+
+The default config file will look like this::
+
+        
 
 Usage
 =====
