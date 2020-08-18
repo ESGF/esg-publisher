@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; esgcet 5.0.0a documentation</title>
+    <title>esgpidcitepub &#8212; esgcet 5.0.0a documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -13,7 +13,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <link rel="index" title="Index" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -31,11 +31,20 @@
 
           <div class="body" role="main">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <div class="section" id="esgpidcitepub">
+<h1>esgpidcitepub<a class="headerlink" href="#esgpidcitepub" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">esgpidcitepub</span></code> command connects to a PID server using credentials defined in the config file. It then assigns a PID to the dataset. This step is necessary for all CMIP6 data records.
+The output of this command is the input to both the <code class="docutils literal notranslate"><span class="pre">esgupdate</span></code> command as well as the <code class="docutils literal notranslate"><span class="pre">esgindexpub</span></code> command.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">esgpidcitepub</span></code> is used with the following syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgpidcitepub</span> <span class="o">&lt;</span><span class="n">JSON</span> <span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;JSON</span> <span class="pre">file&gt;</span></code> is the output of the <code class="docutils literal notranslate"><span class="pre">esgmkpubrec</span></code> command.
+The output of this command is by default printed to stdout, but can easily be redirected using <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">filename.json</span></code>.
+This command requires that <code class="docutils literal notranslate"><span class="pre">data_node</span></code> is defined in the <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> config file.</p>
+</div>
 </div>
 
 
@@ -55,15 +64,6 @@
 
 
 <h3>Navigation</h3>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="esgpublish.html">esgpublish</a></li>
-<li class="toctree-l1"><a class="reference internal" href="esgmapconv.html">esgmapconv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="esgmkpubrec.html">esgmkpubrec</a></li>
-<li class="toctree-l1"><a class="reference internal" href="esgpidcitepub.html">esgpidcitepub</a></li>
-<li class="toctree-l1"><a class="reference internal" href="esgupdate.html">esgupdate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="esgindexpub.html">esgindexpub</a></li>
-</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
@@ -101,6 +101,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
+      |
+      <a href="_sources/esgpidcitepub.rst.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     

@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>esgpublish &#8212; esgcet 5.0.0a documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="esgpublish">
+<h1>esgpublish<a class="headerlink" href="#esgpublish" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> command publishes a record from start to finish using the mapfile(s) passed to it. On success, it will display a success message in the output of the last two steps.
+If an error occurs, a helpful statement will be printed explaining which step went wrong and why.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> is used with the following syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgpublish</span> <span class="o">--</span><span class="nb">map</span> <span class="o">&lt;</span><span class="n">mapfile</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>You can also use <code class="docutils literal notranslate"><span class="pre">--help</span></code> to see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --help
+usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--json JSON] [--data-node DATA_NODE] [--index-node INDEX_NODE] [--certificate CERT] [--project PROJ]
+                  [--cmor-tables CMOR_PATH] [--autocurator AUTOCURATOR_PATH] --map MAP
+
+Publish data sets to ESGF databases.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --test                PID registration will run in &#39;test&#39; mode. Use this mode unless you are performing &#39;production&#39; publications.
+  --set-replica         Enable replica publication.
+  --no-replica          Disable replica publication.
+  --json JSON           Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.
+  --data-node DATA_NODE
+                        Specify data node.
+  --index-node INDEX_NODE
+                        Specify index node.
+  --certificate CERT, -c CERT
+                        Use the following certificate file in .pem form for publishing (use a myproxy login to generate).
+  --project PROJ        Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.
+  --cmor-tables CMOR_PATH
+                Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.
+  --autocurator AUTOCURATOR_PATH
+                        Path to autocurator repository folder.
+  --map MAP             mapfile or file containing a list of mapfiles.
+</pre></div>
+</div>
+<p>This command can handle a singular mapfile passed to it, or a file containing a list of mapfiles (with full paths).
+If optional command line arguments are used, they will override anything set in the config file.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">esgcet</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Elysia Witham, Sasha Ames.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/esgpublish.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
