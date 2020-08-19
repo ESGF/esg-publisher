@@ -2,7 +2,7 @@ import sys, json
 from esgcet.settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 import traceback
 import configparser as cfg
-
+from pathlib import Path
 
 def establish_pid_connection(pid_prefix, test_publication, data_node, publish=True):
 
@@ -151,9 +151,11 @@ def run(args):
     if len(args) < 1:
         print("usage: esgpidcitepub <JSON file with dataset output>", file=sys.stderr)
         exit(1)
-
+    
     config = cfg.ConfigParser()
-    config.read('esg.ini')
+    home = str(Path.home())
+    config_file = home + "/.esg/esg.ini"
+    config.read(config_file)
     p = False
     if len(args) == 2:
         data_node = args[1]

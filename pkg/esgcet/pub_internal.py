@@ -12,6 +12,7 @@ import tempfile
 from cmip6_cv import PrePARE
 from esgcet.settings import *
 import configparser as cfg
+from pathlib import Path
 
 def prepare_internal(json_map, cmor_tables):
     print("iterating through filenames for PrePARE (internal version)...")
@@ -57,7 +58,9 @@ def run(fullmap):
         json_file = pub.json
         third_arg_mkd = True
     config = cfg.ConfigParser()
-    config.read('esg.ini')
+    home = str(Path.home())
+    config_file = home + "/.esg/esg.ini"
+    config.read(config_file)
 
     if pub.cert == "./cert.pem":
         try:

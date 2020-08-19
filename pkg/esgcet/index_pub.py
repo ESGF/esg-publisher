@@ -2,7 +2,7 @@ from esgcet.pub_client import publisherClient
 
 import esgcet.list2json, sys, json
 import configparser as cfg
-
+from pathlib import Path
 
 def run(args):
 
@@ -10,7 +10,9 @@ def run(args):
         print("usage: esgindexpub <JSON file with dataset output>")
         exit(1)
     config = cfg.ConfigParser()
-    config.read('esg.ini')
+    home = str(Path.home())
+    config_file = home + "/.esg/esg.ini"
+    config.read(config_file)
 
     if len(args) == 3:
         hostname = args[1]

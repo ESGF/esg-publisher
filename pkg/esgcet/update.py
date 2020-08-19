@@ -3,6 +3,7 @@ import sys, json, requests
 from esgcet.settings import INDEX_NODE, CERT_FN
 import configparser as cfg
 from datetime import datetime
+from pathlib import Path
 
 ARGS = 1
 
@@ -44,7 +45,9 @@ def run(args):
         print("Error opening input json format {}".format(e))
         exit(1)
     config = cfg.ConfigParser()
-    config.read('esg.ini')
+    home = str(Path.home())
+    config_file = home + "/.esg/esg.ini"
+    config.read(config_file)
     if len(args) == 3:
         index_node = args[1]
         cert_fn = args[2]

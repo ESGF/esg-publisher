@@ -5,9 +5,12 @@ import configparser as cfg
 from datetime import datetime, timedelta
 
 from esgcet.settings import *
+from pathlib import Path
 
 config = cfg.ConfigParser()
-config.read('esg.ini')
+home = str(Path.home())
+config_file = home + "/.esg/esg.ini"
+config.read(config_file)
 
 EXCLUDES = [""]
 
