@@ -49,4 +49,4 @@ Run Time Args
 
 If you prefer to set certain things at runtime, the ``esgpublish`` command has several optional command line arguments which will override options set in the config file.
 For instance, if you use the ``--cmor-tables`` command line argument to set the path to the cmor tables directory, that will override anything written in the config file under ``cmor_path``.
-More details can be found in the :ref:`esgpublish` section.
+More details can be found in the ``esgpublish`` section.
