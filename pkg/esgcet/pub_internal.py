@@ -62,6 +62,15 @@ def run(fullmap):
     config_file = home + "/.esg/esg.ini"
     config.read(config_file)
 
+    try:
+        s = config['user']['silent']
+        if 'true' or 'yes' in s:
+            SILENT = True
+        else:
+            SILENT = False
+    except:
+        SILENT = False
+
     if pub.cert == "./cert.pem":
         try:
             cert = config['user']['cert']
@@ -74,7 +83,7 @@ def run(fullmap):
         try:
             autocurator = config['user']['autoc_path']
         except:
-            print("No autocurator path defined. Use --autocurator option or define in config file.")
+            print("No autocurator path defined. Use --autocurator option or define in config file.", file=sys.stderr)
             exit(1)
     else:
         autocurator = pub.autocurator_path
@@ -83,7 +92,7 @@ def run(fullmap):
         try:
             index_node = config['user']['index_node']
         except:
-            print("Index node not defined. Use the --index-node option or define in esg.ini.")
+            print("Index node not defined. Use the --index-node option or define in esg.ini.", file=sys.stderr)
             exit(1)
     else:
         index_node = pub.index_node
@@ -92,13 +101,13 @@ def run(fullmap):
         try:
             data_node = config['user']['data_node']
         except:
-            print("Data node not defined. Use --data-node option or define in esg.ini.")
+            print("Data node not defined. Use --data-node option or define in esg.ini.", file=sys.stderr)
             exit(1)
     else:
         data_node = pub.data_node
 
     if pub.set_replica and pub.no_replica:
-        print("Error: replica publication simultaneously set and disabled.")
+        print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
         exit(1)
     elif pub.set_replica:
         replica = True
@@ -108,7 +117,7 @@ def run(fullmap):
         try:
             replica = config['user'].getboolean(['set_replica'])
         except:
-            print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.")
+            print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.", file=sys.stderr)
             exit(1)
 
 
@@ -119,86 +128,96 @@ def run(fullmap):
 
     os.system("cert_path=" + cert)
 
-    print("Converting mapfile...")
+    if not SILENT:
+        print("Converting mapfile...")
     try:
         map_json_data = mp.run([fullmap, proj])
     except Exception as ex:
-        print("Error with converting mapfile: " + str(ex))
+        print("Error with converting mapfile: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
-    print("Done.")
+    if not SILENT:
+        print("Done.")
 
     if cmip6:
         if pub.cmor_path is None:
             try:
                 cmor_tables = config['user']['cmor_path']
             except:
-                print("No path for CMOR tables defined. Use --cmor-tables option or define in config file.")
+                print("No path for CMOR tables defined. Use --cmor-tables option or define in config file.", file=sys.stderr)
                 exit(1)
         else:
             cmor_tables = pub.cmor_path
         try:
             prepare_internal(map_json_data, cmor_tables)
         except Exception as ex:
-            print("Error with PrePARE: " + str(ex))
+            print("Error with PrePARE: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
 
     # Run autocurator and all python scripts
-    print("Running autocurator...")
+    if not SILENT:
+        print("Running autocurator...")
     os.system("bash " + autocurator + "/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
-    print("Done.\nMaking dataset...")
+    if not SILENT:
+        print("Done.\nMaking dataset...")
     try:
         if third_arg_mkd:
             out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file])
         else:
             out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica])
     except Exception as ex:
-        print("Error making dataset: " + str(ex))
+        print("Error making dataset: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
 
     if cmip6:
-        print("Done.\nRunning pid cite...")
+        if not SILENT:
+            print("Done.\nRunning pid cite...")
         try:
             new_json_data = pid.run([out_json_data, data_node])
         except Exception as ex:
-            print("Error running pid cite: " + str(ex))
+            print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
 
-    print("Done.\nRunning activity check...")
+    if not SILENT:
+        print("Done.\nRunning activity check...")
     try:
         act.run(new_json_data)
     except Exception as ex:
-        print("Error running activity check: " + str(ex))
+        print("Error running activity check: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
-    print("Done.\nUpdating...")
+
+    if not SILENT:
+        print("Done.\nUpdating...")
     try:
         up.run([new_json_data, index_node, cert])
     except Exception as ex:
-        print("Error updating: " + str(ex))
+        print("Error updating: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
 
-    print("Done.\nRunning index pub...")
+    if not SILENT:
+        print("Done.\nRunning index pub...")
     try:
         ip.run([new_json_data, index_node, cert])
     except Exception as ex:
-        print("Error running pub test: " + str(ex))
+        print("Error running pub test: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
 
-    print("Done. Cleaning up.")
+    if not SILENT:
+        print("Done. Cleaning up.")
     exit_cleanup(scan_file)
 
 def main():
     pub = args.get_args()
     fullmap = pub.map  # full mapfile path
     if fullmap is None:
-        print("Missing argument --map, use " + sys.argv[0] + " --help for usage.")
+        print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
         exit(1)
     if fullmap[-4:] != ".map":
         myfile = open(fullmap)
