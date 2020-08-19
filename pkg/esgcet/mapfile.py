@@ -1,7 +1,31 @@
 import sys, json
 from datetime import datetime
+import configparser as cfg
+from pathlib import Path
+
+config = cfg.ConfigParser()
+home = str(Path.home())
+config_file = home + "/.esg/esg.ini"
+config.read(config_file)
+try:
+    s = config['user']['silent']
+    if 'true' or 'yes' in s:
+        SILENT = True
+    else:
+        SILENT = False
+except:
+    SILENT = False
+try:
+    v = config['user']['verbose']
+    if 'true' or 'yes' in v:
+        VERBOSE = True
+    else:
+        VERBOSE = False
+except:
+    VERBOSE = False
 
 ARGS = 1
+executable = False
 
 def normalize_path(path, project):
     pparts = path.split('/')
@@ -63,12 +87,13 @@ def map_entry(map_json, project, fs_root):
 def run(args):
 
     if (len(args) < ARGS):
-        print("usage: esgmapconv <mapfile>")
+        print("usage: esgmapconv <mapfile>", file=sys.stderr)
         exit(0)
 
     with open(args[0]) as map_data:
         ret = parse_map(map_data)
-    print(json.dumps(ret))
+    if VERBOSE or executable:
+        print(json.dumps(ret))
     return ret
 
 def main():
@@ -76,4 +101,5 @@ def main():
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    executable = True
     main()

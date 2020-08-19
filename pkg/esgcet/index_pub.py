@@ -4,15 +4,33 @@ import esgcet.list2json, sys, json
 import configparser as cfg
 from pathlib import Path
 
+config = cfg.ConfigParser()
+home = str(Path.home())
+config_file = home + "/.esg/esg.ini"
+config.read(config_file)
+
+try:
+    s = config['user']['silent']
+    if 'true' or 'yes' in s:
+        SILENT = True
+    else:
+        SILENT = False
+except:
+    SILENT = False
+try:
+    v = config['user']['verbose']
+    if 'true' or 'yes' in v:
+        VERBOSE = True
+    else:
+        VERBOSE = False
+except:
+    VERBOSE = False
+
 def run(args):
 
     if len(args) < 1:
         print("usage: esgindexpub <JSON file with dataset output>")
         exit(1)
-    config = cfg.ConfigParser()
-    home = str(Path.home())
-    config_file = home + "/.esg/esg.ini"
-    config.read(config_file)
 
     if len(args) == 3:
         hostname = args[1]
@@ -21,13 +39,13 @@ def run(args):
         try:
             hostname = config['user']['index_node']
         except:
-            print("Index node not defined. Define in esg.ini.")
+            print("Index node not defined. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
         try:
             cert_fn = config['user']['cert']
         except:
-            print("Certificate file not found. Define in esg.ini.")
+            print("Certificate file not found. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
     if isinstance(args[0], str):
@@ -40,7 +58,8 @@ def run(args):
     for rec in d:
 
         new_xml = esgcet.list2json.gen_xml(rec)
-        print(new_xml)
+        if not SILENT:
+            print(new_xml)
         pubCli.publish(new_xml)
 
 

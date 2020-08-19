@@ -1,5 +1,27 @@
 import sys, json
+import configparser as cfg
+from pathlib import Path
 
+config = cfg.ConfigParser()
+home = str(Path.home())
+config_file = home + "/.esg/esg.ini"
+config.read(config_file)
+try:
+    s = config['user']['silent']
+    if 'true' or 'yes' in s:
+        SILENT = True
+    else:
+        SILENT = False
+except:
+    SILENT = False
+try:
+    v = config['user']['verbose']
+    if 'true' or 'yes' in v:
+        VERBOSE = True
+    else:
+        VERBOSE = False
+except:
+    VERBOSE = False
 
 CMIPCV="/export/ames4/git/CMIP6_CVs" # TODO: this will need to be changed
 SRC_ID_JSON="CMIP6_source_id.json"
@@ -30,7 +52,7 @@ def run(args):
     fc = FieldCheck(cv_path)
 
     if len(args) < (ARGS):
-        print("Missing required arguments")
+        print("Missing required arguments", file=sys.stderr)
         exit(0)
 
     try:
@@ -39,7 +61,7 @@ def run(args):
         else:
             input_rec = args
     except Exception as e:
-        print("Error opening input json format for {}: ".format(args[0],e))
+        print("Error opening input json format for {}: ".format(args[0],e), file=sys.stderr)
         exit(1)
 
     # Refactor for several cases: (1) standalone with main() (2) called by larger publisher module (3) query results from search
@@ -48,10 +70,11 @@ def run(args):
     act_id = input_rec[IDX]['activity_drs']
  
     if fc.check_fields(src_id, act_id):
-        print("INFO: passed source_id registration test for {}".format(src_id))
+        if not SILENT:
+            print("INFO: passed source_id registration test for {}".format(src_id))
     else:
-        print("ERROR: source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))
-        print("If you think this message has been received in error, please update your CV source repository")
+        print("ERROR: source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id), file=sys.stderr)
+        print("If you think this message has been received in error, please update your CV source repository", file=sys.stderr)
 
 def main():
     run(sys.argv[1:])

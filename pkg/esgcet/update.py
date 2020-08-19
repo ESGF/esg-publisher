@@ -5,6 +5,28 @@ import configparser as cfg
 from datetime import datetime
 from pathlib import Path
 
+config = cfg.ConfigParser()
+home = str(Path.home())
+config_file = home + "/.esg/esg.ini"
+config.read(config_file)
+
+try:
+    s = config['user']['silent']
+    if 'true' or 'yes' in s:
+        SILENT = True
+    else:
+        SILENT = False
+except:
+    SILENT = False
+try:
+    v = config['user']['verbose']
+    if 'true' or 'yes' in v:
+        VERBOSE = True
+    else:
+        VERBOSE = False
+except:
+    VERBOSE = False
+
 ARGS = 1
 
 SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
@@ -34,7 +56,7 @@ def gen_hide_xml(id, *args):
 def run(args):
 
     if len(args) < 1:
-        print("usage: esgupdate <JSON file with dataset output>")
+        print("usage: esgupdate <JSON file with dataset output>", file=sys.stderr)
         exit(1)
     try:
         if isinstance(args, list):
@@ -42,7 +64,7 @@ def run(args):
         else:
             input_rec = args[0]
     except Exception as e:
-        print("Error opening input json format {}".format(e))
+        print("Error opening input json format {}".format(e), file=sys.stderr)
         exit(1)
     config = cfg.ConfigParser()
     home = str(Path.home())
@@ -55,13 +77,13 @@ def run(args):
         try:
             index_node = config['user']['index_node']
         except:
-            print("Index node not defined. Define in esg.ini.")
+            print("Index node not defined. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
         try:
             cert_fn = config['user']['cert']
         except:
-            print("Certificate file not found. Define in esg.ini.")
+            print("Certificate file not found. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
     # The dataset record either first or last in the input file
@@ -70,7 +92,7 @@ def run(args):
         dset_idx = 0
     
     if not input_rec[dset_idx]['type'] == 'Dataset':
-        print("Could not find the Dataset record.  Malformed input, exiting!")
+        print("Could not find the Dataset record.  Malformed input, exiting!", file=sys.stderr)
         exit(1)
 
     mst = input_rec[dset_idx]['master_id']
@@ -79,12 +101,14 @@ def run(args):
     # query for 
     url = SEARCH_TEMPLATE.format(index_node, dnode, mst)
 
-    print(url)
+    if VERBOSE:
+        print(url)
     resp = requests.get(url)
 
-    print (resp.text)
+    if VERBOSE:
+        print(resp.text)
     if not resp.status_code == 200:
-        print('Error')
+        print('Error', file=sys.stderr)
         exit(1)
     
     res = json.loads(resp.text)
@@ -96,10 +120,12 @@ def run(args):
         pubCli = publisherClient(cert_fn, index_node)
         print (update_rec)
         pubCli.update(update_rec)
-        print('INFO: Found previous version, updating the record: {}'.format(dsetid))
+        if not SILENT:
+            print('INFO: Found previous version, updating the record: {}'.format(dsetid))
 
     else:
-        print('INFO: First dataset version for {}.'.format(mst))
+        if not SILENT:
+            print('INFO: First dataset version for {}.'.format(mst))
 
 
 def main():

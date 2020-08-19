@@ -7,7 +7,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 from pathlib import Path
-from os import mkdir
+import os
 
 
 
@@ -15,7 +15,8 @@ VERSION = '5.0.0a'
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
-mkdir(FULLPATH)
+os.mkdir(FULLPATH)
+os.system("bash install.sh")
 
 setup(
     name = 'esgcet',

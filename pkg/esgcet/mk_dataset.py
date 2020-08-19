@@ -12,6 +12,23 @@ home = str(Path.home())
 config_file = home + "/.esg/esg.ini"
 config.read(config_file)
 
+try:
+    s = config['user']['silent']
+    if 'true' or 'yes' in s:
+        SILENT = True
+    else:
+        SILENT = False
+except:
+    SILENT = False
+try:
+    v = config['user']['verbose']
+    if 'true' or 'yes' in v:
+        VERBOSE = True
+    else:
+        VERBOSE = False
+except:
+    VERBOSE = False
+
 EXCLUDES = [""]
 
 def eprint(*a):
@@ -114,7 +131,7 @@ def format_template(template, root, rel):
         try:
             data_node = config['user']['data_node']
         except:
-            print("Data node not defined. Define in esg.ini.")
+            print("Data node not defined. Define in esg.ini.", file=sys.stderr)
             exit(1)
         return template.format(data_node, root, rel)
 
@@ -146,10 +163,10 @@ def get_file(dataset_rec, mapdata, fn_trid):
     try:
         data_roots = json.loads(config['user']['data_roots'])
         if data_roots == 'none':
-            print("Data roots undefined. Define in esg.ini to create file metadata.")
+            print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
             exit(1)
     except:
-        print("Data roots undefined. Define in esg.ini to create file metadata.")
+        print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
         exit(1)
     if not proj_root in data_roots:
         eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
@@ -229,7 +246,7 @@ def update_metadata(record, scanobj):
                     tu_start_inc = time_obj["values"][0]
                     tu_end_inc = time_obj["values"][-1]
                 else:
-                    eprint("WARNING: not sure where time values are...")
+                    eprint("WARNING: Time values not located...")
                     proc_time = False
                 if proc_time:
                     try:
@@ -289,7 +306,7 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
     else:
         xattrobj = {}
 
-    if DEBUG:
+    if VERBOSE:
         print("rec = ")
         print(rec)
         print()
@@ -298,12 +315,12 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
 
     project = rec['project']
     mapdict = parse_map_arr(mapobj)
-    if DEBUG:
+    if VERBOSE:
         print('mapdict = ')
         print(mapdict)
         print()
     scandict = get_scanfile_dict(scanobj['file'])
-    if DEBUG:
+    if VERBOSE:
         print('scandict = ')
         print(scandict)
         print()
@@ -328,20 +345,20 @@ def run(args):
         elif 'false' in r or 'no' in r:
              replica = False
         else:
-             print("Invalid replica: must be type bool.")
+             eprint("Invalid replica: must be type bool.")
              exit(1)
     else:
         p = True
         try:
             data_node = config['user']['data_node']
         except:
-            print("Data node not defined. Define in esg.ini.")
+            eprint("Data node not defined. Define in esg.ini.")
             exit(1)
 
         try:
             index_node = config['user']['index_node']
         except:
-            print("Index node not defined. Define in esg.ini.")
+            eprint("Index node not defined. Define in esg.ini.")
             exit(1)
 
         try:
@@ -351,14 +368,14 @@ def run(args):
             else:
                 replica = False
         except:
-            print("Replica not defined. Define in esg.ini")
+            eprint("Replica not defined. Define in esg.ini")
             exit(1)
 
     if len(args) > 5:
         ret = get_records(args[0], args[1], data_node, index_node, replica, xattrfn=args[5])
     else:
         ret = get_records(args[0], args[1], data_node, index_node, replica)
-    if p:
+    if p or VERBOSE:
         print(json.dumps(ret))
     return ret
 

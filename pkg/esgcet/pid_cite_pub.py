@@ -1,8 +1,35 @@
 import sys, json
-from esgcet.settings import PID_CREDS, DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
+from esgcet.settings import DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 import traceback
 import configparser as cfg
 from pathlib import Path
+
+config = cfg.ConfigParser()
+home = str(Path.home())
+config_file = home + "/.esg/esg.ini"
+config.read(config_file)
+
+try:
+    s = config['user']['silent']
+    if 'true' or 'yes' in s:
+        SILENT = True
+    else:
+        SILENT = False
+except:
+    SILENT = False
+try:
+    v = config['user']['verbose']
+    if 'true' or 'yes' in v:
+        VERBOSE = True
+    else:
+        VERBOSE = False
+except:
+    VERBOSE = False
+try:
+    PID_CREDS = config['user']['pid_creds']
+except:
+    print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+
 
 def establish_pid_connection(pid_prefix, test_publication, data_node, publish=True):
 
@@ -17,7 +44,8 @@ def establish_pid_connection(pid_prefix, test_publication, data_node, publish=Tr
     try:
         import esgfpid
     except ImportError:
-        raise "PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install')."
+        print("PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install').", file=sys.stderr)
+        exit(1)
 
     pid_messaging_service_exchange_name = PID_EXCHANGE
     pid_messaging_service_credentials = PID_CREDS
@@ -47,7 +75,7 @@ def check_pid_connection(pid_prefix, pid_connector, data_node, send_message=Fals
     """
     pid_queue_return_msg = pid_connector.check_pid_queue_availability(send_message=send_message)
     if pid_queue_return_msg is not None:
-        raise Exception("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
+        print("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.", file=sys.stderr)
 
     pid_connector = establish_pid_connection(pid_prefix, TEST_PUB, data_node, publish=True)
 
@@ -75,9 +103,10 @@ def pid_flow_code(dataset_recs, data_node):
     dataset_pid = None
     if pid_connector:
         dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
-        print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, dataset_pid), file=sys.stderr)
+        if not SILENT:
+            print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, dataset_pid), file=sys.stderr)
     else:
-        print('warning no connection')
+        print('Warning: no connection', file=sys.stderr)
     # if project uses citation, build citation url
 
 
@@ -187,7 +216,7 @@ def run(args):
         exit(-1)
 
     pid_connector.finish_messaging_thread()
-    if p:
+    if p or VERBOSE:
         print(json.dumps(res))
     return res
 
