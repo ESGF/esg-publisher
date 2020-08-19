@@ -8,6 +8,19 @@ Install esgcet by running ::
     python3 setup.py install
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
+Setup will also make autocurator in ``$HOME/autocurator`` and put the CMOR tables necessary for PrePARE into ``$HOME/cmor/Tables`` by cloning and both repositories. If these directories already exist,
+that part will fail but the package will still install, just be sure to edit the paths for CMOR and autocurator in the config file as needed.
+
+Conda & Required Packages
+-------------------------
+
+We recommend creating a conda env before installing ``esgcet`` ::
+
+    conda create -n esgf-pub-v5 -c conda-forge pip requests libnetcdf cmor
+
+You will also need to install ``esgfpid`` using pip::
+
+    pip install esgfpid
 
 Config
 ------
@@ -18,8 +31,8 @@ The default config file will look like this::
     note = IMPORTANT: please configure below in the [user] section, that is what the publisher will use to read configured settings. The below are marked as necessary or optional variables.
     data_node = * necessary
     index_node = * necessary
-    cmor_path = * necessary for all CMIP6 recs
-    autoc_path = * necessary
+    cmor_path = ~/cmor/Tables * optional, default is where it is installed in setup
+    autoc_path = ~/autocurator * optional, default is where it is installed in setup
     data_roots = * necessary, dictionary format json loadable
     cert = ./cert.pem * optional, default assumes cert in current directory, override to change
     test = false * optional, default assumes test is off, override to change
@@ -27,13 +40,15 @@ The default config file will look like this::
     set_replica = false * optional, default assumes replica publication off
     globus_uuid = none * optional
     data_transfer_node = none * optional
-    pid_password = * necessary
+    pid_creds = * necessary
+    silent = false * optional
+    verbose = false * optional
 
     [user]
     data_node =
     index_node =
-    cmor_path =
-    autoc_path =
+    cmor_path = ~/cmor/Tables
+    autoc_path = ~/autocurator
     data_roots =
     cert = ./cert.pem
     test = false
@@ -41,6 +56,9 @@ The default config file will look like this::
     set_replica = false
     globus_uuid = none
     data_transfer_node = none
+    pid_creds =
+    silent = false
+    verbose = false
 
 Fill out the necessary variables, and either leave or override the optional configurations.
 
