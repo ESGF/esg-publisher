@@ -115,7 +115,14 @@ def run(fullmap):
         replica = False
     else:
         try:
-            replica = config['user'].getboolean(['set_replica'])
+            r = config['user']['set_replica']
+            if 'yes' or 'true' in r:
+                replica = True
+            elif 'no' or 'false' in r:
+                replica = False
+            else:
+                print("Config file error: set_replica must be true, false, yes, or no.", file=sys.stderr)
+                exit(1)
         except:
             print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.", file=sys.stderr)
             exit(1)
@@ -162,34 +169,34 @@ def run(fullmap):
 
     if not SILENT:
         print("Done.\nMaking dataset...")
-    try:
-        if third_arg_mkd:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file])
-        else:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica])
-    except Exception as ex:
+    # try:
+      #  if third_arg_mkd:
+       #     out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file])
+        #else:
+    out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica])
+    """except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
-        exit(1)
+        exit(1)"""
 
     if cmip6:
         if not SILENT:
             print("Done.\nRunning pid cite...")
-        try:
-            new_json_data = pid.run([out_json_data, data_node])
-        except Exception as ex:
+        # try:
+        new_json_data = pid.run([out_json_data, data_node])
+        """except Exception as ex:
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
-            exit(1)
+            exit(1)"""
 
     if not SILENT:
         print("Done.\nRunning activity check...")
-    try:
-        act.run(new_json_data)
-    except Exception as ex:
+    # try:
+    act.run(new_json_data)
+    """except Exception as ex:
         print("Error running activity check: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
-        exit(1)
+        exit(1)"""
 
     if not SILENT:
         print("Done.\nUpdating...")

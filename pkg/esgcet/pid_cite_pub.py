@@ -26,7 +26,7 @@ try:
 except:
     VERBOSE = False
 try:
-    PID_CREDS = config['user']['pid_creds']
+    PID_CREDS = json.loads(config['user']['pid_creds'])
 except:
     print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
 

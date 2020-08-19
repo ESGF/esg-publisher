@@ -333,40 +333,35 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
 
 def run(args):
     if (len(args) < 2):
-        print("usage: esgmkpubrec <JSON file with map data> <scan file>")
+        print("usage: esgmkpubrec <JSON file with map data> <scan file>", file=sys.stderr)
         exit(0)
     p = False
     if len(args) >= 5 and args[3] != '>':
         data_node = args[2]
         index_node = args[3]
-        r = args[4]
-        if 'true' in r or 'yes' in r:
-             replica = True
-        elif 'false' in r or 'no' in r:
-             replica = False
-        else:
-             eprint("Invalid replica: must be type bool.")
-             exit(1)
+        replica = args[4]
     else:
         p = True
         try:
             data_node = config['user']['data_node']
         except:
-            eprint("Data node not defined. Define in esg.ini.")
+            eprint("Data node not defined. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
         try:
             index_node = config['user']['index_node']
         except:
-            eprint("Index node not defined. Define in esg.ini.")
+            eprint("Index node not defined. Define in esg.ini.", file=sys.stderr)
             exit(1)
 
         try:
             r = config['user']['set_replica']
             if 'true' in r or 'yes' in r:
                 replica = True
-            else:
+            elif 'false' in r or 'no' in r:
                 replica = False
+            else:
+                print("Config file error: set_replica must be true, false, yes, or no.", file=sys.stderr)
         except:
             eprint("Replica not defined. Define in esg.ini")
             exit(1)

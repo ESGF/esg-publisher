@@ -1,6 +1,10 @@
 DEBUG = False
 
+INDEX_NODE = None
+DATA_NODE = None
 
+CMOR_PATH = None
+AUTOC_PATH = None
 # these settings are presently managed within esg.ini and esg.<project>.ini
 
 # Project-specific settings

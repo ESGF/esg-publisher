@@ -35,6 +35,7 @@ def run(args):
     if len(args) == 3:
         hostname = args[1]
         cert_fn = args[2]
+        d = args[0]
     else:
         try:
             hostname = config['user']['index_node']
@@ -47,11 +48,7 @@ def run(args):
         except:
             print("Certificate file not found. Define in esg.ini.", file=sys.stderr)
             exit(1)
-
-    if isinstance(args[0], str):
         d = json.load(open(args[0]))
-    else:
-        d = args[0]
 
     pubCli = publisherClient(cert_fn, hostname)
 

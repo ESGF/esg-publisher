@@ -59,7 +59,7 @@ def run(args):
         print("usage: esgupdate <JSON file with dataset output>", file=sys.stderr)
         exit(1)
     try:
-        if isinstance(args, list):
+        if len(args) == 1:
             input_rec = json.load(open(args[0]))
         else:
             input_rec = args[0]

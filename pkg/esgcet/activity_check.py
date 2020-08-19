@@ -55,14 +55,11 @@ def run(args):
         print("Missing required arguments", file=sys.stderr)
         exit(0)
 
-    try:
-        if isinstance(args, list):
-            input_rec = json.load(open(args[0]))
-        else:
-            input_rec = args
-    except Exception as e:
+    # try:
+    input_rec = args
+    """except Exception as e:
         print("Error opening input json format for {}: ".format(args[0],e), file=sys.stderr)
-        exit(1)
+        exit(1)"""
 
     # Refactor for several cases: (1) standalone with main() (2) called by larger publisher module (3) query results from search
 
