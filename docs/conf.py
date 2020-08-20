@@ -13,6 +13,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import sphinx_glpi_theme
 
 # -- Project information -----------------------------------------------------
 
@@ -29,7 +30,7 @@ release = '5.0.0a'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ 
+extensions = [ 'sphinx_glpi_theme'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -49,7 +50,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'sphinx_glpi_theme'
-html_theme_path = ["_themes", ]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
