@@ -11,7 +11,7 @@ config.read(config_file)
 
 try:
     s = config['user']['silent']
-    if 'true' or 'yes' in s:
+    if 'true' in s or 'yes' in s:
         SILENT = True
     else:
         SILENT = False
@@ -19,7 +19,7 @@ except:
     SILENT = False
 try:
     v = config['user']['verbose']
-    if 'true' or 'yes' in v:
+    if 'true' in v or 'yes' in v:
         VERBOSE = True
     else:
         VERBOSE = False

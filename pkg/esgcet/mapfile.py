@@ -9,7 +9,7 @@ config_file = home + "/.esg/esg.ini"
 config.read(config_file)
 try:
     s = config['user']['silent']
-    if 'true' or 'yes' in s:
+    if 'true' in s or 'yes' in s:
         SILENT = True
     else:
         SILENT = False
@@ -17,16 +17,14 @@ except:
     SILENT = False
 try:
     v = config['user']['verbose']
-    if 'true' or 'yes' in v:
+    if 'true' in v or 'yes' in v:
         VERBOSE = True
     else:
         VERBOSE = False
 except:
     VERBOSE = False
-print("VERBOSE: ")
-print(VERBOSE)
+
 ARGS = 1
-executable = False
 
 def normalize_path(path, project):
     pparts = path.split('/')

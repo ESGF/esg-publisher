@@ -12,9 +12,9 @@ home = str(Path.home())
 config_file = home + "/.esg/esg.ini"
 config.read(config_file)
 
-"""try:
+try:
     s = config['user']['silent']
-    if 'true' or 'yes' in s:
+    if 'true' in s or 'yes' in s:
         SILENT = True
     else:
         SILENT = False
@@ -22,15 +22,13 @@ except:
     SILENT = False
 try:
     v = config['user']['verbose']
-    if 'true' or 'yes' in v:
+    if 'true' in v or 'yes' in v:
         VERBOSE = True
     else:
         VERBOSE = False
 except:
-    VERBOSE = False"""
+    VERBOSE = False
 
-SILENT = False
-VERBOSE = False
 
 EXCLUDES = [""]
 
@@ -340,6 +338,7 @@ def run(args):
         exit(0)
     p = False
     if args[-1] == 'no':
+        print("all good")
         data_node = args[2]
         index_node = args[3]
         replica = args[4]
@@ -369,7 +368,7 @@ def run(args):
             eprint("Replica not defined. Define in esg.ini")
             exit(1)
 
-    if len(args) > 5:
+    if len(args) > 5 and args[-1] != 'no':
         ret = get_records(args[0], args[1], data_node, index_node, replica, xattrfn=args[5])
     else:
         ret = get_records(args[0], args[1], data_node, index_node, replica)

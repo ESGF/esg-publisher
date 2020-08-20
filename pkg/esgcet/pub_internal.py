@@ -64,15 +64,13 @@ def run(fullmap):
 
     try:
         s = config['user']['silent']
-        if 'true' or 'yes' in s:
+        if 'true' in s or 'yes' in s:
             silent = True
         else:
             silent = False
     except:
         silent = False
-    print("silent: ")
-    print(silent)
-    silent = False
+    
     if pub.cert == "./cert.pem":
         try:
             cert = config['user']['cert']
@@ -118,9 +116,9 @@ def run(fullmap):
     else:
         try:
             r = config['user']['set_replica']
-            if 'yes' or 'true' in r:
+            if 'yes' in r or 'true' in r:
                 replica = True
-            elif 'no' or 'false' in r:
+            elif 'no' in r  or 'false' in r:
                 replica = False
             else:
                 print("Config file error: set_replica must be true, false, yes, or no.", file=sys.stderr)
