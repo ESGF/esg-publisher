@@ -12,7 +12,7 @@ home = str(Path.home())
 config_file = home + "/.esg/esg.ini"
 config.read(config_file)
 
-try:
+"""try:
     s = config['user']['silent']
     if 'true' or 'yes' in s:
         SILENT = True
@@ -27,7 +27,10 @@ try:
     else:
         VERBOSE = False
 except:
-    VERBOSE = False
+    VERBOSE = False"""
+
+SILENT = False
+VERBOSE = False
 
 EXCLUDES = [""]
 
@@ -336,7 +339,7 @@ def run(args):
         print("usage: esgmkpubrec <JSON file with map data> <scan file>", file=sys.stderr)
         exit(0)
     p = False
-    if len(args) >= 5 and args[3] != '>':
+    if args[-1] == 'no':
         data_node = args[2]
         index_node = args[3]
         replica = args[4]
@@ -345,13 +348,13 @@ def run(args):
         try:
             data_node = config['user']['data_node']
         except:
-            eprint("Data node not defined. Define in esg.ini.", file=sys.stderr)
+            eprint("Data node not defined. Define in esg.ini.")
             exit(1)
 
         try:
             index_node = config['user']['index_node']
         except:
-            eprint("Index node not defined. Define in esg.ini.", file=sys.stderr)
+            eprint("Index node not defined. Define in esg.ini.")
             exit(1)
 
         try:

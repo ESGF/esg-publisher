@@ -23,7 +23,8 @@ try:
         VERBOSE = False
 except:
     VERBOSE = False
-
+print("VERBOSE: ")
+print(VERBOSE)
 ARGS = 1
 executable = False
 
@@ -92,7 +93,11 @@ def run(args):
 
     with open(args[0]) as map_data:
         ret = parse_map(map_data)
-    if VERBOSE or executable:
+    p = True
+    if len(args) > ARGS:
+        if args[1] == 'no':
+            p = False
+    if VERBOSE or p:
         print(json.dumps(ret))
     return ret
 
@@ -101,5 +106,4 @@ def main():
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    executable = True
     main()

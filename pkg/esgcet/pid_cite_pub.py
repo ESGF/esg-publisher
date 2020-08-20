@@ -9,7 +9,7 @@ home = str(Path.home())
 config_file = home + "/.esg/esg.ini"
 config.read(config_file)
 
-try:
+"""try:
     s = config['user']['silent']
     if 'true' or 'yes' in s:
         SILENT = True
@@ -24,7 +24,9 @@ try:
     else:
         VERBOSE = False
 except:
-    VERBOSE = False
+    VERBOSE = False"""
+SILENT = False
+VERBOSE = False
 try:
     PID_CREDS = json.loads(config['user']['pid_creds'])
 except:
@@ -186,7 +188,7 @@ def run(args):
     config_file = home + "/.esg/esg.ini"
     config.read(config_file)
     p = False
-    if len(args) == 2:
+    if args[-1] == 'no':
         data_node = args[1]
     else:
         p = True

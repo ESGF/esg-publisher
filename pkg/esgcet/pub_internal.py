@@ -65,12 +65,14 @@ def run(fullmap):
     try:
         s = config['user']['silent']
         if 'true' or 'yes' in s:
-            SILENT = True
+            silent = True
         else:
-            SILENT = False
+            silent = False
     except:
-        SILENT = False
-
+        silent = False
+    print("silent: ")
+    print(silent)
+    silent = False
     if pub.cert == "./cert.pem":
         try:
             cert = config['user']['cert']
@@ -135,15 +137,15 @@ def run(fullmap):
 
     os.system("cert_path=" + cert)
 
-    if not SILENT:
+    if not silent:
         print("Converting mapfile...")
     try:
-        map_json_data = mp.run([fullmap, proj])
+        map_json_data = mp.run([fullmap, 'no'])
     except Exception as ex:
         print("Error with converting mapfile: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
-    if not SILENT:
+    if not silent:
         print("Done.")
 
     if cmip6:
@@ -163,42 +165,42 @@ def run(fullmap):
             exit(1)
 
     # Run autocurator and all python scripts
-    if not SILENT:
+    if not silent:
         print("Running autocurator...")
     os.system("bash " + autocurator + "/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
 
-    if not SILENT:
+    if not silent:
         print("Done.\nMaking dataset...")
-    # try:
-      #  if third_arg_mkd:
-       #     out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file])
-        #else:
-    out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica])
-    """except Exception as ex:
+    try:
+        if third_arg_mkd:
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file, 'no'])
+        else:
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, 'no'])
+    except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
-        exit(1)"""
+        exit(1)
 
     if cmip6:
-        if not SILENT:
+        if not silent:
             print("Done.\nRunning pid cite...")
-        # try:
-        new_json_data = pid.run([out_json_data, data_node])
-        """except Exception as ex:
+        try:
+            new_json_data = pid.run([out_json_data, data_node, 'no'])
+        except Exception as ex:
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
-            exit(1)"""
+            exit(1)
 
-    if not SILENT:
+    if not silent:
         print("Done.\nRunning activity check...")
-    # try:
-    act.run(new_json_data)
-    """except Exception as ex:
+    try:
+        act.run(new_json_data)
+    except Exception as ex:
         print("Error running activity check: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
-        exit(1)"""
+        exit(1)
 
-    if not SILENT:
+    if not silent:
         print("Done.\nUpdating...")
     try:
         up.run([new_json_data, index_node, cert])
@@ -207,7 +209,7 @@ def run(fullmap):
         exit_cleanup(scan_file)
         exit(1)
 
-    if not SILENT:
+    if not silent:
         print("Done.\nRunning index pub...")
     try:
         ip.run([new_json_data, index_node, cert])
@@ -216,7 +218,7 @@ def run(fullmap):
         exit_cleanup(scan_file)
         exit(1)
 
-    if not SILENT:
+    if not silent:
         print("Done. Cleaning up.")
     exit_cleanup(scan_file)
 
