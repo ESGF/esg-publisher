@@ -56,7 +56,8 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
         if f in scandata:
             ga_val = scandata[f]
             if not parts[i] == ga_val:
-                eprint("WARNING: {} does not agree!".format(f))
+                if not SILENT:
+                    eprint("WARNING: {} does not agree!".format(f))
         d[f] = parts[i]
 
     # handle Global attributes if defined for the project
@@ -78,7 +79,8 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
                 facetval = scandata[gakey]
                 d[facetkey] = facetval
             else:
-                eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+                if not SILENT:
+                    eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
         for facetkey in CONST_ATTR[projkey]:
             d[facetkey] = CONST_ATTR[projkey][facetkey]
 
