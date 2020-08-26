@@ -1,11 +1,12 @@
 #!/usr/bin/env python
     
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+# try:
+#     from setuptools import setup, find_packages
+# except ImportError:
+#     from ez_setup import use_setuptools
+#     use_setuptools()
+#     from setuptools import setup, find_packages
+from setuptools import setup, find_packages
 from pathlib import Path
 import os
 
@@ -15,7 +16,9 @@ VERSION = '5.0.0a'
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
-os.mkdir(FULLPATH)
+if not os.path.exists(FULLPATH):
+    os.makedirs(FULLPATH)
+
 os.system("bash install.sh")
 
 setup(
@@ -25,13 +28,13 @@ setup(
     author = 'Elysia Witham, Sasha Ames',
     author_email = 'witham3@llnl.gov',
     url = 'http://esgf.llnl.gov',
-    install_requires = [
-        "requests>=2.22.0",
-         "esgfpid>=0.8",
-    ],
-    setup_requires = [
-        "requests>=2.22.0",
-    ],
+#    install_requires = [
+#        "requests",
+#         "esgfpid",
+#    ],
+#    setup_requires = [
+#        "requests",
+#    ],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
     # test_suite = 'nose.collector',
