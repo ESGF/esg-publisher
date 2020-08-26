@@ -26,13 +26,13 @@ setup(
     author = 'Elysia Witham, Sasha Ames',
     author_email = 'witham3@llnl.gov',
     url = 'http://esgf.llnl.gov',
-    install_requires = [
-        "requests",
-         "esgfpid",
-    ],
-    setup_requires = [
-        "requests",
-    ],
+#    install_requires = [
+#        "requests",
+#         "esgfpid",
+#    ],
+#    setup_requires = [
+#        "requests",
+#    ],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
     # test_suite = 'nose.collector',
