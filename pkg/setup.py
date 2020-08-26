@@ -26,11 +26,11 @@ setup(
     author_email = 'witham3@llnl.gov',
     url = 'http://esgf.llnl.gov',
     install_requires = [
-        "requests>=2.22.0",
-         "esgfpid>=0.8",
+        "requests",
+         "esgfpid",
     ],
     setup_requires = [
-        "requests>=2.22.0",
+        "requests",
     ],
     packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
