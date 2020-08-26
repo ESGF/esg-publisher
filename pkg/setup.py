@@ -16,7 +16,9 @@ VERSION = '5.0.0a'
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
-os.mkdir(FULLPATH)
+if not os.path.exists(FULLPATH):
+    os.makedirs(FULLPATH)
+
 os.system("bash install.sh")
 
 setup(
