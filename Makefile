@@ -1,3 +1,5 @@
+.PHONY: setup-build create-feedstock rerender-feedstock build upload
+
 branch ?= gen-five-pkg
 version=`cd ~/esg-publisher \ git describe --tags | tr -d '\n'`
 
