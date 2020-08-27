@@ -24,5 +24,5 @@ build: setup-build create-feedstock rerender-feedstock
 	conda build -m .ci_support/linux_64_.yaml recipe/
 
 upload:
-	anaconda -t es-bf9033f7-75b1-4130-928c-cf32960b14b5 upload /export/witham3/anaconda2/conda-bld/noarch/esgcet-5.0.0a-py_0.tar.bz2 -u esgf-forge
+	anaconda -t $(TOKEN) upload /export/witham3/anaconda2/conda-bld/noarch/esgcet-5.0.0a-py_0.tar.bz2 -u esgf-forge
 
