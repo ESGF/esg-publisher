@@ -1,7 +1,7 @@
 .PHONY: setup-build create-feedstock rerender-feedstock build upload
 branch ?= gen-five-pkg
 PWD=$(shell pwd)
-version=$(shell git describe --tags | tr -d '\n')
+version=$(shell git describe --tags | cut -c 1-7 )
 conda ?= $(or $(CONDA_EXE),$(shell find /opt/*conda*/bin $(HOME)/*conda*/bin -type f -iname conda))
 conda_bin := $(patsubst %/conda,%,$(conda))
 conda_act := $(conda_bin)/activate
