@@ -1,33 +1,41 @@
 .PHONY: setup-build create-feedstock rerender-feedstock build upload
-
 branch ?= gen-five-pkg
 PWD=$(shell pwd)
-version=`cd $(PWD)/esg-publisher \ git describe --tags | tr -d '\n'`
+# version=$(shell git describe --tags  --abbrev=6 | tr -d '\n')
+version = v5.0.0a
 conda ?= $(or $(CONDA_EXE),$(shell find /opt/*conda*/bin $(HOME)/*conda*/bin -type f -iname conda))
+conda_bin := $(patsubst %/conda,%,$(conda))
+conda_act := $(conda_bin)/activate
+conda_act_cmd := source $(conda_act)
+sed_v = s/VERSION/$(version)/
+sed_b = s/BRANCH/$(branch)/g
+
 
 setup-build:
-	$(conda) create -n build-pub -c conda-forge conda-build conda-smithy anaconda
+	echo "...setup-build..."
+	$(conda) create -n build-pub -c conda-forge conda-build conda-smithy anaconda-client
 
 create-feedstock:
-	$(conda) activate build-pub
-	if [ ! -d "$(WORKDIR)/esg-publisher-feedstock" ]; then mkdir $(WORKDIR)/esg-publisher-feedstock; fi;
-	cd $(WORKDIR)/esg-publisher-feedstock
-	$(conda) smithy ci-skeleton $(WORKDIR)/esg-publisher-feedstock
-	if [! -d "$(WORKDIR)/esg-publisher-feedstock/recipe" ]; then mkdir recipe; fi;
-	cp $(PWD)/esg-publisher/meta.yaml recipe/meta.yaml
-	cd recipe
-	sed 's/@VERSION@/$(version)' meta.yaml
-	sed 's/@BRANCH@/$(branch)' meta.yaml
+	echo "xxx version: $(version)"
+	echo "xxx branch: $(branch)"
+	mkdir -p $(WORKDIR)/esg-publisher-feedstock;
+	$(conda_act_cmd) build-pub && \
+	cd $(WORKDIR)/esg-publisher-feedstock && $(conda) smithy ci-skeleton $(WORKDIR)/esg-publisher-feedstock;
+	mkdir -p $(WORKDIR)/esg-publisher-feedstock/recipe 
+	cp $(PWD)/recipe/meta.yaml $(WORKDIR)/esg-publisher-feedstock/recipe/meta.yaml
+	sed -i "$(sed_v)" $(WORKDIR)/esg-publisher-feedstock/recipe/meta.yaml
+	sed -i "$(sed_b)" $(WORKDIR)/esg-publisher-feedstock/recipe/meta.yaml
 
 rerender-feedstock:
-	$(conda) activate build-pub
-	cd $(WORKDIR)/esg-publisher-feedstock
-	$(conda) smithy rerender
+	cd $(WORKDIR)/esg-publisher-feedstock && \
+	$(conda_act_cmd) build-pub && \
+	$(conda) smithy rerender;
 
 build: setup-build create-feedstock rerender-feedstock
-	cd $(WORKDIR)/esg-publisher-feedstock
+	cd $(WORKDIR)/esg-publisher-feedstock && \
+	$(conda_act_cmd) build-pub && \
 	$(conda) build -m .ci_support/linux_64_.yaml recipe/
 
 upload:
+	$(conda_act_cmd) build-pub && \
 	anaconda -t $(TOKEN) upload /export/witham3/anaconda2/conda-bld/noarch/esgcet-5.0.0a-py_0.tar.bz2 -u esgf-forge
-

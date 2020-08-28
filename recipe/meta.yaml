@@ -1,9 +1,9 @@
 package:
   name: esgcet
-  version: @VERSION@ 
+  version: VERSION
 
 source:
-  git_rev: add_conda_build
+  git_rev: BRANCH
   git_url: https://github.com/lisi-w/esg-publisher.git
 
 build:
