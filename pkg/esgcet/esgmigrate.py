@@ -97,7 +97,10 @@ def run(args):
     new_config = {"data_node": data_node, "index_node": index_node, "data_roots": json.dumps(dr_dict), "cert": CERT_FN,
                   "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds)}
     for key, value in new_config:
-        config['user'][key] = value
+        try:
+            test = config['user'][key]
+        except:
+            config['user'][key] = value
     with open(config_file, "w") as cf:
         config.write(cf)
 
