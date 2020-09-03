@@ -3,8 +3,8 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 import os
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'esgcet'))
-import esgmigrate
+import sys
+import esgcet.esgmigrate as esgmigrate
 
 
 
@@ -47,7 +47,7 @@ if config_exists:
                                           'esgindexpub=esgcet.index_pub:main',
                                           'esgpublish=esgcet.pub_internal:main',
                                           'esgupdate=esgcet.update:main',
-                                          'esgmapconv=esgcet.mapfile:main'
+                                          'esgmapconv=esgcet.mapfile:main',
                                           'esgmigrate=esgcet.esgmigrate:main']}
     )
 else:

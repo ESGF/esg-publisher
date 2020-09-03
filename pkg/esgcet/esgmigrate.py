@@ -2,10 +2,11 @@ from ESGConfigParser import SectionParser
 import configparser as cfg
 import os, sys
 from urllib.parse import urlparse
-import settings
+import esgcet.settings
 import shutil
 from datetime import date
 from pathlib import Path
+import json
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
@@ -108,7 +109,8 @@ def run(args):
 def main():
 
     args = {}
-    args['fn'] = sys.argv[1]
+    if len(sys.argv) > 1:
+        args['fn'] = sys.argv[1]
     run(args)
 
 
