@@ -220,21 +220,24 @@ def run(fullmap):
         print("Done. Cleaning up.")
     exit_cleanup(scan_file)
 
+
 def main():
     pub = args.get_args()
-    fullmap = pub.map  # full mapfile path
-    if fullmap is None:
+    maps = pub.map  # full mapfile path
+    if maps is None:
         print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
         exit(1)
-    if fullmap[-4:] != ".map":
-        myfile = open(fullmap)
+    if maps[0][-4:] != ".map":
+        myfile = open(maps[0])
         for line in myfile:
             length = len(line)
             run(line[0:length - 2])
         myfile.close()
         # iterate through file in directory calling main
     else:
-        run(fullmap)
+        for m in maps:
+            run(m)
+
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
