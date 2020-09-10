@@ -30,11 +30,11 @@ CONST_ATTR =  { 'CMIP6' : { 'model_cohort' : 'Registered' }}
 GA_MAPPED = { 'CMIP6' : { 'experiment' : 'experiment_title'} }
 
 # These below are server-specific settings
-DATA_NODE = "greyworm1-rh7.llnl.gov"
-INDEX_NODE = "esgf-fedtest.llnl.gov"
+""" DATA_NODE = "greyworm1-rh7.llnl.gov"
+INDEX_NODE = "esgf-fedtest.llnl.gov" """
 
-""" DATA_NODE = "esgf-data1.llnl.gov"
-INDEX_NODE = "esgf-node.llnl.gov" """
+DATA_NODE = "esgf-data1.llnl.gov"
+INDEX_NODE = "esgf-node.llnl.gov"
 
 CMOR_PATH = "/export/witham3/cmor"
 AUTOC_PATH = "/export/witham3/autocurator"
@@ -46,7 +46,7 @@ DATA_ROOTS = {'/esg/data' : 'esgf_data',
 
 
 # a certificate file for the index, assumes in the CWD
-CERT_FN = "./cert.pem" # "/p/user_pub/publish-queue/certs/certificate-file"
+CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 
 # for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX
@@ -60,7 +60,7 @@ URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPSer
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 
 
 PID_CREDS = [ {'url': 'aims4.llnl.gov', # 'handle-esgf-trusted.dkrz.de',
-             'port': 7070,  # 5671,
+             'port': 7070,
              'vhost': 'esgf-pid',
              'user': 'esgf-publisher',
              'password': "_EarTH!S9uAr3.PhoB0S!",
@@ -75,8 +75,8 @@ CITATION_URLS = { 'CMIP6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
 
-PID_URL = 'http://aims4.llnl.gov/{}|PID|pid'  # PIDs include hdl:
-TEST_PUB = True
+PID_URL = 'http://hd1.handle.net/{}|PID|pid'  # PIDs include hdl:
+TEST_PUB = False
 
 PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = True

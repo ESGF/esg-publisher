@@ -62,12 +62,12 @@ def main(fullmap):
     os.system("cert_path=" + cert)
 
     print("Converting mapfile...")
-    try:
-        map_json_data = mp.main([fullmap, proj])
-    except Exception as ex:
+    # try:
+    map_json_data = mp.main([fullmap, proj])
+    """ except Exception as ex:
         print("Error with converting mapfile: " + str(ex))
         exit_cleanup(scan_file)
-        exit(1)
+        exit(1) """
     print("Done.")
 
     # Run autocurator and all python scripts
