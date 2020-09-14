@@ -224,8 +224,14 @@ def run(args):
     return res
 
 
+def mainrun(args):
+    res = run(args)
+    if type(res) is list:
+        rewrite_json(args[0], res) 
+    elif not SILENT:
+        print("Something went wrong, PID/cite information were not added")
 def main():
-    run(sys.argv[1:])
+    mainrun(sys.argv[1:])
 
 
 if __name__ == '__main__':
