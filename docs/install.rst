@@ -1,11 +1,23 @@
 Installation
 ============
 
-Install esgcet by running ::
+Before installing esgcet, please clone and install autocurator from its git repository::
+
+    git clone http://github.com/sashakames/autocurator.git
+    cd autocurator
+    make
+
+You can install esgcet one of two ways: conda, or git.
+To install esgcet by cloning our github repository, run::
 
     git clone http://github.com/lisi-w/esg-publisher.git -b gen-five-pkg
+    cd esg-publisher
     cd pkg
     python3 setup.py install
+
+To install esgcet using conda, run::
+
+    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet pip libnetcdf cmor
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
 Setup will also make autocurator in ``$HOME/autocurator`` and put the CMOR tables necessary for PrePARE into ``$HOME/cmor/Tables`` by cloning and both repositories. If these directories already exist,
@@ -17,6 +29,9 @@ Conda & Required Packages
 We recommend creating a conda env before installing ``esgcet`` ::
 
     conda create -n esgf-pub-v5 -c conda-forge pip requests libnetcdf cmor
+
+NOTE: if you installed esgcet using conda above, cmor should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
+Also, if you created the env above to install esgcet, this step is not necessary.
 
 You will also need to install ``esgfpid`` using pip::
 

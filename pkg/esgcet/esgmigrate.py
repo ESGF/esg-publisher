@@ -1,8 +1,12 @@
 from ESGConfigParser import SectionParser
-
-import os, sys, json
+import configparser as cfg
+import os, sys
 from urllib.parse import urlparse
-import settings
+import esgcet.settings
+import shutil
+from datetime import date
+from pathlib import Path
+import json
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 CONFIG_FN_DEST = "~/.esg/esg.ini"
@@ -95,25 +99,30 @@ def run(args):
     print(DATA_TRANSFER_NODE)
     print(GLOBUS_UUID)
 
-    new_config = ["[user]", "data_node = " + data_node, "index_node = " + index_node, "cmor_path = ~/cmor/Tables",
-                  "autoc_path = ~/autocurator", "data_roots = " + json.dumps(dr_dict) + "cert = " + CERT_FN,
-                  "test = false", "project = none", "set_replica = false", "globus_uuid = " + GLOBUS_UUID,
-                  "data_transfer_node = " + DATA_TRANSFER_NODE, "pid_creds = " + json.dumps(pid_creds),
-                  "silent = false", "verbose = false"]
-
-
-    cf = open(CONFIG_FN_DEST, 'r+')
-
-    for line in cf:
-        if 'user' in line:
-            for v in new_config:
-                f.write(v)
+    d = date.today()
+    t = d.strftime("%y%m%d")
+    home = str(Path.home())
+    config_file = home + "/.esg/esg.ini"
+    backup = home + "/.esg/" + t + "esg.ini"
+    shutil.copyfile(config_file, backup)
+    config = cfg.ConfigParser()
+    config.read(config_file)
+    new_config = {"data_node": data_node, "index_node": index_node, "data_roots": json.dumps(dr_dict), "cert": CERT_FN,
+                  "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds)}
+    for key, value in new_config.items():
+        try:
+            test = config['user'][key]
+        except:
+            config['user'][key] = value
+    with open(config_file, "w") as cf:
+        config.write(cf)
 
 
 def main():
 
     args = {}
-    args['fn'] = sys.argv[1]
+    if len(sys.argv) > 1:
+        args['fn'] = sys.argv[1]
     run(args)
 
 
