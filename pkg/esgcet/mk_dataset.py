@@ -28,7 +28,6 @@ try:
         VERBOSE = False
 except:
     VERBOSE = False
-7
 
 EXCLUDES = [""]
 
