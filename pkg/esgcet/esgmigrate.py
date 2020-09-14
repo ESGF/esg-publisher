@@ -1,19 +1,23 @@
 from ESGConfigParser import SectionParser
 
-import os, sys
+import os, sys, json
 from urllib.parse import urlparse
 import settings
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
+CONFIG_FN_DEST = "~/.esg/esg.ini"
 
 
 def run(args):
 
     ini_path = DEFAULT_ESGINI
 
-    if ('fn' in args):
+    if 'fn' in args:
         ini_path = args['fn']
-
+    elif args.get('automigrate', False):
+        if os.path.exists(CONFIG_FN_DEST):
+            print('Config file already exists, exiting')
+            return
     #  TODO  For automigrate, exit if the new settings file is found
 
     if not os.path.exists(ini_path + '/esg.ini'):
@@ -83,7 +87,6 @@ def run(args):
 
     CERT_FN = cert_base.replace('%(home)s', '~')
 
-    #TODO save the settings to the config file
     print(str(dr_dict))
     print(str(pid_creds))
     print(data_node)
@@ -92,6 +95,20 @@ def run(args):
     print(DATA_TRANSFER_NODE)
     print(GLOBUS_UUID)
 
+    new_config = ["[user]", "data_node = " + data_node, "index_node = " + index_node, "cmor_path = ~/cmor/Tables",
+                  "autoc_path = ~/autocurator", "data_roots = " + json.dumps(dr_dict) + "cert = " + CERT_FN,
+                  "test = false", "project = none", "set_replica = false", "globus_uuid = " + GLOBUS_UUID,
+                  "data_transfer_node = " + DATA_TRANSFER_NODE, "pid_creds = " + json.dumps(pid_creds),
+                  "silent = false", "verbose = false"]
+
+
+    cf = open(CONFIG_FN_DEST, 'r+')
+
+    for line in cf:
+        if 'user' in line:
+            for v in new_config:
+                f.write(v)
+
 
 def main():
 
@@ -99,8 +116,7 @@ def main():
     args['fn'] = sys.argv[1]
     run(args)
 
+
 if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     main()
-
-

@@ -143,10 +143,12 @@ def pid_flow_code(dataset_recs, data_node):
             pid_wizard.dataset_publication_finished()
             return pid_connector, dataset_pid
         else:
-            print("WARNING, empty pid_wizard!", file=sys.stderr)
+            if not SILENT:
+                print("WARNING, empty pid_wizard!", file=sys.stderr)
 
     except Exception as e:
-        print("WARNING: PID module exception encountered! {}".format(str(e)), file=sys.stderr)
+        if not SILENT:
+            print("WARNING: PID module exception encountered! {}".format(str(e)), file=sys.stderr)
         traceback.print_exc()
 
     pid_connector.force_finish_messaging_thread()
@@ -212,7 +214,7 @@ def run(args):
             res[i] = update_dataset(res[i], pid, TEST_PUB)
 
     except Exception as e:
-        print("WARNING: Some exception encountered! {}".format(str(e)), file=sys.stderr)
+        print("ERROR: Some exception encountered! {}".format(str(e)), file=sys.stderr)
         pid_connector.force_finish_messaging_thread()
         exit(-1)
 

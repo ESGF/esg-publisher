@@ -1,0 +1,33 @@
+package:
+  name: esgcet
+  version: VERSION
+
+source:
+  git_rev: BRANCH
+  git_url: https://github.com/lisi-w/esg-publisher.git
+
+build:
+  number: 0
+  noarch: python
+  script: cd pkg; python setup.py install
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - pip
+    - libnetcdf
+    - cmor
+
+test:
+  commands:
+    - python -c "import esgcet"
+
+about:
+  home: http://github.com/esgf/esg-publisher
+  summary: gen five publisher
+  license: BSD
+  license_file: bsd-3-clause.txt
+
