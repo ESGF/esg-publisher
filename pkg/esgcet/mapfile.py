@@ -62,7 +62,7 @@ def parse_map_arr(map_data):
         for x in lst[3:]:
             parts = x.split('=')
             if parts[0] == 'mod_time':
-                rec[parts[0]] = datetime.utcfromtimestamp(float(parts[1])).isoformat()
+                rec["timestamp"] = datetime.utcfromtimestamp(float(parts[1])).isoformat() + "Z"
             else:
                 rec[parts[0]] = parts[1]
         ret.append(rec)
