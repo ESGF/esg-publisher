@@ -44,7 +44,15 @@ def unpack_values(invals):
             yield x['values']
 
 
-def get_dataset(mapdata, scandata, data_node, index_node, replica):
+def inputjson_handler(inputjson):
+    return [x for x in inputjson.values()][0]
+
+    
+JSON_HANDLERS = {
+    'input4MIPs' :
+    inputjson_handler
+
+    def get_dataset(mapdata, scandata, data_node, index_node, replica, **kwargs):
 
     master_id, version = mapdata.split('#')
 
@@ -62,6 +70,7 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
 
     # handle Global attributes if defined for the project
     if projkey in GA:
+    
         for facetkey in GA[projkey]:
             # did we find a GA in the data by the the key name
             if facetkey in scandata:
@@ -305,7 +314,7 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
         mapobj = mapdata
     scanobj = json.load(open(scanfilename))
 
-    rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica)
+    rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica, )
     update_metadata(rec, scanobj)
     rec["number_of_files"] = len(mapobj)  # place this better
 
@@ -318,10 +327,8 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
         print("rec = ")
         print(rec)
         print()
-    for key in xattrobj:
-        rec[key] = xattrobj[key]
-
     project = rec['project']
+
     mapdict = parse_map_arr(mapobj)
     if VERBOSE:
         print('mapdict = ')
