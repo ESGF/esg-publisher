@@ -51,8 +51,12 @@ def inputjson_handler(inputjson):
 JSON_HANDLERS = {
     'input4MIPs' :
     inputjson_handler
+}
 
-    def get_dataset(mapdata, scandata, data_node, index_node, replica, **kwargs):
+def get_dataset(mapdata, scandata, data_node, index_node, replica, **kwargs):
+
+    if "xattr"  in kwargs:
+        xattr = kwargs["xattr"]
 
     master_id, version = mapdata.split('#')
 
@@ -70,10 +74,12 @@ JSON_HANDLERS = {
 
     # handle Global attributes if defined for the project
     if projkey in GA:
-    
         for facetkey in GA[projkey]:
-            # did we find a GA in the data by the the key name
-            if facetkey in scandata:
+            if projkey in JSON_HANDLERS:
+                handler = JSON_HANDLERS[projkey]
+                facetval = handler(xattr)[facetkey]
+                # did we find a GA in the data by the the key name
+            elif facetkey in scandata:
                 facetval = scandata[facetkey]
                 # is this a delimited attribute ?
                 if facetkey in GA_DELIMITED[projkey]:
@@ -314,14 +320,14 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
         mapobj = mapdata
     scanobj = json.load(open(scanfilename))
 
-    rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica, )
-    update_metadata(rec, scanobj)
-    rec["number_of_files"] = len(mapobj)  # place this better
-
     if xattrfn:
         xattrobj = json.load(open(xattrfn))
     else:
         xattrobj = {}
+
+    rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica, xattr=xattrobj)
+    update_metadata(rec, scanobj)
+    rec["number_of_files"] = len(mapobj)  # place this better
 
     if VERBOSE:
         print("rec = ")
