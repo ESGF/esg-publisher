@@ -9,6 +9,7 @@ from pathlib import Path
 import json
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
+CONFIG_FN_DEST = "~/.esg/esg.ini"
 
 
 def run(args):
@@ -17,7 +18,10 @@ def run(args):
 
     if 'fn' in args:
         ini_path = args['fn']
-
+    elif args.get('automigrate', False):
+        if os.path.exists(CONFIG_FN_DEST):
+            print('Config file already exists, exiting')
+            return
     #  TODO  For automigrate, exit if the new settings file is found
 
     if not os.path.exists(ini_path + '/esg.ini'):
@@ -86,6 +90,14 @@ def run(args):
     cert_base = sp.get('hessian_service_certfile')
 
     CERT_FN = cert_base.replace('%(home)s', '~')
+
+    print(str(dr_dict))
+    print(str(pid_creds))
+    print(data_node)
+    print(index_node)
+    print(CERT_FN)
+    print(DATA_TRANSFER_NODE)
+    print(GLOBUS_UUID)
 
     d = date.today()
     t = d.strftime("%y%m%d")

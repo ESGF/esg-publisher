@@ -8,7 +8,7 @@ import esgcet.esgmigrate as esgmigrate
 
 
 
-VERSION = '5.0.0a'
+VERSION = '5.0.0a2'
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
@@ -23,7 +23,7 @@ if os.path.exists(DEFAULT_ESGINI):
     esgmigrate.run([])
 
 
-os.system("bash install.sh")
+#os.system("bash install.sh")
 
 if config_exists:
     setup(
