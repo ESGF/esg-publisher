@@ -13,7 +13,7 @@ AUTOC_PATH = None
 
 # For each project these become the . delimited components of the dataset_id
 DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'],
-         'E3SM' : [ 'source', 'model_version', 'experiment', 'grid_resolution', 'realm', 'regridding', 'data_type', 'time_frequency', 'ensemble_member'],
+         'E3SM' : [ 'source', 'model_version', 'experiment', 'grid_resolution', 'realm_drs', 'regridding', 'data_type', 'time_frequency', 'ensemble_member'],
     'input4MIPs' : ['activity_id', 'mip_era', 'target_mip', 'institution_id', 'source_id', 'realm', 'frequency', 'variable_id', 'grid_label' ] }
 
 SPLIT_FACET = { 'E3SM' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
@@ -37,14 +37,13 @@ GA = { 'CMIP6' : ['frequency',
 'further_info_url',
 'title',
 'product',
-'table',
 'nominal_resolution',
 'institution',
-'target_mip_list'
+'target_mip_list',
 'source',
 'deprecated',
 'dataset_status',
-'realm_drs',
+'realm',
 'Conventions',
 'creation_date']}
 

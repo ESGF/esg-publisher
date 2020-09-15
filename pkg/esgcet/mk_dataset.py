@@ -78,15 +78,16 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica, **kwargs):
             if projkey in JSON_HANDLERS:
                 handler = JSON_HANDLERS[projkey]
                 facetval = handler(xattr)[facetkey]
+
                 # did we find a GA in the data by the the key name
             elif facetkey in scandata:
                 facetval = scandata[facetkey]
                 # is this a delimited attribute ?
-                if facetkey in GA_DELIMITED[projkey]:
-                    delimiter = GA_DELIMITED[projkey][facetkey]
-                    d[facetkey] = facetval.split(delimiter)
-                else:
-                    d[facetkey] = facetval
+            if facetkey in GA_DELIMITED[projkey]:
+                delimiter = GA_DELIMITED[projkey][facetkey]
+                d[facetkey] = facetval.split(delimiter)
+            else:
+                d[facetkey] = facetval
         # would we ever combine mapped and delimited facets?
     if projkey in GA_MAPPED:
         for gakey in GA_MAPPED[projkey]:
@@ -388,12 +389,12 @@ def run(args):
             eprint("Replica not defined. Define in esg.ini")
             exit(1)
 
-    if len(args) > 5 and args[-1] != 'no':
-        ret = get_records(args[0], args[1], data_node, index_node, replica, xattrfn=args[5])
+    if len(args) > 2 and args[-1] != 'no':
+        ret = get_records(args[0], args[1], data_node, index_node, replica, xattrfn=args[2])
     else:
         ret = get_records(args[0], args[1], data_node, index_node, replica)
     if p or VERBOSE:
-        print(json.dumps(ret))
+        print(json.dumps(ret, indent=1))
     return ret
 
 def main():
