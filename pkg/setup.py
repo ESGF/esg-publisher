@@ -19,8 +19,8 @@ if os.path.exists(FULLPATH + "/esg.ini"):
     config_exists = True
 else:
     config_exists = False
-if os.path.exists(DEFAULT_ESGINI):
-    esgmigrate.run([])
+if os.path.exists(DEFAULT_ESGINI) and not config_exists:
+    esgmigrate.run({})
 
 
 #os.system("bash install.sh")
