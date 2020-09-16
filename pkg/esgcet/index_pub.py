@@ -1,6 +1,6 @@
 from esgcet.pub_client import publisherClient
 
-import esgcet.list2json, sys, json
+import esgcet.list2json, sys, json, os
 import configparser as cfg
 from pathlib import Path
 
@@ -50,7 +50,7 @@ def run(args):
             exit(1)
         d = json.load(open(args[0]))
 
-    pubCli = publisherClient(cert_fn, hostname)
+    pubCli = publisherClient(cert_fn, hostname, verbose=VERBOSE)
 
     for rec in d:
 
