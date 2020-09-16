@@ -29,7 +29,6 @@ try:
 except:
     VERBOSE = False
 
-
 EXCLUDES = [""]
 
 def eprint(*a):
@@ -73,6 +72,7 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
                 else:
                     d[facetkey] = facetval
         # would we ever combine mapped and delimited facets?
+    if projkey in GA_MAPPED:
         for gakey in GA_MAPPED[projkey]:
             if gakey in scandata:
                 facetkey = GA_MAPPED[projkey][gakey]
@@ -81,6 +81,7 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
             else:
                 if not SILENT:
                     eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+    if projkey in CONST_ATTR: 
         for facetkey in CONST_ATTR[projkey]:
             d[facetkey] = CONST_ATTR[projkey][facetkey]
 
@@ -204,7 +205,10 @@ def update_metadata(record, scanobj):
             var_rec = scanobj["variables"][vid]
             if "long_name" in var_rec.keys():
                 record["variable_long_name"] = var_rec["long_name"]
-            record["cf_standard_name"] = var_rec["standard_name"]
+            elif "info" in var_rec:
+                record["variable_long_name"] = var_rec["info"]
+            if "standard_name" in var_rec:
+                record["cf_standard_name"] = var_rec["standard_name"]
             record["variable_units"] = var_rec["units"]
             record["variable"] = vid
         else:

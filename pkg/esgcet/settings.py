@@ -89,13 +89,18 @@ HTTP_SERVICE = '/thredds/fileServer/'
 
 CITATION_URLS = { 'CMIP6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
-        'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}}
+        'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'},
+'input4MIPs' : {'test' :
+'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
+        'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}
+                  
+}
 
 PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
 TEST_PUB = False
 
-PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
-SET_REPLICA = True
+PROJECT = "input4MIPs"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
+SET_REPLICA = False
 
 GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
 DATA_TRANSFER_NODE = "aimsdtn4.llnl.gov"
