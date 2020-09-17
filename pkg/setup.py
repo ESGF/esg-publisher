@@ -19,12 +19,11 @@ if os.path.exists(FULLPATH + "/esg.ini"):
     config_exists = True
 else:
     config_exists = False
-if os.path.exists(DEFAULT_ESGINI) and not config_exists:
-    esgmigrate.run({})
 
+#if os.path.exists(DEFAULT_ESGINI) and not config_exists:
+#    esgmigrate.run({})
 
 #os.system("bash install.sh")
-
 if config_exists:
     setup(
         name = 'esgcet',
@@ -36,6 +35,7 @@ if config_exists:
         install_requires = [
             "requests",
              "esgfpid",
+            "ESGConfigParser==1.0.0a1"
         ],
         packages = find_packages(exclude=['ez_setup']),
         include_package_data = True,
@@ -61,6 +61,7 @@ else:
         install_requires = [
             "requests",
              "esgfpid",
+            "ESGConfigParser==1.0.0a1"
         ],
         packages = find_packages(exclude=['ez_setup']),
         include_package_data = True,
@@ -73,9 +74,10 @@ else:
                                           'esgpublish=esgcet.pub_internal:main',
                                           'esgupdate=esgcet.update:main',
                                           'esgmapconv=esgcet.mapfile:main'
-                                          'esgmigrate=esgcet.esgmigrate:main']},
-        data_files=[(FULLPATH, ['esg.ini'])]
-    )
+                                          'esgmigrate=esgcet.esgmigrate:main']}
+        )
+
+    
 
 
 
