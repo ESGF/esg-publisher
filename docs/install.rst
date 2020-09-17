@@ -88,7 +88,7 @@ The default config file will look like this::
     silent = false
     verbose = falsee
 
-Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the `user` section, not the default nor example.
+Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
 
 Run Time Args
 -------------
