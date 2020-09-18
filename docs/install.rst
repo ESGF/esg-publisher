@@ -14,8 +14,7 @@ To install esgcet using conda, run::
     conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet pip libnetcdf cmor
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
-Setup will also make autocurator in ``$HOME/autocurator`` and put the CMOR tables necessary for PrePARE into ``$HOME/cmor/Tables`` by cloning and both repositories. If these directories already exist,
-that part will fail but the package will still install, just be sure to edit the paths for CMOR and autocurator in the config file as needed.
+Don't forget that you need to install autocurator and download CMOR tables before the publisher will successfully run. See those pages for more info.
 
 Conda & Required Packages
 -------------------------
