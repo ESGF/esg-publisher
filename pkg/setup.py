@@ -5,7 +5,8 @@ from pathlib import Path
 import os
 import sys
 import esgcet.esgmigrate as esgmigrate
-
+import configparser as cfg
+from shutil import copyfile
 
 
 VERSION = '5.0.0a2'
@@ -13,18 +14,40 @@ print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
 DEFAULT_ESGINI = '/esg/config/esgcet'
+
 if not os.path.exists(FULLPATH):
     os.makedirs(FULLPATH)
+
 if os.path.exists(FULLPATH + "/esg.ini"):
     config_exists = True
 else:
     config_exists = False
 
-#if os.path.exists(DEFAULT_ESGINI) and not config_exists:
-#    esgmigrate.run({})
-
-#os.system("bash install.sh")
+make_config = False
 if config_exists:
+    try:
+        config = cfg.ConfigParser()
+        config.read(FULLPATH + "/esg.ini")
+        if config['version'] != VERSION:
+            print("Config file not up to date, saving back up and overwriting original.", file=sys.stderr)
+            copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
+            make_config = True
+        else:
+            make_config = False
+    except:
+        print("Error with existing config, saving back up and overwriting original.", file=sys.stderr)
+        copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
+        make_config = True
+else:
+    if os.path.exists(DEFAULT_ESGINI):
+        print("Old esg config found. Migrating.")
+        esgmigrate.run({})
+        make_config = False
+    else:
+        make_config = True
+
+
+if make_config:
     setup(
         name = 'esgcet',
         version = VERSION,
@@ -74,10 +97,6 @@ else:
                                           'esgpublish=esgcet.pub_internal:main',
                                           'esgupdate=esgcet.update:main',
                                           'esgmapconv=esgcet.mapfile:main'
-                                          'esgmigrate=esgcet.esgmigrate:main']}
+                                          'esgmigrate=esgcet.esgmigrate:main']},
+        data_files=[(FULLPATH, ['esg.ini'])]
         )
-
-    
-
-
-

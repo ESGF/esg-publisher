@@ -11,7 +11,7 @@ To install esgcet by cloning our github repository, run::
 
 To install esgcet using conda, run::
 
-    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet pip libnetcdf cmor
+    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet pip libnetcdf cmor autocurator esgconfigparser
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
 Don't forget that you need to install autocurator and download CMOR tables before the publisher will successfully run. See those pages for more info.
@@ -21,9 +21,9 @@ Conda & Required Packages
 
 We recommend creating a conda env before installing ``esgcet`` ::
 
-    conda create -n esgf-pub-v5 -c conda-forge pip requests libnetcdf cmor
+    conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
 
-NOTE: if you installed esgcet using conda above, cmor should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
+NOTE: if you installed esgcet using conda above, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
 Also, if you created the env above to install esgcet, this step is not necessary.
 
 You will also need to install ``esgfpid`` using pip::
@@ -39,10 +39,11 @@ The default config file will look like this::
 
     [DEFAULT]
     note = IMPORTANT: please configure below in the [user] section, that is what the publisher will use to read configured settings. The below are marked as necessary or optional variables.
+    version = 5.0.0a2
     data_node = * necessary
     index_node = * necessary
     cmor_path = * necessary, and must be an absolute path (not relative)
-    autoc_path = ~/autocurator * optional, default is where it is installed in setup, relative path ok
+    autoc_path = autocurator * optional, default is autocurator conda binary, can be replaced with a file path, relative or absolute
     data_roots = * necessary, must be in json loadable dictionary format
     cert = ./cert.pem * optional, default assumes cert in current directory, override to change
     test = false * optional, default assumes test is off, override to change
@@ -58,7 +59,7 @@ The default config file will look like this::
     data_node = esgf-data1.llnl.gov
     index_node = esgf-node.llnl.gov
     cmor_path = /export/user/cmor/Tables
-    autoc_path = ~/autocurator
+    autoc_path = autocurator
     data_roots = {"/esg/data": "esgf_data"}
     cert = ./cert.pem
     test = false
@@ -75,7 +76,7 @@ The default config file will look like this::
     data_node =
     index_node =
     cmor_path =
-    autoc_path = ~/autocurator
+    autoc_path = autocurator
     data_roots =
     cert = ./cert.pem
     test = false
