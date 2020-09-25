@@ -171,16 +171,15 @@ def run(fullmap):
     # Run autocurator and all python scripts
     if not silent:
         print("Running autocurator...")
+    os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")
     datafile = map_json_data[0][1]
 
     destpath = os.path.dirname(datafile)
     outname = os.path.basename(datafile)
     idx = outname.rfind('.')
-    scanfntemplate = "{}.scan.json"
-    scanpath = scanfntemplate.format(outname[0:idx])
 
     autstr = autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
-    stat = os.system(autstr.format(scanpath, destpath))
+    stat = os.system(autstr.format(scanfn, destpath))
     if os.WEXITSTATUS(stat) != 0:
         print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
         exit(os.WEXITSTATUS(stat))
@@ -194,6 +193,9 @@ def run(fullmap):
             out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, 'no'])
     except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
+        with open(scanfn, 'r') as sf:
+            for line in sf:
+                print(line)
         exit_cleanup(scan_file)
         exit(1)
 

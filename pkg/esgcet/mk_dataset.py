@@ -344,7 +344,6 @@ def run(args):
         exit(0)
     p = False
     if args[-1] == 'no':
-        print("all good")
         data_node = args[2]
         index_node = args[3]
         replica = args[4]
