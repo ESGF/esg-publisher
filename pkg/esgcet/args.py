@@ -6,6 +6,8 @@ def get_args():
     # ANY FILE NAME INPUT: check first to make sure it exists
     # add project flag: cmip6 or CMIP6 is fine, case insensitive
     # for test see settings
+    home = str(Path.home())
+    def_config = home + "/.esg/esg.ini"
     parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
     # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
     parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
@@ -18,6 +20,7 @@ def get_args():
     parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.")
     parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.")
     parser.add_argument("--map", dest="map", required=True, nargs="+", help="mapfile or file containing a list of mapfiles.")
+    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
 
     pub = parser.parse_args()
 

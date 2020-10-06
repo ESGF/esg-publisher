@@ -57,9 +57,9 @@ def run(fullmap):
     if pub.json is not None:
         json_file = pub.json
         third_arg_mkd = True
+    ini_file = pub.cfg
     config = cfg.ConfigParser()
-    home = str(Path.home())
-    config_file = home + "/.esg/esg.ini"
+    config_file = ini_file
     config.read(config_file)
 
     try:
