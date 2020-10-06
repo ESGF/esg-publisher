@@ -171,7 +171,6 @@ def run(fullmap):
     # Run autocurator and all python scripts
     if not silent:
         print("Running autocurator...")
-    os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")
     datafile = map_json_data[0][1]
 
     destpath = os.path.dirname(datafile)

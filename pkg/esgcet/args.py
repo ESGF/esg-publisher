@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
