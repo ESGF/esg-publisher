@@ -13,7 +13,7 @@ label ?= main
 
 setup-build:
 	echo "...setup-build..."
-	$(conda) create -n build-pub -c conda-forge conda-build conda-smithy anaconda-client
+	$(conda) create -n build-pub -c conda-forge -c esgf-forge conda-build conda-smithy anaconda-client esgconfigparser
 
 create-feedstock:
 	echo "xxx version: $(version)"
