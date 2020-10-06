@@ -8,7 +8,7 @@ conda_act := $(conda_bin)/activate
 conda_act_cmd := source $(conda_act)
 sed_v = s/VERSION/$(version)/
 sed_b = s/BRANCH/$(branch)/g
-build_dir = $(shell $(conda) build --output -m .ci_support/linux_64_.yaml recipe/)
+build_dir = $(shell $(conda) build --output -c esgf-forge -c conda-forge -m .ci_support/linux_64_.yaml recipe/)
 label ?= main
 
 setup-build:
@@ -34,11 +34,11 @@ rerender-feedstock:
 build: setup-build create-feedstock rerender-feedstock
 	cd $(WORKDIR)/esg-publisher-feedstock && \
 	$(conda_act_cmd) build-pub && \
-	$(conda) build -m .ci_support/linux_64_.yaml recipe/
+	$(conda) build -c esgf-forge -c conda-forge -m .ci_support/linux_64_.yaml recipe/
 	echo "$(build_dir)"
 
 upload:
 	cd $(WORKDIR)/esg-publisher-feedstock && \
 	$(conda_act_cmd) build-pub && \
-	output_file=$$(conda build --output -m .ci_support/linux_64_.yaml recipe/) && \
+	output_file=$$(conda build --output -c esgf-forge -c conda-forge -m .ci_support/linux_64_.yaml recipe/) && \
 	anaconda -t $(TOKEN) upload -u esgf-forge -l $(label) $$output_file
