@@ -1,19 +1,27 @@
 from ESGConfigParser import SectionParser
-
+import configparser as cfg
 import os, sys
 from urllib.parse import urlparse
-import settings
+import esgcet.settings
+import shutil
+from datetime import date
+from pathlib import Path
+import json
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
+CONFIG_FN_DEST = "~/.esg/esg.ini"
 
 
 def run(args):
 
     ini_path = DEFAULT_ESGINI
 
-    if ('fn' in args):
+    if 'fn' in args:
         ini_path = args['fn']
-
+    elif args.get('automigrate', False):
+        if os.path.exists(CONFIG_FN_DEST):
+            print('Config file already exists, exiting')
+            return
     #  TODO  For automigrate, exit if the new settings file is found
 
     if not os.path.exists(ini_path + '/esg.ini'):
@@ -83,7 +91,6 @@ def run(args):
 
     CERT_FN = cert_base.replace('%(home)s', '~')
 
-    #TODO save the settings to the config file
     print(str(dr_dict))
     print(str(pid_creds))
     print(data_node)
@@ -92,15 +99,33 @@ def run(args):
     print(DATA_TRANSFER_NODE)
     print(GLOBUS_UUID)
 
+    d = date.today()
+    t = d.strftime("%y%m%d")
+    home = str(Path.home())
+    config_file = home + "/.esg/esg.ini"
+    backup = home + "/.esg/" + t + "esg.ini"
+    shutil.copyfile(config_file, backup)
+    config = cfg.ConfigParser()
+    config.read(config_file)
+    new_config = {"data_node": data_node, "index_node": index_node, "data_roots": json.dumps(dr_dict), "cert": CERT_FN,
+                  "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds)}
+    for key, value in new_config.items():
+        try:
+            test = config['user'][key]
+        except:
+            config['user'][key] = value
+    with open(config_file, "w") as cf:
+        config.write(cf)
+
 
 def main():
 
     args = {}
-    args['fn'] = sys.argv[1]
+    if len(sys.argv) > 1:
+        args['fn'] = sys.argv[1]
     run(args)
+
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     main()
-
-

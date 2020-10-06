@@ -79,12 +79,15 @@ def run(fullmap):
     else:
         cert = pub.cert
 
+    conda_auto = False
     if pub.autocurator_path is None:
         try:
             autocurator = config['user']['autoc_path']
+            if autocurator == "autocurator":
+                conda_auto = True
         except:
-            print("No autocurator path defined. Use --autocurator option or define in config file.", file=sys.stderr)
-            exit(1)
+            autocurator = "autocurator"
+            conda_auto = True
     else:
         autocurator = pub.autocurator_path
 
@@ -131,7 +134,10 @@ def run(fullmap):
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
     scanfn = scan_file.name  # name to refer to tmp file
 
-    autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
+    if not conda_auto:
+        autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
+    else:
+        autoc_command = autocurator
 
     os.system("cert_path=" + cert)
 
@@ -165,7 +171,18 @@ def run(fullmap):
     # Run autocurator and all python scripts
     if not silent:
         print("Running autocurator...")
-    os.system("bash " + autocurator + "/autocurator.sh " + autoc_command + " " + fullmap + " " + scanfn)
+    os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")
+    datafile = map_json_data[0][1]
+
+    destpath = os.path.dirname(datafile)
+    outname = os.path.basename(datafile)
+    idx = outname.rfind('.')
+
+    autstr = autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
+    stat = os.system(autstr.format(scanfn, destpath))
+    if os.WEXITSTATUS(stat) != 0:
+        print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
+        exit(os.WEXITSTATUS(stat))
 
     if not silent:
         print("Done.\nMaking dataset...")
@@ -176,6 +193,9 @@ def run(fullmap):
             out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, 'no'])
     except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
+        with open(scanfn, 'r') as sf:
+            for line in sf:
+                print(line)
         exit_cleanup(scan_file)
         exit(1)
 
@@ -220,21 +240,24 @@ def run(fullmap):
         print("Done. Cleaning up.")
     exit_cleanup(scan_file)
 
+
 def main():
     pub = args.get_args()
-    fullmap = pub.map  # full mapfile path
-    if fullmap is None:
+    maps = pub.map  # full mapfile path
+    if maps is None:
         print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
         exit(1)
-    if fullmap[-4:] != ".map":
-        myfile = open(fullmap)
+    if maps[0][-4:] != ".map":
+        myfile = open(maps[0])
         for line in myfile:
             length = len(line)
             run(line[0:length - 2])
         myfile.close()
         # iterate through file in directory calling main
     else:
-        run(fullmap)
+        for m in maps:
+            run(m)
+
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

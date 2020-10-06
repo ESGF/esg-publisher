@@ -9,10 +9,11 @@ conda_act_cmd := source $(conda_act)
 sed_v = s/VERSION/$(version)/
 sed_b = s/BRANCH/$(branch)/g
 build_dir = $(shell $(conda) build --output -m .ci_support/linux_64_.yaml recipe/)
+label ?= main
 
 setup-build:
 	echo "...setup-build..."
-	$(conda) create -n build-pub -c conda-forge conda-build conda-smithy anaconda-client
+	$(conda) create -n build-pub -c conda-forge -c esgf-forge conda-build conda-smithy anaconda-client esgconfigparser
 
 create-feedstock:
 	echo "xxx version: $(version)"
@@ -37,5 +38,7 @@ build: setup-build create-feedstock rerender-feedstock
 	echo "$(build_dir)"
 
 upload:
+	cd $(WORKDIR)/esg-publisher-feedstock && \
 	$(conda_act_cmd) build-pub && \
-	anaconda -t $(TOKEN) upload $(build_dir) -u esgf-forge
+	output_file=$$(conda build --output -m .ci_support/linux_64_.yaml recipe/) && \
+	anaconda -t $(TOKEN) upload -u esgf-forge -l $(label) $$output_file

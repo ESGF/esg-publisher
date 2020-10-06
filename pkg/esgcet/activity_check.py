@@ -1,4 +1,4 @@
-import sys, json
+import sys, json, os
 import configparser as cfg
 from pathlib import Path
 
@@ -23,8 +23,6 @@ try:
 except:
     VERBOSE = False
 
-CMIPCV="/export/ames4/git/CMIP6_CVs" # TODO: this will need to be changed
-SRC_ID_JSON="CMIP6_source_id.json"
 
 IDX = -1  # index for the dataset record
 ARGS = 1
@@ -32,7 +30,7 @@ class FieldCheck(object):
 
     def __init__(self, cv_path):
 
-        jobj = json.load(open(cv_path))
+        jobj = json.load(open(cv_path))["CV"]
         self.sid_dict = jobj["source_id"]
 
 
@@ -46,17 +44,18 @@ class FieldCheck(object):
         return activity_id in rec["activity_participation"]
 
 
-def run(args):
+def run(input_rec):
 
-    cv_path = "{}/{}".format(CMIPCV, SRC_ID_JSON)
+    try:
+        cmor_path = config["user"]["cmor_path"]
+    except Exception as e:
+        print(e)
+        print("Error CMOR path not configured. Must do so to enable the Activity check! {}".format(str(e)))
+        return -1
+    cv_path="{}/CMIP6_CV.json".format(cmor_path)
     fc = FieldCheck(cv_path)
 
-    if len(args) < (ARGS):
-        print("Missing required arguments", file=sys.stderr)
-        exit(0)
-
     # try:
-    input_rec = args
     """except Exception as e:
         print("Error opening input json format for {}: ".format(args[0],e), file=sys.stderr)
         exit(1)"""
@@ -73,8 +72,17 @@ def run(args):
         print("ERROR: source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id), file=sys.stderr)
         print("If you think this message has been received in error, please update your CV source repository", file=sys.stderr)
 
+
+def open_run(args):
+    if len(args) < (ARGS):
+        print("Missing required arguments", file=sys.stderr)
+        exit(0)
+    jobj = json.load(open(args[0]))
+    run(jobj)
+
+
 def main():
-    run(sys.argv[1:])
+    open_run(sys.argv[1:])
 
 
 if __name__ == '__main__':

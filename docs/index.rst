@@ -5,6 +5,8 @@ The esgcet package for ESGF Publication
    :maxdepth: 2
 
    install
+   autocurator
+   cmor
    esgpublish
    esgmapconv
    esgmkpubrec
