@@ -20,7 +20,7 @@ requirements:
     - pip
     - libnetcdf
     - cmor
-
+    - esgconfigparser
 test:
   commands:
     - python -c "import esgcet"

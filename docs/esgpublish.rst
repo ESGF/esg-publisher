@@ -37,6 +37,12 @@ You can also use ``--help`` to see::
           --autocurator AUTOCURATOR_PATH
                                 Path to autocurator repository folder.
           --map MAP             mapfile or file containing a list of mapfiles.
+          --ini CFG, -i CFG     Path to config file.
 
 This command can handle a singular mapfile passed to it, or a file containing a list of mapfiles (with full paths).
 If optional command line arguments are used, they will override anything set in the config file.
+NOTE: If, in your config file, you have specified a directory for ``autocurator`` rather than the default command, ie you are using a different ``autocurator`` than the one installed using conda, you must run the following command prior to running ``esgpublish``::
+
+    export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
+
+If you do not run this and are not using the conda installed ``autocurator``, the program will not work.
