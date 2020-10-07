@@ -1,9 +1,9 @@
 package:
   name: esgcet
-  version: VERSION
+  version: 5.0.0a3
 
 source:
-  git_rev: BRANCH
+  git_rev: gen-five-pkg
   git_url: https://github.com/lisi-w/esg-publisher.git
 
 build:
@@ -15,12 +15,19 @@ requirements:
   build:
     - python
     - setuptools
+    - esgconfigparser
+    - esgfpid
   run:
     - python
     - pip
     - libnetcdf
     - cmor
     - esgconfigparser
+    - autocurator
+    - requests
+    - esgfpid
+
+
 test:
   commands:
     - python -c "import esgcet"
