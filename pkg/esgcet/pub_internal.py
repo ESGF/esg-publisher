@@ -209,19 +209,20 @@ def run(fullmap):
             exit_cleanup(scan_file)
             exit(1)
 
-    if not silent:
-        print("Done.\nRunning activity check...")
-    try:
-        act.run(new_json_data)
-    except Exception as ex:
-        print("Error running activity check: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
+        if not silent:
+            print("Done.\nRunning activity check...")
+        try:
+            act.run(new_json_data)
+        except Exception as ex:
+            print("Error running activity check: " + str(ex), file=sys.stderr)
+            exit_cleanup(scan_file)
+            exit(1)
+        out_json_data = new_json_data
 
     if not silent:
         print("Done.\nUpdating...")
     try:
-        up.run([new_json_data, index_node, cert])
+        up.run([out_json_data, index_node, cert])
     except Exception as ex:
         print("Error updating: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
@@ -230,7 +231,7 @@ def run(fullmap):
     if not silent:
         print("Done.\nRunning index pub...")
     try:
-        ip.run([new_json_data, index_node, cert])
+        ip.run([out_json_data, index_node, cert])
     except Exception as ex:
         print("Error running pub test: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
