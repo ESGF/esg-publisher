@@ -16,6 +16,13 @@ You will need to update the config if you choose to do this with the correct pat
 Running Autocurator
 -------------------
 
+Before running ``autocurator`` (if you are not using the conda installed version) you must first run the following command::
+
+    export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
+
+This command helps autocurator locate and open shared libraries within the current conda environment. It will not work if this is not run.
+This also goes for running the ``esgpublish`` command if, in your config, you have listed a direct path instead of simply the autocurator command.
+
 If you want to run ``autocurator`` as a stand alone, use the following format::
 
     bash autocurator.sh <path to autocurator executable> <full mapfile path> <scan file name (output file)>

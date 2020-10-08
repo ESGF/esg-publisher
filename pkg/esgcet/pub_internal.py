@@ -57,9 +57,9 @@ def run(fullmap):
     if pub.json is not None:
         json_file = pub.json
         third_arg_mkd = True
+    ini_file = pub.cfg
     config = cfg.ConfigParser()
-    home = str(Path.home())
-    config_file = home + "/.esg/esg.ini"
+    config_file = ini_file
     config.read(config_file)
 
     try:
@@ -171,7 +171,6 @@ def run(fullmap):
     # Run autocurator and all python scripts
     if not silent:
         print("Running autocurator...")
-    os.system("export LD_LIBRARY_PATH=$CONDA_PREFIX/lib")
     datafile = map_json_data[0][1]
 
     destpath = os.path.dirname(datafile)
@@ -209,19 +208,20 @@ def run(fullmap):
             exit_cleanup(scan_file)
             exit(1)
 
-    if not silent:
-        print("Done.\nRunning activity check...")
-    try:
-        act.run(new_json_data)
-    except Exception as ex:
-        print("Error running activity check: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
+        if not silent:
+            print("Done.\nRunning activity check...")
+        try:
+            act.run(new_json_data)
+        except Exception as ex:
+            print("Error running activity check: " + str(ex), file=sys.stderr)
+            exit_cleanup(scan_file)
+            exit(1)
+        out_json_data = new_json_data
 
     if not silent:
         print("Done.\nUpdating...")
     try:
-        up.run([new_json_data, index_node, cert])
+        up.run([out_json_data, index_node, cert])
     except Exception as ex:
         print("Error updating: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
@@ -230,7 +230,7 @@ def run(fullmap):
     if not silent:
         print("Done.\nRunning index pub...")
     try:
-        ip.run([new_json_data, index_node, cert])
+        ip.run([out_json_data, index_node, cert])
     except Exception as ex:
         print("Error running pub test: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
