@@ -9,6 +9,10 @@ from pathlib import Path
 
 silent = False
 verbose = False
+data_roots = {}
+globus = "none"
+data_node = ""
+dtn = "none"
 EXCLUDES = [""]
 
 def get_sv():
@@ -94,33 +98,20 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
 
 def format_template(template, root, rel):
     if "Globus" in template:
-        try:
-            globus = config['user']['globus_uuid']
-            if globus != 'none':
-                return template.format(globus, root, rel)
-            else:
+        if globus != 'none':
+            return template.format(globus, root, rel)
+        else:
+            if not silent:
                 print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
-                return template.format(GLOBUS_UUID, root, rel)
-        except:
-            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
             return template.format(GLOBUS_UUID, root, rel)
     elif "gsiftp" in template:
-        try:
-            dtn = config['user']['data_transfer_node']
-            if dtn != 'none':
-                return template.format(dtn, root, rel)
-            else:
+        if dtn != 'none':
+            return template.format(dtn, root, rel)
+        else:
+            if not silent:
                 print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
-                return template.format(DATA_TRANSFER_NODE, root, rel)
-        except:
-            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
             return template.format(DATA_TRANSFER_NODE, root, rel)
     else:
-        try:
-            data_node = config['user']['data_node']
-        except:
-            print("Data node not defined. Define in esg.ini.", file=sys.stderr)
-            exit(1)
         return template.format(data_node, root, rel)
 
 
@@ -148,14 +139,7 @@ def get_file(dataset_rec, mapdata, fn_trid):
 
     rel_path, proj_root = normalize_path(fullfn, dataset_rec["project"])
 
-    try:
-        data_roots = json.loads(config['user']['data_roots'])
-        if data_roots == 'none':
-            print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
-            exit(1)
-    except:
-        print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
-        exit(1)
+
     if not proj_root in data_roots:
         eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
         exit(1)
@@ -326,8 +310,16 @@ def run(args):
 
     global silent
     global verbose
-    silent = args[5]
-    verbose = args[6]
+    global data_roots
+    global dtn
+    global data_node
+    global globus
+    silent = args[8]
+    verbose = args[9]
+    data_roots = args[5]
+    globus = args[6]
+    dtn = args[7]
+    data_node = args[2]
 
     if len(args) == 8:
         ret = get_records(args[0], args[1], args[2], args[3], args[4], xattrfn=args[7])

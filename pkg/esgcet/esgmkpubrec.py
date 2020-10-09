@@ -105,11 +105,27 @@ def run():
         except:
             print("Set_replica not defined. Use --set-replica or --no-replica or define in config file.", file=sys.stderr)
             exit(1)
+
     try:
-        data_roots = config['user']['data_roots']
+        data_roots = json.loads(config['user']['data_roots'])
+        if data_roots == 'none':
+            print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
+            exit(1)
     except:
-        print("Error: data roots not defined; define in config file.", file=sys.stderr)
+        print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
         exit(1)
+
+    try:
+        globus = json.loads(config['user']['globus_uuid'])
+    except:
+        # globus undefined
+        globus = "none"
+
+    try:
+        dtn = config['user']['data_transfer_node']
+    except:
+        # dtn undefined
+        dtn = "none"
 
     third_arg_mkd = False
     if a.json is not None:
@@ -119,9 +135,9 @@ def run():
 
     try:
         if third_arg_mkd:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, silent, verbose, json_file])
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose, json_file])
         else:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, silent, verbose])
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
     except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
         exit(1)
