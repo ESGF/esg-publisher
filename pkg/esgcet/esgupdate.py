@@ -4,7 +4,8 @@ import sys
 import json
 import argparse
 import configparser as cfg
-from pathlib import path
+from pathlib import Path
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
