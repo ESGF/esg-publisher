@@ -66,7 +66,7 @@ def run(args):
 
     with open(args[0]) as map_data:
         if len(args) > 1:
-            ret = parse_map(map_data, args[2])
+            ret = parse_map(map_data, args[1])
         else:
             ret = parse_map(map_data)
 

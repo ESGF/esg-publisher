@@ -62,6 +62,8 @@ def run(fullmap):
     config_file = ini_file
     config.read(config_file)
 
+    if pub.proj != "":
+        proj = pub.proj
     try:
         s = config['user']['silent']
         if 'true' in s or 'yes' in s:
@@ -136,7 +138,8 @@ def run(fullmap):
         dtn = config['user']['data_transfer_node']
     except:
         # dtn undefined
-        dtn = "none
+        dtn = "none"
+    
     if pub.set_replica and pub.no_replica:
         print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
         exit(1)
@@ -171,7 +174,7 @@ def run(fullmap):
     if not silent:
         print("Converting mapfile...")
     try:
-        map_json_data = mp.run([fullmap, 'no'])
+        map_json_data = mp.run([fullmap, proj])
     except Exception as ex:
         print("Error with converting mapfile: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
