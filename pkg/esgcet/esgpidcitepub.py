@@ -56,8 +56,16 @@ def run():
             verbose = False
     except:
         verbose = False
+
+    if a.data_node is None:
+        try:
+            data_node = config['user']['data_node']
+        except:
+            print("Error: data node not supplied in config or command line. Exiting.", file=sys.stderr)
+            exit(1)
     else:
         data_node = a.data_node
+
     try:
         pid_creds = json.loads(config['user']['pid_creds'])
     except:

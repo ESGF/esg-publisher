@@ -1,5 +1,5 @@
 import sys, json
-from esgcet.settings import DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
+from esgcet.settings import PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 import traceback
 import configparser as cfg
 from pathlib import Path
