@@ -185,8 +185,7 @@ def run(args):
         exit(-1)
 
     pid_connector.finish_messaging_thread()
-    if p or verbose:
-        print(json.dumps(res))
+    
     return res
 
 
