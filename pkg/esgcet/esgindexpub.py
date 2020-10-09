@@ -74,7 +74,6 @@ def run():
         ipub.run([new_json_data, index_node, cert, silent, verbose])
     except Exception as ex:
         print("Error running pub test: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
         exit(1)
 
 

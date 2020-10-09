@@ -15,7 +15,7 @@ def get_args():
     parser.add_argument("--pub-rec", dest="json_data", required=True,
                         help="Dataset and file json data; output from esgmkpubrec.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
-    parser.add_argument("--out_file", dest="out_file", default=None,
+    parser.add_argument("--out-file", dest="out_file", default=None,
                         help="Optional output file destination. Default is stdout.")
 
     pub = parser.parse_args()

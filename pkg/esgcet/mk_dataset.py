@@ -321,8 +321,8 @@ def run(args):
     dtn = args[7]
     data_node = args[2]
 
-    if len(args) == 8:
-        ret = get_records(args[0], args[1], args[2], args[3], args[4], xattrfn=args[7])
+    if len(args) == 11:
+        ret = get_records(args[0], args[1], args[2], args[3], args[4], xattrfn=args[10])
     else:
         ret = get_records(args[0], args[1], args[2], args[3], args[4])
     return ret

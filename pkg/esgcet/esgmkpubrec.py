@@ -13,13 +13,13 @@ def get_args():
     def_config = home + "/.esg/esg.ini"
     parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
-    parser.add_argument("--scan_file", dest="scan_file", required=True, help="JSON output file from autocurator.")
+    parser.add_argument("--scan-file", dest="scan_file", required=True, help="JSON output file from autocurator.")
     parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
-    parser.add_argument("--map_data", dest="map_data", required=True, help="Mapfile json data converted using esgmapconv.")
+    parser.add_argument("--map-data", dest="map_data", required=True, help="Mapfile json data converted using esgmapconv.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
-    parser.add_argument("--out_file", dest="out_file", default=None, help="Optional output file destination. Default is stdout.")
+    parser.add_argument("--out-file", dest="out_file", default=None, help="Optional output file destination. Default is stdout.")
 
     pub = parser.parse_args()
 
