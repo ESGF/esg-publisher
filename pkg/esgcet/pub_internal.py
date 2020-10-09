@@ -70,6 +70,15 @@ def run(fullmap):
             silent = False
     except:
         silent = False
+
+    try:
+        v = config['user']['silent']
+        if 'true' in v or 'yes' in v:
+            verbose = True
+        else:
+            verbose = False
+    except:
+        verbose = False
     
     if pub.cert == "./cert.pem":
         try:
@@ -130,7 +139,6 @@ def run(fullmap):
             print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.", file=sys.stderr)
             exit(1)
 
-
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
     scanfn = scan_file.name  # name to refer to tmp file
 
@@ -187,14 +195,11 @@ def run(fullmap):
         print("Done.\nMaking dataset...")
     try:
         if third_arg_mkd:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, json_file, 'no'])
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, silent, verbose, json_file])
         else:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, 'no'])
+            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, silent, verbose])
     except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
-        with open(scanfn, 'r') as sf:
-            for line in sf:
-                print(line)
         exit_cleanup(scan_file)
         exit(1)
 
@@ -202,7 +207,12 @@ def run(fullmap):
         if not silent:
             print("Done.\nRunning pid cite...")
         try:
-            new_json_data = pid.run([out_json_data, data_node, 'no'])
+            pid_creds = json.loads(config['user']['pid_creds'])
+        except:
+            print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+            exit(1)
+        try:
+            new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
         except Exception as ex:
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
@@ -220,7 +230,7 @@ def run(fullmap):
     if not silent:
         print("Done.\nUpdating...")
     try:
-        up.run([new_json_data, index_node, cert])
+        up.run([new_json_data, index_node, cert, silent, verbose])
     except Exception as ex:
         print("Error updating: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
@@ -229,7 +239,7 @@ def run(fullmap):
     if not silent:
         print("Done.\nRunning index pub...")
     try:
-        ip.run([new_json_data, index_node, cert])
+        ip.run([new_json_data, index_node, cert, silent, verbose])
     except Exception as ex:
         print("Error running pub test: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
@@ -252,7 +262,7 @@ def main():
             length = len(line)
             run(line[0:length - 2])
         myfile.close()
-        # iterate through file in directory calling main
+        # iterate through file in directory calling main func
     else:
         for m in maps:
             run(m)

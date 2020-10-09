@@ -3,28 +3,6 @@ from datetime import datetime
 import configparser as cfg
 from pathlib import Path
 
-config = cfg.ConfigParser()
-home = str(Path.home())
-config_file = home + "/.esg/esg.ini"
-config.read(config_file)
-try:
-    s = config['user']['silent']
-    if 'true' in s or 'yes' in s:
-        SILENT = True
-    else:
-        SILENT = False
-except:
-    SILENT = False
-try:
-    v = config['user']['verbose']
-    if 'true' in v or 'yes' in v:
-        VERBOSE = True
-    else:
-        VERBOSE = False
-except:
-    VERBOSE = False
-
-ARGS = 1
 
 def normalize_path(path, project):
     pparts = path.split('/')
@@ -70,7 +48,6 @@ def parse_map_arr(map_data):
     return ret
 
 
-
 def map_entry(map_json, project, fs_root):
     norm_path = normalize_path(map_json['file'], project)
     abs_path = "{}/{}".format(fs_root, norm_path)
@@ -84,25 +61,13 @@ def map_entry(map_json, project, fs_root):
             outarr.append("{}={}".format(x,map_json[x]))
     return ' | '.join(outarr)
 
+
 def run(args):
 
-    if (len(args) < ARGS):
-        print("usage: esgmapconv <mapfile>", file=sys.stderr)
-        exit(0)
-
     with open(args[0]) as map_data:
-        ret = parse_map(map_data)
-    p = True
-    if len(args) > ARGS:
-        if args[1] == 'no':
-            p = False
-    if VERBOSE or p:
-        print(json.dumps(ret))
+        if len(args) > 1:
+            ret = parse_map(map_data, args[2])
+        else:
+            ret = parse_map(map_data)
+
     return ret
-
-def main():
-    run(sys.argv[1:])
-
-if __name__ == '__main__':
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    main()
