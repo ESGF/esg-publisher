@@ -240,14 +240,15 @@ def run(fullmap):
             exit_cleanup(scan_file)
             exit(1)
 
-    if not silent:
-        print("Done.\nRunning activity check...")
-    try:
-        act.run(new_json_data)
-    except Exception as ex:
-        print("Error running activity check: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
+        if not silent:
+            print("Done.\nRunning activity check...")
+        try:
+            act.run(new_json_data)
+        except Exception as ex:
+            print("Error running activity check: " + str(ex), file=sys.stderr)
+            exit_cleanup(scan_file)
+            exit(1)
+        out_json_data = new_json_data
 
     if not silent:
         print("Done.\nUpdating...")
