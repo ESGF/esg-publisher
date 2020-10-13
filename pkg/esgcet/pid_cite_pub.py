@@ -1,35 +1,12 @@
 import sys, json
-from esgcet.settings import DATA_NODE, PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
+from esgcet.settings import PID_PREFIX, PID_EXCHANGE, URL_Templates, HTTP_SERVICE, CITATION_URLS, PID_URL, TEST_PUB
 import traceback
 import configparser as cfg
 from pathlib import Path
 
-config = cfg.ConfigParser()
-home = str(Path.home())
-config_file = home + "/.esg/esg.ini"
-config.read(config_file)
-
-try:
-    s = config['user']['silent']
-    if 'true' in s or 'yes' in s:
-        SILENT = True
-    else:
-        SILENT = False
-except:
-    SILENT = False
-try:
-    v = config['user']['verbose']
-    if 'true' in v or 'yes' in v:
-        VERBOSE = True
-    else:
-        VERBOSE = False
-except:
-    VERBOSE = False
-
-try:
-    PID_CREDS = json.loads(config['user']['pid_creds'])
-except:
-    print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+silent = False
+verbose = False
+pid_creds = {}
 
 
 def establish_pid_connection(pid_prefix, test_publication, data_node, publish=True):
@@ -49,7 +26,7 @@ def establish_pid_connection(pid_prefix, test_publication, data_node, publish=Tr
         exit(1)
 
     pid_messaging_service_exchange_name = PID_EXCHANGE
-    pid_messaging_service_credentials = PID_CREDS
+    pid_messaging_service_credentials = pid_creds
     pid_data_node = data_node
 
     # http_service_path = None
@@ -104,7 +81,7 @@ def pid_flow_code(dataset_recs, data_node):
     dataset_pid = None
     if pid_connector:
         dataset_pid = pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
-        if not SILENT:
+        if not silent:
             print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, dataset_pid), file=sys.stderr)
     else:
         print('Warning: no connection', file=sys.stderr)
@@ -143,11 +120,11 @@ def pid_flow_code(dataset_recs, data_node):
             pid_wizard.dataset_publication_finished()
             return pid_connector, dataset_pid
         else:
-            if not SILENT:
+            if not silent:
                 print("WARNING, empty pid_wizard!", file=sys.stderr)
 
     except Exception as e:
-        if not SILENT:
+        if not silent:
             print("WARNING: PID module exception encountered! {}".format(str(e)), file=sys.stderr)
         traceback.print_exc()
 
@@ -183,26 +160,15 @@ def run(args):
     if len(args) < 1:
         print("usage: esgpidcitepub <JSON file with dataset output>", file=sys.stderr)
         exit(1)
-    
-    config = cfg.ConfigParser()
-    home = str(Path.home())
-    config_file = home + "/.esg/esg.ini"
-    config.read(config_file)
-    p = False
-    if args[-1] == 'no':
-        data_node = args[1]
-    else:
-        p = True
-        try:
-            data_node = config['user']['data_node']
-        except:
-            print("Data node not defined. Define in esg.ini.", file=sys.stderr)
-            exit(1)
 
-    if isinstance(args[0], str):
-        res = json.load(open(args[0]))
-    else:
-        res = args[0]
+    res = args[0]
+    data_node = args[1]
+    global pid_creds
+    global silent
+    global verbose
+    pid_creds = args[2]
+    silent = args[3]
+    verbose = args[4]
 
     pid_connector, pid = pid_flow_code(res, data_node)
 
@@ -219,8 +185,7 @@ def run(args):
         exit(-1)
 
     pid_connector.finish_messaging_thread()
-    if p or VERBOSE:
-        print(json.dumps(res))
+    
     return res
 
 
@@ -228,15 +193,10 @@ def mainrun(args):
     res = run(args)
     if type(res) is list:
         rewrite_json(args[0], res) 
-    elif not SILENT:
+    elif not silent:
         print("Something went wrong, PID/cite information were not added")
-def main():
-    mainrun(sys.argv[1:])
 
 
-if __name__ == '__main__':
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    main()
 
 
 #    "xlink":["http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.RFMIP.MOHC.HadGEM3-GC31-LL.rad-irf.r1i1p3f3.Efx.rld.gn.v20191030.json|Citation|citation",

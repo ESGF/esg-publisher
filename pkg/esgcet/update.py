@@ -5,29 +5,9 @@ import configparser as cfg
 from datetime import datetime
 from pathlib import Path
 
-config = cfg.ConfigParser()
-home = str(Path.home())
-config_file = home + "/.esg/esg.ini"
-config.read(config_file)
-
-try:
-    s = config['user']['silent']
-    if 'true' in s or 'yes' in s:
-        SILENT = True
-    else:
-        SILENT = False
-except:
-    SILENT = False
-try:
-    v = config['user']['verbose']
-    if 'true' in v or 'yes' in v:
-        VERBOSE = True
-    else:
-        VERBOSE = False
-except:
-    VERBOSE = False
-
 ARGS = 1
+silent = False
+verbose = False
 
 SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
 
@@ -55,36 +35,14 @@ def gen_hide_xml(id, *args):
 
 def run(args):
 
-    if len(args) < 1:
-        print("usage: esgupdate <JSON file with dataset output>", file=sys.stderr)
-        exit(1)
-    try:
-        if len(args) == 1:
-            input_rec = json.load(open(args[0]))
-        else:
-            input_rec = args[0]
-    except Exception as e:
-        print("Error opening input json format {}".format(e), file=sys.stderr)
-        exit(1)
-    config = cfg.ConfigParser()
-    home = str(Path.home())
-    config_file = home + "/.esg/esg.ini"
-    config.read(config_file)
-    if len(args) == 3:
-        index_node = args[1]
-        cert_fn = args[2]
-    else:
-        try:
-            index_node = config['user']['index_node']
-        except:
-            print("Index node not defined. Define in esg.ini.", file=sys.stderr)
-            exit(1)
+    global silent
+    global verbose
 
-        try:
-            cert_fn = config['user']['cert']
-        except:
-            print("Certificate file not found. Define in esg.ini.", file=sys.stderr)
-            exit(1)
+    input_rec = args[0]
+    index_node = args[1]
+    cert_fn = args[2]
+    silent = args[3]
+    verbose = args[4]
 
     # The dataset record either first or last in the input file
     dset_idx = -1
@@ -101,11 +59,11 @@ def run(args):
     # query for 
     url = SEARCH_TEMPLATE.format(index_node, dnode, mst)
 
-    if VERBOSE:
+    if verbose:
         print(url)
     resp = requests.get(url)
 
-    if VERBOSE:
+    if verbose:
         print(resp.text)
     if not resp.status_code == 200:
         print('Error', file=sys.stderr)
@@ -120,18 +78,9 @@ def run(args):
         pubCli = publisherClient(cert_fn, index_node)
         print (update_rec)
         pubCli.update(update_rec)
-        if not SILENT:
+        if not silent:
             print('INFO: Found previous version, updating the record: {}'.format(dsetid))
 
     else:
-        if not SILENT:
+        if not silent:
             print('INFO: First dataset version for {}.'.format(mst))
-
-
-def main():
-    run(sys.argv[1:])
-
-
-if __name__ == '__main__':
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    main()
