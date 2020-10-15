@@ -9,7 +9,23 @@ Usage
 
 ``esgupdate`` is used with the follwing syntax::
 
-    esgupdate <JSON file>
+    esgupdate --pub-rec <JSON file>
 
 where ``<JSON file>`` is the output of the ``esgpidcitepub`` command.
-This command assumes that ``index_node`` and ``cert`` are defined in the ``esg.ini`` config file.
+
+Additional command line options are as follows::
+
+    usage: esgupdate [-h] [--index-node INDEX_NODE] [--certificate CERT] --pub-rec JSON_DATA [--ini CFG]
+
+    Publish data sets to ESGF databases.
+
+    optional arguments:
+        -h, --help            show this help message and exit
+        --index-node INDEX_NODE
+                              Specify index node.
+        --certificate CERT, -c CERT
+                              Use the following certificate file in .pem form for publishing (use a myproxy login to generate).
+        --pub-rec JSON_DATA   JSON file output from esgpidcitepub or esgmkpubrec.
+        --ini CFG, -i CFG     Path to config file.
+
+You can also define most of these options in the config file if you choose.
