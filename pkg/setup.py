@@ -71,7 +71,8 @@ if make_config:
                                           'esgpublish=esgcet.pub_internal:main',
                                           'esgupdate=esgcet.esgupdate:main',
                                           'esgmapconv=esgcet.esgmapconv:main',
-                                          'esgmigrate=esgcet.esgmigrate:main']}
+                                          'esgmigrate=esgcet.esgmigrate:main']},
+        data_files=[(FULLPATH, ['esg.ini'])]
     )
 else:
     setup(
@@ -97,6 +98,5 @@ else:
                                           'esgpublish=esgcet.pub_internal:main',
                                           'esgupdate=esgcet.esgupdate:main',
                                           'esgmapconv=esgcet.esgmapconv:main'
-                                          'esgmigrate=esgcet.esgmigrate:main']},
-        data_files=[(FULLPATH, ['esg.ini'])]
+                                          'esgmigrate=esgcet.esgmigrate:main']}
         )
