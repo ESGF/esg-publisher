@@ -13,6 +13,7 @@ def get_args():
     # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
     parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
+    parser.add_argument("--esgmigrate", dest="migrate", action="store_true", help="Run esgmigrate before publishing, to migrate over old config. May be left with incomplete config settings.")
     parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
@@ -22,6 +23,8 @@ def get_args():
     parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.")
     parser.add_argument("--map", dest="map", required=True, nargs="+", help="Mapfile or list of mapfiles.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
+    parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
     pub = parser.parse_args()
 

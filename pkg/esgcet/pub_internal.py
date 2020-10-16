@@ -5,6 +5,7 @@ import esgcet.index_pub as ip
 import esgcet.pid_cite_pub as pid
 import esgcet.activity_check as act
 import esgcet.args as args
+import esgcet.esgmigrate as migrate
 import os
 import json
 import sys
@@ -44,8 +45,6 @@ def run(fullmap):
     fname_split = fname.split(".")
     proj = fname_split[0]
     cmip6 = False
-    if proj == "CMIP6":
-        cmip6 = True
 
     files = []
     files.append(fullmap)
@@ -57,6 +56,10 @@ def run(fullmap):
     if pub.json is not None:
         json_file = pub.json
         third_arg_mkd = True
+
+    if pub.migrate:
+        migrate.run({})
+
     ini_file = pub.cfg
     config = cfg.ConfigParser()
     config_file = ini_file
@@ -64,23 +67,37 @@ def run(fullmap):
 
     if pub.proj != "":
         proj = pub.proj
-    try:
-        s = config['user']['silent']
-        if 'true' in s or 'yes' in s:
-            silent = True
-        else:
-            silent = False
-    except:
-        silent = False
+    else:
+        try:
+            proj = config['user']['project']
+        except:
+            pass
+    if proj == "CMIP6":
+        cmip6 = True
 
-    try:
-        v = config['user']['silent']
-        if 'true' in v or 'yes' in v:
-            verbose = True
-        else:
+    if not pub.silent:
+        try:
+            s = config['user']['silent']
+            if 'true' in s or 'yes' in s:
+                silent = True
+            else:
+                silent = False
+        except:
+            silent = False
+    else:
+        silent = True
+
+    if not pub.verbose:
+        try:
+            v = config['user']['verbose']
+            if 'true' in v or 'yes' in v:
+                verbose = True
+            else:
+                verbose = False
+        except:
             verbose = False
-    except:
-        verbose = False
+    else:
+        verbose = True
     
     if pub.cert == "./cert.pem":
         try:

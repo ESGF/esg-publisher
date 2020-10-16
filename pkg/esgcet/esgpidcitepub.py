@@ -17,6 +17,8 @@ def get_args():
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--out-file", dest="out_file", default=None,
                         help="Optional output file destination. Default is stdout.")
+    parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
+    parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
     pub = parser.parse_args()
 
@@ -40,22 +42,30 @@ def run():
         except:
             print("Error: data node not supplied in config or command line. Exiting.", file=sys.stderr)
             exit(1)
-    try:
-        s = config['user']['silent']
-        if 'true' in s or 'yes' in s:
-            silent = True
-        else:
+
+    if not a.silent:
+        try:
+            s = config['user']['silent']
+            if 'true' in s or 'yes' in s:
+                silent = True
+            else:
+                silent = False
+        except:
             silent = False
-    except:
-        silent = False
-    try:
-        v = config['user']['silent']
-        if 'true' in v or 'yes' in v:
-            verbose = True
-        else:
+    else:
+        silent = True
+
+    if not a.verbose:
+        try:
+            v = config['user']['verbose']
+            if 'true' in v or 'yes' in v:
+                verbose = True
+            else:
+                verbose = False
+        except:
             verbose = False
-    except:
-        verbose = False
+    else:
+        verbose = True
 
     if a.data_node is None:
         try:

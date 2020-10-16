@@ -20,6 +20,8 @@ def get_args():
     parser.add_argument("--map-data", dest="map_data", required=True, help="Mapfile json data converted using esgmapconv.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--out-file", dest="out_file", default=None, help="Optional output file destination. Default is stdout.")
+    parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
+    parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
     pub = parser.parse_args()
 
@@ -38,22 +40,29 @@ def run():
         p = False
         outfile = a.out_file
 
-    try:
-        s = config['user']['silent']
-        if 'true' in s or 'yes' in s:
-            silent = True
-        else:
+    if not a.silent:
+        try:
+            s = config['user']['silent']
+            if 'true' in s or 'yes' in s:
+                silent = True
+            else:
+                silent = False
+        except:
             silent = False
-    except:
-        silent = False
-    try:
-        v = config['user']['silent']
-        if 'true' in v or 'yes' in v:
-            verbose = True
-        else:
+    else:
+        silent = True
+
+    if not a.verbose:
+        try:
+            v = config['user']['verbose']
+            if 'true' in v or 'yes' in v:
+                verbose = True
+            else:
+                    verbose = False
+        except:
             verbose = False
-    except:
-        verbose = False
+    else:
+        verbose = True
 
     try:
         map_json_data = json.load(open(a.map_data, 'r'))
@@ -109,10 +118,10 @@ def run():
     try:
         data_roots = json.loads(config['user']['data_roots'])
         if data_roots == 'none':
-            print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
+            print("Data roots undefined. Define in config file to create file metadata.", file=sys.stderr)
             exit(1)
     except:
-        print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
+        print("Data roots undefined. Define in config file to create file metadata.", file=sys.stderr)
         exit(1)
 
     try:

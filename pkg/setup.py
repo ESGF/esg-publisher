@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from pathlib import Path
 import os
 import sys
-import esgcet.esgmigrate as esgmigrate
+#import esgcet.esgmigrate as esgmigrate
 import configparser as cfg
 from shutil import copyfile
 
@@ -39,12 +39,12 @@ if config_exists:
         copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
         make_config = True
 else:
-    if os.path.exists(DEFAULT_ESGINI):
-        print("Old esg config found. Migrating.")
-        esgmigrate.run({})
-        make_config = False
-    else:
-        make_config = True
+    #if os.path.exists(DEFAULT_ESGINI):
+    #    print("Old esg config found. Migrating.")
+    #    esgmigrate.run({})
+    #    make_config = False
+    #else:
+    make_config = True
 
 
 if make_config:

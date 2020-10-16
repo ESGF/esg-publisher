@@ -16,6 +16,8 @@ def get_args():
     parser.add_argument("--pub-rec", dest="json_data", required=True,
                         help="JSON file output from esgpidcitepub or esgmkpubrec.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
+    parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
     pub = parser.parse_args()
 
@@ -27,25 +29,34 @@ def run():
 
     ini_file = a.cfg
     config = cfg.ConfigParser()
-    config.read(ini_file)
-
     try:
-        s = config['user']['silent']
-        if 'true' in s or 'yes' in s:
-            silent = True
-        else:
+        config.read(ini_file)
+    except:
+        print("WARNING: no config file found.", file=sys.stderr)
+
+    if not a.silent:
+        try:
+            s = config['user']['silent']
+            if 'true' in s or 'yes' in s:
+                silent = True
+            else:
+                silent = False
+        except:
             silent = False
-    except:
-        silent = False
+    else:
+        silent = True
 
-    try:
-        v = config['user']['silent']
-        if 'true' in v or 'yes' in v:
-            verbose = True
-        else:
+    if not a.verbose:
+        try:
+            v = config['user']['verbose']
+            if 'true' in v or 'yes' in v:
+                verbose = True
+            else:
+                verbose = False
+        except:
             verbose = False
-    except:
-        verbose = False
+    else:
+        verbose = True
 
     if a.cert == "./cert.pem":
         try:
@@ -73,7 +84,7 @@ def run():
     try:
         ipub.run([new_json_data, index_node, cert, silent, verbose])
     except Exception as ex:
-        print("Error running pub test: " + str(ex), file=sys.stderr)
+        print("Error running index pub: " + str(ex), file=sys.stderr)
         exit(1)
 
 
