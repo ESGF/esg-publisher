@@ -7,6 +7,7 @@ The esgcet package for ESGF Publication
    install
    autocurator
    cmor
+   esgmigrate
    esgpublish
    esgmapconv
    esgmkpubrec
