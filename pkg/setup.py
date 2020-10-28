@@ -69,10 +69,14 @@ if make_config:
                                           'esgmkpubrec=esgcet.esgmkpubrec:main',
                                           'esgindexpub=esgcet.esgindexpub:main',
                                           'esgpublish=esgcet.pub_internal:main',
-                                          'esgupdate=esgcet.esgupdate:main',
-                                          'esgmapconv=esgcet.esgmapconv:main',
-                                          'esgmigrate=esgcet.esgmigrate:main']},
+
+
+                                          'esgupdate=esgcet.update:main',
+                                          'esgmapconv=esgcet.mapfile:main',
+                                          'esgmigrate=esgcet.esgmigrate:main',
+                                          'esgunpublish=esgcet.esgunpublish:main']}, 
         data_files=[(FULLPATH, ['esg.ini'])]
+
     )
 else:
     setup(

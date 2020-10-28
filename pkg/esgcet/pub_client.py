@@ -12,7 +12,7 @@ class publisherClient(object):
         self.retractUrl = '{}/retract'.format(urlbase)
         self.updateUrl = '{}/update'.format(urlbase)
         self.publishUrl = '{}/publish'.format(urlbase)
-        self.deleteUrl = '{}/retract'.format(urlbase)
+        self.deleteUrl = '{}/delete'.format(urlbase)
         self.verbose = verbose
 
     def post_data(self, url, data):
@@ -54,9 +54,14 @@ verify=False, allow_redirects=True)
         # text = root[0].text
         # return (response.status_code, text)
     def delete(self, object_id):
+        
+        data = { 'id' : object_id }
+
+        print (data)
         try:
             response = self.post_data(self.deleteUrl, data)
         except requests.exceptions.SSLError as e:
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
+        print(response.text)

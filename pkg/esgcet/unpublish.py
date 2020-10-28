@@ -1,9 +1,11 @@
 from pub_client import publisherClient
 import sys, json
-from settings import INDEX_NODE, CERT_FN
+from settings import INDEX_NODE, CERT_FN, DATA_NODE
 
+# TODO 1 Get from config file instead of settings (or args)
 hostname = INDEX_NODE
 cert_fn = CERT_FN
+data_node = DATA_NODE
 
 ARGS = 1
 
@@ -20,10 +22,16 @@ def main(args):
 
     dset_id =  args[-1]
 
+    # ensure that dataset id is in correct format, use the set data node as a default
+    if not '|' in dset_id:
+
+        dset_id_new = '{}|{}'.format(dset_id, data_node)
+        dset_id = dset_id_new
+        
     pubCli = publisherClient(cert_fn, hostname)
 
     if do_delete:
-        pubCl.delete(dset_id)
+        pubCli.delete(dset_id)
     else:
         pubCli.retract(dset_id)
 
