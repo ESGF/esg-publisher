@@ -1,6 +1,6 @@
-from pub_client import publisherClient
+from esgcet.pub_client import publisherClient
 import sys, json
-from settings import INDEX_NODE, CERT_FN, DATA_NODE
+from esgcet.settings import INDEX_NODE, CERT_FN, DATA_NODE
 
 # TODO 1 Get from config file instead of settings (or args)
 hostname = INDEX_NODE
@@ -9,7 +9,7 @@ data_node = DATA_NODE
 
 ARGS = 1
 
-def main(args):
+def run(args):
 
     if len(args) < (ARGS):
         print("Missing required arguments")
@@ -35,5 +35,11 @@ def main(args):
     else:
         pubCli.retract(dset_id)
 
+def main():
+    run(sys.argv[1:])
+
+
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()
+

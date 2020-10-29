@@ -53,6 +53,8 @@ verify=False, allow_redirects=True)
         # root = etree.fromstring(response.content)
         # text = root[0].text
         # return (response.status_code, text)
+        print(response.text)
+
     def delete(self, object_id):
         
         data = { 'id' : object_id }
