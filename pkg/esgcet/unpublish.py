@@ -1,31 +1,35 @@
-from pub_client import publisherClient
+from esgcet.pub_client import publisherClient
 import sys, json
-from settings import INDEX_NODE, CERT_FN
+from esgcet.settings import INDEX_NODE, CERT_FN, DATA_NODE
 
-hostname = INDEX_NODE
-cert_fn = CERT_FN
 
-ARGS = 1
+def run(args):
 
-def main(args):
+    dset_id = args[0]
+    do_delete = args[1]
+    data_node = args[2]
+    hostname = args[3]
+    cert_fn = args[4]
 
-    if len(args) < (ARGS):
-        print("Missing required arguments")
-        exit(0)
 
-    if len(args) > 1 and '--delete' in args:
-        do_delete = True
-    else:
-        do_delete = False
+    # ensure that dataset id is in correct format, use the set data node as a default
+    if not '|' in dset_id:
 
-    dset_id =  args[-1]
-
+        dset_id_new = '{}|{}'.format(dset_id, data_node)
+        dset_id = dset_id_new
+        
     pubCli = publisherClient(cert_fn, hostname)
 
     if do_delete:
-        pubCl.delete(dset_id)
+        pubCli.delete(dset_id)
     else:
         pubCli.retract(dset_id)
 
+def main():
+    run(sys.argv[1:])
+
+
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    main()
+

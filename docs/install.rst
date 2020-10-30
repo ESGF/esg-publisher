@@ -91,6 +91,9 @@ The default config file will look like this::
 
 Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
 
+If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
+See that page for more info.
+
 Run Time Args
 -------------
 
