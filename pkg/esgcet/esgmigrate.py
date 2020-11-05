@@ -14,25 +14,23 @@ CONFIG_FN_DEST = "~/.esg/esg.ini"
 
 def run(args):
 
-    ini_path = DEFAULT_ESGINI
+    ini_path = args[0]
+    silent = args[1]
+    verbose = args[2]
 
-    if 'fn' in args:
-        ini_path = args['fn']
-    elif args.get('automigrate', False):
-        if os.path.exists(CONFIG_FN_DEST):
-            print('Config file already exists, exiting')
-            return
-    #  TODO  For automigrate, exit if the new settings file is found
+    if os.path.exists(CONFIG_FN_DEST):
+        print("New config file exists, exiting.", file=sys.stderr)
+        exit(0)
 
     if not os.path.exists(ini_path + '/esg.ini'):
-        print("esg.ini not found or unreadable")
-        return
+        print("esg.ini not found or unreadable", file=sys.stderr)
+        exit(1)
 
     try:
         sp = SectionParser('config:cmip6')
-        sp.parse( ini_path)
+        sp.parse(ini_path)
     except Exception as e:
-        print("Exception encountered {}".format(str(e)))
+        print("Exception encountered {}".format(str(e)), file=sys.stderr)
         return
 
     thredds_url = sp.get("thredds_url")
@@ -91,13 +89,14 @@ def run(args):
 
     CERT_FN = cert_base.replace('%(home)s', '~')
 
-    print(str(dr_dict))
-    print(str(pid_creds))
-    print(data_node)
-    print(index_node)
-    print(CERT_FN)
-    print(DATA_TRANSFER_NODE)
-    print(GLOBUS_UUID)
+    if verbose:
+        print(str(dr_dict))
+        print(str(pid_creds))
+        print(data_node)
+        print(index_node)
+        print(CERT_FN)
+        print(DATA_TRANSFER_NODE)
+        print(GLOBUS_UUID)
 
     d = date.today()
     t = d.strftime("%y%m%d")
@@ -117,15 +116,3 @@ def run(args):
     with open(config_file, "w") as cf:
         config.write(cf)
 
-
-def main():
-
-    args = {}
-    if len(sys.argv) > 1:
-        args['fn'] = sys.argv[1]
-    run(args)
-
-
-if __name__ == "__main__":
-    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    main()

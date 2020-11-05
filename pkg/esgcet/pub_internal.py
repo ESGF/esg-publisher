@@ -14,6 +14,10 @@ from cmip6_cv import PrePARE
 from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
+import esgcet.esgmigrate as em
+
+DEFAULT_ESGINI = '/esg/config/esgcet'
+
 
 def prepare_internal(json_map, cmor_tables):
     print("iterating through filenames for PrePARE (internal version)...")
@@ -63,7 +67,15 @@ def run(fullmap):
     ini_file = pub.cfg
     config = cfg.ConfigParser()
     config_file = ini_file
-    config.read(config_file)
+    try:
+        config.read(config_file)
+    except Exception as ex:
+        if not os.path.exists(ini_file):
+            print("No config file found. Attempting to migrate old settings.")
+            em.run(DEFAULT_ESGINI, False, False)
+        else:
+            print("Error opening config file: " + str(ex))
+            exit(1)
 
     if pub.proj != "":
         proj = pub.proj
