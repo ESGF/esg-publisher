@@ -16,8 +16,7 @@ class publisherClient(object):
         self.verbose = verbose
 
     def post_data(self, url, data):
-        resp =  requests.post(url, data=data, cert=(self.certFile, self.keyFile), \
-verify=False, allow_redirects=True)
+        resp =  requests.post(url, data=data, verify=False, allow_redirects=True)
         if self.verbose:
             print(resp.text)
         return resp
