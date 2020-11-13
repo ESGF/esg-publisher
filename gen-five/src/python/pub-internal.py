@@ -10,6 +10,37 @@ import tempfile
 from cmip6_cv import PrePARE
 from settings import *
 
+CMOR_PATH = "/export/witham3/cmor"
+
+def run_ac(input_rec):
+    cv_path = "{}/CMIP6_CV.json".format(CMOR_PATH)
+    jobj = json.load(open(cv_path))["CV"]
+    sid_dict = jobj["source_id"]
+
+    src_id = input_rec['source_id']
+    act_id = input_rec['activity_drs']
+
+    if src_id not in sid_dict:
+        return False
+
+    rec = sid_dict[src_id]
+    return act_id in rec["activity_participation"]
+
+
+def run_ec(rec):
+    cv_path = "{}/CMIP6_CV.json".format(CMOR_PATH)
+
+    act_id = rec['activity_drs']
+    exp_id = rec['experiment_id']
+
+    cv_table = json.load(open(cv_path, 'r'))["CV"]
+    if exp_id not in cv_table['experiment_id']:
+        return False
+    elif act_id not in cv_table['experiment_id'][exp_id]['activity_id'][0]:
+        return False
+    else:
+        return True
+
 
 def prepare_internal(json_map, cmor_tables):
     print("iterating through filenames for PrePARE (internal version)...")
@@ -82,7 +113,15 @@ def main(fullmap):
         print("Error making dataset: " + str(ex))
         exit_cleanup(scan_file)
         exit(1)"""
-
+    print("Done, running ac")
+    ac_valid = run_ac(out_json_data[-1])
+    if ac_valid:
+        ec_valid = run_ec(out_json_data[-1])
+    else:
+        print("WARNING: Failed ac check.")
+    if not ec_valid:
+        print("WARNING: Failed ec check.")
+    
     if cmip6:
         print("Done.\nRunning pid cite...")
         try:
@@ -91,6 +130,8 @@ def main(fullmap):
             print("Error running pid cite: " + str(ex))
             exit_cleanup(scan_file)
             exit(1)
+    else:
+        new_json_data = out_json_data
 
     print("Done.\nUpdating...")
     try:
