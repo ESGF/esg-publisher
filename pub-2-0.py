@@ -15,7 +15,7 @@ FLAG_FILE = "/export/witham3/pub-internal/flag.txt"
 SUCCESS_DIR = "/p/user_pub/publish-queue/CMIP6-maps-done/"
 FAIL_DIR = "/p/user_pub/publish-queue/CMIP6-maps-err/"
 TMP_DIR = "/export/witham3/tmplogs/"
-ERROR_LOGS = "/export/witham3/error-logs/"
+ERROR_LOGS = "esg/log/publisher/"
 MAP_PREFIX = "/p/user_pub/publish-queue/CMIP6-maps-todo/"
 
 CMOR_PATH = "/export/witham3/cmor"
@@ -58,8 +58,12 @@ def run_ec(rec):
 
 
 def check_errata(pid):
-    get_error = "errata.es-doc.org/1/resolve/simple-pid?datasets={}".format(pid)
-    resp = json.loads(requests.get(get_error, timeout=120, verify=False).text)
+    get_error = "http://errata.es-doc.org/1/resolve/simple-pid?datasets={}".format(pid)
+    try:
+        resp = json.loads(requests.get(get_error, timeout=120, verify=False).text)
+    except:
+        print("Could not reach errata site.")
+        return False
     errata = resp[next(iter(resp))]["hasErrata"]
     if errata:
         uid = str(resp[next(iter(resp))]["errataIds"][0])
@@ -207,10 +211,10 @@ def main():
                         errata = check_errata(fn)
                         not_latest = check_latest(fn)
                         if errata:
-                            shutil.move(fullmap, "/export/witham3/errata-maps/" + m)
+                            shutil.move(fullmap, FAIL_DIR + "errata/" + m)
                             shutil.move(log, ERROR_LOGS + "errata/" + l)
                         elif not_latest:
-                            shutil.move(fullmap, "/export/witham3/superseded-maps/" + m)
+                            shutil.move(fullmap, FAIL_DIR + "superseded/" + m)
                             shutil.move(log, ERROR_LOGS + "superseded/" + l)
                         elif pid:
                             print("pid error")
