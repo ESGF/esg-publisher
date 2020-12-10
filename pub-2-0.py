@@ -15,7 +15,7 @@ FLAG_FILE = "/export/witham3/pub-internal/flag.txt"
 SUCCESS_DIR = "/p/user_pub/publish-queue/CMIP6-maps-done/"
 FAIL_DIR = "/p/user_pub/publish-queue/CMIP6-maps-err/"
 TMP_DIR = "/export/witham3/tmplogs/"
-ERROR_LOGS = "esg/log/publisher/"
+ERROR_LOGS = "/esg/log/publisher/"
 MAP_PREFIX = "/p/user_pub/publish-queue/CMIP6-maps-todo/"
 
 CMOR_PATH = "/export/witham3/cmor"
