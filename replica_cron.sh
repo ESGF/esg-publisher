@@ -3,7 +3,7 @@
 cd /export/witham3/pub-internal
 running=`ps -fe | grep pub-2-0 | wc -l`
 conda activate esgf-pub-v5
-if [ $running -gt 0 ]
+if [ $running -gt 1 ]
 then
   exit 0
 else
