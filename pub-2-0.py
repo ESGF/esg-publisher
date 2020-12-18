@@ -80,14 +80,22 @@ def check_errata(pid):
 def check_latest(pid):
     get_meta = "https://esgf-node.llnl.gov/esg-search/search?format=application%2fsolr%2bjson&instance_id={}&fields=retracted,latest".format(pid)
     resp = json.loads(requests.get(get_meta, timeout=120).text)
-    latest = resp["response"]["docs"][0]["latest"]
-    retracted = resp["response"]["docs"][0]["retracted"]
-    if not latest or retracted:
-        print("Superseded by later version.")
-        return True
-    else:
-        print("Dataset is current version.")
-        return False
+    try:
+        latest = resp["response"]["docs"][0]["latest"]
+        retracted = resp["response"]["docs"][0]["retracted"]
+        if not latest or retracted:
+            print("Superseded by later version.")
+            return "superseded"
+        else:
+            print("Dataset is current version.")
+            return "current"
+    except Exception as ex:
+        if resp["response"]["numFound"] == 0:
+            print("No original record found.")
+            return "missing"
+        else:
+            print("Error fetching from esg-search api.")
+            return "error"
 
 
 def send_msg(message, to_email):
@@ -201,21 +209,24 @@ def main():
                                 autoc = True
                             if "Failed ac check" in line or "Failed ec check" in line:
                                 print("WARNING: Failed activity check or experiment id check")
+                    fn = log[24:-8]
+                    m = fn + ".map"
+                    l = fn + ".log"
                     if success < 2:
                         if ".part" in log:
                             continue
                         print("error " + fullmap)
-                        fn = log[24:-8]
-                        m = fn + ".map"
-                        l = fn + ".log"
                         errata = check_errata(fn)
-                        not_latest = check_latest(fn)
+                        latest_rc = check_latest(fn)
                         if errata:
                             shutil.move(fullmap, FAIL_DIR + "errata/" + m)
                             shutil.move(log, ERROR_LOGS + "errata/" + l)
-                        elif not_latest:
+                        elif latest_rc == "superseded":
                             shutil.move(fullmap, FAIL_DIR + "superseded/" + m)
                             shutil.move(log, ERROR_LOGS + "superseded/" + l)
+                        elif latest_rc == "missing":
+                            shutil.move(fullmap, FAIL_DIR + "missing/" + m)
+                            shutil.move(log, ERROR_LOGS + "missing/" + l)
                         elif pid:
                             print("pid error")
                         elif filesystem:
