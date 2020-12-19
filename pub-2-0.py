@@ -17,6 +17,7 @@ FAIL_DIR = "/p/user_pub/publish-queue/CMIP6-maps-err/"
 TMP_DIR = "/export/witham3/tmplogs/"
 ERROR_LOGS = "/esg/log/publisher/"
 MAP_PREFIX = "/p/user_pub/publish-queue/CMIP6-maps-todo/"
+ERR_PREFIX = "/p/user_pub/publish-queue/CMIP6-maps-err/"
 
 CMOR_PATH = "/export/witham3/cmor"
 
@@ -64,7 +65,11 @@ def check_errata(pid):
     except:
         print("Could not reach errata site.")
         return False
-    errata = resp[next(iter(resp))]["hasErrata"]
+    try:
+        errata = resp[next(iter(resp))]["hasErrata"]
+    except:
+        print("Errata site threw error.")
+        return False
     if errata:
         uid = str(resp[next(iter(resp))]["errataIds"][0])
         get_desc = "errata.es-doc.org/1/issue/retrieve?uid={}".format(uid)
@@ -81,6 +86,9 @@ def check_latest(pid):
     get_meta = "https://esgf-node.llnl.gov/esg-search/search?format=application%2fsolr%2bjson&instance_id={}&fields=retracted,latest".format(pid)
     resp = json.loads(requests.get(get_meta, timeout=120).text)
     try:
+        if resp["response"]["numFound"] == 0:
+            print("No original record found.")
+            return "missing"
         latest = resp["response"]["docs"][0]["latest"]
         retracted = resp["response"]["docs"][0]["retracted"]
         if not latest or retracted:
@@ -90,12 +98,8 @@ def check_latest(pid):
             print("Dataset is current version.")
             return "current"
     except Exception as ex:
-        if resp["response"]["numFound"] == 0:
-            print("No original record found.")
-            return "missing"
-        else:
-            print("Error fetching from esg-search api.")
-            return "error"
+        print("Error fetching from esg-search api.")
+        return "error"
 
 
 def send_msg(message, to_email):
@@ -127,6 +131,8 @@ def check_flag():
 def main():
     run = True
     count = 0
+    redo_errs = False
+    errs_done = False
     print("USER WARNING: This job will continue to run until stopped. Use text file flag to quit job.")
     while run:
         check_flag()
@@ -138,17 +144,34 @@ def main():
             time.sleep(300)
             continue
         if count == 0:
-            print("No maps left to do. Going to sleep.")
+            print("No maps left to do.")
+            if not errs_done:
+                print("Re checking errors...")
+                redo_errs = True
+                continue
+            print("Going to sleep.")
             time.sleep(1000)
             continue
         check_flag()
+        if redo_errs:
+            try:
+                files = os.listdir("/p/user_pub/publish-queue/CMIP6-maps-err")
+                count = len(files)
+            except:
+                print("Filesystem error likely. Will attempt to resume in 5 minutes.")
+                time.sleep(300)
+                continue
         jobs = []
         logs = []
         p_list = []
         maps = []
         timeout = []
         for f in files:
-            fullmap = MAP_PREFIX + f
+            check_flag()
+            if redo_errs:
+                fullmap = ERR_PREFIX + f
+            else:
+                fullmap = MAP_PREFIX + f
             if fullmap[-4:] != ".map":
                 if ".part" in fullmap:
                     try:
@@ -157,9 +180,10 @@ def main():
                         if 'already exists' in str(ex):
                             os.remove(fullmap)
                     continue
-                if "greyworm" in f:
+                elif "greyworm" in f:
                     os.remove(fullmap)
-                    check_flag()
+                    continue
+                else:
                     continue
             maps.append(fullmap)
             log = TMP_DIR + f + ".log"
@@ -213,6 +237,8 @@ def main():
                     m = fn + ".map"
                     l = fn + ".log"
                     if success < 2:
+                        if redo_errs:
+                            continue
                         if ".part" in log:
                             continue
                         print("error " + fullmap)
@@ -273,6 +299,9 @@ def main():
                 p_list = []
                 maps = []
                 check_flag()
+                if redo_errs:
+                    redo_errs = False
+                    errs_done = True
                 if gotosleep:
                     print("Going to sleep to resolve filesystem/server error. Will resume in 10 minutes.")
                     time.sleep(600)
