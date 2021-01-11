@@ -100,7 +100,7 @@ CITATION_URLS = { 'CMIP6' : {'test' :
 }
 
 
-PID_URL = 'http://hd1.handle.net/{}|PID|pid'  # PIDs include hdl:
+PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
 TEST_PUB = False
 
 PROJECT = "CMIP6"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
