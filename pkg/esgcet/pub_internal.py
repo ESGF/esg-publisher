@@ -15,40 +15,39 @@ from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
 import esgcet.esgmigrate as em
+from esgcet.cmip6 import cmip6
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
-
-
-def prepare_internal(json_map, cmor_tables):
-    print("iterating through filenames for PrePARE (internal version)...")
-    validator = PrePARE.PrePARE
-    for info in json_map:
-        filename = info[1]
-        process = validator.checkCMIP6(cmor_tables)
-        process.ControlVocab(filename)
 
 
 def check_files(files):
     for file in files:
         try:
             myfile = open(file, 'r')
+            myfile.close()
         except Exception as ex:
             print("Error opening file " + file + ": " + str(ex))
             exit(1)
-        myfile.close()
 
 
-def exit_cleanup(scan_file):
-    scan_file.close()
+def exit_cleanup(files):
+    for f in files:
+        f.close()
+
+
+def check_data(data, proj):
+    if data is None:
+        exit_cleanup(proj.files)
+        exit(1)
 
 
 def run(fullmap):
 
+    # SETUP
     split_map = fullmap.split("/")
     fname = split_map[-1]
     fname_split = fname.split(".")
     proj = fname_split[0]
-    cmip6 = False
 
     files = []
     files.append(fullmap)
@@ -60,6 +59,7 @@ def run(fullmap):
     if pub.json is not None:
         json_file = pub.json
         third_arg_mkd = True
+
 
     if pub.migrate:
         migrate.run({})
@@ -84,8 +84,6 @@ def run(fullmap):
             proj = config['user']['project']
         except:
             pass
-    if proj == "CMIP6":
-        cmip6 = True
 
     if not pub.silent:
         try:
@@ -190,8 +188,6 @@ def run(fullmap):
             print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.", file=sys.stderr)
             exit(1)
 
-    scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
-    scanfn = scan_file.name  # name to refer to tmp file
 
     if not conda_auto:
         autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
@@ -200,18 +196,19 @@ def run(fullmap):
 
     os.system("cert_path=" + cert)
 
-    if not silent:
-        print("Converting mapfile...")
-    try:
-        map_json_data = mp.run([fullmap, proj])
-    except Exception as ex:
-        print("Error with converting mapfile: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
-    if not silent:
-        print("Done.")
+    arglist = [fullmap, third_arg_mkd, silent, verbose, cert, autoc_command, index_node, data_node, data_roots, globus, dtn, replica]
 
-    if cmip6:
+    if third_arg_mkd:
+        arglist.append(json_file)
+
+    # ___________________________________________
+    # WORKFLOW
+
+    # step one: convert mapfile
+    map_json_data = proj.mapfile([fullmap, proj])
+
+    # step two: prepare (cmip6 only)
+    if proj == "cmip6":
         if pub.cmor_path is None:
             try:
                 cmor_tables = config['user']['cmor_path']
@@ -220,86 +217,53 @@ def run(fullmap):
                 exit(1)
         else:
             cmor_tables = pub.cmor_path
-        try:
-            prepare_internal(map_json_data, cmor_tables)
-        except Exception as ex:
-            print("Error with PrePARE: " + str(ex), file=sys.stderr)
-            exit_cleanup(scan_file)
-            exit(1)
+        arglist.append(cmor_tables)
 
-    # Run autocurator and all python scripts
+        proj.prepare_internal(map_json_data, cmor_tables)
+
+    # step three: run autocurator
     if not silent:
         print("Running autocurator...")
-    datafile = map_json_data[0][1]
+    proj.autocurator(map_json_data, autoc_command)
 
-    destpath = os.path.dirname(datafile)
-    outname = os.path.basename(datafile)
-    idx = outname.rfind('.')
-
-    autstr = autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
-    stat = os.system(autstr.format(scanfn, destpath))
-    if os.WEXITSTATUS(stat) != 0:
-        print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
-        exit(os.WEXITSTATUS(stat))
-
+    # step four: make dataset
     if not silent:
         print("Done.\nMaking dataset...")
-    try:
-        if third_arg_mkd:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose, json_file])
-        else:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
-    except Exception as ex:
-        print("Error making dataset: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
+    if third_arg_mkd:
+        out_json_data = proj.mk_dataset(
+            [map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose,
+             json_file])
+    else:
+        out_json_data = proj.mk_dataset(
+            [map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
+    check_data(out_json_data, proj)
 
     if cmip6:
         if not silent:
-            print("Done.\nRunning pid cite...")
+            print("Done.\nRunning pid cite and activity check...")
         try:
             pid_creds = json.loads(config['user']['pid_creds'])
         except:
             print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
             exit(1)
-        try:
-            new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
-        except Exception as ex:
-            print("Error running pid cite: " + str(ex), file=sys.stderr)
-            exit_cleanup(scan_file)
-            exit(1)
-
-        if not silent:
-            print("Done.\nRunning activity check...")
-        try:
-            act.run(new_json_data)
-        except Exception as ex:
-            print("Error running activity check: " + str(ex), file=sys.stderr)
-            exit_cleanup(scan_file)
-            exit(1)
-        out_json_data = new_json_data
+        new_json_data = proj.pid_ac([out_json_data, data_node, pid_creds, silent, verbose])
+    else:
+        new_json_data = out_json_data
+    check_data(new_json_data, proj)
 
     if not silent:
         print("Done.\nUpdating...")
-    try:
-        up.run([new_json_data, index_node, cert, silent, verbose])
-    except Exception as ex:
-        print("Error updating: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
+    returnmsg = proj.update([new_json_data, index_node, cert, silent, verbose])
+    check_data(returnmsg, proj)
 
     if not silent:
         print("Done.\nRunning index pub...")
-    try:
-        ip.run([new_json_data, index_node, cert, silent, verbose])
-    except Exception as ex:
-        print("Error running pub test: " + str(ex), file=sys.stderr)
-        exit_cleanup(scan_file)
-        exit(1)
+    returnmsg = proj.index_pub([new_json_data, index_node, cert, silent, verbose])
+    check_data(returnmsg, proj)
 
     if not silent:
         print("Done. Cleaning up.")
-    exit_cleanup(scan_file)
+    exit_cleanup(proj.files)
 
 
 def main():
