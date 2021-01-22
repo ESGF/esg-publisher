@@ -15,7 +15,6 @@ from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
 import esgcet.esgmigrate as em
-from esgcet.cmip6 import cmip6
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
@@ -47,7 +46,7 @@ def run(fullmap):
     split_map = fullmap.split("/")
     fname = split_map[-1]
     fname_split = fname.split(".")
-    proj = fname_split[0]
+    project = fname_split[0]
 
     files = []
     files.append(fullmap)
@@ -78,10 +77,10 @@ def run(fullmap):
             exit(1)
 
     if pub.proj != "":
-        proj = pub.proj
+        project = pub.proj
     else:
         try:
-            proj = config['user']['project']
+            project = config['user']['project']
         except:
             pass
 
@@ -200,6 +199,9 @@ def run(fullmap):
 
     if third_arg_mkd:
         arglist.append(json_file)
+
+    if project == "CMIP6":
+        from esgcet.cmip6 import cmip6 as proj
 
     # ___________________________________________
     # WORKFLOW
