@@ -201,13 +201,18 @@ def run(fullmap):
         arglist.append(json_file)
 
     if project == "CMIP6":
-        from esgcet.cmip6 import cmip6 as proj
+        from esgcet.cmip6 import cmip6
+        proj = cmip6()
 
     # ___________________________________________
     # WORKFLOW
 
     # step one: convert mapfile
+    if not silent:
+        print("Converting mapfile...")
     map_json_data = proj.mapfile([fullmap, proj])
+    if not silent:
+        print("Done.")
 
     # step two: prepare (cmip6 only)
     if proj == "cmip6":
@@ -233,11 +238,11 @@ def run(fullmap):
         print("Done.\nMaking dataset...")
     if third_arg_mkd:
         out_json_data = proj.mk_dataset(
-            [map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose,
+            [map_json_data, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose,
              json_file])
     else:
         out_json_data = proj.mk_dataset(
-            [map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
+            [map_json_data, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
     check_data(out_json_data, proj)
 
     if cmip6:

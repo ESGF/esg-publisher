@@ -22,6 +22,10 @@ class cmip6:
     scanfn = scan_file.name
     files = [scan_file, ]
 
+    def __init__(self):
+        # maybe get args here
+        pass
+    
     def prepare_internal(self, json_map, cmor_tables):
         try:
             print("iterating through filenames for PrePARE (internal version)...")
@@ -35,15 +39,11 @@ class cmip6:
             exit(1)
 
     def mapfile(self, args):
-        if not silent:
-            print("Converting mapfile...")
         try:
             map_json_data = mp.run(args)
         except Exception as ex:
             print("Error with converting mapfile: " + str(ex), file=sys.stderr)
             exit(1)
-        if not silent:
-            print("Done.")
         return map_json_data
 
     def autocurator(self, map_json_data, autoc_cmd):
@@ -54,12 +54,13 @@ class cmip6:
         idx = outname.rfind('.')
 
         autstr = autoc_cmd + ' --out_pretty --out_json {} --files "{}/*.nc"'
-        stat = os.system(autstr.format(scanfn, destpath))
+        stat = os.system(autstr.format(self.scanfn, destpath))
         if os.WEXITSTATUS(stat) != 0:
             print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, args):
+        args.append(self.scanfn)
         try:
             out_json_data = mkd.run(args)
         except Exception as ex:
@@ -110,9 +111,7 @@ class cmip6:
         if third_arg_mkd:
             json_file = args[12]
             cmor_tables = args[13]
-            scanfn = args[14]
         else:
             cmor_tables = args[12]
-            scanfn = args[13]
 
 

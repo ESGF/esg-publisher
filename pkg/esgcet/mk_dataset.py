@@ -314,15 +314,15 @@ def run(args):
     global dtn
     global data_node
     global globus
-    silent = args[8]
-    verbose = args[9]
-    data_roots = args[5]
-    globus = args[6]
-    dtn = args[7]
-    data_node = args[2]
+    silent = args[7]
+    verbose = args[8]
+    data_roots = args[4]
+    globus = args[5]
+    dtn = args[6]
+    data_node = args[1]
 
     if len(args) == 11:
-        ret = get_records(args[0], args[1], args[2], args[3], args[4], xattrfn=args[10])
+        ret = get_records(args[0], args[-1], args[1], args[2], args[3], xattrfn=args[9])
     else:
-        ret = get_records(args[0], args[1], args[2], args[3], args[4])
+        ret = get_records(args[0], args[-1], args[1], args[2], args[3])
     return ret
