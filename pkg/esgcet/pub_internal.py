@@ -246,7 +246,7 @@ def run(fullmap):
         except:
             print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
             exit(1)
-        new_json_data = proj.pid_ac([out_json_data, data_node, pid_creds, silent, verbose])
+        new_json_data = proj.pid([out_json_data, data_node, pid_creds, silent, verbose])
     else:
         new_json_data = out_json_data
     check_data(new_json_data, proj)

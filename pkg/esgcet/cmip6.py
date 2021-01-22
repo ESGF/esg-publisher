@@ -67,7 +67,7 @@ class cmip6:
             return None
         return out_json_data
 
-    def pid_ac(self, args):
+    def pid(self, args):
         try:
             new_json_data = pid.run(args)
             act.run(new_json_data)
