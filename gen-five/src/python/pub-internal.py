@@ -115,6 +115,7 @@ def main(fullmap):
         exit(1)"""
     print("Done, running ac")
     ac_valid = run_ac(out_json_data[-1])
+    ec_valid = True
     if ac_valid:
         ec_valid = run_ec(out_json_data[-1])
     else:

@@ -10,16 +10,23 @@ from email.mime.base import MIMEBase
 import requests
 import json
 
+import traceback
 
-FLAG_FILE = "/export/witham3/pub-internal/flag.txt"
+
+FLAG_FILE = "/tmp/pub-flag.txt"
 SUCCESS_DIR = "/p/user_pub/publish-queue/CMIP6-maps-done/"
 FAIL_DIR = "/p/user_pub/publish-queue/CMIP6-maps-err/"
-TMP_DIR = "/export/witham3/tmplogs/"
+TMP_DIR = "/esg/log/publisher/tmplog/"
 ERROR_LOGS = "/esg/log/publisher/"
 MAP_PREFIX = "/p/user_pub/publish-queue/CMIP6-maps-todo/"
 ERR_PREFIX = "/p/user_pub/publish-queue/CMIP6-maps-err/"
 
-CMOR_PATH = "/export/witham3/cmor"
+CMOR_PATH = "/usr/local/cmip6-cmor-tables/Tables"
+OPERATOR = "ames4"  # make a parameter
+
+RECIP= "ames4@llnl.gov" # reconcile with OPERATOR for email
+
+# 'e.witham@columbia.edu'
 
 
 def run_ac(input_rec):
@@ -105,7 +112,7 @@ def check_latest(pid):
 def send_msg(message, to_email):
     print("Sending email...")
     msg = MIMEMultipart()
-    from_email = "witham3@llnl.gov" # can replace with ames4@llnl.gov
+    from_email = "{}@llnl.gov".format(OPERATOR) # can replace with ames4@llnl.gov
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = "Publisher Failure"
@@ -175,7 +182,7 @@ def main():
             if fullmap[-4:] != ".map":
                 if ".part" in fullmap:
                     try:
-                        shutil.move(fullmap, "/export/witham3/CMIP6-maps-inc/")
+                        shutil.move(fullmap, "/tmp/CMIP6-maps-inc/")
                     except Exception as ex:
                         if 'already exists' in str(ex):
                             os.remove(fullmap)
@@ -233,7 +240,8 @@ def main():
                                 autoc = True
                             if "Failed ac check" in line or "Failed ec check" in line:
                                 print("WARNING: Failed activity check or experiment id check")
-                    fn = log[24:-8]
+                    fn = log[26:-8]
+#                    print ("{} - {}".format( log, fn))
                     m = fn + ".map"
                     l = fn + ".log"
                     if success < 2:
@@ -271,7 +279,7 @@ def main():
                                     os.remove(fullmap)
                                     os.remove(log)
                                 else:
-                                    send_msg(str(ex), 'e.witham@columbia.edu')
+                                    send_msg(str(ex), RECIP)
                                     exit(1)
                         else:
                             try:
@@ -282,7 +290,7 @@ def main():
                                     os.remove(fullmap)
                                     os.remove(log)
                                 else:
-                                    send_msg(str(ex), 'e.witham@columbia.edu')
+                                    send_msg(str(ex), RECIP)
                                     exit(1)
                     else:
                         try:
@@ -292,7 +300,7 @@ def main():
                             if 'already exists' in str(ex) or 'Destination path' in str(ex):
                                 os.remove(fullmap)
                             else:
-                                send_msg(str(ex), 'e.witham@columbia.edu')
+                                send_msg(str(ex), RECIP)
                                 exit(1)
                 jobs = []
                 logs = []
@@ -322,6 +330,7 @@ if __name__ == '__main__':
             elif "No such file or directory" in str(ex):
                 print("error, attempting to list directory...")
                 check_flag()
-                continue
-            send_msg(str(ex), "e.witham@columbia.edu")
+                traceback.print_exc()
+                exit()
+            send_msg(str(ex), RECIP)
             go = False
