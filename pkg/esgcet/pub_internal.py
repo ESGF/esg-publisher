@@ -14,7 +14,9 @@ from cmip6_cv import PrePARE
 from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
-import esgcet.esgmigrate as em
+
+
+import traceback
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
@@ -72,7 +74,7 @@ def run(fullmap):
     except Exception as ex:
         if not os.path.exists(ini_file):
             print("No config file found. Attempting to migrate old settings.")
-            em.run(DEFAULT_ESGINI, False, False)
+            migrate.run(DEFAULT_ESGINI, False, False)
         else:
             print("Error opening config file: " + str(ex))
             exit(1)
@@ -205,6 +207,9 @@ def run(fullmap):
     try:
         map_json_data = mp.run([fullmap, proj])
     except Exception as ex:
+        if verbose:
+            traceback.print_exc()
+
         print("Error with converting mapfile: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
@@ -223,6 +228,8 @@ def run(fullmap):
         try:
             prepare_internal(map_json_data, cmor_tables)
         except Exception as ex:
+            if verbose:
+                traceback.print_exc()
             print("Error with PrePARE: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
@@ -250,6 +257,8 @@ def run(fullmap):
         else:
             out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
     except Exception as ex:
+        if verbose:
+            traceback.print_exc()
         print("Error making dataset: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
@@ -265,6 +274,8 @@ def run(fullmap):
         try:
             new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
         except Exception as ex:
+        if verbose:
+            traceback.print_exc()
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
@@ -284,6 +295,8 @@ def run(fullmap):
     try:
         up.run([new_json_data, index_node, cert, silent, verbose])
     except Exception as ex:
+        if verbose:
+            traceback.print_exc()
         print("Error updating: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
@@ -293,6 +306,8 @@ def run(fullmap):
     try:
         ip.run([new_json_data, index_node, cert, silent, verbose])
     except Exception as ex:
+        if verbose:
+            traceback.print_exc()
         print("Error running pub test: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
