@@ -279,6 +279,8 @@ def run(fullmap):
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
+    else:
+        new_json_data = out_json_data
 
         if not silent:
             print("Done.\nRunning activity check...")
@@ -288,7 +290,6 @@ def run(fullmap):
             print("Error running activity check: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
-        out_json_data = new_json_data
 
     if not silent:
         print("Done.\nUpdating...")
