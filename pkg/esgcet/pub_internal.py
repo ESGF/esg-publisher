@@ -274,8 +274,8 @@ def run(fullmap):
         try:
             new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
         except Exception as ex:
-        if verbose:
-            traceback.print_exc()
+            if verbose:
+                traceback.print_exc()
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
