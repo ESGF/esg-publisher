@@ -83,7 +83,9 @@ def run(fullmap):
         proj = pub.proj
     else:
         try:
-            proj = config['user']['project']
+            tmp = config['user']['project']
+            if tmp != "none":
+                proj = tmp
         except:
             pass
     if proj == "CMIP6":
