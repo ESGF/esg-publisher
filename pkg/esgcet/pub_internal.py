@@ -308,7 +308,7 @@ def run(fullmap):
     except Exception as ex:
         if verbose:
             traceback.print_exc()
-        print("Error running pub test: " + str(ex), file=sys.stderr)
+        print("Error running index pub: " + str(ex), file=sys.stderr)
         exit_cleanup(scan_file)
         exit(1)
 
