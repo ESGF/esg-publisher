@@ -27,12 +27,7 @@ if config_exists:
     try:
         config = cfg.ConfigParser()
         config.read(FULLPATH + "/esg.ini")
-        if config['version'] != VERSION:
-            print("Config file not up to date, saving back up and overwriting original.", file=sys.stderr)
-            copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
-            make_config = True
-        else:
-            make_config = False
+        make_config = False
     except:
         print("Error with existing config, saving back up and overwriting original.", file=sys.stderr)
         copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
