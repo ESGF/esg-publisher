@@ -82,8 +82,7 @@ def run(args):
         pubCli = publisherClient(cert_fn, index_node)
         print(update_rec)
         pubCli.update(update_rec)
-        file_id = docs[0]['dataset_id']
-        update_rec = gen_hide_xml(file_id, "files")
+        update_rec = gen_hide_xml(dsetid, "files")
         print(update_rec)
         pubCli.update(update_rec)
         if not silent:
