@@ -195,82 +195,24 @@ def run(fullmap):
 
     os.system("cert_path=" + cert)
 
-    arglist = [fullmap, third_arg_mkd, silent, verbose, cert, autoc_command, index_node, data_node, data_roots, globus, dtn, replica]
+    argdict = {"fullmap": fullmap, "third_arg_mkd": third_arg_mkd, "silent": silent, "verbose": verbose, "cert": cert,
+               "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node, "data_roots": data_roots,
+               "globus": globus, "dtn": dtn, "replica": replica}
 
     if third_arg_mkd:
-        arglist.append(json_file)
+        argdict["json_file"] = json_file
 
     if project == "CMIP6":
         from esgcet.cmip6 import cmip6
         proj = cmip6()
+    elif project == "non-nc":
+        from esgcet.generic_pub import GenericPublisher
+        proj = GenericPublisher()
 
     # ___________________________________________
-    # WORKFLOW
+    # WORKFLOW - one line call
 
-    # step one: convert mapfile
-    if not silent:
-        print("Converting mapfile...")
-    map_json_data = proj.mapfile([fullmap, proj])
-    if not silent:
-        print("Done.")
-
-    # step two: prepare (cmip6 only)
-    if proj == "cmip6":
-        if pub.cmor_path is None:
-            try:
-                cmor_tables = config['user']['cmor_path']
-            except:
-                print("No path for CMOR tables defined. Use --cmor-tables option or define in config file.", file=sys.stderr)
-                exit(1)
-        else:
-            cmor_tables = pub.cmor_path
-        arglist.append(cmor_tables)
-
-        proj.prepare_internal(map_json_data, cmor_tables)
-
-    # step three: run autocurator
-    if not silent:
-        print("Running autocurator...")
-    proj.autocurator(map_json_data, autoc_command)
-
-    # step four: make dataset
-    if not silent:
-        print("Done.\nMaking dataset...")
-    if third_arg_mkd:
-        out_json_data = proj.mk_dataset(
-            [map_json_data, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose,
-             json_file])
-    else:
-        out_json_data = proj.mk_dataset(
-            [map_json_data, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
-    check_data(out_json_data, proj)
-
-    if cmip6:
-        if not silent:
-            print("Done.\nRunning pid cite and activity check...")
-        try:
-            pid_creds = json.loads(config['user']['pid_creds'])
-        except:
-            print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
-            exit(1)
-        new_json_data = proj.pid([out_json_data, data_node, pid_creds, silent, verbose])
-    else:
-        new_json_data = out_json_data
-    check_data(new_json_data, proj)
-
-    if not silent:
-        print("Done.\nUpdating...")
-    returnmsg = proj.update([new_json_data, index_node, cert, silent, verbose])
-    check_data(returnmsg, proj)
-
-    if not silent:
-        print("Done.\nRunning index pub...")
-    returnmsg = proj.index_pub([new_json_data, index_node, cert, silent, verbose])
-    check_data(returnmsg, proj)
-
-    if not silent:
-        print("Done. Cleaning up.")
-    exit_cleanup(proj.files)
+    proj.workflow(argdict)
 
 
 def main():
