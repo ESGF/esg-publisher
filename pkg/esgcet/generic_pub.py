@@ -70,46 +70,47 @@ class GenericPublisher:
         return 0
 
     def workflow(self, a):
+        silent = a["silent"]
 
         # step one: convert mapfile
         if not silent:
             print("Converting mapfile...")
-        map_json_data = mapfile([a["fullmap"], a["proj"]])
+        map_json_data = self.mapfile([a["fullmap"], a["proj"]])
         if not silent:
             print("Done.")
 
-        # step three: run autocurator
+        """# step three: run autocurator
         if not silent:
             print("Running autocurator...")
-        autocurator(map_json_data, a["autoc_command"])
+        self.autocurator(map_json_data, a["autoc_command"])"""
 
         # step four: make dataset
         if not silent:
             print("Done.\nMaking dataset...")
-        if third_arg_mkd:
-            out_json_data = mk_dataset(
+        if a["third_arg_mkd"]:
+            out_json_data = self.mk_dataset(
                 [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"], a["silent"], a["verbose"],
                  a["json_file"]])
         else:
-            out_json_data = mk_dataset(
+            out_json_data = self.mk_dataset(
                 [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"], a["silent"], a["verbose"]])
 
         if out_json_data is None:
-            cleanup()
+            self.cleanup()
 
         if not silent:
             print("Done.\nUpdating...")
-        rc = update([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+        rc = self.update([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
         if rc is None:
-            cleanup()
+            self.cleanup()
 
         if not silent:
             print("Done.\nRunning index pub...")
-        rc = index_pub([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+        rc = self.index_pub([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
         if rc is None:
-            cleanup()
+            self.cleanup()
 
         if not silent:
             print("Done. Cleaning up.")
-        cleanup()
+        self.cleanup()
 

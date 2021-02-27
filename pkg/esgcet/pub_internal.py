@@ -197,7 +197,7 @@ def run(fullmap):
 
     argdict = {"fullmap": fullmap, "third_arg_mkd": third_arg_mkd, "silent": silent, "verbose": verbose, "cert": cert,
                "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node, "data_roots": data_roots,
-               "globus": globus, "dtn": dtn, "replica": replica}
+               "globus": globus, "dtn": dtn, "replica": replica, "proj": project}
 
     if third_arg_mkd:
         argdict["json_file"] = json_file

@@ -122,14 +122,6 @@ def get_file(dataset_rec, mapdata, fn_trid):
     proj_key = dataset_rec["project"]
     rel_path, proj_root = normalize_path(fullfn, proj_key.upper())
 
-    try:
-        data_roots = json.loads(config['user']['data_roots'])
-        if data_roots == 'none':
-            eprint("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
-            exit(1)
-    except:
-        eprint("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
-        exit(1)
     if not proj_root in data_roots:
         eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
         exit(1)
@@ -314,7 +306,7 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
     else:
         xattrobj = {}
 
-    if VERBOSE:
+    if verbose:
         eprint("rec = ")
         eprint(rec)
         eprint()
@@ -325,7 +317,7 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
     project = rec['project']
 
     mapdict = parse_map_arr(mapobj)
-    if VERBOSE:
+    if verbose:
         print('mapdict = ')
         print(mapdict)
         print()
