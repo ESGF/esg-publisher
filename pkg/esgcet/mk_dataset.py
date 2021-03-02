@@ -14,6 +14,8 @@ globus = "none"
 data_node = ""
 dtn = "none"
 EXCLUDES = [""]
+globus_printed = False
+dtn_printed = False
 
 def get_sv():
     return
@@ -97,19 +99,23 @@ def get_dataset(mapdata, scandata, data_node, index_node, replica):
 
 
 def format_template(template, root, rel):
+    global globus_printed
+    global dtn_printed
     if "Globus" in template:
         if globus != 'none':
             return template.format(globus, root, rel)
         else:
-            if not silent:
+            if not silent and not globus_printed:
                 print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
+                globus_printed = True
             return template.format(GLOBUS_UUID, root, rel)
     elif "gsiftp" in template:
         if dtn != 'none':
             return template.format(dtn, root, rel)
         else:
-            if not silent:
+            if not silent and not dtn_printed:
                 print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
+                dtn_printed = True
             return template.format(DATA_TRANSFER_NODE, root, rel)
     else:
         return template.format(data_node, root, rel)
@@ -283,7 +289,7 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
 
     if verbose:
         print("rec = ")
-        print(rec)
+        print(json.dumps(rec, indent=4))
         print()
     for key in xattrobj:
         rec[key] = xattrobj[key]
@@ -292,12 +298,12 @@ def get_records(mapdata, scanfilename, data_node, index_node, replica, xattrfn=N
     mapdict = parse_map_arr(mapobj)
     if verbose:
         print('mapdict = ')
-        print(mapdict)
+        print(json.dumps(mapdict, indent=4))
         print()
     scandict = get_scanfile_dict(scanobj['file'])
     if verbose:
         print('scandict = ')
-        print(scandict)
+        print(json.dumps(scandict, indent=4))
         print()
     ret, sz, access = iterate_files(rec, mapdict, scandict)
     rec["size"] = sz

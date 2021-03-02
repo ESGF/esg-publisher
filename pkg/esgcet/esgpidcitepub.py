@@ -95,10 +95,10 @@ def run():
         exit(1)
 
     if p:
-        print(json.dumps(new_json_data))
+        print(json.dumps(new_json_data, indent=4))
     else:
         with open(outfile, 'w') as of:
-            json.dump(new_json_data, of)
+            json.dump(new_json_data, of, indent=4)
 
 
 def main():
