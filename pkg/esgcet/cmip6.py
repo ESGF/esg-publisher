@@ -16,6 +16,7 @@ import configparser as cfg
 from pathlib import Path
 import esgcet.esgmigrate as em
 
+
 class cmip6:
 
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
