@@ -61,7 +61,8 @@ def run(args):
 
     if verbose:
         print(url)
-    resp = requests.get(url)
+    verify_cond = False # TODO get test setting, or setting
+    resp = requests.get(url, verify=verify_cond)
 
     if verbose:
         print(resp.text)
