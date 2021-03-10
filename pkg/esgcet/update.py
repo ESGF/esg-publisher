@@ -9,7 +9,7 @@ ARGS = 1
 silent = False
 verbose = False
 
-SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
+SEARCH_TEMPLATE = 'https://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
 
 ''' The xml to hide the previous version
 '''
