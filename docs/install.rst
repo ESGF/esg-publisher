@@ -2,16 +2,23 @@ Installation
 ============
 
 You can install esgcet one of two ways: conda, or git.
-To install esgcet by cloning our github repository, run::
+
+
+To install esgcet using conda, ensure the conda command is available in your shell and run::
+
+    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet
+    conda activate esgf-pub
+
+..  note:: the command above creates a new environment for the publisher.  This is recommended rather than attempting to reuse an existing environment if you wish to upgrade a previous version of the publisher.  
+
+To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
     git clone http://github.com/lisi-w/esg-publisher.git -b gen-five-pkg
     cd esg-publisher
     cd pkg
     python3 setup.py install
 
-To install esgcet using conda, run::
 
-    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
 
