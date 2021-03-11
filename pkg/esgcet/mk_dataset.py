@@ -106,23 +106,28 @@ def format_template(template, root, rel):
             return template.format(globus, root, rel)
         else:
             if not silent and not globus_printed:
-                print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
+                eprint("WARNING: no Globus UUID defined")
                 globus_printed = True
-            return template.format(GLOBUS_UUID, root, rel)
+            return None
     elif "gsiftp" in template:
         if dtn != 'none':
             return template.format(dtn, root, rel)
         else:
             if not silent and not dtn_printed:
-                print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
+                eprint("WARNING: no data transfer node defined")
                 dtn_printed = True
-            return template.format(DATA_TRANSFER_NODE, root, rel)
+            return None
     else:
         return template.format(data_node, root, rel)
 
+def prune_list(ll):
+    for x in ll:
+        if not x is None:
+            yield(x)
 
 def gen_urls(proj_root, rel_path):
-    return  [format_template(template, proj_root, rel_path) for template in URL_Templates]
+    res =prune_list([format_template(template, proj_root, rel_path) for template in URL_Templates])
+    return list(res)
 
 
 def get_file(dataset_rec, mapdata, fn_trid):
