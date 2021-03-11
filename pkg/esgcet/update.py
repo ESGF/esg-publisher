@@ -9,7 +9,7 @@ ARGS = 1
 silent = False
 verbose = False
 
-SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id,dataset_id'
+SEARCH_TEMPLATE = 'https://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
 
 ''' The xml to hide the previous version
 '''
@@ -19,9 +19,12 @@ def gen_hide_xml(id, type):
     dateFormat = "%Y-%m-%dT%H:%M:%SZ"
     now = datetime.utcnow()
     ts = now.strftime(dateFormat)
+    idfield = "id"
+    if type == "files":
+        idfield = "dataset_id"
     txt = """<updates core="{}" action="set">
         <update>
-          <query>id={}</query>
+          <query>{}={}</query>
           <field name="latest">
              <value>false</value>
           </field>
@@ -30,7 +33,7 @@ def gen_hide_xml(id, type):
           </field>
         </update>
     </updates>
-    \n""".format(type, id, ts)
+    \n""".format(type, idfield, id, ts)
 
     return txt
 
@@ -79,8 +82,7 @@ def run(args):
         pubCli = publisherClient(cert_fn, index_node)
         print(update_rec)
         pubCli.update(update_rec)
-        file_id = docs[0]['dataset_id']
-        update_rec = gen_hide_xml(file_id, "files")
+        update_rec = gen_hide_xml(dsetid, "files")
         print(update_rec)
         pubCli.update(update_rec)
         if not silent:

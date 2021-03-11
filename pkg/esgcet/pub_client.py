@@ -30,6 +30,7 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
+        print(response.text)
 
     def update(self, xmldata):
 
@@ -40,6 +41,7 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
+        print(response.text)
 
     def retract(self, object_id):
         data = { 'id' : object_id }
