@@ -27,17 +27,6 @@ def check_files(files):
             exit(1)
 
 
-def exit_cleanup(files):
-    for f in files:
-        f.close()
-
-
-def check_data(data, proj):
-    if data is None:
-        exit_cleanup(proj.files)
-        exit(1)
-
-
 def run(fullmap):
 
     # SETUP
@@ -61,7 +50,10 @@ def run(fullmap):
         from esgcet.cmip6 import cmip6
         proj = cmip6()
     elif project == "non-nc":
-        from esgcet.generic_pub import GenericPublisher
+        from esgcet.generic_pub import BasePublisher
+        proj = BasePublisher()
+    elif project == "generic":
+        from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher()
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")

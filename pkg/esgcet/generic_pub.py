@@ -17,14 +17,7 @@ from pathlib import Path
 import esgcet.esgmigrate as em
 
 
-class GenericPublisher:
-
-    scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
-    scanfn = scan_file.name
-
-    def cleanup(self):
-        self.scan_file.close()
-        exit(1)
+class BasePublisher:
 
     def __init__(self):
         pass
@@ -37,20 +30,12 @@ class GenericPublisher:
             exit(1)
         return map_json_data
 
-    def autocurator(self, map_json_data):
-        datafile = map_json_data[0][1]
-        destpath = os.path.dirname(datafile)
-        scanpath = self.scanfn
-
-        autstr = 'autocurator --out_pretty --out_json {} --files "{}/*.nc"'
-        os.system(autstr.format(scanpath, destpath))
-
     def mk_dataset(self, args):
         try:
             out_json_data = mkd.run(args)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
-            return None
+            exit(1)
         return out_json_data
 
     def update(self, args):
@@ -58,16 +43,14 @@ class GenericPublisher:
             up.run(args)
         except Exception as ex:
             print("Error updating: " + str(ex), file=sys.stderr)
-            return None
-        return 0
+            exit(1)
 
     def index_pub(self, args):
         try:
             ip.run(args)
         except Exception as ex:
             print("Error running index pub: " + str(ex), file=sys.stderr)
-            return None
-        return 0
+            exit(1)
 
     def workflow(self, a):
         silent = a["silent"]
@@ -79,38 +62,26 @@ class GenericPublisher:
         if not silent:
             print("Done.")
 
-        """# step three: run autocurator
-        if not silent:
-            print("Running autocurator...")
-        self.autocurator(map_json_data, a["autoc_command"])"""
-
-        # step four: make dataset
+        # step two: make dataset
         if not silent:
             print("Done.\nMaking dataset...")
         if a["third_arg_mkd"]:
             out_json_data = self.mk_dataset(
-                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"], a["silent"], a["verbose"],
-                 a["json_file"]])
+                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
+                 a["silent"], a["verbose"], a["json_file"]])
         else:
             out_json_data = self.mk_dataset(
-                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"], a["silent"], a["verbose"]])
-
-        if out_json_data is None:
-            self.cleanup()
+                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
+                 a["silent"], a["verbose"]])
 
         if not silent:
             print("Done.\nUpdating...")
-        rc = self.update([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
-        if rc is None:
-            self.cleanup()
+        self.update([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
 
         if not silent:
             print("Done.\nRunning index pub...")
-        rc = self.index_pub([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
-        if rc is None:
-            self.cleanup()
+        self.index_pub([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
 
         if not silent:
-            print("Done. Cleaning up.")
-        self.cleanup()
+            print("Done.")
 

@@ -23,6 +23,12 @@ class cmip6:
     scanfn = scan_file.name
     files = [scan_file, ]
 
+    def check_files(self):
+        pass
+
+    def cleanup(self):
+        self.scan_file.close()
+
     def __init__(self):
         # maybe get args here
         pass
@@ -37,6 +43,7 @@ class cmip6:
                 process.ControlVocab(filename)
         except Exception as ex:
             print("Error with PrePARE: " + str(ex), file=sys.stderr)
+            self.cleanup()
             exit(1)
 
     def mapfile(self, args):
@@ -44,6 +51,7 @@ class cmip6:
             map_json_data = mp.run(args)
         except Exception as ex:
             print("Error with converting mapfile: " + str(ex), file=sys.stderr)
+            self.cleanup()
             exit(1)
         return map_json_data
 
@@ -58,6 +66,7 @@ class cmip6:
         stat = os.system(autstr.format(self.scanfn, destpath))
         if os.WEXITSTATUS(stat) != 0:
             print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
+            self.cleanup()
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, args):
@@ -66,7 +75,8 @@ class cmip6:
             out_json_data = mkd.run(args)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
-            return None
+            self.cleanup()
+            exit(1)
         return out_json_data
 
     def pid(self, args):
@@ -75,7 +85,8 @@ class cmip6:
             act.run(new_json_data)
         except Exception as ex:
             print("Error assigning pid or running activity check: " + str(ex))
-            return None
+            self.cleanup()
+            exit(1)
         return new_json_data
 
     def update(self, args):
@@ -83,36 +94,55 @@ class cmip6:
             up.run(args)
         except Exception as ex:
             print("Error updating: " + str(ex), file=sys.stderr)
-            return None
-        return "all good"
+            self.cleanup()
+            exit(1)
 
     def index_pub(self, args):
         try:
             ip.run(args)
         except Exception as ex:
             print("Error running index pub: " + str(ex), file=sys.stderr)
-            return None
-        return "all good"
+            self.cleanup()
+            exit(1)
 
-    def get_args(self, args):
+    def workflow(self, a):
+        silent = a["silent"]
 
-        # setup and variables
-        fullmap = args[0]
-        third_arg_mkd = args[1]
-        silent = args[2]
-        verbose = args[3]
-        cert = args[4]
-        autoc_cmd = args[5]
-        index_node = args[6]
-        data_node = args[7]
-        data_roots = args[8]
-        globus = args[9]
-        dtn = args[10]
-        replica = args[11]
-        if third_arg_mkd:
-            json_file = args[12]
-            cmor_tables = args[13]
+        # step one: convert mapfile
+        if not silent:
+            print("Converting mapfile...")
+        map_json_data = self.mapfile([a["fullmap"], a["proj"]])
+
+        # step two: PrePARE
+        self.prepare_internal(map_json_data, a["cmor_tables"])
+
+        # step three: autocurator
+        if not silent:
+            print("Done.\nRunning autocurator...")
+        self.autocurator(map_json_data, a["autoc_command"])
+
+        # step four: make dataset
+        if not silent:
+            print("Done.\nMaking dataset...")
+        if a["third_arg_mkd"]:
+            out_json_data = self.mk_dataset(
+                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
+                 a["silent"], a["verbose"], a["json_file"]])
         else:
-            cmor_tables = args[12]
+            out_json_data = self.mk_dataset(
+                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
+                 a["silent"], a["verbose"]])
 
+        # step four: update record if exists
+        if not silent:
+            print("Done.\nUpdating...")
+        self.update([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
 
+        # step five: publish to database
+        if not silent:
+            print("Done.\nRunning index pub...")
+        self.index_pub([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+
+        if not silent:
+            print("Done. Cleaning up.")
+        self.cleanup()
