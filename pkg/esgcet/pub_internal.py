@@ -16,7 +16,6 @@ import configparser as cfg
 from pathlib import Path
 
 
-
 def check_files(files):
     for file in files:
         try:
@@ -27,7 +26,7 @@ def check_files(files):
             exit(1)
 
 
-def run(fullmap):
+def run(fullmap, pub_args):
 
     # SETUP
     split_map = fullmap.split("/")
@@ -40,7 +39,6 @@ def run(fullmap):
 
     check_files(files)
 
-    pub_args = PublisherArgs()
     argdict = pub_args.get_dict()
 
     if argdict["project"]:
@@ -66,7 +64,8 @@ def run(fullmap):
 
 
 def main():
-    pub = args.get_args()
+    pub_args = PublisherArgs()
+    pub = pub_args.get_args()
     maps = pub.map  # full mapfile path
     if maps is None:
         print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
@@ -80,7 +79,7 @@ def main():
         # iterate through file in directory calling main func
     else:
         for m in maps:
-            run(m)
+            run(m, pub_args)
 
 
 if __name__ == '__main__':

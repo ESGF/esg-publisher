@@ -182,6 +182,22 @@ class PublisherArgs:
                    "data_roots": data_roots,
                    "globus": globus, "dtn": dtn, "replica": replica, "proj": project}
 
+        if project == "CMIP6":
+            if pub.cmor_path is None:
+                try:
+                    argdict["cmor_tables"] = config['user']['cmor_path']
+                except:
+                    print("No path for CMOR tables defined. Use --cmor-tables option or define in config file.",
+                          file=sys.stderr)
+                    exit(1)
+            else:
+                argdict["cmor_tables"] = pub.cmor_path
+            try:
+                a["pid_creds"] = json.loads(config['user']['pid_creds'])
+            except:
+                print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+                exit(1)
+
         if json_file:
             argdict["json_file"] = json_file
 
