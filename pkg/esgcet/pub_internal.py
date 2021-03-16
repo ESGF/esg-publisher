@@ -267,6 +267,15 @@ def run(fullmap):
 
     if cmip6:
         if not silent:
+            print("Done.\nRunning activity check...")
+        try:
+            act.run(new_json_data)
+        except Exception as ex:
+            print("Error running activity check: " + str(ex), file=sys.stderr)
+            exit_cleanup(scan_file)
+            exit(1)
+
+        if not silent:
             print("Done.\nRunning pid cite...")
         try:
             pid_creds = json.loads(config['user']['pid_creds'])
@@ -281,17 +290,9 @@ def run(fullmap):
             print("Error running pid cite: " + str(ex), file=sys.stderr)
             exit_cleanup(scan_file)
             exit(1)
+
     else:
         new_json_data = out_json_data
-
-        if not silent:
-            print("Done.\nRunning activity check...")
-        try:
-            act.run(new_json_data)
-        except Exception as ex:
-            print("Error running activity check: " + str(ex), file=sys.stderr)
-            exit_cleanup(scan_file)
-            exit(1)
 
     if not silent:
         print("Done.\nUpdating...")
