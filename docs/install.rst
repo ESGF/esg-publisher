@@ -1,19 +1,35 @@
 Installation
 ============
 
-You can install esgcet one of two ways: conda, or git.
+You can install esgcet one of two ways: pip or git.  At present esgcet in unavailable via conda (a change is forthcoming).
 
 
-To install esgcet using conda, ensure the conda command is available in your shell and run::
+Conda & Required Packages
+-------------------------
 
-    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet
+We recommend creating a conda env before installing ``esgcet``: ::
+
+    conda create -n esgf-pub -c conda-forge -c esgf-forge pip cmor autocurator esgconfigparser
     conda activate esgf-pub
 
-..  note:: the command above creates a new environment for the publisher.  This is recommended rather than attempting to reuse an existing environment if you wish to upgrade a previous version of the publisher.  
 
-To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
+..  note:: the command above creates a new environment for the publisher.  This is recommended rather than attempting to reuse an existing environment if you wish to upgrade a previous version of the publisher.  If you installed esgcet using conda above, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
 
-    git clone http://github.com/lisi-w/esg-publisher.git -b gen-five-pkg
+
+esgcet Install: (pip or source)
+-------------------------------
+
+To install esgcet by pip run the following (note the version tag is requried): ::
+
+    pip install esgcet==5.0.0a9
+
+..  note:: You must specify the version as the v5.0.x is under pre-release.  Installing `esgcet` will install the previous version. 
+
+
+
+To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see above for information on conda, etc.), and then run: ::
+
+    git clone http://github.com/ESGF/esg-publisher.git -b gen-five-pkg
     cd esg-publisher
     cd pkg
     python3 setup.py install
@@ -24,21 +40,7 @@ Now you will be able to call all commands in this package from any directory. A 
 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
-Conda & Required Packages
--------------------------
 
-We recommend creating a conda env before installing ``esgcet`` ::
-
-    conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
-
-NOTE: if you installed esgcet using conda above, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
-Also, if you created the env above to install esgcet, this step is not necessary.
-
-You will also need to install ``esgfpid`` using pip::
-
-    pip install esgfpid
-
-NOTE: you will also need a functioning version of `autocurator` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.
 
 Config
 ------
