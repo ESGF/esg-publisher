@@ -28,7 +28,7 @@ To install esgcet by pip run the following (note the version tag is requried): :
 
 To install esgcet into an existing environment using conda run the following: ::
 
-    conda install -c esgf-forge esgcet
+    conda install -c conda-forge -c esgf-forge esgcet
 
 Of course, you can also just tack on ``esgcet`` to the list of packages in the command above when creating your new conda environment as well.
 
