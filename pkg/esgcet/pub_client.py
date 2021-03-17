@@ -2,7 +2,7 @@ import requests
 
 class publisherClient(object):
 
-    def __init__(self, cert_fn, hostname, verbose=False):
+    def __init__(self, cert_fn, hostname, verbose=False, silent=False):
 
         self.certFile = cert_fn
         self.keyFile = cert_fn
@@ -14,11 +14,12 @@ class publisherClient(object):
         self.publishUrl = '{}/publish'.format(urlbase)
         self.deleteUrl = '{}/delete'.format(urlbase)
         self.verbose = verbose
+        self.silent = silent
 
     def post_data(self, url, data):
         resp =  requests.post(url, data=data, cert=(self.certFile, self.keyFile), \
 verify=False, allow_redirects=True)
-        if self.verbose:
+        if not self.silent:
             print(resp.text)
         return resp
 
@@ -30,9 +31,12 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
-        print(response.text)
+
 
     def update(self, xmldata):
+
+        if self.verbose:
+            print (xmldata)
 
         try:
             response = self.post_data(self.updateUrl, xmldata)
@@ -41,11 +45,12 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
-        print(response.text)
+
 
     def retract(self, object_id):
         data = { 'id' : object_id }
-
+        if self.verbose:
+            print (data)
         try:
             response = self.post_data(self.retractUrl, data)
         except requests.exceptions.SSLError as e:
@@ -55,17 +60,17 @@ verify=False, allow_redirects=True)
         # root = etree.fromstring(response.content)
         # text = root[0].text
         # return (response.status_code, text)
-        print(response.text)
+
 
     def delete(self, object_id):
         
         data = { 'id' : object_id }
-
-        print (data)
+        if self.verbose:
+            print (data)
         try:
             response = self.post_data(self.deleteUrl, data)
         except requests.exceptions.SSLError as e:
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
-        print(response.text)
+
