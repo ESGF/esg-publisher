@@ -14,12 +14,12 @@ def run(args):
     verbose = args[4]
 
 
-    pubCli = publisherClient(cert_fn, hostname, verbose=verbose)
+    pubCli = publisherClient(cert_fn, hostname, verbose=verbose, silent=silent)
 
     for rec in d:
 
         new_xml = esgcet.list2json.gen_xml(rec)
-        if not silent:
+        if verbose:
             print(new_xml)
         pubCli.publish(new_xml)
 

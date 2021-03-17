@@ -21,7 +21,7 @@ esgcet install:
 
 To install esgcet by pip run the following (note the version tag is requried): ::
 
-    pip install esgcet==5.0.0a11
+    pip install esgcet==5.0.0a12
 
 ..  note:: You must specify the version as the v5.0.x is under pre-release.  Installing ``esgcet`` will install the previous major version (v3.xx). 
 
