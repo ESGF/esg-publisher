@@ -1,6 +1,6 @@
 package:
   name: esgcet
-  version: 5.0.0a10
+  version: 5.0.0a11
 
 source:
   git_rev: gen-five-pkg
