@@ -64,7 +64,7 @@ def run(args):
     url = SEARCH_TEMPLATE.format(index_node, dnode, mst)
 
     if verbose:
-        print("Search Url: '{}'".fornat(url))
+        print("Search Url: '{}'".forMat(url))
     resp = requests.get(url)
 
     if verbose:
