@@ -1,7 +1,7 @@
 Installation
 ============
 
-You can install esgcet one of two ways: pip or git.  At present esgcet in unavailable via conda (a change is forthcoming).
+You can install esgcet one of three ways: pip, conda, or git. 
 
 
 Conda & Required Packages
@@ -16,7 +16,7 @@ We recommend creating a conda env before installing ``esgcet``: ::
 ..  note:: the command above creates a new environment for the publisher.  This is recommended rather than attempting to reuse an existing environment if you wish to upgrade a previous version of the publisher.  If you installed esgcet using conda above, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
 
 
-esgcet Install: (pip or source)
+esgcet install:
 -------------------------------
 
 To install esgcet by pip run the following (note the version tag is requried): ::
@@ -25,6 +25,12 @@ To install esgcet by pip run the following (note the version tag is requried): :
 
 ..  note:: You must specify the version as the v5.0.x is under pre-release.  Installing ``esgcet`` will install the previous major version (v3.xx). 
 
+
+To install esgcet into an existing environment using conda run the following: ::
+
+    conda install -c conda-forge -c esgf-forge esgcet
+
+Of course, you can also just tack on ``esgcet`` to the list of packages in the command above when creating your new conda environment as well.
 
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see above for information on conda, etc.), and then run: ::
