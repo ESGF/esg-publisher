@@ -21,8 +21,23 @@ class cmip6(GenericPublisher):
     scanfn = scan_file.name
     files = [scan_file, ]
 
-    def __init__(self):
+    def __init__(self, argdict):
         # maybe get args here
+        self.fullmap = argdict["fullmap"]
+        self.silent = argdict["silent"]
+        self.verbose = argdict["verbose"]
+        self.cert = argdict["cert"]
+        self.autoc_command = argdict["autoc_command"]
+        self.index_node = argdict["index_node"]
+        self.data_node = argdict["data_node"]
+        self.data_roots = argdict["data_roots"]
+        self.globus = argdict["globus"]
+        self.dtn = argdict["dtn"]
+        self.replica = argdict["replica"]
+        self.proj = ardict["proj"]
+        self.json_file = argdict["json_file"]
+        self.pid_creds = argdict["pid_creds"]
+        self.cmor_tables = argdict["cmor_tables"]
         pass
     
     def prepare_internal(self, json_map, cmor_tables):
@@ -48,49 +63,41 @@ class cmip6(GenericPublisher):
             exit(1)
         return new_json_data
 
-    def workflow(self, a):
-        silent = a["silent"]
+    def workflow(self):
 
         # step one: convert mapfile
-        if not silent:
+        if not self.silent:
             print("Converting mapfile...")
-        map_json_data = self.mapfile([a["fullmap"], a["proj"]])
+        map_json_data = self.mapfile([self.fullmap, self.proj])
 
         # step two: PrePARE
-        self.prepare_internal(map_json_data, a["cmor_tables"])
+        self.prepare_internal(map_json_data, self.cmor_tables)
 
         # step three: autocurator
-        if not silent:
+        if not self.silent:
             print("Done.\nRunning autocurator...")
-        self.autocurator(map_json_data, a["autoc_command"])
+        self.autocurator(map_json_data, self.autoc_command)
 
         # step four: make dataset
-        if not silent:
+        if not self.silent:
             print("Done.\nMaking dataset...")
-        if a["json_file"]:
-            out_json_data = self.mk_dataset(
-                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
-                 a["silent"], a["verbose"], a["json_file"]])
-        else:
-            out_json_data = self.mk_dataset(
-                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
-                 a["silent"], a["verbose"]])
+        out_json_data = self.mk_dataset(map_json_data)
 
         # step five: assign PID
-        if not silent:
+        if not self.silent:
             print("Done. Assigning PID...")
-        new_json_data = self.pid([out_json_data, a["data_node"], a["pid_creds"], silent, a["verbose"]])
+        new_json_data = self.pid([out_json_data, self.data_node, self.pid_creds, self.silent, self.verbose])
 
         # step six: update record if exists
-        if not silent:
+        if not self.silent:
             print("Done.\nUpdating...")
-        self.update([new_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+        self.update([new_json_data, self.index_node, self.cert, self.silent, self.verbose])
 
         # step seven: publish to database
-        if not silent:
+        if not self.silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([new_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+        self.index_pub([new_json_data, self.index_node, self.cert, self.silent, self.verbose])
 
-        if not silent:
+        if not self.silent:
             print("Done. Cleaning up.")
         self.cleanup()

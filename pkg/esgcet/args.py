@@ -181,7 +181,7 @@ class PublisherArgs:
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots,
-                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project}
+                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project, "json_file": json_file}
 
         if project == "CMIP6":
             if pub.cmor_path is None:
@@ -198,8 +198,5 @@ class PublisherArgs:
             except:
                 print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
                 exit(1)
-
-        
-        argdict["json_file"] = json_file
 
         return argdict

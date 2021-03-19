@@ -18,7 +18,19 @@ import esgcet.esgmigrate as em
 
 class BasePublisher:
 
-    def __init__(self):
+    def __init__(self, argdict):
+        self.fullmap = argdict["fullmap"]
+        self.silent = argdict["silent"]
+        self.verbose = argdict["verbose"]
+        self.cert = argdict["cert"]
+        self.index_node = argdict["index_node"]
+        self.data_node = argdict["data_node"]
+        self.data_roots = argdict["data_roots"]
+        self.globus = argdict["globus"]
+        self.dtn = argdict["dtn"]
+        self.replica = argdict["replica"]
+        self.proj = ardict["proj"]
+        self.json_file = argdict["json_file"]
         pass
 
     def cleanup(self):
@@ -33,9 +45,10 @@ class BasePublisher:
             exit(1)
         return map_json_data
 
-    def mk_dataset(self, args):
+    def mk_dataset(self, map_json_data):
         try:
-            out_json_data = mkd.run(args)
+            out_json_data = mkd.run(map_json_data, self.scanfn, self.data_node, self.index_node, self.replica,
+                                    self.data_roots, self.globus, self.dtn, self.silent, self.verbose, self.json_file)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()
@@ -58,35 +71,27 @@ class BasePublisher:
             self.cleanup()
             exit(1)
 
-    def workflow(self, a):
-        silent = a["silent"]
+    def workflow(self):
 
         # step one: convert mapfile
-        if not silent:
+        if not self.silent:
             print("Converting mapfile...")
-        map_json_data = self.mapfile([a["fullmap"], a["proj"]])
-        if not silent:
+        map_json_data = self.mapfile([self.fullmap, self.proj])
+        if not self.silent:
             print("Done.")
 
         # step two: make dataset
-        if not silent:
+        if not self.silent:
             print("Done.\nMaking dataset...")
-        if a["json_file"]:
-            out_json_data = self.mk_dataset(
-                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
-                 a["silent"], a["verbose"], a["json_file"]])
-        else:
-            out_json_data = self.mk_dataset(
-                [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
-                 a["silent"], a["verbose"]])
+        out_json_data = self.mk_dataset(map_json_data)
 
-        if not silent:
+        if not self.silent:
             print("Done.\nUpdating...")
-        self.update([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+        self.update([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
 
         if not silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([out_json_data, a["index_node"], a["cert"], a["silent"], a["verbose"]])
+        self.index_pub([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
 
         if not silent:
             print("Done.")

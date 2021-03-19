@@ -46,13 +46,13 @@ def run(fullmap, pub_args):
 
     if project == "CMIP6":
         from esgcet.cmip6 import cmip6
-        proj = cmip6()
+        proj = cmip6(argdict)
     elif project == "non-nc":
         from esgcet.generic_pub import BasePublisher
-        proj = BasePublisher()
+        proj = BasePublisher(argdict)
     elif project == "generic":
         from esgcet.generic_netcdf import GenericPublisher
-        proj = GenericPublisher()
+        proj = GenericPublisher(argdict)
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
@@ -60,7 +60,7 @@ def run(fullmap, pub_args):
     # ___________________________________________
     # WORKFLOW - one line call
 
-    proj.workflow(argdict)
+    proj.workflow()
 
 
 def main():
