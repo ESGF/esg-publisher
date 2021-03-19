@@ -3,14 +3,8 @@ import sys, json, requests
 from datetime import datetime
 from pathlib import Path
 
-
-
-''' The xml to hide the previous version
+''' Handles setting latest=false for previously published versions, includes finding those in the index
 '''
-
-
-
-
 class ESGPubUpdate:
 
 
@@ -24,8 +18,8 @@ class ESGPubUpdate:
 
         self.SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
 
-''' The xml to hide the previous version
-'''
+    ''' The xml to hide the previous version
+    '''
     def gen_hide_xml(id, type):
         dateFormat = "%Y-%m-%dT%H:%M:%SZ"
         now = datetime.utcnow()
@@ -43,8 +37,8 @@ class ESGPubUpdate:
                  <value>{ts}</value>
               </field>
             </update>
-        </updates>
-        \n"""
+            </updates>
+            \n"""
 
         return txt
 
@@ -95,5 +89,5 @@ class ESGPubUpdate:
 
         else:
             if not self.silent:
-                print(f'INFO: First dataset version for {mst}: v{input_rec['version']}.)'
-
+                version = input_rec['version']
+                print(f'INFO: First dataset version for {mst}: v{version}.)')
