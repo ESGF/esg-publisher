@@ -54,7 +54,7 @@ def run(args):
         dset_idx = 0
 
     if not input_rec[dset_idx]['type'] == 'Dataset':
-        print("Could not find the Dataset record.  Malformed input, exiting!", file=sys.stderr)
+        print("Error: could not find the Dataset record.  Malformed input, exiting!", file=sys.stderr)
         exit(1)
 
     mst = input_rec[dset_idx]['master_id']
@@ -64,13 +64,13 @@ def run(args):
     url = SEARCH_TEMPLATE.format(index_node, dnode, mst)
 
     if verbose:
-        print(url)
+        print("Search Url: '{}'".format(url))
     resp = requests.get(url)
 
     if verbose:
         print(resp.text)
     if not resp.status_code == 200:
-        print('Error', file=sys.stderr)
+        print('Error: received {} from index server.'.format(resp.status_code), file=sys.stderr)
         exit(1)
 
     res = json.loads(resp.text)
@@ -79,11 +79,13 @@ def run(args):
         docs = res['response']["docs"]
         dsetid = docs[0]['id']
         update_rec = gen_hide_xml(dsetid, "datasets")
-        pubCli = publisherClient(cert_fn, index_node)
-        print(update_rec)
+        pubCli = publisherClient(cert_fn, index_node, verbose=verbose, silent=silent)
+        if verbose:
+            print(update_rec)
         pubCli.update(update_rec)
         update_rec = gen_hide_xml(dsetid, "files")
-        print(update_rec)
+        if verbose:
+            print(update_rec)
         pubCli.update(update_rec)
         if not silent:
             print('INFO: Found previous version, updating the record: {}'.format(dsetid))

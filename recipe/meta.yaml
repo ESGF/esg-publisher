@@ -1,6 +1,6 @@
 package:
   name: esgcet
-  version: 5.0.0a10
+  version: 5.0.0a12
 
 source:
   git_rev: gen-five-pkg
@@ -9,7 +9,8 @@ source:
 build:
   number: 0
   noarch: python
-  script: cd pkg; python setup.py install
+  script: cd pkg; python setup.py install --single-version-externally-managed --record=record.txt
+
 
 requirements:
   build:
