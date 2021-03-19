@@ -71,7 +71,7 @@ class BasePublisher:
         # step two: make dataset
         if not silent:
             print("Done.\nMaking dataset...")
-        if a["third_arg_mkd"]:
+        if a["json_file"]:
             out_json_data = self.mk_dataset(
                 [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
                  a["silent"], a["verbose"], a["json_file"]])

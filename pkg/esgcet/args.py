@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 import os, sys, json
 import esgcet.esgmigrate as em
+import configparser as cfg
 
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
@@ -38,7 +39,7 @@ class PublisherArgs:
 
         return pub
 
-    def get_dict(self):
+    def get_dict(self, fullmap):
 
         pub = self.get_args()
         json_file = pub.json
@@ -193,12 +194,12 @@ class PublisherArgs:
             else:
                 argdict["cmor_tables"] = pub.cmor_path
             try:
-                a["pid_creds"] = json.loads(config['user']['pid_creds'])
+                argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
             except:
                 print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
                 exit(1)
 
-        if json_file:
-            argdict["json_file"] = json_file
+        
+        argdict["json_file"] = json_file
 
         return argdict

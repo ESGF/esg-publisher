@@ -1,6 +1,3 @@
-import esgcet.mapfile as mp
-import esgcet.mk_dataset as mkd
-import esgcet.update as up
 import esgcet.index_pub as ip
 import esgcet.pid_cite_pub as pid
 import esgcet.activity_check as act
@@ -70,7 +67,7 @@ class cmip6(GenericPublisher):
         # step four: make dataset
         if not silent:
             print("Done.\nMaking dataset...")
-        if a["third_arg_mkd"]:
+        if a["json_file"]:
             out_json_data = self.mk_dataset(
                 [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
                  a["silent"], a["verbose"], a["json_file"]])

@@ -39,9 +39,9 @@ def run(fullmap, pub_args):
 
     check_files(files)
 
-    argdict = pub_args.get_dict()
+    argdict = pub_args.get_dict(fullmap)
 
-    if argdict["project"]:
+    if argdict["proj"]:
         project = argdict["proj"]
 
     if project == "CMIP6":

@@ -1,5 +1,5 @@
 import esgcet.mapfile as mp
-import esgcet.mkd_non_nc as mkd
+import esgcet.mk_dataset as mkd
 import esgcet.update as up
 import esgcet.index_pub as ip
 import esgcet.pid_cite_pub as pid
@@ -14,7 +14,7 @@ from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
 import esgcet.esgmigrate as em
-from generic_pub import BasePublisher
+from esgcet.generic_pub import BasePublisher
 
 
 class GenericPublisher(BasePublisher):
@@ -45,6 +45,15 @@ class GenericPublisher(BasePublisher):
             self.cleanup()
             exit(os.WEXITSTATUS(stat))
 
+    def mk_dataset(self, args):
+        try:
+            out_json_data = mkd.run(args)
+        except Exception as ex:
+            print("Error making dataset: " + str(ex), file=sys.stderr)
+            self.cleanup()
+            exit(1)
+        return out_json_data
+
     def workflow(self, a):
 
         silent = a["silent"]
@@ -62,7 +71,7 @@ class GenericPublisher(BasePublisher):
         # step three: make dataset
         if not silent:
             print("Done.\nMaking dataset...")
-        if a["third_arg_mkd"]:
+        if a["json_file"]:
             out_json_data = self.mk_dataset(
                 [map_json_data, a["data_node"], a["index_node"], a["replica"], a["data_roots"], a["globus"], a["dtn"],
                  a["silent"], a["verbose"], a["json_file"]])
