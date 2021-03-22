@@ -97,7 +97,7 @@ CITATION_URLS = { 'CMIP6' : {'test' :
 }
 
 PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
-TEST_PUB = False
+TEST_PUB = True
 
 PROJECT = "input4MIPs"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = False
