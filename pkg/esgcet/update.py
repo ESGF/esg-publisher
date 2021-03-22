@@ -8,7 +8,7 @@ from pathlib import Path
 class ESGPubUpdate:
 
 
-    def __init__(index_node, cert_fn, silent=False, verbose=False):    
+    def __init__(self, index_node, cert_fn, silent=False, verbose=False):    
 
         self.index_node = index_node 
         self.cert_fn = cert_fn
@@ -20,7 +20,7 @@ class ESGPubUpdate:
 
     ''' The xml to hide the previous version
     '''
-    def gen_hide_xml(id, type):
+    def gen_hide_xml(self, id, type):
         dateFormat = "%Y-%m-%dT%H:%M:%SZ"
         now = datetime.utcnow()
         ts = now.strftime(dateFormat)
@@ -43,13 +43,13 @@ class ESGPubUpdate:
         return txt
 
 
-    def update_core(id, type):
+    def update_core(self, id, type):
         update_rec = self.gen_hide_xml(dsetid, "datasets")
         if self.verbose:
             print(update_rec)
         self.pubCli.update(update_rec)
 
-    def do_update(input_rec):
+    def do_update(self, input_rec):
 
     # The dataset record either first or last in the input file
         dset_idx = -1
