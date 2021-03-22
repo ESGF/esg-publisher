@@ -1,4 +1,4 @@
-#ESGF Publisher
+# ESGF Publisher
 
 ## v5.0.0a12 Pre-release
 
