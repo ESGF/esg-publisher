@@ -53,7 +53,7 @@ class ESGPubUpdate:
         return txt
 
 
-    def update_core(self, id, type):
+    def update_core(self, dsetid, type):
         """ For a specific core, generate the xml and run the update.
 
             id - the full dataset identifier
