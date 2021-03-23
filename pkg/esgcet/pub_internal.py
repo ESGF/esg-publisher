@@ -62,6 +62,10 @@ def run(fullmap):
     if pub.json is not None:
         json_file = pub.json
         third_arg_mkd = True
+    if pub.test:
+        test = True
+    else:
+        test = False
 
     if pub.migrate:
         migrate.run({})
@@ -286,7 +290,7 @@ def run(fullmap):
             print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
             exit(1)
         try:
-            new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
+            new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose, test])
         except Exception as ex:
             if verbose:
                 traceback.print_exc()
