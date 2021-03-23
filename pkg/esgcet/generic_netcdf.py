@@ -91,7 +91,7 @@ class GenericPublisher(BasePublisher):
         # step four: update record if exists
         if not self.silent:
             print("Done.\nUpdating...")
-        self.update([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.update(out_json_data)
 
         # step five: publish to database
         if not self.silent:

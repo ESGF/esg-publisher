@@ -58,10 +58,10 @@ class BasePublisher:
             exit(1)
         return out_json_data
 
-    def update(self, args):
-        up = ESGPubUpdate(self.cert, self.silent, self.verbose)
+    def update(self, json_data):
+        up = ESGPubUpdate(self.index_node, self.cert, self.silent, self.verbose)
         try:
-            up.run(args)
+            up.run(json_data)
         except Exception as ex:
             print("Error updating: " + str(ex), file=sys.stderr)
             self.cleanup()
@@ -91,7 +91,7 @@ class BasePublisher:
 
         if not self.silent:
             print("Done.\nUpdating...")
-        self.update([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.update(out_json_data)
 
         if not silent:
             print("Done.\nRunning index pub...")

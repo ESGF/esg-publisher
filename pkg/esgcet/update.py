@@ -64,7 +64,7 @@ class ESGPubUpdate():
             print(update_rec)
         self.pubCli.update(update_rec)
 
-    def do_update(self, input_rec):
+    def run(self, input_rec):
         """ Check a record in the index and peform the updates
 
             input_rec - a json record to be published containing a "master_id" and "data_node" fields with 
