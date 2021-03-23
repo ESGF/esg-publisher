@@ -253,7 +253,7 @@ class MakeDataset():
         for maprec in mapdata:
             fullpath = maprec['file']
             scanrec = scandata[fullpath]
-            file_rec = get_file(dataset_rec, maprec, scanrec)
+            file_rec = self.get_file(dataset_rec, maprec, scanrec)
             last_file = file_rec
             sz += file_rec["size"]
             ret.append(file_rec)
@@ -292,28 +292,28 @@ class MakeDataset():
             print('mapdict = ')
             print(mapdict)
             print()
-        scandict = get_scanfile_dict(scanobj['file'])
+        scandict = self.get_scanfile_dict(scanobj['file'])
         if self.verbose:
             print('scandict = ')
             print(scandict)
             print()
-        ret, sz, access = iterate_files(rec, mapdict, scandict)
+        ret, sz, access = self.iterate_files(rec, mapdict, scandict)
         rec["size"] = sz
         rec["access"] = access
         ret.append(rec)
         return ret
 
-    def run(self, map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose, json_file=None):
+    def run(self, a):
 
-        self.silent = silent
-        self.verbose = verbose
-        self.data_roots = data_roots
-        self.globus = globus
-        self.dtn = dtn
-        self.data_node = data_node
+        self.silent = a["silent"]
+        self.verbose = a["verbose"]
+        self.data_roots = a["data_roots"]
+        self.globus = a["globus"]
+        self.dtn = a["dtn"]
+        self.data_node = a["data_node"]
 
-        if json_file:
-            ret = get_records(map_json_data, scanfn, data_node, index_node, replica, xattrfn=json_file)
+        if a["json_file"]:
+            ret = get_records(a["map_json_data"], a["scanfn"], a["data_node"], a["index_node"], a["replica"], xattrfn=a["json_file"])
         else:
-            ret = get_records(map_json_data, scanfn, data_node, index_node, replica)
+            ret = get_records(a["map_json_data"], a["scanfn"], a["data_node"], a["index_node"], a["replica"])
         return ret

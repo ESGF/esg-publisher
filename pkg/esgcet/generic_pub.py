@@ -1,5 +1,5 @@
 import esgcet.mapfile as mp
-import esgcet.mkd_non_nc as mkd
+from esgcet.mkd_non_nc import MKDNonNC
 import esgcet.update as up
 import esgcet.index_pub as ip
 import esgcet.pid_cite_pub as pid
@@ -19,6 +19,7 @@ import esgcet.esgmigrate as em
 class BasePublisher:
 
     def __init__(self, argdict):
+        self.argdict = argdict
         self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
@@ -46,9 +47,11 @@ class BasePublisher:
         return map_json_data
 
     def mk_dataset(self, map_json_data):
+        mkd = MKDNonNC()
         try:
-            out_json_data = mkd.run(map_json_data, self.scanfn, self.data_node, self.index_node, self.replica,
-                                    self.data_roots, self.globus, self.dtn, self.silent, self.verbose, self.json_file)
+            self.argdict["map_json_data"] = map_json_data
+            self.argdict["scanfn"] = ""
+            out_json_data = mkd.run(self.argdict)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()

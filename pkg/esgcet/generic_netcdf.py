@@ -23,6 +23,7 @@ class GenericPublisher(BasePublisher):
     scanfn = scan_file.name
 
     def __init__(self, argdict):
+        self.argdict = argdict
         self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
@@ -61,8 +62,9 @@ class GenericPublisher(BasePublisher):
     def mk_dataset(self, map_json_data):
         mkd = MakeDataset()
         try:
-            out_json_data = mkd.run(map_json_data, self.scanfn, self.data_node, self.index_node, self.replica,
-                                    self.data_roots, self.globus, self.dtn, self.silent, self.verbose, self.json_file)
+            self.argdict["map_json_data"] = map_json_data
+            self.argdict["scanfn"] = self.scanfn
+            out_json_data = mkd.run(self.argdict)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()
