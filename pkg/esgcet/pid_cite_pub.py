@@ -46,7 +46,7 @@ def establish_pid_connection(pid_prefix, test_publication, data_node, publish=Tr
     return pid_connector
 
 
-def check_pid_connection(pid_prefix, pid_connector, data_node, send_message=False):
+def check_pid_connection(pid_prefix, pid_connector, data_node, test, send_message=False):
     """
     Check the connection to the PID rabbit MQ
     Raise an Error if connection fails
@@ -55,7 +55,7 @@ def check_pid_connection(pid_prefix, pid_connector, data_node, send_message=Fals
     if pid_queue_return_msg is not None:
         print("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.", file=sys.stderr)
 
-    pid_connector = establish_pid_connection(pid_prefix, TEST_PUB, data_node, publish=True)
+    pid_connector = establish_pid_connection(pid_prefix, test, data_node, publish=True)
 
 
 
@@ -63,7 +63,7 @@ def get_url(arr):
 
     return arr[0].split('|')[0]
 
-def pid_flow_code(dataset_recs, data_node):
+def pid_flow_code(dataset_recs, data_node, test):
 
 
     try:
@@ -89,7 +89,7 @@ def pid_flow_code(dataset_recs, data_node):
 
 
     try:
-        check_pid_connection(PID_PREFIX, pid_connector, data_node, send_message=True)
+        check_pid_connection(PID_PREFIX, pid_connector, data_node, test, send_message=True)
 
         pid_wizard = None
             # Check connection
@@ -169,15 +169,16 @@ def run(args):
     pid_creds = args[2]
     silent = args[3]
     verbose = args[4]
+    test = args[-1]
 
-    pid_connector, pid = pid_flow_code(res, data_node)
+    pid_connector, pid = pid_flow_code(res, data_node, test)
 
     if pid_connector is None:
         exit(-1)
 
     try:
         for i in range(len(res)):
-            res[i] = update_dataset(res[i], pid, TEST_PUB)
+            res[i] = update_dataset(res[i], pid, test)
 
     except Exception as e:
         print("ERROR: Some exception encountered! {}".format(str(e)), file=sys.stderr)

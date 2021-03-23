@@ -5,7 +5,7 @@ from pathlib import Path
 
 ''' Handles setting latest=false for previously published versions, includes finding those in the index
 '''
-class ESGPubUpdate:
+class ESGPubUpdate():
 
 
     def __init__(index_node, cert_fn, silent=False, verbose=False):    
@@ -43,13 +43,13 @@ class ESGPubUpdate:
         return txt
 
 
-    def update_core(id, type):
-        update_rec = self.gen_hide_xml(dsetid, "datasets")
+    def update_core(self, dsetid, type):
+        update_rec = self.gen_hide_xml(dsetid, type)
         if self.verbose:
             print(update_rec)
         self.pubCli.update(update_rec)
 
-    def do_update(input_rec):
+    def do_update(self, input_rec):
 
     # The dataset record either first or last in the input file
         dset_idx = -1

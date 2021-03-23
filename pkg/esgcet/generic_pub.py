@@ -59,6 +59,7 @@ class BasePublisher:
         return out_json_data
 
     def update(self, args):
+        up = ESGPubUpdate(self.cert, self.silent, self.verbose)
         try:
             up.run(args)
         except Exception as ex:
