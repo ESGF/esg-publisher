@@ -62,10 +62,6 @@ def run(fullmap):
     if pub.json is not None:
         json_file = pub.json
         third_arg_mkd = True
-    if pub.test:
-        test = True
-    else:
-        test = False
 
     if pub.migrate:
         migrate.run({})
@@ -94,6 +90,18 @@ def run(fullmap):
             pass
     if proj == "CMIP6":
         cmip6 = True
+
+    if not pub.test:
+        try:
+            t = config['user']['test']
+            if 'true' in t or 'yes' in t:
+                test = True
+            else:
+                test = False
+        except:
+            test = False
+    else:
+        test = True
 
     if not pub.silent:
         try:
