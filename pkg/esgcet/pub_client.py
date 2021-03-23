@@ -20,7 +20,8 @@ class publisherClient(object):
         self.publishUrl = '{}/publish'.format(urlbase)
         self.deleteUrl = '{}/delete'.format(urlbase)
         self.verbose = verbose
-    
+        self.silent = silent
+
     def post_data(self, url, data):
         """ Internal method to post data to a url via requests
             url - the url
@@ -28,7 +29,7 @@ class publisherClient(object):
         """
         resp =  requests.post(url, data=data, cert=(self.certFile, self.keyFile), \
 verify=False, allow_redirects=True)
-        if self.verbose:
+        if not self.silent:
             print(resp.text)
         return resp
     
@@ -42,7 +43,6 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
-        print(response.text)
 
     def update(self, xmldata):
         """  Invoke the update API call
@@ -56,7 +56,6 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
-        print(response.text)
 
     def retract(self, object_id):
         """  Invoke the retract API call
@@ -74,7 +73,6 @@ verify=False, allow_redirects=True)
         # root = etree.fromstring(response.content)
         # text = root[0].text
         # return (response.status_code, text)
-        print(response.text)
 
     def delete(self, object_id):
         """  Invoke the delete API call
@@ -90,4 +88,3 @@ verify=False, allow_redirects=True)
             print("SSL error!", e )
         except Exception as e:
             print("Some other error!", e )
-        print(response.text)
