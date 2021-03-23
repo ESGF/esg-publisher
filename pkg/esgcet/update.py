@@ -21,7 +21,7 @@ class ESGPubUpdate:
         self.verbose = verbose
         self.pubCli = publisherClient(self.cert_fn, self.index_node, verbose=self.verbose, silent=self.silent)
 
-        self.SEARCH_TEMPLATE = 'http://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
+        self.SEARCH_TEMPLATE = 'https://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
 
 
     def gen_hide_xml(self, id, type):
