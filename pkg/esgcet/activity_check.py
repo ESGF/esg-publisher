@@ -1,35 +1,10 @@
 import sys, json, os
-import configparser as cfg
-from pathlib import Path
-
-config = cfg.ConfigParser()
-home = str(Path.home())
-config_file = home + "/.esg/esg.ini"
-config.read(config_file)
-try:
-    s = config['user']['silent']
-    if 'true' in s or 'yes' in s:
-        SILENT = True
-    else:
-        SILENT = False
-except:
-    SILENT = False
-try:
-    v = config['user']['verbose']
-    if 'true' in v or 'yes' in v:
-        VERBOSE = True
-    else:
-        VERBOSE = False
-except:
-    VERBOSE = False
 
 
-IDX = -1  # index for the dataset record
-ARGS = 1
 class FieldCheck(object):
 
-    def __init__(self, cv_path):
-
+    def __init__(self, cmor_path):
+        cv_path = "{}/CMIP6_CV.json".format(cmor_path)
         jobj = json.load(open(cv_path))["CV"]
         self.sid_dict = jobj["source_id"]
 
@@ -52,7 +27,6 @@ def run(input_rec):
         print(e)
         print("Error CMOR path not configured. Must do so to enable the Activity check! {}".format(str(e)))
         return -1
-    cv_path="{}/CMIP6_CV.json".format(cmor_path)
     fc = FieldCheck(cv_path)
 
     # try:

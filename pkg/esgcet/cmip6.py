@@ -1,5 +1,5 @@
 import esgcet.index_pub as ip
-import esgcet.pid_cite_pub as pid
+from esgcet.pid_cite_pub import ESGPubPIDCite
 import esgcet.activity_check as act
 import esgcet.args as args
 import os
@@ -86,7 +86,7 @@ class cmip6(GenericPublisher):
         # step five: assign PID
         if not self.silent:
             print("Done. Assigning PID...")
-        new_json_data = self.pid([out_json_data, self.data_node, self.pid_creds, self.silent, self.verbose])
+        new_json_data = self.pid(out_json_data)
 
         # step six: update record if exists
         if not self.silent:
@@ -96,7 +96,7 @@ class cmip6(GenericPublisher):
         # step seven: publish to database
         if not self.silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([new_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.index_pub(new_json_data)
 
         if not self.silent:
             print("Done. Cleaning up.")
