@@ -63,6 +63,8 @@ verify=False, allow_redirects=True)
         """
         
         data = { 'id' : object_id }
+        if self.verbose:
+            print (data)
 
         try:
             response = self.post_data(self.retractUrl, data)
@@ -78,10 +80,10 @@ verify=False, allow_redirects=True)
         """  Invoke the delete API call
             object_id - name of dataset id to delete in master_id.version|data_node form. 
         """
-        
-        data = { 'id' : object_id }
 
-        print (data)
+        data = { 'id' : object_id }
+        if self.verbose:
+            print(data)
         try:
             response = self.post_data(self.deleteUrl, data)
         except requests.exceptions.SSLError as e:

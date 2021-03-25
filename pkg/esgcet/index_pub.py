@@ -1,25 +1,37 @@
 from esgcet.pub_client import publisherClient
 
-import esgcet.list2json, sys, json, os
-import configparser as cfg
-from pathlib import Path
+
+class ESGPubIndex:
+
+    def __init__(self, hostname, cert_fn,  verbose=False, silent=False):
+        self.silent = silent
+        self.verbose = verbose
+        self.pubCli = publisherClient(cert_fn, hostname, verbose=self.verbose, silent=self.silent)
+
+    def gen_xml(d):
+        out = []
+        out.append("<doc>\n")
+        for key in d:
+
+            val = d[key]
+            if key == "description":
+                val = ' '.join(val)
+                out.append('  <field name="{}">{}</field>\n'.format(key, val))
+            elif type(val) is list:
+                for vv in val:
+                    out.append('  <field name="{}">{}</field>\n'.format(key, vv))
+            else:
+                out.append('  <field name="{}">{}</field>\n'.format(key, val))
+        out.append("</doc>\n")
+        return ''.join(out)
 
 
-def run(args):
+    def do_publish(self, dataset):
 
-    hostname = args[1]
-    cert_fn = args[2]
-    d = args[0]
-    silent = args[3]
-    verbose = args[4]
+        for rec in dataset:
 
-
-    pubCli = publisherClient(cert_fn, hostname, verbose=verbose)
-
-    for rec in d:
-
-        new_xml = esgcet.list2json.gen_xml(rec)
-        if not silent:
-            print(new_xml)
-        pubCli.publish(new_xml)
+            new_xml = self.gen_xml(rec)
+            if self.verbose:
+                print(new_xml)
+            self.pubCli.publish(new_xml)
 

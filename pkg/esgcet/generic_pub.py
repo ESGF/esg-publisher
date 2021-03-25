@@ -1,22 +1,13 @@
-import esgcet.mapfile as mp
+from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import MKDNonNC
-import esgcet.update as up
-import esgcet.index_pub as ip
-import esgcet.pid_cite_pub as pid
-import esgcet.activity_check as act
-import esgcet.args as args
-import os
-import json
+from esgcet.update import ESGPubUpdate
+from esgcet.index_pub import ESGPubIndex
+
 import sys
-import tempfile
-from cmip6_cv import PrePARE
 from esgcet.settings import *
-import configparser as cfg
-from pathlib import Path
-import esgcet.esgmigrate as em
 
 
-class BasePublisher:
+class BasePublisher(object):
 
     def __init__(self, argdict):
         self.argdict = argdict
@@ -32,14 +23,18 @@ class BasePublisher:
         self.replica = argdict["replica"]
         self.proj = ardict["proj"]
         self.json_file = argdict["json_file"]
-        pass
 
     def cleanup(self):
         pass
 
     def mapfile(self, args):
+
+        mapconv = ESGPubMapConv(self.fullmap)
+        map_json_data = None
         try:
-            map_json_data = mp.run(args)
+
+            map_json_data = mapconv.mapfilerun()
+
         except Exception as ex:
             print("Error with converting mapfile: " + str(ex), file=sys.stderr)
             self.cleanup()
@@ -59,7 +54,7 @@ class BasePublisher:
         return out_json_data
 
     def update(self, json_data):
-        up = ESGPubUpdate(self.index_node, self.cert, self.silent, self.verbose)
+        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose)
         try:
             up.run(json_data)
         except Exception as ex:
@@ -67,9 +62,10 @@ class BasePublisher:
             self.cleanup()
             exit(1)
 
-    def index_pub(self, args):
+    def index_pub(self,dataset_records):
+        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose)
         try:
-            ip.run(args)
+            ip.do_publish(dataset_records)
         except Exception as ex:
             print("Error running index pub: " + str(ex), file=sys.stderr)
             self.cleanup()
@@ -80,9 +76,7 @@ class BasePublisher:
         # step one: convert mapfile
         if not self.silent:
             print("Converting mapfile...")
-        map_json_data = self.mapfile([self.fullmap, self.proj])
-        if not self.silent:
-            print("Done.")
+        map_json_data = self.mapfile()
 
         # step two: make dataset
         if not self.silent:
@@ -95,7 +89,7 @@ class BasePublisher:
 
         if not silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.index_pub(out_json_data)
 
         if not silent:
             print("Done.")
