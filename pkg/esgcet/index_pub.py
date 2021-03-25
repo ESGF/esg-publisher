@@ -1,7 +1,5 @@
 from esgcet.pub_client import publisherClient
 
-import sys, json, os
-
 
 class ESGPubIndex:
 
