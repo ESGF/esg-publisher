@@ -7,7 +7,7 @@ from esgcet.settings import *
 from pathlib import Path
 
 
-class MKDNonNC(MakeDataset):
+class ESGPubMKDNonNC(MakeDataset):
 
     def get_dataset(self, mapdata, data_node, index_node, replica):
         master_id, version = mapdata.split('#')

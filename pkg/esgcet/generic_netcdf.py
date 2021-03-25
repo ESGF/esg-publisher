@@ -1,5 +1,5 @@
 import esgcet.mapfile as mp
-from esgcet.mk_dataset import MakeDataset
+from esgcet.mk_dataset import ESGPubMakeDataset
 import esgcet.update as up
 import esgcet.index_pub as ip
 import esgcet.pid_cite_pub as pid
@@ -60,11 +60,10 @@ class GenericPublisher(BasePublisher):
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = MakeDataset()
+        mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
+                                self.silent, self.verbose)
         try:
-            self.argdict["map_json_data"] = map_json_data
-            self.argdict["scanfn"] = self.scanfn
-            out_json_data = mkd.run(self.argdict)
+            out_json_data = mkd.run(map_json_data, self.scanfn, self.json_file)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()

@@ -8,16 +8,17 @@ from esgcet.settings import *
 from pathlib import Path
 
 
-class MakeDataset():
+class ESGPubMakeDataset():
 
-    def __init__(self):
-        self.silent = False
-        self.verbose = False
-        self.data_roots = {}
-        self.globus = "none"
-        self.data_node = ""
-        self.dtn = "none"
-        self.EXCLUDES = [""]
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
+        self.silent = silent
+        self.verbose = verbose
+        self.data_roots = data_roots
+        self.globus = globus
+        self.data_node = data_node
+        self.index_node = index_node
+        self.replica = replica
+        self.dtn = dtn
 
     def eprint(self, *a):
 
@@ -29,7 +30,7 @@ class MakeDataset():
             if x['values']:
                 yield x['values']
 
-    def get_dataset(self, mapdata, scandata, data_node, index_node, replica):
+    def get_dataset(self, mapdata, scandata):
 
         master_id, version = mapdata.split('#')
 
@@ -45,6 +46,14 @@ class MakeDataset():
                         eprint("WARNING: {} does not agree!".format(f))
             d[f] = parts[i]
 
+        d = self.global_attributes(projkey, d, scandata)
+        d = self.global_attr_mapped(projkey, d, scandata)
+        d = self.const_attr(projkey, d)
+        d = self.assign_dset_values(projeky, master_id, version, d)
+
+        return d
+
+    def global_attributes(self, projkey, d, scandata):
         # handle Global attributes if defined for the project
         if projkey in GA:
             for facetkey in GA[projkey]:
@@ -57,7 +66,9 @@ class MakeDataset():
                         d[facetkey] = facetval.split(delimiter)
                     else:
                         d[facetkey] = facetval
-            # would we ever combine mapped and delimited facets?
+        return d
+
+    def global_attr_mapped(self, projkey, d, scandata):
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
@@ -67,12 +78,17 @@ class MakeDataset():
                 else:
                     if not self.silent:
                         eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+        return d
+
+    def const_attr(self, projkey, d):
         if projkey in CONST_ATTR:
             for facetkey in CONST_ATTR[projkey]:
                 d[facetkey] = CONST_ATTR[projkey][facetkey]
+        return d
 
-        d['data_node'] = data_node
-        d['index_node'] = index_node
+    def assign_dset_values(self, projkey, master_id, version, d):
+        d['data_node'] = self.data_node
+        d['index_node'] = self.index_node
         DRSlen = len(DRS[projkey])
         d['master_id'] = master_id
         d['instance_id'] = master_id + '.v' + version
@@ -80,7 +96,7 @@ class MakeDataset():
         if 'title' in d:
             d['short_description'] = d['title']
         d['title'] = d['master_id']
-        d['replica'] = replica
+        d['replica'] = self.replica
         d['latest'] = 'true'
         d['type'] = 'Dataset'
         d['project'] = projkey
@@ -303,17 +319,10 @@ class MakeDataset():
         ret.append(rec)
         return ret
 
-    def run(self, a):
+    def run(self, map_json_data, scanfn, json_file=None):
 
-        self.silent = a["silent"]
-        self.verbose = a["verbose"]
-        self.data_roots = a["data_roots"]
-        self.globus = a["globus"]
-        self.dtn = a["dtn"]
-        self.data_node = a["data_node"]
-
-        if a["json_file"]:
-            ret = get_records(a["map_json_data"], a["scanfn"], a["data_node"], a["index_node"], a["replica"], xattrfn=a["json_file"])
+        if json_file:
+            ret = self.get_records(map_json_data, scanfn, self.data_node, self.index_node, self.replica, xattrfn=json_file)
         else:
-            ret = get_records(a["map_json_data"], a["scanfn"], a["data_node"], a["index_node"], a["replica"])
+            ret = self.get_records(map_json_data, scanfn, self.data_node, self.index_node, self.replica)
         return ret
