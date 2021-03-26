@@ -1,19 +1,6 @@
-import esgcet.mapfile as mp
 from esgcet.mk_dataset import ESGPubMakeDataset
-import esgcet.update as up
-import esgcet.index_pub as ip
-import esgcet.pid_cite_pub as pid
-import esgcet.activity_check as act
-import esgcet.args as args
-import os
 import json
-import sys
 import tempfile
-from cmip6_cv import PrePARE
-from esgcet.settings import *
-import configparser as cfg
-from pathlib import Path
-import esgcet.esgmigrate as em
 from esgcet.generic_pub import BasePublisher
 
 
@@ -75,7 +62,7 @@ class GenericPublisher(BasePublisher):
         # step one: convert mapfile
         if not self.silent:
             print("Converting mapfile...")
-        map_json_data = self.mapfile([self.fullmap, self.proj])
+        map_json_data = self.mapfile()
 
         # step two: autocurator
         if not self.silent:
@@ -95,7 +82,7 @@ class GenericPublisher(BasePublisher):
         # step five: publish to database
         if not self.silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.index_pub(out_json_data)
 
         if not self.silent:
             print("Done. Cleaning up.")

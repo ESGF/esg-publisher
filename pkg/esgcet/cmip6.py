@@ -1,16 +1,8 @@
-import esgcet.index_pub as ip
-import esgcet.pid_cite_pub as pid
+from esgcet.pid_cite_pub import ESGPubPidCite
 import esgcet.activity_check as act
-import esgcet.args as args
-import os
-import json
-import sys
 import tempfile
+import json
 from cmip6_cv import PrePARE
-from esgcet.settings import *
-import configparser as cfg
-from pathlib import Path
-import esgcet.esgmigrate as em
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
 
@@ -38,6 +30,7 @@ class cmip6(GenericPublisher):
         self.json_file = argdict["json_file"]
         self.pid_creds = argdict["pid_creds"]
         self.cmor_tables = argdict["cmor_tables"]
+        self.test = argdict["test"]
         pass
     
     def prepare_internal(self, json_map, cmor_tables):
@@ -53,9 +46,10 @@ class cmip6(GenericPublisher):
             self.cleanup()
             exit(1)
 
-    def pid(self, args):
+    def pid(self, out_json_data):
+        pid = ESGPubPidCite(out_json_data, self.pid_creds, test=self.test, silent=self.silent, verbose=self.verbose)
         try:
-            new_json_data = pid.run(args)
+            new_json_data = pid.do_pidcite()
             act.run(new_json_data)
         except Exception as ex:
             print("Error assigning pid or running activity check: " + str(ex))
@@ -68,7 +62,7 @@ class cmip6(GenericPublisher):
         # step one: convert mapfile
         if not self.silent:
             print("Converting mapfile...")
-        map_json_data = self.mapfile([self.fullmap, self.proj])
+        map_json_data = self.mapfile()
 
         # step two: PrePARE
         self.prepare_internal(map_json_data, self.cmor_tables)
@@ -86,7 +80,7 @@ class cmip6(GenericPublisher):
         # step five: assign PID
         if not self.silent:
             print("Done. Assigning PID...")
-        new_json_data = self.pid([out_json_data, self.data_node, self.pid_creds, self.silent, self.verbose])
+        new_json_data = self.pid(out_json_data)
 
         # step six: update record if exists
         if not self.silent:
@@ -96,7 +90,7 @@ class cmip6(GenericPublisher):
         # step seven: publish to database
         if not self.silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([new_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.index_pub(new_json_data)
 
         if not self.silent:
             print("Done. Cleaning up.")

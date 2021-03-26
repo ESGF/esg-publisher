@@ -13,7 +13,7 @@ def get_url(arr):
 class ESGPubPidCite:
     """ for PID services wraps calls to obtain a PID, add to records and generate citiation metadata """
 
-    def __init__(self, ds_recs, pid_creds, pid_prefix=PID_PREFIX, test=False, silent=False, verbose=False):
+    def __init__(self, ds_recs, pid_creds, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX):
         """ Constructor
             ds_rec - a dataset record (dictionary/json)
             pid_creds - credentials typically loaded from config file, contains PID server, password, etc.

@@ -9,7 +9,7 @@ from pathlib import Path
 
 class ESGPubMKDNonNC(MakeDataset):
 
-    def get_dataset(self, mapdata, data_node, index_node, replica):
+    def get_dataset(self, mapdata):
         master_id, version = mapdata.split('#')
 
         parts = master_id.split('.')
@@ -31,35 +31,9 @@ class ESGPubMKDNonNC(MakeDataset):
                 if type(idxkey) is int:
                     keyprefix = splitinfo[idxkey]
                     d[keyprefix + splitkey] = valsplt[idxkey]
-        # handle Global attributes if defined for the project
-        if projkey in CONST_ATTR:
-            for facetkey in CONST_ATTR[projkey]:
-                d[facetkey] = CONST_ATTR[projkey][facetkey]
 
-        d['data_node'] = data_node
-        d['index_node'] = index_node
-        DRSlen = len(DRS[projkey])
-        d['master_id'] = master_id
-        d['instance_id'] = master_id + '.v' + version
-        d['id'] = d['instance_id'] + '|' + d['data_node']
-        if 'title' in d:
-            d['short_description'] = d['title']
-        d['title'] = d['master_id']
-        d['replica'] = replica
-        d['latest'] = 'true'
-        d['type'] = 'Dataset'
-        if projkey == "E3SM":
-            d['project'] = projkey.lower()
-        else:
-            d['project'] = projkey
-
-        d['version'] = version
-
-        fmat_list = ['%({})s'.format(x) for x in DRS[projkey]]
-
-        d['dataset_id_template_'] = '.'.join(fmat_list)
-        d['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
-
+        d = self.const_attr(projkey, d)
+        d = self.assign_dset_values(projkey, master_id, version, d)
         return d
 
     def iterate_files(self, dataset_rec, mapdata):
@@ -78,13 +52,13 @@ class ESGPubMKDNonNC(MakeDataset):
 
         return ret, sz, access
 
-    def get_records(self, mapdata, data_node, index_node, replica, xattrfn=None):
+    def get_records(self, mapdata, xattrfn=None):
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
         else:
             mapobj = mapdata
 
-        rec = self.get_dataset(mapobj[0][0], data_node, index_node, replica)
+        rec = self.get_dataset(mapobj[0][0])
 
         if not rec:
             return None

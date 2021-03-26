@@ -1,5 +1,5 @@
 import sys, json
-from esgcet.mapfile import *
+from esgcet.mapfile import ESGPubMapConv
 import configparser as cfg
 
 from datetime import datetime, timedelta
@@ -8,9 +8,9 @@ from esgcet.settings import *
 from pathlib import Path
 
 
-class ESGPubMakeDataset():
+class ESGPubMakeDataset:
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
+    def __init__(self, fullmap, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -19,6 +19,8 @@ class ESGPubMakeDataset():
         self.index_node = index_node
         self.replica = replica
         self.dtn = dtn
+
+        self.mapconv = ESGPubMapConv(fullmap)
 
     def eprint(self, *a):
 
@@ -109,7 +111,6 @@ class ESGPubMakeDataset():
 
         return d
 
-
     def format_template(self, template, root, rel):
         if "Globus" in template:
             if self.globus != 'none':
@@ -128,10 +129,8 @@ class ESGPubMakeDataset():
         else:
             return template.format(self.data_node, root, rel)
 
-
     def gen_urls(self, proj_root, rel_path):
-        return  [format_template(template, proj_root, rel_path) for template in URL_Templates]
-
+        return [self.format_template(template, proj_root, rel_path) for template in URL_Templates]
 
     def get_file(self, dataset_rec, mapdata, fn_trid):
         ret = dataset_rec.copy()
@@ -151,7 +150,7 @@ class ESGPubMakeDataset():
             if kn not in ("id", "file"):
                 ret[kn] = mapdata[kn]
 
-        rel_path, proj_root = normalize_path(fullfn, dataset_rec["project"])
+        rel_path, proj_root = self.mapconv.normalize_path(fullfn, dataset_rec["project"])
 
 
         if not proj_root in self.data_roots:
@@ -260,7 +259,6 @@ class ESGPubMakeDataset():
         else:
             eprint("WARNING: No axes extracted from data files")
 
-
     def iterate_files(self, dataset_rec, mapdata, scandata):
         ret = []
         sz = 0
@@ -278,7 +276,7 @@ class ESGPubMakeDataset():
 
         return ret, sz, access
 
-    def get_records(self, mapdata, scanfilename, data_node, index_node, replica, xattrfn=None):
+    def get_records(self, mapdata, scanfilename, xattrfn=None):
 
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
@@ -286,8 +284,8 @@ class ESGPubMakeDataset():
             mapobj = mapdata
         scanobj = json.load(open(scanfilename))
 
-        rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica)
-        update_metadata(rec, scanobj)
+        rec = self.get_dataset(mapobj[0][0], scanobj['dataset'])
+        self.update_metadata(rec, scanobj)
         rec["number_of_files"] = len(mapobj)  # place this better
 
         if xattrfn:
@@ -303,7 +301,7 @@ class ESGPubMakeDataset():
             rec[key] = xattrobj[key]
 
         project = rec['project']
-        mapdict = parse_map_arr(mapobj)
+        mapdict = self.mapconv.parse_map_arr(mapobj)
         if self.verbose:
             print('mapdict = ')
             print(mapdict)
@@ -322,7 +320,7 @@ class ESGPubMakeDataset():
     def run(self, map_json_data, scanfn, json_file=None):
 
         if json_file:
-            ret = self.get_records(map_json_data, scanfn, self.data_node, self.index_node, self.replica, xattrfn=json_file)
+            ret = self.get_records(map_json_data, scanfn, xattrfn=json_file)
         else:
-            ret = self.get_records(map_json_data, scanfn, self.data_node, self.index_node, self.replica)
+            ret = self.get_records(map_json_data, scanfn)
         return ret

@@ -1,16 +1,8 @@
-import esgcet.mapfile as mp
-import esgcet.mk_dataset as mkd
-import esgcet.update as up
-import esgcet.index_pub as ip
-import esgcet.pid_cite_pub as pid
-import esgcet.activity_check as ac
 from esgcet.args import PublisherArgs
 import esgcet.esgmigrate as migrate
 import os
 import json
 import sys
-import tempfile
-from cmip6_cv import PrePARE
 from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
