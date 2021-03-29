@@ -1,7 +1,6 @@
 from esgcet.pid_cite_pub import ESGPubPidCite
-import esgcet.activity_check as act
+from esgcet.activity_check import FieldCheck
 import tempfile
-import json
 from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
@@ -48,9 +47,11 @@ class cmip6(GenericPublisher):
 
     def pid(self, out_json_data):
         pid = ESGPubPidCite(out_json_data, self.pid_creds, test=self.test, silent=self.silent, verbose=self.verbose)
+        check = FieldCheck(self.cmor_tables, silent=self.silent)
+
         try:
+            check.run_check(out_json_data)
             new_json_data = pid.do_pidcite()
-            act.run(new_json_data)
         except Exception as ex:
             print("Error assigning pid or running activity check: " + str(ex))
             self.cleanup()
@@ -76,6 +77,7 @@ class cmip6(GenericPublisher):
         if not self.silent:
             print("Done.\nMaking dataset...")
         out_json_data = self.mk_dataset(map_json_data)
+
 
         # step five: assign PID
         if not self.silent:
