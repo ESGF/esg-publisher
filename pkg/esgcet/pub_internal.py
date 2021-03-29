@@ -91,6 +91,18 @@ def run(fullmap):
     if proj == "CMIP6":
         cmip6 = True
 
+    if not pub.test:
+        try:
+            t = config['user']['test']
+            if 'true' in t or 'yes' in t:
+                test = True
+            else:
+                test = False
+        except:
+            test = False
+    else:
+        test = True
+
     if not pub.silent:
         try:
             s = config['user']['silent']
@@ -286,7 +298,7 @@ def run(fullmap):
             print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
             exit(1)
         try:
-            new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
+            new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose, test])
         except Exception as ex:
             if verbose:
                 traceback.print_exc()
