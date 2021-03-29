@@ -7,6 +7,7 @@ import configparser as cfg
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
+
 class PublisherArgs:
 
     def __init__(self):
@@ -170,6 +171,10 @@ class PublisherArgs:
                       file=sys.stderr)
                 exit(1)
 
+        test = False
+        if pub.test:
+            test = True
+
         if not conda_auto:
             autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
         else:
@@ -181,7 +186,7 @@ class PublisherArgs:
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots,
-                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project, "json_file": json_file}
+                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project, "json_file": json_file, "test": test}
 
         if project == "CMIP6":
             if pub.cmor_path is None:

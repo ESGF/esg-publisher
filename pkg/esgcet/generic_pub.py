@@ -1,10 +1,7 @@
 from esgcet.mapfile import ESGPubMapConv
-from esgcet.mkd_non_nc import MKDNonNC
+from esgcet.mkd_non_nc import ESGPubMKDNonNC
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
-
-import sys
-from esgcet.settings import *
 
 
 class BasePublisher(object):
@@ -27,12 +24,11 @@ class BasePublisher(object):
     def cleanup(self):
         pass
 
-    def mapfile(self, args):
+    def mapfile(self):
 
         mapconv = ESGPubMapConv(self.fullmap)
         map_json_data = None
         try:
-
             map_json_data = mapconv.mapfilerun()
 
         except Exception as ex:
@@ -42,11 +38,10 @@ class BasePublisher(object):
         return map_json_data
 
     def mk_dataset(self, map_json_data):
-        mkd = MKDNonNC()
+        mkd = ESGPubMKDNonNC(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
+                                self.silent, self.verbose)
         try:
-            self.argdict["map_json_data"] = map_json_data
-            self.argdict["scanfn"] = ""
-            out_json_data = mkd.run(self.argdict)
+            out_json_data = mkd.run(map_json_data, "", self.json_file)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()

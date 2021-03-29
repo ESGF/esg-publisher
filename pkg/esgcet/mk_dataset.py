@@ -1,5 +1,5 @@
 import sys, json
-from esgcet.mapfile import *
+from esgcet.mapfile import ESGPubMapConv
 import configparser as cfg
 
 from datetime import datetime, timedelta
@@ -8,16 +8,19 @@ from esgcet.settings import *
 from pathlib import Path
 
 
-class MakeDataset():
+class ESGPubMakeDataset:
 
-    def __init__(self):
-        self.silent = False
-        self.verbose = False
-        self.data_roots = {}
-        self.globus = "none"
-        self.data_node = ""
-        self.dtn = "none"
-        self.EXCLUDES = [""]
+    def __init__(self, fullmap, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
+        self.silent = silent
+        self.verbose = verbose
+        self.data_roots = data_roots
+        self.globus = globus
+        self.data_node = data_node
+        self.index_node = index_node
+        self.replica = replica
+        self.dtn = dtn
+
+        self.mapconv = ESGPubMapConv(fullmap)
 
     def eprint(self, *a):
 
@@ -29,7 +32,7 @@ class MakeDataset():
             if x['values']:
                 yield x['values']
 
-    def get_dataset(self, mapdata, scandata, data_node, index_node, replica):
+    def get_dataset(self, mapdata, scandata):
 
         master_id, version = mapdata.split('#')
 
@@ -45,6 +48,14 @@ class MakeDataset():
                         eprint("WARNING: {} does not agree!".format(f))
             d[f] = parts[i]
 
+        d = self.global_attributes(projkey, d, scandata)
+        d = self.global_attr_mapped(projkey, d, scandata)
+        d = self.const_attr(projkey, d)
+        d = self.assign_dset_values(projeky, master_id, version, d)
+
+        return d
+
+    def global_attributes(self, projkey, d, scandata):
         # handle Global attributes if defined for the project
         if projkey in GA:
             for facetkey in GA[projkey]:
@@ -57,7 +68,9 @@ class MakeDataset():
                         d[facetkey] = facetval.split(delimiter)
                     else:
                         d[facetkey] = facetval
-            # would we ever combine mapped and delimited facets?
+        return d
+
+    def global_attr_mapped(self, projkey, d, scandata):
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
@@ -67,12 +80,17 @@ class MakeDataset():
                 else:
                     if not self.silent:
                         eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+        return d
+
+    def const_attr(self, projkey, d):
         if projkey in CONST_ATTR:
             for facetkey in CONST_ATTR[projkey]:
                 d[facetkey] = CONST_ATTR[projkey][facetkey]
+        return d
 
-        d['data_node'] = data_node
-        d['index_node'] = index_node
+    def assign_dset_values(self, projkey, master_id, version, d):
+        d['data_node'] = self.data_node
+        d['index_node'] = self.index_node
         DRSlen = len(DRS[projkey])
         d['master_id'] = master_id
         d['instance_id'] = master_id + '.v' + version
@@ -80,7 +98,7 @@ class MakeDataset():
         if 'title' in d:
             d['short_description'] = d['title']
         d['title'] = d['master_id']
-        d['replica'] = replica
+        d['replica'] = self.replica
         d['latest'] = 'true'
         d['type'] = 'Dataset'
         d['project'] = projkey
@@ -92,7 +110,6 @@ class MakeDataset():
         d['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
 
         return d
-
 
     def format_template(self, template, root, rel):
         if "Globus" in template:
@@ -112,10 +129,8 @@ class MakeDataset():
         else:
             return template.format(self.data_node, root, rel)
 
-
     def gen_urls(self, proj_root, rel_path):
-        return  [format_template(template, proj_root, rel_path) for template in URL_Templates]
-
+        return [self.format_template(template, proj_root, rel_path) for template in URL_Templates]
 
     def get_file(self, dataset_rec, mapdata, fn_trid):
         ret = dataset_rec.copy()
@@ -135,7 +150,7 @@ class MakeDataset():
             if kn not in ("id", "file"):
                 ret[kn] = mapdata[kn]
 
-        rel_path, proj_root = normalize_path(fullfn, dataset_rec["project"])
+        rel_path, proj_root = self.mapconv.normalize_path(fullfn, dataset_rec["project"])
 
 
         if not proj_root in self.data_roots:
@@ -244,7 +259,6 @@ class MakeDataset():
         else:
             eprint("WARNING: No axes extracted from data files")
 
-
     def iterate_files(self, dataset_rec, mapdata, scandata):
         ret = []
         sz = 0
@@ -262,7 +276,7 @@ class MakeDataset():
 
         return ret, sz, access
 
-    def get_records(self, mapdata, scanfilename, data_node, index_node, replica, xattrfn=None):
+    def get_records(self, mapdata, scanfilename, xattrfn=None):
 
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
@@ -270,8 +284,8 @@ class MakeDataset():
             mapobj = mapdata
         scanobj = json.load(open(scanfilename))
 
-        rec = get_dataset(mapobj[0][0], scanobj['dataset'], data_node, index_node, replica)
-        update_metadata(rec, scanobj)
+        rec = self.get_dataset(mapobj[0][0], scanobj['dataset'])
+        self.update_metadata(rec, scanobj)
         rec["number_of_files"] = len(mapobj)  # place this better
 
         if xattrfn:
@@ -287,7 +301,7 @@ class MakeDataset():
             rec[key] = xattrobj[key]
 
         project = rec['project']
-        mapdict = parse_map_arr(mapobj)
+        mapdict = self.mapconv.parse_map_arr(mapobj)
         if self.verbose:
             print('mapdict = ')
             print(mapdict)
@@ -303,17 +317,10 @@ class MakeDataset():
         ret.append(rec)
         return ret
 
-    def run(self, a):
+    def run(self, map_json_data, scanfn, json_file=None):
 
-        self.silent = a["silent"]
-        self.verbose = a["verbose"]
-        self.data_roots = a["data_roots"]
-        self.globus = a["globus"]
-        self.dtn = a["dtn"]
-        self.data_node = a["data_node"]
-
-        if a["json_file"]:
-            ret = get_records(a["map_json_data"], a["scanfn"], a["data_node"], a["index_node"], a["replica"], xattrfn=a["json_file"])
+        if json_file:
+            ret = self.get_records(map_json_data, scanfn, xattrfn=json_file)
         else:
-            ret = get_records(a["map_json_data"], a["scanfn"], a["data_node"], a["index_node"], a["replica"])
+            ret = self.get_records(map_json_data, scanfn)
         return ret

@@ -1,19 +1,6 @@
-import esgcet.mapfile as mp
-from esgcet.mk_dataset import MakeDataset
-import esgcet.update as up
-import esgcet.index_pub as ip
-import esgcet.pid_cite_pub as pid
-import esgcet.activity_check as act
-import esgcet.args as args
-import os
+from esgcet.mk_dataset import ESGPubMakeDataset
 import json
-import sys
 import tempfile
-from cmip6_cv import PrePARE
-from esgcet.settings import *
-import configparser as cfg
-from pathlib import Path
-import esgcet.esgmigrate as em
 from esgcet.generic_pub import BasePublisher
 
 
@@ -60,11 +47,10 @@ class GenericPublisher(BasePublisher):
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = MakeDataset()
+        mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
+                                self.silent, self.verbose)
         try:
-            self.argdict["map_json_data"] = map_json_data
-            self.argdict["scanfn"] = self.scanfn
-            out_json_data = mkd.run(self.argdict)
+            out_json_data = mkd.run(map_json_data, self.scanfn, self.json_file)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()
@@ -76,7 +62,7 @@ class GenericPublisher(BasePublisher):
         # step one: convert mapfile
         if not self.silent:
             print("Converting mapfile...")
-        map_json_data = self.mapfile([self.fullmap, self.proj])
+        map_json_data = self.mapfile()
 
         # step two: autocurator
         if not self.silent:
@@ -96,7 +82,7 @@ class GenericPublisher(BasePublisher):
         # step five: publish to database
         if not self.silent:
             print("Done.\nRunning index pub...")
-        self.index_pub([out_json_data, self.index_node, self.cert, self.silent, self.verbose])
+        self.index_pub(out_json_data)
 
         if not self.silent:
             print("Done. Cleaning up.")
