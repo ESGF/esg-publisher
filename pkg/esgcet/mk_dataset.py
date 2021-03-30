@@ -21,6 +21,8 @@ class ESGPubMakeDataset:
         self.dtn = dtn
 
         self.mapconv = ESGPubMapConv(fullmap)
+        self.dataset = {}
+
 
     def eprint(self, *a):
 
@@ -39,19 +41,20 @@ class ESGPubMakeDataset:
         parts = master_id.split('.')
         projkey = parts[0]
         facets = DRS[projkey]
-        d = {}
+
+        d = self.dataset  # reference
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
                 if not parts[i] == ga_val:
                     if not self.silent:
                         eprint("WARNING: {} does not agree!".format(f))
-            d[f] = parts[i]
+            self.dataset[f] = parts[i]
+        self.assign_dset_values(projeky, master_id, version)
 
+        d = self.const_attr(projkey, d)
         d = self.global_attributes(projkey, d, scandata)
         d = self.global_attr_mapped(projkey, d, scandata)
-        d = self.const_attr(projkey, d)
-        d = self.assign_dset_values(projeky, master_id, version, d)
 
         return d
 
@@ -88,7 +91,9 @@ class ESGPubMakeDataset:
                 d[facetkey] = CONST_ATTR[projkey][facetkey]
         return d
 
-    def assign_dset_values(self, projkey, master_id, version, d):
+    def assign_dset_values(self, projkey, master_id, version):
+
+        d = self.dataset  # reference
         d['data_node'] = self.data_node
         d['index_node'] = self.index_node
         DRSlen = len(DRS[projkey])
@@ -109,7 +114,6 @@ class ESGPubMakeDataset:
         d['dataset_id_template_'] = '.'.join(fmat_list)
         d['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
 
-        return d
 
     def format_template(self, template, root, rel):
         if "Globus" in template:
@@ -285,6 +289,7 @@ class ESGPubMakeDataset:
         scanobj = json.load(open(scanfilename))
 
         rec = self.get_dataset(mapobj[0][0], scanobj['dataset'])
+
         self.update_metadata(rec, scanobj)
         rec["number_of_files"] = len(mapobj)  # place this better
 
@@ -300,7 +305,7 @@ class ESGPubMakeDataset:
         for key in xattrobj:
             rec[key] = xattrobj[key]
 
-        project = rec['project']
+        project = rec['project']  # is this needed ?
         mapdict = self.mapconv.parse_map_arr(mapobj)
         if self.verbose:
             print('mapdict = ')

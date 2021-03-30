@@ -10,7 +10,7 @@ pid_creds = {}
 def get_url(arr):
     return arr[0].split('|')[0]
 
-class ESGPubPidCite:
+class ESGPubPidCite(object):
     """ for PID services wraps calls to obtain a PID, add to records and generate citiation metadata """
 
     def __init__(self, ds_recs, pid_creds, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX):
