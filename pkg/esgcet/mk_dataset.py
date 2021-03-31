@@ -10,7 +10,7 @@ from pathlib import Path
 
 class ESGPubMakeDataset:
 
-    def __init__(self, fullmap, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -20,7 +20,7 @@ class ESGPubMakeDataset:
         self.replica = replica
         self.dtn = dtn
 
-        self.mapconv = ESGPubMapConv(fullmap)
+        self.mapconv = ESGPubMapConv("")
 
     def eprint(self, *a):
 
@@ -51,7 +51,7 @@ class ESGPubMakeDataset:
         d = self.global_attributes(projkey, d, scandata)
         d = self.global_attr_mapped(projkey, d, scandata)
         d = self.const_attr(projkey, d)
-        d = self.assign_dset_values(projeky, master_id, version, d)
+        d = self.assign_dset_values(projkey, master_id, version, d)
 
         return d
 
@@ -157,7 +157,7 @@ class ESGPubMakeDataset:
             eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
             exit(1)
 
-        ret["url"] = gen_urls(self.data_roots[proj_root], rel_path)
+        ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
@@ -301,7 +301,8 @@ class ESGPubMakeDataset:
             rec[key] = xattrobj[key]
 
         project = rec['project']
-        mapdict = self.mapconv.parse_map_arr(mapobj)
+        self.mapconv.set_map_arr(mapobj)
+        mapdict = self.mapconv.parse_map_arr()
         if self.verbose:
             print('mapdict = ')
             print(mapdict)

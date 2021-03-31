@@ -1,5 +1,5 @@
 from esgcet.mk_dataset import ESGPubMakeDataset
-import json
+import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
 
@@ -22,7 +22,7 @@ class GenericPublisher(BasePublisher):
         self.globus = argdict["globus"]
         self.dtn = argdict["dtn"]
         self.replica = argdict["replica"]
-        self.proj = ardict["proj"]
+        self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
         pass
 

@@ -2,6 +2,7 @@ from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import ESGPubMKDNonNC
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
+import sys
 
 
 class BasePublisher(object):
@@ -18,7 +19,7 @@ class BasePublisher(object):
         self.globus = argdict["globus"]
         self.dtn = argdict["dtn"]
         self.replica = argdict["replica"]
-        self.proj = ardict["proj"]
+        self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
 
     def cleanup(self):
@@ -82,10 +83,10 @@ class BasePublisher(object):
             print("Done.\nUpdating...")
         self.update(out_json_data)
 
-        if not silent:
+        if not self.silent:
             print("Done.\nRunning index pub...")
         self.index_pub(out_json_data)
 
-        if not silent:
+        if not self.silent:
             print("Done.")
 

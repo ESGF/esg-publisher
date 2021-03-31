@@ -83,7 +83,7 @@ class ESGPubUpdate():
         dnode = input_rec[dset_idx]['data_node']
 
         # query for
-        url = self.SEARCH_TEMPLATE.format(index_node, dnode, mst)
+        url = self.SEARCH_TEMPLATE.format(self.index_node, dnode, mst)
 
         if self.verbose:
             print(f"Search Url: '{url}'")
@@ -108,5 +108,5 @@ class ESGPubUpdate():
 
         else:
             if not self.silent:
-                version = input_rec['version']
+                version = input_rec[dset_idx]['version']
                 print(f'INFO: First dataset version for {mst}: v{version}.)')
