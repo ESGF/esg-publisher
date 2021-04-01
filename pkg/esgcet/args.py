@@ -140,7 +140,7 @@ class PublisherArgs:
             exit(1)
 
         try:
-            globus = json.loads(config['user']['globus_uuid'])
+            globus = config['user']['globus_uuid']
         except:
             globus = "none"
 

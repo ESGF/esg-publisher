@@ -21,7 +21,7 @@ class ESGPubMakeDataset:
         self.dtn = dtn
 
         self.mapconv = ESGPubMapConv("")
-        self.dataset = None
+        self.dataset = {}
 
     def eprint(self, *a):
 
@@ -40,19 +40,19 @@ class ESGPubMakeDataset:
         parts = master_id.split('.')
         projkey = parts[0]
         facets = DRS[projkey]
-        self.dataset = {}
+
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
                 if not parts[i] == ga_val:
                     if not self.silent:
                         eprint("WARNING: {} does not agree!".format(f))
-            d[f] = parts[i]
-
+            self.dataset[f] = parts[i]
+        
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
         self.const_attr(projkey)
-        self.assign_dset_values(projeky, master_id, version)
+        self.assign_dset_values(projkey, master_id, version)
 
     def global_attributes(self, projkey, scandata):
         # handle Global attributes if defined for the project
@@ -85,7 +85,8 @@ class ESGPubMakeDataset:
                 self.dataset[facetkey] = CONST_ATTR[projkey][facetkey]
 
     def assign_dset_values(self, projkey, master_id, version):
-        d = self.dataset
+
+        d = self.dataset  # reference
         d['data_node'] = self.data_node
         d['index_node'] = self.index_node
         DRSlen = len(DRS[projkey])
@@ -281,7 +282,7 @@ class ESGPubMakeDataset:
 
         self.get_dataset(mapobj[0][0], scanobj['dataset'])
         self.update_metadata(self.dataset, scanobj)
-        self.datset["number_of_files"] = len(mapobj)  # place this better
+        self.dataset["number_of_files"] = len(mapobj)  # place this better
 
         if xattrfn:
             xattrobj = json.load(open(xattrfn))
@@ -298,6 +299,7 @@ class ESGPubMakeDataset:
         project = self.dataset['project']
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
+
         if self.verbose:
             print('mapdict = ')
             print(mapdict)
