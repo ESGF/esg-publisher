@@ -26,7 +26,7 @@ class cmip6(GenericPublisher):
         self.globus = argdict["globus"]
         self.dtn = argdict["dtn"]
         self.replica = argdict["replica"]
-        self.proj = ardict["proj"]
+        self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
         self.pid_creds = argdict["pid_creds"]
         self.cmor_tables = argdict["cmor_tables"]
@@ -47,7 +47,8 @@ class cmip6(GenericPublisher):
             exit(1)
 
     def pid(self, out_json_data):
-        pid = ESGPubPidCite(out_json_data, self.pid_creds, test=self.test, silent=self.silent, verbose=self.verbose)
+      
+        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
         check = FieldCheck(self.cmor_tables, silent=self.silent)
 
         try:

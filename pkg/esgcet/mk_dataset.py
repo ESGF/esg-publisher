@@ -10,7 +10,7 @@ from pathlib import Path
 
 class ESGPubMakeDataset:
 
-    def __init__(self, fullmap, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -20,9 +20,8 @@ class ESGPubMakeDataset:
         self.replica = replica
         self.dtn = dtn
 
-        self.mapconv = ESGPubMapConv(fullmap)
+        self.mapconv = ESGPubMapConv("")
         self.dataset = {}
-
 
     def eprint(self, *a):
 
@@ -42,7 +41,6 @@ class ESGPubMakeDataset:
         projkey = parts[0]
         facets = DRS[projkey]
 
-        d = self.dataset  # reference
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
@@ -50,15 +48,13 @@ class ESGPubMakeDataset:
                     if not self.silent:
                         eprint("WARNING: {} does not agree!".format(f))
             self.dataset[f] = parts[i]
-        self.assign_dset_values(projeky, master_id, version)
+        
+        self.global_attributes(projkey, scandata)
+        self.global_attr_mapped(projkey, scandata)
+        self.const_attr(projkey)
+        self.assign_dset_values(projkey, master_id, version)
 
-        d = self.const_attr(projkey, d)
-        d = self.global_attributes(projkey, d, scandata)
-        d = self.global_attr_mapped(projkey, d, scandata)
-
-        return d
-
-    def global_attributes(self, projkey, d, scandata):
+    def global_attributes(self, projkey, scandata):
         # handle Global attributes if defined for the project
         if projkey in GA:
             for facetkey in GA[projkey]:
@@ -68,28 +64,25 @@ class ESGPubMakeDataset:
                     # is this a delimited attribute ?
                     if facetkey in GA_DELIMITED[projkey]:
                         delimiter = GA_DELIMITED[projkey][facetkey]
-                        d[facetkey] = facetval.split(delimiter)
+                        self.dataset[facetkey] = facetval.split(delimiter)
                     else:
-                        d[facetkey] = facetval
-        return d
+                        self.dataset[facetkey] = facetval
 
-    def global_attr_mapped(self, projkey, d, scandata):
+    def global_attr_mapped(self, projkey, scandata):
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
                     facetkey = GA_MAPPED[projkey][gakey]
                     facetval = scandata[gakey]
-                    d[facetkey] = facetval
+                    self.dataset[facetkey] = facetval
                 else:
                     if not self.silent:
                         eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
-        return d
 
-    def const_attr(self, projkey, d):
+    def const_attr(self, projkey):
         if projkey in CONST_ATTR:
             for facetkey in CONST_ATTR[projkey]:
-                d[facetkey] = CONST_ATTR[projkey][facetkey]
-        return d
+                self.dataset[facetkey] = CONST_ATTR[projkey][facetkey]
 
     def assign_dset_values(self, projkey, master_id, version):
 
@@ -114,6 +107,7 @@ class ESGPubMakeDataset:
         d['dataset_id_template_'] = '.'.join(fmat_list)
         d['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
 
+        self.dataset = d
 
     def format_template(self, template, root, rel):
         if "Globus" in template:
@@ -136,9 +130,9 @@ class ESGPubMakeDataset:
     def gen_urls(self, proj_root, rel_path):
         return [self.format_template(template, proj_root, rel_path) for template in URL_Templates]
 
-    def get_file(self, dataset_rec, mapdata, fn_trid):
-        ret = dataset_rec.copy()
-        dataset_id = dataset_rec["id"]
+    def get_file(self, mapdata, fn_trid):
+        ret = self.dataset.copy()
+        dataset_id = self.dataset["id"]
         ret['type'] = "File"
         fullfn = mapdata['file']
 
@@ -154,14 +148,14 @@ class ESGPubMakeDataset:
             if kn not in ("id", "file"):
                 ret[kn] = mapdata[kn]
 
-        rel_path, proj_root = self.mapconv.normalize_path(fullfn, dataset_rec["project"])
+        rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.dataset["project"])
 
 
         if not proj_root in self.data_roots:
             eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
             exit(1)
 
-        ret["url"] = gen_urls(self.data_roots[proj_root], rel_path)
+        ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
@@ -171,8 +165,6 @@ class ESGPubMakeDataset:
             ret.pop("datetime_end")
 
         return ret
-        # need to match up the
-
 
     def get_scanfile_dict(self, scandata):
         ret = {}
@@ -263,7 +255,7 @@ class ESGPubMakeDataset:
         else:
             eprint("WARNING: No axes extracted from data files")
 
-    def iterate_files(self, dataset_rec, mapdata, scandata):
+    def iterate_files(self, mapdata, scandata):
         ret = []
         sz = 0
         last_file = None
@@ -271,7 +263,7 @@ class ESGPubMakeDataset:
         for maprec in mapdata:
             fullpath = maprec['file']
             scanrec = scandata[fullpath]
-            file_rec = self.get_file(dataset_rec, maprec, scanrec)
+            file_rec = self.get_file(maprec, scanrec)
             last_file = file_rec
             sz += file_rec["size"]
             ret.append(file_rec)
@@ -288,10 +280,9 @@ class ESGPubMakeDataset:
             mapobj = mapdata
         scanobj = json.load(open(scanfilename))
 
-        rec = self.get_dataset(mapobj[0][0], scanobj['dataset'])
-
-        self.update_metadata(rec, scanobj)
-        rec["number_of_files"] = len(mapobj)  # place this better
+        self.get_dataset(mapobj[0][0], scanobj['dataset'])
+        self.update_metadata(self.dataset, scanobj)
+        self.dataset["number_of_files"] = len(mapobj)  # place this better
 
         if xattrfn:
             xattrobj = json.load(open(xattrfn))
@@ -300,13 +291,15 @@ class ESGPubMakeDataset:
 
         if self.verbose:
             print("rec = ")
-            print(rec)
+            print(self.dataset)
             print()
         for key in xattrobj:
-            rec[key] = xattrobj[key]
+            self.dataset[key] = xattrobj[key]
 
-        project = rec['project']  # is this needed ?
-        mapdict = self.mapconv.parse_map_arr(mapobj)
+        project = self.dataset['project']
+        self.mapconv.set_map_arr(mapobj)
+        mapdict = self.mapconv.parse_map_arr()
+
         if self.verbose:
             print('mapdict = ')
             print(mapdict)
@@ -316,10 +309,10 @@ class ESGPubMakeDataset:
             print('scandict = ')
             print(scandict)
             print()
-        ret, sz, access = self.iterate_files(rec, mapdict, scandict)
+        ret, sz, access = self.iterate_files(mapdict, scandict)
         rec["size"] = sz
         rec["access"] = access
-        ret.append(rec)
+        ret.append(self.dataset)
         return ret
 
     def run(self, map_json_data, scanfn, json_file=None):

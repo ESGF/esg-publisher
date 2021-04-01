@@ -13,7 +13,7 @@ def get_url(arr):
 class ESGPubPidCite(object):
     """ for PID services wraps calls to obtain a PID, add to records and generate citiation metadata """
 
-    def __init__(self, ds_recs, pid_creds, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX):
+    def __init__(self, ds_recs, pid_creds, data_node, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX):
         """ Constructor
             ds_rec - a dataset record (dictionary/json)
             pid_creds - credentials typically loaded from config file, contains PID server, password, etc.
@@ -24,11 +24,10 @@ class ESGPubPidCite(object):
         self.silent = silent
         self.verbose = verbose
         self.test_publication = test
-        self.pid_connector = None
         self.pid_prefix = pid_prefix
+        self.data_node = data_node
 
     def establish_pid_connection(self):
-
         """Establish a connection to the PID service
         pid_prefix
             PID prefix to be used for given project
@@ -71,8 +70,6 @@ class ESGPubPidCite(object):
         pid_queue_return_msg = self.pid_connector.check_pid_queue_availability(send_message=send_message)
         if pid_queue_return_msg is not None:
             print("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.", file=sys.stderr)
-
-        self.pid_connector = self.establish_pid_connection()
 
 
 

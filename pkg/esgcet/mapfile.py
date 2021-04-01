@@ -13,9 +13,11 @@ class ESGPubMapConv:
         self.map_json = {}
         self.silent = silent
 
-    def normalize_path(self, path):
+    def normalize_path(self, path, project=None):
+        if project is None:
+            project = self.project
         pparts = path.split('/')
-        idx = pparts.index(self.project)
+        idx = pparts.index(project)
         if idx < 0:
             raise(BaseException("Incorrect Project in File Path!"))
         proj_root = '/'.join(pparts[0:idx])

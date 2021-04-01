@@ -8,7 +8,7 @@ class ESGPubIndex:
         self.verbose = verbose
         self.pubCli = publisherClient(cert_fn, hostname, verbose=self.verbose, silent=self.silent)
 
-    def gen_xml(d):
+    def gen_xml(self, d):
         out = []
         out.append("<doc>\n")
         for key in d:

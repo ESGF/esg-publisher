@@ -1,13 +1,13 @@
 import sys, json, os
-from esgcet.mapfile import *
+from esgcet.mapfile import ESGPubMapConv
 import configparser as cfg
-from esgcet.mk_dataset import MakeDataset
+from esgcet.mk_dataset import ESGPubMakeDataset
 from datetime import datetime, timedelta
 from esgcet.settings import *
 from pathlib import Path
 
 
-class ESGPubMKDNonNC(MakeDataset):
+class ESGPubMKDNonNC(ESGPubMakeDataset):
 
     def get_dataset(self, mapdata):
         master_id, version = mapdata.split('#')
@@ -80,7 +80,8 @@ class ESGPubMKDNonNC(MakeDataset):
         assert ('project' in rec)
         project = rec['project']
 
-        mapdict = parse_map_arr(mapobj)
+        self.mapconv.set_map_arr(mapobj)
+        mapdict = self.mapconv.parse_map_arr()
         if self.verbose:
             print('mapdict = ')
             print(mapdict)
