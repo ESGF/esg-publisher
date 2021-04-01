@@ -24,10 +24,10 @@ class ESGPubMKDCordex(ESGPubMakeDataset):
                 record["variable_units"] = var_rec["units"]
                 record["variable"] = vid
             else:
-                eprint("TODO check project settings for variable extraction")
+                self.eprint("TODO check project settings for variable extraction")
                 record["variable"] = "Multiple"
         else:
-            eprint("WARNING: no variables were extracted (is this CF compliant?)")
+            self.eprint("WARNING: no variables were extracted (is this CF compliant?)")
 
         geo_units = []
         if "axes" in scanobj:
@@ -57,7 +57,7 @@ class ESGPubMKDCordex(ESGPubMakeDataset):
                     tu_date = tu_parts[2]  # can we ignore time component?
                     if "subaxes" in time_obj:
                         subaxes = time_obj["subaxes"]
-                        sub_values = sorted([x for x in unpack_values(subaxes.values())])
+                        sub_values = sorted([x for x in self.unpack_values(subaxes.values())])
 
                         tu_start_inc = int(sub_values[0][0])
                         tu_end_inc = int(sub_values[-1][-1])
@@ -65,7 +65,7 @@ class ESGPubMKDCordex(ESGPubMakeDataset):
                         tu_start_inc = time_obj["values"][0]
                         tu_end_inc = time_obj["values"][-1]
                     else:
-                        eprint("WARNING: Time values not located...")
+                        self.eprint("WARNING: Time values not located...")
                         proc_time = False
                     if proc_time:
                         # TODO: handle this better?
@@ -89,4 +89,4 @@ class ESGPubMKDCordex(ESGPubMakeDataset):
                     record["height_top"] = plev["values"][0]
                     record["height_bottom"] = plev["values"][-1]
         else:
-            eprint("WARNING: No axes extracted from data files")
+            self.eprint("WARNING: No axes extracted from data files")

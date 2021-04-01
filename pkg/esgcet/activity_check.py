@@ -8,6 +8,7 @@ class FieldCheck(object):
         jobj = json.load(open(cv_path))["CV"]
         self.sid_dict = jobj["source_id"]
         self.silent = silent
+        self.idx = -1
 
     def check_fields(self, source_id, activity_id):
 
@@ -20,8 +21,8 @@ class FieldCheck(object):
 
 
     def run_check(self, input_rec):
-        src_id = input_rec[IDX]['source_id']
-        act_id = input_rec[IDX]['activity_drs']
+        src_id = input_rec[self.idx]['source_id']
+        act_id = input_rec[self.idx]['activity_drs']
  
         if self.check_fields(src_id, act_id):
             if not self.silent:

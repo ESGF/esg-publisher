@@ -51,13 +51,13 @@ class cmip6(GenericPublisher):
         pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
         check = FieldCheck(self.cmor_tables, silent=self.silent)
 
-        try:
-            check.run_check(out_json_data)
-            new_json_data = pid.do_pidcite()
-        except Exception as ex:
+        #try:
+        check.run_check(out_json_data)
+        new_json_data = pid.do_pidcite()
+        """except Exception as ex:
             print("Error assigning pid or running activity check: " + str(ex))
             self.cleanup()
-            exit(1)
+            exit(1)"""
         return new_json_data
 
     def workflow(self):

@@ -46,13 +46,14 @@ class ESGPubMakeDataset:
                 ga_val = scandata[f]
                 if not parts[i] == ga_val:
                     if not self.silent:
-                        eprint("WARNING: {} does not agree!".format(f))
+                        self.eprint("WARNING: {} does not agree!".format(f))
             self.dataset[f] = parts[i]
         
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
         self.const_attr(projkey)
         self.assign_dset_values(projkey, master_id, version)
+        print(self.dataset.keys())
 
     def global_attributes(self, projkey, scandata):
         # handle Global attributes if defined for the project
@@ -77,7 +78,7 @@ class ESGPubMakeDataset:
                     self.dataset[facetkey] = facetval
                 else:
                     if not self.silent:
-                        eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+                        self.eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
 
     def const_attr(self, projkey):
         if projkey in CONST_ATTR:
@@ -86,28 +87,25 @@ class ESGPubMakeDataset:
 
     def assign_dset_values(self, projkey, master_id, version):
 
-        d = self.dataset  # reference
-        d['data_node'] = self.data_node
-        d['index_node'] = self.index_node
+        self.dataset['data_node'] = self.data_node
+        self.dataset['index_node'] = self.index_node
         DRSlen = len(DRS[projkey])
-        d['master_id'] = master_id
-        d['instance_id'] = master_id + '.v' + version
-        d['id'] = d['instance_id'] + '|' + d['data_node']
-        if 'title' in d:
-            d['short_description'] = d['title']
-        d['title'] = d['master_id']
-        d['replica'] = self.replica
-        d['latest'] = 'true'
-        d['type'] = 'Dataset'
-        d['project'] = projkey
-        d['version'] = version
+        self.dataset['master_id'] = master_id
+        self.dataset['instance_id'] = master_id + '.v' + version
+        self.dataset['id'] = self.dataset['instance_id'] + '|' + self.dataset['data_node']
+        if 'title' in self.dataset:
+            self.dataset['short_description'] = self.dataset['title']
+        self.dataset['title'] = self.dataset['master_id']
+        self.dataset['replica'] = self.replica
+        self.dataset['latest'] = 'true'
+        self.dataset['type'] = 'Dataset'
+        self.dataset['project'] = projkey
+        self.dataset['version'] = version
 
         fmat_list = ['%({})s'.format(x) for x in DRS[projkey]]
 
-        d['dataset_id_template_'] = '.'.join(fmat_list)
-        d['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
-
-        self.dataset = d
+        self.dataset['dataset_id_template_'] = '.'.join(fmat_list)
+        self.dataset['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
 
     def format_template(self, template, root, rel):
         if "Globus" in template:
@@ -132,6 +130,7 @@ class ESGPubMakeDataset:
 
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
+        print(self.dataset.keys())
         dataset_id = self.dataset["id"]
         ret['type'] = "File"
         fullfn = mapdata['file']
@@ -152,14 +151,14 @@ class ESGPubMakeDataset:
 
 
         if not proj_root in self.data_roots:
-            eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
+            self.eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
             exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
-            eprint("WARNING: no files present")
+            self.eprint("WARNING: no files present")
         if "datetime_start" in ret:
             ret.pop("datetime_start")
             ret.pop("datetime_end")
@@ -189,10 +188,10 @@ class ESGPubMakeDataset:
                 record["variable_units"] = var_rec["units"]
                 record["variable"] = vid
             else:
-                eprint("TODO check project settings for variable extraction")
+                self.eprint("TODO check project settings for variable extraction")
                 record["variable"] = "Multiple"
         else:
-            eprint("WARNING: no variables were extracted (is this CF compliant?)")
+            self.eprint("WARNING: no variables were extracted (is this CF compliant?)")
 
         geo_units = []
         if "axes" in scanobj:
@@ -230,7 +229,7 @@ class ESGPubMakeDataset:
                         tu_start_inc = time_obj["values"][0]
                         tu_end_inc = time_obj["values"][-1]
                     else:
-                        eprint("WARNING: Time values not located...")
+                        self.eprint("WARNING: Time values not located...")
                         proc_time = False
                     if proc_time:
                         try:
@@ -253,7 +252,7 @@ class ESGPubMakeDataset:
                     record["height_top"] = plev["values"][0]
                     record["height_bottom"] = plev["values"][-1]
         else:
-            eprint("WARNING: No axes extracted from data files")
+            self.eprint("WARNING: No axes extracted from data files")
 
     def iterate_files(self, mapdata, scandata):
         ret = []
@@ -310,8 +309,8 @@ class ESGPubMakeDataset:
             print(scandict)
             print()
         ret, sz, access = self.iterate_files(mapdict, scandict)
-        rec["size"] = sz
-        rec["access"] = access
+        self.dataset["size"] = sz
+        self.dataset["access"] = access
         ret.append(self.dataset)
         return ret
 
