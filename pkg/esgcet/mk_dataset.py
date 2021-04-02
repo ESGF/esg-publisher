@@ -10,7 +10,20 @@ from pathlib import Path
 
 class ESGPubMakeDataset:
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False):
+    def init_project(self, project):
+
+        if project in DRS:
+            self.DRS = DRS['project']
+            if 'project' in CONST_ATTR:
+                self.CONST_ATTR = CONST_ATTR['project']
+        elif project in user_project:
+            self.DRS = user_project['project']['DRS']
+            if len(user_project['project']['CONST_ATTR']) > 0:
+                self.CONST_ATTR = user_project['project']['CONST_ATTR']
+        else:
+            raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, user_project=None):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -22,6 +35,13 @@ class ESGPubMakeDataset:
 
         self.mapconv = ESGPubMapConv("")
         self.dataset = {}
+        self.project = None
+        self.user_project = user_project
+        self.DRS = None
+        self.CONST_ATTR = None
+
+    def set_project(self, project_in):
+        self.project = project_in
 
     def eprint(self, *a):
 
@@ -38,8 +58,16 @@ class ESGPubMakeDataset:
         master_id, version = mapdata.split('#')
 
         parts = master_id.split('.')
+
         projkey = parts[0]
-        facets = DRS[projkey]
+
+        if self.project:
+            projkey = self.project
+        self.init_project(projkey)
+
+        facets = self.DRS  # depends on Init_project to initialize
+
+        assert(facets)
 
         for i, f in enumerate(facets):
             if f in scandata:
@@ -48,10 +76,10 @@ class ESGPubMakeDataset:
                     if not self.silent:
                         self.eprint("WARNING: {} does not agree!".format(f))
             self.dataset[f] = parts[i]
-        
+
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
-        self.const_attr(projkey)
+        self.const_attr()
         self.assign_dset_values(projkey, master_id, version)
         print(self.dataset.keys())
 
@@ -80,10 +108,10 @@ class ESGPubMakeDataset:
                     if not self.silent:
                         self.eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
 
-    def const_attr(self, projkey):
-        if projkey in CONST_ATTR:
-            for facetkey in CONST_ATTR[projkey]:
-                self.dataset[facetkey] = CONST_ATTR[projkey][facetkey]
+    def const_attr(self):
+        if self.CONST_ATTR:
+            for facetkey in self.CONST_ATTR:
+                self.dataset[facetkey] = self.CONST_ATTR[facetkey]
 
     def assign_dset_values(self, projkey, master_id, version):
 
@@ -149,9 +177,9 @@ class ESGPubMakeDataset:
 
         rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.dataset["project"])
 
-
         if not proj_root in self.data_roots:
-            self.eprint('Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
+            self.eprint(
+                'Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
             exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
@@ -171,7 +199,6 @@ class ESGPubMakeDataset:
             rec = scandata[key]
             ret[rec['name']] = rec
         return ret
-
 
     def update_metadata(self, record, scanobj):
         if "variables" in scanobj:
@@ -266,12 +293,14 @@ class ESGPubMakeDataset:
             last_file = file_rec
             sz += file_rec["size"]
             ret.append(file_rec)
-   
+
         access = [x.split("|")[2] for x in last_file["url"]]
 
         return ret, sz, access
 
-    def get_records(self, mapdata, scanfilename, xattrfn=None):
+    def get_records(self, mapdata, scanfilename, xattrfn=None, user_project=None):
+
+        self.user_project = user_project
 
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
@@ -312,12 +341,4 @@ class ESGPubMakeDataset:
         self.dataset["size"] = sz
         self.dataset["access"] = access
         ret.append(self.dataset)
-        return ret
-
-    def run(self, map_json_data, scanfn, json_file=None):
-
-        if json_file:
-            ret = self.get_records(map_json_data, scanfn, xattrfn=json_file)
-        else:
-            ret = self.get_records(map_json_data, scanfn)
         return ret

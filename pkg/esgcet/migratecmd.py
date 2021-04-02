@@ -1,5 +1,6 @@
-import esgcet.esgmigrate as em
-import argparse
+from esgcet.esgmigrate import ESGPubMigrate
+import argparse, sys, os
+
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
@@ -10,6 +11,7 @@ def get_args():
     parser.add_argument("--old-config", dest="cfg", default=DEFAULT_ESGINI, help="Path to old config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+    parser.add_argument("--project", dest="project", default=None, help='Name of a particular legacy project to migrate.')
 
     pub = parser.parse_args()
 
@@ -22,8 +24,11 @@ def main():
     ini_path = a.cfg
     silent = a.silent
     verbose = a.verbose
+    project = a.project
 
-    em.run([ini_path, silent, verbose])
+    em = ESGPubMigrate(ini_path, silent=silent, verbose=verbose)
+
+    em.run(project)
 
 
 if __name__ == "__main__":
