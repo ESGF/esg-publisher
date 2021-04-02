@@ -40,7 +40,7 @@ class ESGPubMakeDataset:
 
         parts = master_id.split('.')
         projkey = parts[0]
-        if projkey = "cordex":
+        if projkey == "cordex":
             self.variable_name = "variable"
         facets = DRS[projkey]
 
@@ -56,7 +56,6 @@ class ESGPubMakeDataset:
         self.global_attr_mapped(projkey, scandata)
         self.const_attr(projkey)
         self.assign_dset_values(projkey, master_id, version)
-        print(self.dataset.keys())
 
     def global_attributes(self, projkey, scandata):
         # handle Global attributes if defined for the project
@@ -224,7 +223,7 @@ class ESGPubMakeDataset:
                     tu_date = tu_parts[2]  # can we ignore time component?
                     if "subaxes" in time_obj:
                         subaxes = time_obj["subaxes"]
-                        sub_values = sorted([x for x in unpack_values(subaxes.values())])
+                        sub_values = sorted([x for x in self.unpack_values(subaxes.values())])
 
                         tu_start_inc = int(sub_values[0][0])
                         tu_end_inc = int(sub_values[-1][-1])
