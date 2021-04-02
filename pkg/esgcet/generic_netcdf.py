@@ -32,14 +32,14 @@ class GenericPublisher(BasePublisher):
     def cleanup(self):
         self.scan_file.close()
 
-    def autocurator(self, map_json_data, autoc_cmd):
+    def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
 
         destpath = os.path.dirname(datafile)
         outname = os.path.basename(datafile)
         idx = outname.rfind('.')
 
-        autstr = autoc_cmd + ' --out_pretty --out_json {} --files "{}/*.nc"'
+        autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
         stat = os.system(autstr.format(self.scanfn, destpath))
         if os.WEXITSTATUS(stat) != 0:
             print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
@@ -67,7 +67,7 @@ class GenericPublisher(BasePublisher):
         # step two: autocurator
         if not self.silent:
             print("Done.\nRunning autocurator...")
-        self.autocurator(map_json_data, self.autoc_command)
+        self.autocurator(map_json_data)
 
         # step three: make dataset
         if not self.silent:

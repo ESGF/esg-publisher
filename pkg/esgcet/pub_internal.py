@@ -45,6 +45,9 @@ def run(fullmap, pub_args):
     elif project == "generic" or project == "cordex":
         from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher(argdict)
+    elif project == "CREATE-IP":
+        from esgcet.create_ip import CreateIP
+        proj = CreateIP(argdict)
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
