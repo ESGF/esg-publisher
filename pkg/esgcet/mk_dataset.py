@@ -22,6 +22,7 @@ class ESGPubMakeDataset:
 
         self.mapconv = ESGPubMapConv("")
         self.dataset = {}
+        self.variable_name = "variable_id"
 
     def eprint(self, *a):
 
@@ -39,6 +40,8 @@ class ESGPubMakeDataset:
 
         parts = master_id.split('.')
         projkey = parts[0]
+        if projkey = "cordex":
+            self.variable_name = "variable"
         facets = DRS[projkey]
 
         for i, f in enumerate(facets):
@@ -175,9 +178,9 @@ class ESGPubMakeDataset:
 
     def update_metadata(self, record, scanobj):
         if "variables" in scanobj:
-            if "variable_id" in record:
+            if self.variable_name in record:
 
-                vid = record["variable_id"]
+                vid = record[self.variable_name]
                 var_rec = scanobj["variables"][vid]
                 if "long_name" in var_rec.keys():
                     record["variable_long_name"] = var_rec["long_name"]
@@ -233,10 +236,10 @@ class ESGPubMakeDataset:
                         proc_time = False
                     if proc_time:
                         try:
-                            days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                            days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         except:
                             tu_date = '0' + tu_date
-                            days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                            days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         dt_start = days_since_dt + timedelta(days=tu_start_inc)
                         dt_end = days_since_dt + timedelta(days=tu_end_inc)
                         if dt_start.microsecond >= 500000:
