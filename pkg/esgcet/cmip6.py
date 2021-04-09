@@ -73,7 +73,7 @@ class cmip6(GenericPublisher):
         # step three: autocurator
         if not self.silent:
             print("Done.\nRunning autocurator...")
-        self.autocurator(map_json_data, self.autoc_command)
+        self.autocurator(map_json_data)
 
         # step four: make dataset
         if not self.silent:

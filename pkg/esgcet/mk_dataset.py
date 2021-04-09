@@ -39,6 +39,7 @@ class ESGPubMakeDataset:
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
+        self.variable_name = "variable_id"
 
     def set_project(self, project_in):
         self.project = project_in
@@ -68,6 +69,8 @@ class ESGPubMakeDataset:
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
+        if projkey == "cordex":
+            self.variable_name = "variable"
 
         for i, f in enumerate(facets):
             if f in scandata:
@@ -81,7 +84,6 @@ class ESGPubMakeDataset:
         self.global_attr_mapped(projkey, scandata)
         self.const_attr()
         self.assign_dset_values(projkey, master_id, version)
-        print(self.dataset.keys())
 
     def global_attributes(self, projkey, scandata):
         # handle Global attributes if defined for the project
@@ -202,9 +204,9 @@ class ESGPubMakeDataset:
 
     def update_metadata(self, record, scanobj):
         if "variables" in scanobj:
-            if "variable_id" in record:
+            if self.variable_name in record:
 
-                vid = record["variable_id"]
+                vid = record[self.variable_name]
                 var_rec = scanobj["variables"][vid]
                 if "long_name" in var_rec.keys():
                     record["variable_long_name"] = var_rec["long_name"]
@@ -248,7 +250,7 @@ class ESGPubMakeDataset:
                     tu_date = tu_parts[2]  # can we ignore time component?
                     if "subaxes" in time_obj:
                         subaxes = time_obj["subaxes"]
-                        sub_values = sorted([x for x in unpack_values(subaxes.values())])
+                        sub_values = sorted([x for x in self.unpack_values(subaxes.values())])
 
                         tu_start_inc = int(sub_values[0][0])
                         tu_end_inc = int(sub_values[-1][-1])
@@ -260,10 +262,10 @@ class ESGPubMakeDataset:
                         proc_time = False
                     if proc_time:
                         try:
-                            days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                            days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         except:
                             tu_date = '0' + tu_date
-                            days_since_dt = datetime.strptime(tu_date, "%Y-%m-%d")
+                            days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         dt_start = days_since_dt + timedelta(days=tu_start_inc)
                         dt_end = days_since_dt + timedelta(days=tu_end_inc)
                         if dt_start.microsecond >= 500000:
