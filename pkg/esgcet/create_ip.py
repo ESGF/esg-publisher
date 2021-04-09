@@ -1,6 +1,10 @@
 import sys, os
-from generic_pub import BasePublisher
-from generic_netcdf import GenericPublisher
+from esgcet.generic_pub import BasePublisher
+from esgcet.generic_netcdf import GenericPublisher
+from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.update import ESGPubUpdate
+from esgcet.index_pub import ESGPubIndex
+import tempfile
 
 
 class CreateIP(GenericPublisher):
@@ -27,7 +31,7 @@ class CreateIP(GenericPublisher):
         self.variables = []
 
     def cleanup(self):
-        for scan in scans:
+        for scan in self.scans:
             scan.close()
 
     def autocurator(self, map_json_data):
@@ -59,7 +63,7 @@ class CreateIP(GenericPublisher):
                                 self.dtn, self.silent, self.verbose)
         for scan in self.scans:
             try:
-                out_json_data = mkd.get_records(map_json_data, scan, self.json_file, user_project=self.proj_config)
+                out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file, user_project=self.proj_config)
                 self.datasets.append(out_json_data)
             except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
