@@ -179,6 +179,11 @@ class PublisherArgs:
             autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
         else:
             autoc_command = autocurator
+        
+        try:
+            proj_config = json.loads(config['user']['user_project_config'])
+        except:
+            proj_config = None
 
         os.system("cert_path=" + cert)
 
@@ -186,7 +191,7 @@ class PublisherArgs:
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots,
-                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project, "json_file": json_file, "test": test}
+                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project, "json_file": json_file, "test": test, "user_project_config": proj_config}
 
         if project == "CMIP6":
             if pub.cmor_path is None:

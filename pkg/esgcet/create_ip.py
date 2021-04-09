@@ -20,6 +20,7 @@ class CreateIP(GenericPublisher):
         self.replica = argdict["replica"]
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
+        self.proj_config = argdict["user_project_config"]
 
         self.scans = []
         self.datasets = []
@@ -58,7 +59,7 @@ class CreateIP(GenericPublisher):
                                 self.dtn, self.silent, self.verbose)
         for scan in self.scans:
             try:
-                out_json_data = mkd.get_records(map_json_data, scan, self.json_file, user_project=self.proj)
+                out_json_data = mkd.get_records(map_json_data, scan, self.json_file, user_project=self.proj_config)
                 self.datasets.append(out_json_data)
             except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)

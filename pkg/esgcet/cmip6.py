@@ -31,6 +31,7 @@ class cmip6(GenericPublisher):
         self.pid_creds = argdict["pid_creds"]
         self.cmor_tables = argdict["cmor_tables"]
         self.test = argdict["test"]
+        self.proj_config = argdict["user_project_config"]
         pass
     
     def prepare_internal(self, json_map, cmor_tables):

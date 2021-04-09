@@ -24,7 +24,7 @@ class GenericPublisher(BasePublisher):
         self.replica = argdict["replica"]
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
-        pass
+        self.proj_config = argdict["user_project_config"]
 
     def check_files(self):
         pass
@@ -49,12 +49,12 @@ class GenericPublisher(BasePublisher):
     def mk_dataset(self, map_json_data):
         mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
-        try:
-            out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj)
-        except Exception as ex:
+        #try:
+        out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)
+        """except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()
-            exit(1)
+            exit(1)"""
         return out_json_data
 
     def workflow(self):

@@ -13,13 +13,13 @@ class ESGPubMakeDataset:
     def init_project(self, project):
 
         if project in DRS:
-            self.DRS = DRS['project']
-            if 'project' in CONST_ATTR:
-                self.CONST_ATTR = CONST_ATTR['project']
-        elif project in user_project:
-            self.DRS = user_project['project']['DRS']
-            if len(user_project['project']['CONST_ATTR']) > 0:
-                self.CONST_ATTR = user_project['project']['CONST_ATTR']
+            self.DRS = DRS[project]
+            if project in CONST_ATTR:
+                self.CONST_ATTR = CONST_ATTR[project]
+        elif project in self.user_project:
+            self.DRS = self.user_project[project]['DRS']
+            if len(self.user_project[project]['CONST_ATTR']) > 0:
+                self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
             raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
