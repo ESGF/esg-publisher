@@ -50,7 +50,7 @@ class GenericPublisher(BasePublisher):
         mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
         try:
-            out_json_data = mkd.run(map_json_data, self.scanfn, self.json_file)
+            out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
             self.cleanup()

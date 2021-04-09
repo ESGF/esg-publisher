@@ -58,7 +58,7 @@ class CreateIP(GenericPublisher):
                                 self.dtn, self.silent, self.verbose)
         for scan in self.scans:
             try:
-                out_json_data = mkd.run(map_json_data, scan, self.json_file)
+                out_json_data = mkd.get_records(map_json_data, scan, self.json_file, user_project=self.proj)
                 self.datasets.append(out_json_data)
             except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
