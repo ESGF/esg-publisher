@@ -320,8 +320,8 @@ class ESGPubMakeDataset:
             xattrobj = {}
 
         if self.verbose:
-            print("rec = ")
-            print(self.dataset)
+            print("Record:")
+            print(json.dumps(self.dataset, indent=4))
             print()
         for key in xattrobj:
             self.dataset[key] = xattrobj[key]
@@ -331,13 +331,13 @@ class ESGPubMakeDataset:
         mapdict = self.mapconv.parse_map_arr()
 
         if self.verbose:
-            print('mapdict = ')
-            print(mapdict)
+            print('Mapfile dictionary:')
+            print(json.dumps(mapdict, indent=4))
             print()
         scandict = self.get_scanfile_dict(scanobj['file'])
         if self.verbose:
-            print('scandict = ')
-            print(scandict)
+            print('Autocurator Scanfile dictionary:')
+            print(json.dumps(scandict, indent=4))
             print()
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
