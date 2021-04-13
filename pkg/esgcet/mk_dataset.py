@@ -54,13 +54,14 @@ class ESGPubMakeDataset:
             if x['values']:
                 yield x['values']
 
-    def get_dataset(self, mapdata, scandata):
+    def get_dataset(self, mapdata, scanobj):
 
         master_id, version = mapdata.split('#')
 
         parts = master_id.split('.')
 
         projkey = parts[0]
+        scandata = scanobj['dataset']
 
         if self.project:
             projkey = self.project
@@ -119,7 +120,6 @@ class ESGPubMakeDataset:
 
         self.dataset['data_node'] = self.data_node
         self.dataset['index_node'] = self.index_node
-        DRSlen = len(DRS[projkey])
         self.dataset['master_id'] = master_id
         self.dataset['instance_id'] = master_id + '.v' + version
         self.dataset['id'] = self.dataset['instance_id'] + '|' + self.dataset['data_node']
@@ -132,7 +132,7 @@ class ESGPubMakeDataset:
         self.dataset['project'] = projkey
         self.dataset['version'] = version
 
-        fmat_list = ['%({})s'.format(x) for x in DRS[projkey]]
+        fmat_list = ['%({})s'.format(x) for x in self.DRS]
 
         self.dataset['dataset_id_template_'] = '.'.join(fmat_list)
         self.dataset['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
@@ -310,7 +310,7 @@ class ESGPubMakeDataset:
             mapobj = mapdata
         scanobj = json.load(open(scanfilename))
 
-        self.get_dataset(mapobj[0][0], scanobj['dataset'])
+        self.get_dataset(mapobj[0][0], scanobj)
         self.update_metadata(self.dataset, scanobj)
         self.dataset["number_of_files"] = len(mapobj)  # place this better
 
