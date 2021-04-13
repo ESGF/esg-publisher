@@ -25,6 +25,8 @@ class CreateIP(GenericPublisher):
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
         self.proj_config = argdict["user_project_config"]
+        self.verify = argdict["verify"]
+        self.auth = argdict["auth"]
 
         self.scans = []
         self.datasets = []
@@ -75,7 +77,7 @@ class CreateIP(GenericPublisher):
         return 0
 
     def update(self, placeholder):
-        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose)
+        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
         for json_data in self.datasets:
             try:
                 up.run(json_data)
@@ -85,7 +87,7 @@ class CreateIP(GenericPublisher):
                 exit(1)
 
     def index_pub(self, placeholder):
-        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose)
+        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
         for dataset_records in self.datasets:
             try:
                 ip.do_publish(dataset_records)

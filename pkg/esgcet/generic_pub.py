@@ -21,6 +21,8 @@ class BasePublisher(object):
         self.replica = argdict["replica"]
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
+        self.auth = argdict["auth"]
+        self.verify = argdict["verify"]
 
     def cleanup(self):
         pass
@@ -50,7 +52,7 @@ class BasePublisher(object):
         return out_json_data
 
     def update(self, json_data):
-        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose)
+        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
         try:
             up.run(json_data)
         except Exception as ex:
@@ -59,7 +61,7 @@ class BasePublisher(object):
             exit(1)
 
     def index_pub(self,dataset_records):
-        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose)
+        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
         try:
             ip.do_publish(dataset_records)
         except Exception as ex:

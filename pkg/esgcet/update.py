@@ -8,7 +8,7 @@ from pathlib import Path
 class ESGPubUpdate():
 
 
-    def __init__(self, index_node, cert_fn, silent=False, verbose=False):    
+    def __init__(self, index_node, cert_fn, silent=False, verbose=False, verify=False, auth=True):
         """
             index_node (string):  The node to search for the update 
             cert_fn (string):  Filename for certicate to use to push updates to the API
@@ -19,7 +19,7 @@ class ESGPubUpdate():
         self.cert_fn = cert_fn
         self.silent = silent
         self.verbose = verbose
-        self.pubCli = publisherClient(self.cert_fn, self.index_node, verbose=self.verbose, silent=self.silent)
+        self.pubCli = publisherClient(self.cert_fn, self.index_node, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
 
         self.SEARCH_TEMPLATE = 'https://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
 

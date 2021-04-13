@@ -3,10 +3,10 @@ from esgcet.pub_client import publisherClient
 
 class ESGPubIndex:
 
-    def __init__(self, hostname, cert_fn,  verbose=False, silent=False):
+    def __init__(self, hostname, cert_fn, verbose=False, silent=False, verify=False, auth=True):
         self.silent = silent
         self.verbose = verbose
-        self.pubCli = publisherClient(cert_fn, hostname, verbose=self.verbose, silent=self.silent)
+        self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
 
     def gen_xml(self, d):
         out = []

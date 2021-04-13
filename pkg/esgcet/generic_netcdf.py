@@ -25,6 +25,8 @@ class GenericPublisher(BasePublisher):
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
         self.proj_config = argdict["user_project_config"]
+        self.auth = argdict["auth"]
+        self.verify = argdict["verify"]
 
     def check_files(self):
         pass

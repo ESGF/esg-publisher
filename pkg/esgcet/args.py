@@ -35,6 +35,8 @@ class PublisherArgs:
         parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
         parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
         parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+        parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
+        parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
 
         pub = parser.parse_args()
 
@@ -187,11 +189,22 @@ class PublisherArgs:
 
         os.system("cert_path=" + cert)
 
+        if pub.verify:
+            verify = True
+        else:
+            verify = False
+
+        if pub.no_auth:
+            auth = False
+        else:
+            auth = True
+
         argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
-                   "data_roots": data_roots,
-                   "globus": globus, "dtn": dtn, "replica": replica, "proj": project, "json_file": json_file, "test": test, "user_project_config": proj_config}
+                   "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
+                   "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
+                   "auth": auth}
 
         if project == "CMIP6":
             if pub.cmor_path is None:

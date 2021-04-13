@@ -5,7 +5,7 @@ class publisherClient(object):
         User must supply API parameters in xml form for publish and updates, dataset_ids for retract/delete
     """
     
-    def __init__(self, cert_fn, hostname, verbose=False, silent=False):
+    def __init__(self, cert_fn, hostname, verify=False, verbose=False, silent=False, auth=True):
         """ cert_fn - Path to certificate file
             hostame - target index node for API
             verbose, silent (bool) - add additional output, suppress INFO messages
@@ -21,14 +21,18 @@ class publisherClient(object):
         self.deleteUrl = '{}/delete'.format(urlbase)
         self.verbose = verbose
         self.silent = silent
+        self.verify = verify
+        self.use_cert = auth
 
     def post_data(self, url, data):
         """ Internal method to post data to a url via requests
             url - the url
             data - the post data payload
         """
-        resp =  requests.post(url, data=data, cert=(self.certFile, self.keyFile), \
-verify=False, allow_redirects=True)
+        if self.use_cert:
+            resp = requests.post(url, data=data, cert=(self.certFile, self.keyFile), verify=self.verify, allow_redirects=True)
+        else:
+            resp = requests.post(url, data=data, verify=self.verify, allow_redirects=True)
         if not self.silent:
             print(resp.text)
         return resp
