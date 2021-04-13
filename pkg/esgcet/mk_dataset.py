@@ -40,6 +40,7 @@ class ESGPubMakeDataset:
         self.DRS = None
         self.CONST_ATTR = None
         self.variable_name = "variable_id"
+        self.source_ids = [ "CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5", "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3", "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351" ] 
 
     def set_project(self, project_in):
         self.project = project_in
@@ -75,6 +76,9 @@ class ESGPubMakeDataset:
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
+                if f == "experiment":
+                    if ga_val in self.source_ids and projkey == "CREATE-IP":
+                        f = "source_id"
                 if not parts[i] == ga_val:
                     if not self.silent:
                         self.eprint("WARNING: {} does not agree!".format(f))
