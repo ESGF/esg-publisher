@@ -1,7 +1,7 @@
 import sys, os
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-from esgcet.mk_dataset import ESGPubMKDCreateIP
+from esgcet.mkd_create_ip import ESGPubMKDCreateIP
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
 import tempfile
