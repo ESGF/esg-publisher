@@ -1,7 +1,7 @@
 import sys, os
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.mk_dataset import ESGPubMKDCreateIP
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
 import tempfile
@@ -59,11 +59,11 @@ class CreateIP(GenericPublisher):
                 exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
+        mkd = ESGPubMKDCreateIP(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
                                 self.dtn, self.silent, self.verbose)
         for scan in self.scans:
             try:
-                out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file, user_project=self.proj_config)
+                out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(out_json_data)
             except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
