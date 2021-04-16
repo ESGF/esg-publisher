@@ -199,6 +199,12 @@ class PublisherArgs:
         else:
             auth = True
 
+        if globus == "none" and not silent:
+            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
+
+        if dtn == "none" and not silent:
+            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
+
         argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,

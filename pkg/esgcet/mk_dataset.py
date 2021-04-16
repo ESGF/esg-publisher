@@ -139,15 +139,11 @@ class ESGPubMakeDataset:
             if self.globus != 'none':
                 return template.format(self.globus, root, rel)
             else:
-                if not self.silent:
-                    print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
                 return template.format(GLOBUS_UUID, root, rel)
         elif "gsiftp" in template:
             if self.dtn != 'none':
                 return template.format(self.dtn, root, rel)
             else:
-                if not self.silent:
-                    print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
                 return template.format(DATA_TRANSFER_NODE, root, rel)
         else:
             return template.format(self.data_node, root, rel)

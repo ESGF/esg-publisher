@@ -10,10 +10,12 @@ from esgcet.mk_dataset import ESGPubMakeDataset
 
 class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
-    def init_project(self, s):
+    def init_project(self, s, l):
 
         if s in self.source_ids:
             self.DRS = DRS["CREATE-IP-src"]
+        elif l == 7:
+            self.DRS = DRS["CREATE-IP-model"]
         else:
             self.DRS = DRS["CREATE-IP-exp"]
 
@@ -51,7 +53,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
         if self.project:
             projkey = self.project
-        self.init_project(exp_src)
+        self.init_project(exp_src, len(parts))
 
         facets = self.DRS  # depends on Init_project to initialize
 
