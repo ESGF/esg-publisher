@@ -49,10 +49,7 @@ class ESGPubMakeDataset:
         print(*a, file=sys.stderr)
 
     def unpack_values(self, invals):
-
-        for x in invals:
-            if x['values']:
-                yield x['values']
+        return list(filter(lambda x: x, invals))
 
     def get_dataset(self, mapdata, scanobj):
 
