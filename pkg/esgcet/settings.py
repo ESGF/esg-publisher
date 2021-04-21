@@ -18,7 +18,8 @@ DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
     'cordex' : ['project', 'product', 'domain', 'institute', 'driving_model', 'experiment', 'ensemble', 'rcm_model', 'rcm_version', 'time_frequency', 'variable' ],
     'CREATE-IP-exp' : ['project', 'product', 'institute', 'experiment', 'realm', 'time_frequency'],
     'CREATE-IP-src': ['project', 'product', 'institute', 'source_id', 'realm', 'time_frequency'],
-    'CREATE-IP-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'] }
+    'CREATE-IP-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'],
+        'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble']}
 
 SPLIT_FACET = { 'E3SM' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
 
@@ -108,3 +109,5 @@ SET_REPLICA = False
 
 GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
 DATA_TRANSFER_NODE = "aimsdtn4.llnl.gov"
+
+VARIABLE_LIMIT = 75

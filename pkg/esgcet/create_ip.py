@@ -5,6 +5,7 @@ from esgcet.mkd_create_ip import ESGPubMKDCreateIP
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
 import tempfile
+from esgcet.settings import VARIABLE_LIMIT
 
 
 class CreateIP(GenericPublisher):
@@ -41,9 +42,9 @@ class CreateIP(GenericPublisher):
 
         destpath = os.path.dirname(datafile)
         outname = os.path.basename(datafile)
-        idx = outname.rfind('.')
+        idx = outname.rfind('.')  # was this needed for something?
 
-        autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
+        autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/{}_*.nc"'
         files = os.listdir(destpath)
         for f in files:
             var = f.split('_')[0]
@@ -72,7 +73,7 @@ class CreateIP(GenericPublisher):
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables
-            if len(self.variables) > 75:
+            if len(self.variables) > VARIABLE_LIMIT:
                 break
         return 0
 
