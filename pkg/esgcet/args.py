@@ -3,6 +3,7 @@ from pathlib import Path
 import os, sys, json
 import esgcet.esgmigrate as em
 import configparser as cfg
+from esgcet.settings import *
 
 
 DEFAULT_ESGINI = '/esg/config/esgcet'

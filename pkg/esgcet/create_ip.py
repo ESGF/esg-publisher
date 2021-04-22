@@ -64,13 +64,13 @@ class CreateIP(GenericPublisher):
         mkd = ESGPubMKDCreateIP(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
                                 self.dtn, self.silent, self.verbose)
         for scan in self.scans:
-            try:
-                out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
-                self.datasets.append(out_json_data)
-            except Exception as ex:
+            #try:
+            out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
+            self.datasets.append(out_json_data)
+            """except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
                 self.cleanup()
-                exit(1)
+                exit(1)"""
             # only use first scan file if more than 75 variables
             if len(self.variables) > 75:
                 break
