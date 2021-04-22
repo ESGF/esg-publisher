@@ -1,11 +1,12 @@
 import sys, os
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-from esgcet.mkd_create_ip import ESGPubMKDCreateIP
+from esgcet.mkd_cmip5 import ESGPubMKDCmip5
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
-import tempfile
 from esgcet.settings import VARIABLE_LIMIT
+
+import tempfile
 
 
 class CreateIP(GenericPublisher):
@@ -44,7 +45,7 @@ class CreateIP(GenericPublisher):
         outname = os.path.basename(datafile)
         idx = outname.rfind('.')  # was this needed for something?
 
-        autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/{}_*.nc"'
+        autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/{}/*.nc"'
         files = os.listdir(destpath)
         for f in files:
             var = f.split('_')[0]
@@ -65,15 +66,21 @@ class CreateIP(GenericPublisher):
         mkd = ESGPubMKDCreateIP(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
                                 self.dtn, self.silent, self.verbose)
         for scan in self.scans:
-            #try:
-            out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
-            self.datasets.append(out_json_data)
-            """except Exception as ex:
+            try:
+                out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
+                # this is problematic because we will have duplicate type=Dataset records
+                #  NEED an aggregator to create the master dataset record, pull the variable-specific metadata
+                #  from all the sub-dataset records
+
+                self.datasets.append(out_json_data)
+
+            except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
                 self.cleanup()
-                exit(1)"""
+                exit(1)
             # only use first scan file if more than 75 variables
             if len(self.variables) > VARIABLE_LIMIT:
+                # NEED to ASSIGN variable field for everything to multiple in this case
                 break
         return 0
 
