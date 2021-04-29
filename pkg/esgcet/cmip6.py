@@ -32,7 +32,8 @@ class cmip6(GenericPublisher):
         self.cmor_tables = argdict["cmor_tables"]
         self.test = argdict["test"]
         self.proj_config = argdict["user_project_config"]
-        pass
+        self.verify = argdict["verify"]
+        self.auth = argdict["auth"]
     
     def prepare_internal(self, json_map, cmor_tables):
         try:
