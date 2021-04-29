@@ -23,7 +23,7 @@ class ESGPubMakeDataset:
         else:
             raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -32,6 +32,7 @@ class ESGPubMakeDataset:
         self.index_node = index_node
         self.replica = replica
         self.dtn = dtn
+        self.limit_exceeded = limit_exceeded
 
         self.mapconv = ESGPubMapConv("")
         self.dataset = {}
@@ -49,7 +50,10 @@ class ESGPubMakeDataset:
         print(*a, file=sys.stderr)
 
     def unpack_values(self, invals):
-        return list(filter(lambda x: x, invals))
+        for x in invals:
+            if x['values']:
+                yield x['values']
+        #return list(filter(lambda x: x, invals))
 
     def get_dataset(self, mapdata, scanobj):
 
@@ -153,7 +157,6 @@ class ESGPubMakeDataset:
 
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
-        print(self.dataset.keys())
         dataset_id = self.dataset["id"]
         ret['type'] = "File"
         fullfn = mapdata['file']
@@ -283,6 +286,10 @@ class ESGPubMakeDataset:
 
         for maprec in mapdata:
             fullpath = maprec['file']
+            if fullpath not in scandata.keys():
+                if not self.limit_exceeded and self.project != "CREATE-IP":
+                    self.eprint("WARNING: autocurator data not found for file: " + fullpath)
+                continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
             last_file = file_rec

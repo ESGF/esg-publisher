@@ -12,6 +12,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
     def init_project(self, s, l):
 
+        self.project = "CREATE-IP"
         if s in self.source_ids:
             self.DRS = DRS["CREATE-IP-src"]
         elif l == 7:
@@ -19,7 +20,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         else:
             self.DRS = DRS["CREATE-IP-exp"]
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -28,6 +29,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.index_node = index_node
         self.replica = replica
         self.dtn = dtn
+        self.limit_exceeded = limit_exceeded
 
         self.mapconv = ESGPubMapConv("")
         self.dataset = {}
@@ -58,7 +60,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
-        self.variable_name = list(scanobj["variables"].keys())[0]
+        self.variable_name = list(scanobj["variables"].keys())[-1]
 
         for i, f in enumerate(facets):
             if f in scandata:
