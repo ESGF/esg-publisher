@@ -32,6 +32,7 @@ class CreateIP(GenericPublisher):
         self.scans = []
         self.datasets = []
         self.variables = []
+        self.master_dataset = None
 
     def cleanup(self):
         for scan in self.scans:
@@ -76,24 +77,24 @@ class CreateIP(GenericPublisher):
             # only use first scan file if more than 75 variables
             if len(self.variables) > VARIABLE_LIMIT:
                 break
+
+        self.master_dataset = mkd.aggregate_datasets(self.datasets)
         return 0
 
     def update(self, placeholder):
         up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
-        for json_data in self.datasets:
-            try:
-                up.run(json_data)
-            except Exception as ex:
-                print("Error updating: " + str(ex), file=sys.stderr)
-                self.cleanup()
-                exit(1)
+        try:
+            up.run(self.master_dataset)
+        except Exception as ex:
+            print("Error updating: " + str(ex), file=sys.stderr)
+            self.cleanup()
+            exit(1)
 
     def index_pub(self, placeholder):
         ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
-        for dataset_records in self.datasets:
-            try:
-                ip.do_publish(dataset_records)
-            except Exception as ex:
-                print("Error running index pub: " + str(ex), file=sys.stderr)
-                self.cleanup()
-                exit(1)
+        try:
+            ip.do_publish(self.master_dataset)
+        except Exception as ex:
+            print("Error running index pub: " + str(ex), file=sys.stderr)
+            self.cleanup()
+            exit(1)

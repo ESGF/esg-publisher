@@ -80,3 +80,24 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.const_attr()
         self.assign_dset_values(projkey, master_id, version)
 
+    def aggregate_datasets(self, datasets):
+        vids = []
+        v_long_names = []
+        cf_std_names = []
+        v_units = []
+        last_dset = None
+        last_rec = None
+        for data in datasets:
+            dataset = data[-1]
+            vids.append(dataset["variable"])
+            v_long_names.append(dataset["variable_long_name"])
+            cf_std_names.append(dataset["cf_standard_name"])
+            v_units.append(dataset["variable_units"])
+            last_rec = data
+            last_dset = dataset
+        last_dset["variable"] = vids
+        last_dset["variable_long_name"] = v_long_names
+        last_dset["cf_standard_name"] = cf_std_names
+        last_dset["variable_units"] = v_units
+        last_rec[-1] = last_dset
+        return last_rec
