@@ -33,6 +33,7 @@ class CreateIP(GenericPublisher):
         self.scans = []
         self.datasets = []
         self.variables = []
+        self.master_dataset = None
 
     def cleanup(self):
         for scan in self.scans:
@@ -65,13 +66,10 @@ class CreateIP(GenericPublisher):
     def mk_dataset(self, map_json_data):
         mkd = ESGPubMKDCreateIP(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
                                 self.dtn, self.silent, self.verbose)
+        limit = False
         for scan in self.scans:
             try:
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
-                # this is problematic because we will have duplicate type=Dataset records
-                #  NEED an aggregator to create the master dataset record, pull the variable-specific metadata
-                #  from all the sub-dataset records
-
                 self.datasets.append(out_json_data)
 
             except Exception as ex:
@@ -80,8 +78,9 @@ class CreateIP(GenericPublisher):
                 exit(1)
             # only use first scan file if more than 75 variables
             if len(self.variables) > VARIABLE_LIMIT:
-                # NEED to ASSIGN variable field for everything to multiple in this case
+                limit = True
                 break
+        self.master_dataset = mkd.aggregate_datasets(self.datasets, limit)
         return 0
 
     def update(self, placeholder):
