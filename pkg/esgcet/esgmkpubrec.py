@@ -1,4 +1,4 @@
-import esgcet.mk_dataset as mkd
+from esgcet.mk_dataset as mkd
 import argparse
 from pathlib import Path
 import configparser as cfg

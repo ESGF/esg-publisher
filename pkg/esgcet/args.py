@@ -152,6 +152,13 @@ class PublisherArgs:
         except:
             dtn = "none"
 
+        skip_prepare = False
+
+        try:
+            skip_prep_str = config['user']['skip_prepare'].lower()
+            skip_prepare = (skip_prep_str in ["true", "yes"])
+        except:
+            pass
         if pub.set_replica and pub.no_replica:
             print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
             exit(1)
@@ -161,7 +168,7 @@ class PublisherArgs:
             replica = False
         else:
             try:
-                r = config['user']['set_replica']
+                r = config['user']['set_replica'].lower()
                 if 'yes' in r or 'true' in r:
                     replica = True
                 elif 'no' in r or 'false' in r:
@@ -187,6 +194,7 @@ class PublisherArgs:
             proj_config = json.loads(config['user']['user_project_config'])
         except:
             proj_config = None
+
 
         os.system("cert_path=" + cert)
 
