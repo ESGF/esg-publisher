@@ -89,10 +89,14 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         last_rec = None
         for data in datasets:
             dataset = data[-1]
-            vids.append(dataset["variable"])
-            v_long_names.append(dataset["variable_long_name"])
-            cf_std_names.append(dataset["cf_standard_name"])
-            v_units.append(dataset["variable_units"])
+            if "variable" in dataset:
+                vids.append(dataset["variable"])
+            if "variable_long_name" in dataset:
+                v_long_names.append(dataset["variable_long_name"])
+            if "cf_standard_name" in dataset:
+                cf_std_names.append(dataset["cf_standard_name"])
+            if "variable_units" in dataset:
+                v_units.append(dataset["variable_units"])
             last_rec = data
             last_dset = dataset
         last_dset["variable"] = vids
