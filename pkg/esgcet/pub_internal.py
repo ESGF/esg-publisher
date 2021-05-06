@@ -65,30 +65,30 @@ def main():
     if maps is None:
         print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
         exit(1)
-    if os.path.isdir(maps[0]):
-        files = os.listdir(maps[0])
-        for f in files:
-            if os.path.isdir(maps[0] + f):
-                continue
-            run(maps[0] + f, pub_args)
-    else:
-        myfile = open(maps[0])
-        ismap = True
-        first = True
-        for line in myfile:
-            # if parsed line is not mapfile line, run on each file
-            if first:
-                if os.path.isfile(line):
-                    ismap = False
-                else:
-                    break
-                first = False
+    for m in maps:
+        if os.path.isdir(m):
+            files = os.listdir(m)
+            for f in files:
+                if os.path.isdir(m + f):
+                    continue
+                run(m + f, pub_args)
+        else:
+            myfile = open(m)
+            ismap = True
+            first = True
+            for line in myfile:
+                # if parsed line is not mapfile line, run on each file
+                if first:
+                    if os.path.isfile(line):
+                        ismap = False
+                    else:
+                        break
+                    first = False
 
-            length = len(line)
-            run(line[0:length - 2], pub_args)
-        myfile.close()
-        if ismap:
-            for m in maps:
+                length = len(line)
+                run(line[0:length - 2], pub_args)
+            myfile.close()
+            if ismap:
                 run(m, pub_args)
 
 
