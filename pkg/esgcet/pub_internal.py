@@ -48,6 +48,9 @@ def run(fullmap, pub_args):
     elif project == "CREATE-IP":
         from esgcet.create_ip import CreateIP
         proj = CreateIP(argdict)
+    elif project == "CMIP5":
+        from esgcet.cmip5 import cmip5
+        proj = cmip5(argdict)
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
