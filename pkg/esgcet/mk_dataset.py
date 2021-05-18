@@ -287,7 +287,7 @@ class ESGPubMakeDataset:
         for maprec in mapdata:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
-                if not self.limit_exceeded and self.project != "CREATE-IP":
+                if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
                     self.eprint("WARNING: autocurator data not found for file: " + fullpath)
                 continue
             scanrec = scandata[fullpath]
@@ -330,12 +330,12 @@ class ESGPubMakeDataset:
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
-        if self.verbose:
+        if self.verbose and False:
             print('Mapfile dictionary:')
             print(json.dumps(mapdict, indent=4))
             print()
         scandict = self.get_scanfile_dict(scanobj['file'])
-        if self.verbose:
+        if self.verbose and False:
             print('Autocurator Scanfile dictionary:')
             print(json.dumps(scandict, indent=4))
             print()

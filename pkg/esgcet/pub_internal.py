@@ -48,7 +48,7 @@ def run(fullmap, pub_args):
     elif project == "CREATE-IP":
         from esgcet.create_ip import CreateIP
         proj = CreateIP(argdict)
-    elif project == "CMIP5":
+    elif project == "cmip5":
         from esgcet.cmip5 import cmip5
         proj = cmip5(argdict)
     else:

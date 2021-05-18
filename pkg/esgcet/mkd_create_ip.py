@@ -37,7 +37,8 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
-        self.variable_name = "variable_id"
+        self.variable_name = "variable"
+        self.variable = None
 
         self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
                    "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
@@ -60,7 +61,8 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
-        self.variable_name = list(scanobj["variables"].keys())[-1]
+        self.variable = list(scanobj["variables"].keys())[-1]
+        self.eprint(self.variable)
 
         for i, f in enumerate(facets):
             if f in scandata:
@@ -74,13 +76,14 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
                         self.eprint("WARNING: {} does not agree!".format(f))
                         self.eprint(ga_val)
             self.dataset[f] = parts[i]
+        self.dataset[self.variable_name] = self.variable
 
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
         self.const_attr()
         self.assign_dset_values(projkey, master_id, version)
 
-    def aggregate_datasets(self, datasets):
+    def aggregate_datasets(self, datasets, limit=False):
         vids = []
         v_long_names = []
         cf_std_names = []
@@ -88,20 +91,35 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         last_dset = None
         last_rec = None
         for data in datasets:
-            dataset = data[-1]
-            if "variable" in dataset:
+            if data[0]["type"] == "Dataset":
+                idx = 0
+            else:
+                idx = -1
+            dataset = data[idx]
+            if "variable" in dataset and dataset["variable"] not in vids:
+                if dataset["variable"] == "time_bnds":
+                    continue
                 vids.append(dataset["variable"])
-            if "variable_long_name" in dataset:
+            if "variable_long_name" in dataset and dataset["variable_long_name"] not in v_long_names:
                 v_long_names.append(dataset["variable_long_name"])
-            if "cf_standard_name" in dataset:
+            if "cf_standard_name" in dataset and dataset["cf_standard_name"] not in cf_std_names:
                 cf_std_names.append(dataset["cf_standard_name"])
-            if "variable_units" in dataset:
+            if "variable_units" in dataset and dataset["variable_units"] not in v_units:
                 v_units.append(dataset["variable_units"])
             last_rec = data
             last_dset = dataset
-        last_dset["variable"] = vids
-        last_dset["variable_long_name"] = v_long_names
-        last_dset["cf_standard_name"] = cf_std_names
-        last_dset["variable_units"] = v_units
-        last_rec[-1] = last_dset
+        if limit:
+            last_dset["variable"] = "Multiple"
+            last_dset["variable_long_name"] = "Multiple"
+            last_dset["cf_standard_name"] = "Multiple"
+            last_dset["variable_units"] = "Multiple"
+        else:
+            last_dset["variable"] = vids
+            last_dset["variable_long_name"] = v_long_names
+            last_dset["cf_standard_name"] = cf_std_names
+            last_dset["variable_units"] = v_units
+        last_rec[idx] = last_dset
+        if self.verbose:
+            self.eprint("Aggregate record:")
+            self.eprint(json.dumps(last_dset, indent=4))
         return last_rec

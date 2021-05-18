@@ -34,6 +34,7 @@ class cmip5(CreateIP):
 
     def mk_dataset(self, map_json_data):
         limit_exceeded = len(self.variables) > VARIABLE_LIMIT
+        limit = False
         mkd = ESGPubMKDCmip5(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
                                 self.dtn, self.silent, self.verbose, limit_exceeded)
         for scan in self.scans:
@@ -46,7 +47,8 @@ class cmip5(CreateIP):
                 exit(1)"""
             # only use first scan file if more than 75 variables
             if len(self.variables) > VARIABLE_LIMIT:
+                limit = True
                 break
 
-        self.master_dataset = mkd.aggregate_datasets(self.datasets)
+        self.master_dataset = mkd.aggregate_datasets(self.datasets, limit)
         return 0

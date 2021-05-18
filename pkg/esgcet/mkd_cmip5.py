@@ -32,12 +32,9 @@ class ESGPubMKDCmip5(ESGPubMKDCreateIP):
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
-        self.variable_name = "variable_id"
+        self.variable_name = "variable"
         self.limit_exceeded = limit_exceeded
 
-        self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
-                   "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
-                   "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351"]
 
     def get_dataset(self, mapdata, scanobj):
 
@@ -50,10 +47,11 @@ class ESGPubMKDCmip5(ESGPubMKDCreateIP):
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
-        self.variable_name = list(scanobj["variables"].keys())[0]
+        self.variable = list(scanobj["variables"].keys())[0]
 
         for i, f in enumerate(facets):
             self.dataset[f] = parts[i]
+        self.dataset[self.variable_name] = self.variable
 
 #        self.global_attributes(projkey, scandata)
 #        self.global_attr_mapped(projkey, scandata)
