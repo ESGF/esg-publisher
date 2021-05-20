@@ -5,6 +5,7 @@ import json
 from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
+import sys
 
 
 class cmip6(GenericPublisher):

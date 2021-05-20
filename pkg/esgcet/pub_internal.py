@@ -77,19 +77,18 @@ def main():
                 run(m + f, pub_args)
         else:
             myfile = open(m)
-            ismap = True
+            ismap = False
             first = True
             for line in myfile:
                 # if parsed line is not mapfile line, run on each file
                 if first:
-                    if os.path.isfile(line):
-                        ismap = False
-                    else:
+                    if '#' in line:
+                        ismap = True
                         break
                     first = False
 
                 length = len(line)
-                run(line[0:length - 2], pub_args)
+                run(line[0:length - 1], pub_args)
             myfile.close()
             if ismap:
                 run(m, pub_args)
