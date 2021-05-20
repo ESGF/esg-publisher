@@ -296,6 +296,11 @@ class ESGPubMakeDataset:
             sz += file_rec["size"]
             ret.append(file_rec)
 
+        lst = []
+        for x in last_file["url"]:
+            if x:
+                lst.append(x)
+        last_file["url"] = lst
         access = [x.split("|")[2] for x in last_file["url"]]
 
         return ret, sz, access
