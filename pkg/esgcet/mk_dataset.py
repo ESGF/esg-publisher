@@ -143,12 +143,12 @@ class ESGPubMakeDataset:
             if self.globus != 'none':
                 return template.format(self.globus, root, rel)
             else:
-                return template.format(GLOBUS_UUID, root, rel)
+                return None
         elif "gsiftp" in template:
             if self.dtn != 'none':
                 return template.format(self.dtn, root, rel)
             else:
-                return template.format(DATA_TRANSFER_NODE, root, rel)
+                return None
         else:
             return template.format(self.data_node, root, rel)
 
