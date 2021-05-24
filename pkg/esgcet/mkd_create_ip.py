@@ -65,7 +65,6 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             if "bnds" not in var:
                 self.variable = var
 
-        self.eprint(self.variable)
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
@@ -92,7 +91,6 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         v_units = []
         last_dset = None
         last_rec = None
-        self.eprint(len(datasets))
         for data in datasets:
             if data[0]["type"] == "Dataset":
                 idx = 0
@@ -102,7 +100,6 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
                 self.eprint("No dataset record found. Exiting")
                 exit(-4)
             dataset = data[idx]
-            self.eprint(json.dumps(dataset, indent=4))
             if self.variable_name in dataset and dataset[self.variable_name] not in vids:
                 self.eprint(dataset[self.variable_name])
                 vids.append(dataset[self.variable_name])
