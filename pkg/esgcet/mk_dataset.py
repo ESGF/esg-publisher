@@ -143,12 +143,12 @@ class ESGPubMakeDataset:
             if self.globus != 'none':
                 return template.format(self.globus, root, rel)
             else:
-                return template.format(GLOBUS_UUID, root, rel)
+                return None
         elif "gsiftp" in template:
             if self.dtn != 'none':
                 return template.format(self.dtn, root, rel)
             else:
-                return template.format(DATA_TRANSFER_NODE, root, rel)
+                return None
         else:
             return template.format(self.data_node, root, rel)
 
@@ -211,10 +211,10 @@ class ESGPubMakeDataset:
                 if "standard_name" in var_rec:
                     record["cf_standard_name"] = var_rec["standard_name"]
                 record["variable_units"] = var_rec["units"]
-                record["variable"] = vid
+                record[self.variable_name] = vid
             else:
                 self.eprint("TODO check project settings for variable extraction")
-                record["variable"] = "Multiple"
+                record[self.variable_name] = "Multiple"
         else:
             self.eprint("WARNING: no variables were extracted (is this CF compliant?)")
 
@@ -291,7 +291,7 @@ class ESGPubMakeDataset:
         for maprec in mapdata:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
-                if not self.limit_exceeded and self.project != "CREATE-IP":
+                if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
                     self.eprint("WARNING: autocurator data not found for file: " + fullpath)
                 continue
             scanrec = scandata[fullpath]
@@ -300,6 +300,11 @@ class ESGPubMakeDataset:
             sz += file_rec["size"]
             ret.append(file_rec)
 
+        lst = []
+        for x in last_file["url"]:
+            if x:
+                lst.append(x)
+        last_file["url"] = lst
         access = [x.split("|")[2] for x in last_file["url"]]
 
         return ret, sz, access

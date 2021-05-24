@@ -19,6 +19,7 @@ class ESGPubUpdate():
         self.cert_fn = cert_fn
         self.silent = silent
         self.verbose = verbose
+        self.verify = verify
         self.pubCli = publisherClient(self.cert_fn, self.index_node, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
 
         self.SEARCH_TEMPLATE = 'https://{}/esg-search/search/?latest=true&distrib=false&format=application%2Fsolr%2Bjson&data_node={}&master_id={}&fields=version,id'
@@ -87,7 +88,7 @@ class ESGPubUpdate():
 
         if self.verbose:
             print(f"Search Url: '{url}'")
-        resp = requests.get(url)
+        resp = requests.get(url, verify=self.verify)
 
         if self.verbose:
             print(resp.text)

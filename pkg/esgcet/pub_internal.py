@@ -48,6 +48,9 @@ def run(fullmap, pub_args):
     elif project == "CREATE-IP":
         from esgcet.create_ip import CreateIP
         proj = CreateIP(argdict)
+    elif project == "cmip5":
+        from esgcet.cmip5 import cmip5
+        proj = cmip5(argdict)
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
@@ -65,16 +68,30 @@ def main():
     if maps is None:
         print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
         exit(1)
-    if maps[0][-4:] != ".map":
-        myfile = open(maps[0])
-        for line in myfile:
-            length = len(line)
-            run(line[0:length - 2])
-        myfile.close()
-        # iterate through file in directory calling main func
-    else:
-        for m in maps:
-            run(m, pub_args)
+    for m in maps:
+        if os.path.isdir(m):
+            files = os.listdir(m)
+            for f in files:
+                if os.path.isdir(m + f):
+                    continue
+                run(m + f, pub_args)
+        else:
+            myfile = open(m)
+            ismap = False
+            first = True
+            for line in myfile:
+                # if parsed line is not mapfile line, run on each file
+                if first:
+                    if '#' in line:
+                        ismap = True
+                        break
+                    first = False
+
+                length = len(line)
+                run(line[0:length - 1], pub_args)
+            myfile.close()
+            if ismap:
+                run(m, pub_args)
 
 
 if __name__ == '__main__':
