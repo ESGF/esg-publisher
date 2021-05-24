@@ -101,7 +101,6 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
                 exit(-4)
             dataset = data[idx]
             if self.variable_name in dataset and dataset[self.variable_name] not in vids:
-                self.eprint(dataset[self.variable_name])
                 vids.append(dataset[self.variable_name])
             if "variable_long_name" in dataset and dataset["variable_long_name"] not in v_long_names:
                 v_long_names.append(dataset["variable_long_name"])
