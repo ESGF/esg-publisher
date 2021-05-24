@@ -7,6 +7,7 @@ from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
 import tempfile
 from esgcet.settings import VARIABLE_LIMIT
+from copy import deepcopy
 
 
 class CreateIP(GenericPublisher):
@@ -73,7 +74,7 @@ class CreateIP(GenericPublisher):
         for scan in self.scans:
             try: 
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
-                self.datasets.append(out_json_data.copy()) # herein lies the issue, copy hasn't fixed it
+                self.datasets.append(deepcopy(out_json_data)) # herein lies the issue, copy hasn't fixed it
             except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
                 self.cleanup()
