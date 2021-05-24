@@ -1,4 +1,5 @@
 import sys, os
+import json
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
 from esgcet.mkd_create_ip import ESGPubMKDCreateIP
@@ -79,6 +80,8 @@ class CreateIP(GenericPublisher):
             if len(self.variables) > VARIABLE_LIMIT:
                 limit = True
                 break
+
+        print(json.dumps(self.datasets, indent=4))
 
         self.master_dataset = mkd.aggregate_datasets(self.datasets, limit)
         return 0

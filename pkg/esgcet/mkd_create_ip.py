@@ -93,10 +93,14 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         for data in datasets:
             if data[0]["type"] == "Dataset":
                 idx = 0
-            else:
+            elif data[-1]["type"] == "Dataset":
                 idx = -1
+            else:
+                self.eprint("No dataset record found. Exiting")
+                exit(-4)
             dataset = data[idx]
             if "variable" in dataset and dataset["variable"] not in vids:
+                print(dataset["variable"])
                 if dataset["variable"] == "time_bnds":
                     continue
                 vids.append(dataset["variable"])

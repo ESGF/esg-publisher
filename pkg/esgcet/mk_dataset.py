@@ -203,15 +203,19 @@ class ESGPubMakeDataset:
             if self.variable_name in record:
 
                 vid = record[self.variable_name]
-                var_rec = scanobj["variables"][vid]
-                if "long_name" in var_rec.keys():
-                    record["variable_long_name"] = var_rec["long_name"]
-                elif "info" in var_rec:
-                    record["variable_long_name"] = var_rec["info"]
-                if "standard_name" in var_rec:
-                    record["cf_standard_name"] = var_rec["standard_name"]
-                record["variable_units"] = var_rec["units"]
-                record["variable"] = vid
+                if vid == "time_bnds":
+                    print("vid not identified")
+                
+                else:
+                    var_rec = scanobj["variables"][vid]
+                    if "long_name" in var_rec.keys():
+                        record["variable_long_name"] = var_rec["long_name"]
+                    elif "info" in var_rec:
+                        record["variable_long_name"] = var_rec["info"]
+                    if "standard_name" in var_rec:
+                        record["cf_standard_name"] = var_rec["standard_name"]
+                    record["variable_units"] = var_rec["units"]
+                    record["variable"] = vid
             else:
                 self.eprint("TODO check project settings for variable extraction")
                 record["variable"] = "Multiple"
@@ -324,7 +328,7 @@ class ESGPubMakeDataset:
         else:
             xattrobj = {}
 
-        if self.verbose:
+        if self.verbose or True:
             print("Record:")
             print(json.dumps(self.dataset, indent=4))
             print()
@@ -335,12 +339,12 @@ class ESGPubMakeDataset:
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
-        if self.verbose and False:
+        if self.verbose:
             print('Mapfile dictionary:')
             print(json.dumps(mapdict, indent=4))
             print()
         scandict = self.get_scanfile_dict(scanobj['file'])
-        if self.verbose and False:
+        if self.verbose:
             print('Autocurator Scanfile dictionary:')
             print(json.dumps(scandict, indent=4))
             print()
