@@ -37,7 +37,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
-        self.variable_name = "variable"
+        self.variable_name = "variable_id"
         self.variable = None
 
         self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
@@ -61,9 +61,11 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
-        self.variable = list(scanobj["variables"].keys())[-1]
-        self.eprint(self.variable)
+        for var in list(scanobj["variables"].keys()):
+            if "bnds" not in var:
+                self.variable = var
 
+        self.eprint(self.variable)
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
@@ -90,6 +92,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         v_units = []
         last_dset = None
         last_rec = None
+        self.eprint(len(datasets))
         for data in datasets:
             if data[0]["type"] == "Dataset":
                 idx = 0
@@ -99,11 +102,10 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
                 self.eprint("No dataset record found. Exiting")
                 exit(-4)
             dataset = data[idx]
-            if "variable" in dataset and dataset["variable"] not in vids:
-                print(dataset["variable"])
-                if dataset["variable"] == "time_bnds":
-                    continue
-                vids.append(dataset["variable"])
+            self.eprint(json.dumps(dataset, indent=4))
+            if self.variable_name in dataset and dataset[self.variable_name] not in vids:
+                self.eprint(dataset[self.variable_name])
+                vids.append(dataset[self.variable_name])
             if "variable_long_name" in dataset and dataset["variable_long_name"] not in v_long_names:
                 v_long_names.append(dataset["variable_long_name"])
             if "cf_standard_name" in dataset and dataset["cf_standard_name"] not in cf_std_names:
@@ -113,17 +115,17 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             last_rec = data
             last_dset = dataset
         if limit:
-            last_dset["variable"] = "Multiple"
+            last_dset[self.variable_name] = "Multiple"
             last_dset["variable_long_name"] = "Multiple"
             last_dset["cf_standard_name"] = "Multiple"
             last_dset["variable_units"] = "Multiple"
         else:
-            last_dset["variable"] = vids
+            last_dset[self.variable_name] = vids
             last_dset["variable_long_name"] = v_long_names
             last_dset["cf_standard_name"] = cf_std_names
             last_dset["variable_units"] = v_units
         last_rec[idx] = last_dset
         if self.verbose:
-            self.eprint("Aggregate record:")
-            self.eprint(json.dumps(last_dset, indent=4))
+            print("Aggregate record:")
+            print(json.dumps(last_dset, indent=4))
         return last_rec
