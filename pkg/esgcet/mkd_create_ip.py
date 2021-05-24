@@ -62,7 +62,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
         assert(facets)
         for var in list(scanobj["variables"].keys()):
-            if "bnds" not in var:
+            if "bnds" not in var and "_" not in var and "lon" not in var and "lat" not in var:
                 self.variable = var
 
         for i, f in enumerate(facets):

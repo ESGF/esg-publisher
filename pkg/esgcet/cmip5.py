@@ -32,7 +32,31 @@ class cmip5(CreateIP):
         self.variables = []
         self.master_dataset = None
         self.variable_limit = 100
-        self.autoc_args = ' --out_pretty --out_json {} --files "{}/{}/*.nc"'
+        self.autoc_args = ' --out_pretty --out_json {} --files "{}/*.nc"'
+
+    def autocurator(self, map_json_data):
+        datafile = map_json_data[0][1]
+
+        destpath = os.path.dirname(datafile)
+        outname = os.path.basename(datafile)
+        idx = outname.rfind('.')  # was this needed for something?
+
+        autstr = self.autoc_command + self.autoc_args
+        files = os.listdir(destpath)
+        for f in files:
+            var = f.split('_')[0]
+            if var not in self.variables:
+                self.variables.append(var)
+        for var in self.variables:
+            self.scans.append(
+                tempfile.NamedTemporaryFile())  # create a temporary file which is deleted afterward for autocurator
+            scan = self.scans[-1].name
+            print(autstr.format(scan, destpath))
+            stat = os.system(autstr.format(scan, destpath))
+            if os.WEXITSTATUS(stat) != 0:
+                print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
+                self.cleanup()
+                exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
         limit_exceeded = len(self.variables) > VARIABLE_LIMIT

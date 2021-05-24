@@ -47,8 +47,9 @@ class ESGPubMKDCmip5(ESGPubMKDCreateIP):
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
-        self.variable = list(scanobj["variables"].keys())[0]
-
+        for var in list(scanobj["variables"].keys()):
+            if "bnds" not in var and "_" not in var and "lon" not in var and "lat" not in var:
+                self.variable = var
         for i, f in enumerate(facets):
             self.dataset[f] = parts[i]
         self.dataset[self.variable_name] = self.variable
