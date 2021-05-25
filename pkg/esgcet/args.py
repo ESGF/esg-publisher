@@ -219,7 +219,7 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth}
+                   "auth": auth, "skip_prepare" : skip_prepare}
 
         if project == "CMIP6":
             if pub.cmor_path is None:
