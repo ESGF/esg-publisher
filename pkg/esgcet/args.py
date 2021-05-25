@@ -221,7 +221,7 @@ class PublisherArgs:
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
                    "auth": auth, "skip_prepare" : skip_prepare}
 
-        if project == "CMIP6":
+        if project == "CMIP6" or project == "input4mips":
             if pub.cmor_path is None:
                 try:
                     argdict["cmor_tables"] = config['user']['cmor_path']
