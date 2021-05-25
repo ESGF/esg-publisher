@@ -34,9 +34,10 @@ def run(fullmap, pub_args):
     argdict = pub_args.get_dict(fullmap)
 
     if argdict["proj"]:
-        project = argdict["proj"]
+        p = argdict["proj"]
+    project = p.lower()
 
-    if project == "CMIP6":
+    if project == "cmip6":
         from esgcet.cmip6 import cmip6
         proj = cmip6(argdict)
     elif project == "non-nc":
@@ -45,7 +46,7 @@ def run(fullmap, pub_args):
     elif project == "generic" or project == "cordex":
         from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher(argdict)
-    elif project == "CREATE-IP":
+    elif project == "create-ip":
         from esgcet.create_ip import CreateIP
         proj = CreateIP(argdict)
     elif project == "cmip5":
