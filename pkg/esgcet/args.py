@@ -231,10 +231,10 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
-            try:
-                argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
-            except:
-                print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
-                exit(1)
+        try:
+            argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
+        except:
+            print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+            exit(1)
 
         return argdict
