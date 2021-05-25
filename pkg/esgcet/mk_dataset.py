@@ -55,6 +55,9 @@ class ESGPubMakeDataset:
                 yield x['values']
         #return list(filter(lambda x: x, invals))
 
+    def xattr_handler(self, xattr_in):
+        return xattr_in
+
     def get_dataset(self, mapdata, scanobj):
 
         master_id, version = mapdata.split('#')
@@ -327,6 +330,9 @@ class ESGPubMakeDataset:
             xattrobj = json.load(open(xattrfn))
         else:
             xattrobj = {}
+
+        if len(xattrobj) > 0:
+            xattrobj = self.xattr_handler(xattrobj)
 
         if self.verbose:
             print("Record:")

@@ -9,6 +9,8 @@ from pathlib import Path
 
 class ESGPubMKDNonNC(ESGPubMakeDataset):
 
+
+
     def get_dataset(self, mapdata):
         master_id, version = mapdata.split('#')
 
@@ -70,10 +72,14 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
         else:
             xattrobj = {}
 
+        if len(xattrobj) > 0:
+            xattrobj = self.xattr_handler(xattrobj)
+
         if self.verbose:
-            eprint("rec = ")
-            eprint(rec)
-            eprint()
+            self.eprint("rec = ")
+            self.eprint(rec)
+            self.eprint()
+
         for key in xattrobj:
             rec[key] = xattrobj[key]
 

@@ -27,6 +27,7 @@ class GenericPublisher(BasePublisher):
         self.proj_config = argdict["user_project_config"]
         self.auth = argdict["auth"]
         self.verify = argdict["verify"]
+        self.MKD_Construct = ESGPubMakeDataset
 
     def check_files(self):
         pass
@@ -49,7 +50,7 @@ class GenericPublisher(BasePublisher):
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
+        mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
         try:
             out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)

@@ -1,5 +1,4 @@
 from esgcet.mk_dataset import ESGPubMakeDataset
-import json
 
 class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
 
