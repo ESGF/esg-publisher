@@ -55,6 +55,9 @@ class ESGPubMakeDataset:
                 yield x['values']
         #return list(filter(lambda x: x, invals))
 
+    def xattr_handler(self, xattr_in):
+        return xattr_in
+
     def get_dataset(self, mapdata, scanobj):
 
         master_id, version = mapdata.split('#')
@@ -233,8 +236,12 @@ class ESGPubMakeDataset:
             if "lon" in axes:
                 lon = axes["lon"]
                 geo_units.append(lon["units"])
-                record["east_degrees"] = lon["values"][-1]
-                record["west_degrees"] = lon["values"][0]
+                if 'values' not in lon.keys():
+                    record["east_degrees"] = lon['subaxes']['0']["values"][-1]
+                    record["west_degrees"] = lon['subaxes']['0']["values"][0]
+                else:
+                    record["east_degrees"] = lon["values"][-1]
+                    record["west_degrees"] = lon["values"][0]
             if "time" in axes:
                 time_obj = axes["time"]
                 time_units = time_obj["units"]
@@ -323,6 +330,9 @@ class ESGPubMakeDataset:
             xattrobj = json.load(open(xattrfn))
         else:
             xattrobj = {}
+
+        if len(xattrobj) > 0:
+            xattrobj = self.xattr_handler(xattrobj)
 
         if self.verbose:
             print("Record:")

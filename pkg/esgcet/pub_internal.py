@@ -51,6 +51,9 @@ def run(fullmap, pub_args):
     elif project == "cmip5":
         from esgcet.cmip5 import cmip5
         proj = cmip5(argdict)
+    elif project == "input4mips":
+        from esgcet.input4mips import input4mips
+        proj = input4mips(argdict)
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)

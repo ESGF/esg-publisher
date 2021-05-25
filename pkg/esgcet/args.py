@@ -152,6 +152,13 @@ class PublisherArgs:
         except:
             dtn = "none"
 
+        skip_prepare = False
+
+        try:
+            skip_prep_str = config['user']['skip_prepare'].lower()
+            skip_prepare = (skip_prep_str in ["true", "yes"])
+        except:
+            pass
         if pub.set_replica and pub.no_replica:
             print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
             exit(1)
@@ -161,7 +168,7 @@ class PublisherArgs:
             replica = False
         else:
             try:
-                r = config['user']['set_replica']
+                r = config['user']['set_replica'].lower()
                 if 'yes' in r or 'true' in r:
                     replica = True
                 elif 'no' in r or 'false' in r:
@@ -188,6 +195,7 @@ class PublisherArgs:
         except:
             proj_config = None
 
+
         os.system("cert_path=" + cert)
 
         if pub.verify:
@@ -211,7 +219,7 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth}
+                   "auth": auth, "skip_prepare" : skip_prepare}
 
         if project == "CMIP6":
             if pub.cmor_path is None:
@@ -223,10 +231,10 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
-            try:
-                argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
-            except:
-                print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
-                exit(1)
+        try:
+            argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
+        except:
+            print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+            exit(1)
 
         return argdict

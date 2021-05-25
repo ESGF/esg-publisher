@@ -35,7 +35,9 @@ class cmip6(GenericPublisher):
         self.proj_config = argdict["user_project_config"]
         self.verify = argdict["verify"]
         self.auth = argdict["auth"]
-    
+        if self.replica:
+            self.skip_prepare= argdict["skip-prepare"]
+
     def prepare_internal(self, json_map, cmor_tables):
         try:
             print("iterating through filenames for PrePARE (internal version)...")
