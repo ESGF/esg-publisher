@@ -36,6 +36,9 @@ def run(fullmap, pub_args):
     if argdict["proj"]:
         p = argdict["proj"]
     project = p.lower()
+    user_defined = False
+    if argdict["user_project_config"]:
+        user_defined = True
 
     if project == "cmip6":
         from esgcet.cmip6 import cmip6
@@ -43,7 +46,7 @@ def run(fullmap, pub_args):
     elif project == "non-nc":
         from esgcet.generic_pub import BasePublisher
         proj = BasePublisher(argdict)
-    elif project == "generic" or project == "cordex":
+    elif project == "generic" or project == "cordex" or user_defined:
         from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher(argdict)
     elif project == "create-ip":
