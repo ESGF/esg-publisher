@@ -39,16 +39,13 @@ def run(fullmap, pub_args):
     user_defined = False
     if argdict["user_project_config"]:
         user_defined = True
+    non_netcdf = False
+    if argdict["non_nc"]:
+        non_netcdf = True
 
     if project == "cmip6":
         from esgcet.cmip6 import cmip6
         proj = cmip6(argdict)
-    elif project == "non-nc":
-        from esgcet.generic_pub import BasePublisher
-        proj = BasePublisher(argdict)
-    elif project == "generic" or project == "cordex" or user_defined:
-        from esgcet.generic_netcdf import GenericPublisher
-        proj = GenericPublisher(argdict)
     elif project == "create-ip":
         from esgcet.create_ip import CreateIP
         proj = CreateIP(argdict)
@@ -58,6 +55,15 @@ def run(fullmap, pub_args):
     elif project == "input4mips":
         from esgcet.input4mips import input4mips
         proj = input4mips(argdict)
+    elif project == "e3sm":
+        from esgcet.e3sm import e3sm
+        proj = e3sm(argdict)
+    elif non_netcdf:
+        from esgcet.generic_pub import BasePublisher
+        proj = BasePublisher(argdict)
+    elif project == "generic" or project == "cordex" or user_defined:
+        from esgcet.generic_netcdf import GenericPublisher
+        proj = GenericPublisher(argdict)
     else:
         print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)

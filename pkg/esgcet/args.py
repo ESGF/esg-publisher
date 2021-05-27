@@ -195,7 +195,6 @@ class PublisherArgs:
         except:
             proj_config = None
 
-
         os.system("cert_path=" + cert)
 
         if pub.verify:
@@ -221,7 +220,8 @@ class PublisherArgs:
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
                    "auth": auth, "skip_prepare" : skip_prepare}
 
-        if project == "CMIP6" or project == "input4mips":
+        project = project.lower()
+        if project == "cmip6" or project == "input4mips":
             if pub.cmor_path is None:
                 try:
                     argdict["cmor_tables"] = config['user']['cmor_path']
@@ -231,10 +231,16 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
-        try:
-            argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
-        except:
-            print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
-            exit(1)
+            try:
+                argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
+            except:
+                print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+                exit(1)
+
+        if project == "e3sm":
+            try:
+                argdict["e3sm_data_type"] = config['user']['e3sm_data_type']
+            except:
+                argdict["e3sm_data_type"] = None
 
         return argdict
