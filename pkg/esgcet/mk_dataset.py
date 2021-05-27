@@ -325,6 +325,7 @@ class ESGPubMakeDataset:
         self.get_dataset(mapobj[0][0], scanobj)
         self.update_metadata(self.dataset, scanobj)
         self.dataset["number_of_files"] = len(mapobj)  # place this better
+        project = self.dataset['project']
 
         if xattrfn:
             xattrobj = json.load(open(xattrfn))
@@ -334,14 +335,16 @@ class ESGPubMakeDataset:
         if len(xattrobj) > 0:
             xattrobj = self.xattr_handler(xattrobj)
 
+        for key in xattrobj:
+            if project == "input4MIPs" and key == "version":
+                continue
+            else:
+                self.dataset[key] = xattrobj[key]
         if self.verbose:
             print("Record:")
             print(json.dumps(self.dataset, indent=4))
             print()
-        for key in xattrobj:
-            self.dataset[key] = xattrobj[key]
 
-        project = self.dataset['project']
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
