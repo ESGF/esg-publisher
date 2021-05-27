@@ -18,7 +18,7 @@ class ESGPubMakeDataset:
                 self.CONST_ATTR = CONST_ATTR[project]
         elif self.user_project and project in self.user_project:
             self.DRS = self.user_project[project]['DRS']
-            if len(self.user_project[project]['CONST_ATTR']) > 0:
+            if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
             raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
