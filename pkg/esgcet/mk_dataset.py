@@ -53,7 +53,11 @@ class ESGPubMakeDataset:
         for x in invals:
             if x['values']:
                 yield x['values']
-        #return list(filter(lambda x: x, invals))
+
+    def prune_list(self, ll):
+        for x in ll:
+            if not x is None:
+                yield (x)
 
     def load_xattr(self, xattrfn):
         if (xattrfn):
@@ -169,7 +173,8 @@ class ESGPubMakeDataset:
             return template.format(self.data_node, root, rel)
 
     def gen_urls(self, proj_root, rel_path):
-        return self.unpack_values([self.format_template(template, proj_root, rel_path) for template in URL_Templates])
+        res = prune_list([format_template(template, proj_root, rel_path) for template in URL_Templates])
+        return list(res)
 
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
