@@ -207,6 +207,15 @@ class PublisherArgs:
         else:
             auth = True
 
+        try:
+            non_netcdf = config['user']['non_netcdf'].lower()
+            if 'yes' in non_netcdf or 'true' in non_netcdf:
+                non_nc = True
+            else:
+                non_nc = False
+        except:
+            non_nc = False
+
         if globus == "none" and not silent:
             print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
 
@@ -218,7 +227,7 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth, "skip_prepare" : skip_prepare}
+                   "auth": auth, "skip_prepare" : skip_prepare, "non_nc": non_nc}
 
         project = project.lower()
         if project == "cmip6" or project == "input4mips":
@@ -236,11 +245,5 @@ class PublisherArgs:
             except:
                 print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
                 exit(1)
-
-        if project == "e3sm":
-            try:
-                argdict["e3sm_data_type"] = config['user']['e3sm_data_type']
-            except:
-                argdict["e3sm_data_type"] = None
 
         return argdict
