@@ -1,4 +1,5 @@
 from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.settings import GA, GA_DELIMITED
 
 class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
 
@@ -29,4 +30,4 @@ class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
     def get_records(self, mapdata, scanfilename, xattrfn=None, user_project=None):
 
         self.load_xattr(xattrfn)
-        super().get_records(mapdata, scanfilename)
+        return super().get_records(mapdata, scanfilename)

@@ -173,7 +173,7 @@ class ESGPubMakeDataset:
             return template.format(self.data_node, root, rel)
 
     def gen_urls(self, proj_root, rel_path):
-        res = prune_list([format_template(template, proj_root, rel_path) for template in URL_Templates])
+        res = self.prune_list([self.format_template(template, proj_root, rel_path) for template in URL_Templates])
         return list(res)
 
     def get_file(self, mapdata, fn_trid):
