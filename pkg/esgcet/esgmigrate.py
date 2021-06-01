@@ -17,10 +17,10 @@ def project_list(cfg_obj):
 
 class ESGPubMigrate(object):
 
-    def __init__(self, args):
-        self.ini_path = args[0]
-        self.silent = args[1]
-        self.verbose = args[2]
+    def __init__(self, i, silent=False, verbose=False):
+        self.ini_path = i
+        self.silent = silent
+        self.verbose = verbose
 
     def project_migrate(self, project):
 

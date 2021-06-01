@@ -2,7 +2,7 @@ from esgcet.mk_dataset import ESGPubMakeDataset
 import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
-
+import traceback
 
 class GenericPublisher(BasePublisher):
 
@@ -56,6 +56,8 @@ class GenericPublisher(BasePublisher):
         out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)
         """ except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
+            if self.verbose:
+                traceback.print_exc()
             self.cleanup()
             exit(1)"""
         return out_json_data

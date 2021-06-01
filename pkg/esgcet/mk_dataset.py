@@ -53,10 +53,27 @@ class ESGPubMakeDataset:
         for x in invals:
             if x['values']:
                 yield x['values']
-        #return list(filter(lambda x: x, invals))
 
-    def xattr_handler(self, xattr_in):
-        return xattr_in
+    def prune_list(self, ll):
+        for x in ll:
+            if not x is None:
+                yield (x)
+
+    def load_xattr(self, xattrfn):
+        if (xattrfn):
+            self.xattr = json.load(open(xattrfn))
+        else:
+            self.xattr = {}
+
+    def proc_xattr(self, xattrfn):
+        self.load_xattr(xattrfn)
+        if len(self.xattr) > 0:
+            tmp_xattr = self.xattr_handler()
+            for key in tmp_xattr:
+                self.dataset[key] = tmp_xattr[key]
+
+    def xattr_handler(self):
+        return self.xattr
 
     def get_dataset(self, mapdata, scanobj):
 
@@ -156,7 +173,8 @@ class ESGPubMakeDataset:
             return template.format(self.data_node, root, rel)
 
     def gen_urls(self, proj_root, rel_path):
-        return [self.format_template(template, proj_root, rel_path) for template in URL_Templates]
+        res = self.prune_list([self.format_template(template, proj_root, rel_path) for template in URL_Templates])
+        return list(res)
 
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
@@ -327,19 +345,8 @@ class ESGPubMakeDataset:
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-        if xattrfn:
-            xattrobj = json.load(open(xattrfn))
-        else:
-            xattrobj = {}
+        self.proc_xattr(xattrfn)
 
-        if len(xattrobj) > 0:
-            xattrobj = self.xattr_handler(xattrobj)
-
-        for key in xattrobj:
-            if project == "input4MIPs" and key == "version":
-                continue
-            else:
-                self.dataset[key] = xattrobj[key]
         if self.verbose:
             print("Record:")
             print(json.dumps(self.dataset, indent=4))

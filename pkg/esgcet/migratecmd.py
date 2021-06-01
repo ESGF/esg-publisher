@@ -28,7 +28,7 @@ def main():
 
     em = ESGPubMigrate(ini_path, silent=silent, verbose=verbose)
 
-    em.run(project)
+    em.migrate(project)
 
 
 if __name__ == "__main__":
