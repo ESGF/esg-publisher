@@ -217,10 +217,10 @@ class PublisherArgs:
             non_nc = False
 
         if globus == "none" and not silent:
-            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
+            print("INFO: no Globus UUID defined.", file=sys.stderr)
 
         if dtn == "none" and not silent:
-            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
+            print("INFO: no data transfer node defined.", file=sys.stderr)
 
         argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
                    "cert": cert,

@@ -16,36 +16,37 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
 
         parts = master_id.split('.')
         projkey = parts[0]
+        if self.project:
+            projkey = self.project
+        self.init_project(projkey)
 
-        facets = DRS[projkey]
-        d = {}
+        facets = self.DRS
 
         for i, f in enumerate(facets):
-            d[f] = parts[i]
+            self.dataset[f] = parts[i]
 
         #    SPLIT_FACET = {'E3SM': {'delim': '_', 'facet': 'grid_resolution', 0: 'atmos_', 2: 'ocean_'}}
         if projkey in SPLIT_FACET:
             splitinfo = SPLIT_FACET[projkey]
             splitkey = splitinfo['facet']
-            orgval = d[splitkey]
+            orgval = self.dataset[splitkey]
             valsplt = orgval.split(splitinfo['delim'])
             for idxkey in splitinfo:
                 if type(idxkey) is int:
                     keyprefix = splitinfo[idxkey]
-                    d[keyprefix + splitkey] = valsplt[idxkey]
+                    self.dataset[keyprefix + splitkey] = valsplt[idxkey]
 
-        d = self.const_attr(projkey, d)
-        d = self.assign_dset_values(projkey, master_id, version, d)
-        return d
+        self.const_attr()
+        self.assign_dset_values(projkey, master_id, version)
 
-    def iterate_files(self, dataset_rec, mapdata):
+    def iterate_files(self, mapdata):
         ret = []
         sz = 0
         last_file = None
 
         for maprec in mapdata:
             fullpath = maprec['file']
-            file_rec = self.get_file(dataset_rec, maprec, {})
+            file_rec = self.get_file(maprec, {})
             last_file = file_rec
             sz += file_rec["size"]
             ret.append(file_rec)
@@ -54,18 +55,19 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
 
         return ret, sz, access
 
-    def get_records(self, mapdata, xattrfn=None):
+    def get_records(self, mapdata, xattrfn=None, user_project=None):
+        self.user_project = user_project
+
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
         else:
             mapobj = mapdata
 
-        rec = self.get_dataset(mapobj[0][0])
+        self.get_dataset(mapobj[0][0])
 
-        if not rec:
-            return None
 
-        rec["number_of_files"] = len(mapobj)  # place this better
+        self.dataset["number_of_files"] = len(mapobj)  # place this better
+        project = self.dataset['project']
 
         if xattrfn:
             xattrobj = json.load(open(xattrfn))
@@ -75,27 +77,25 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
         if len(xattrobj) > 0:
             xattrobj = self.xattr_handler(xattrobj)
 
-        if self.verbose:
-            self.eprint("rec = ")
-            self.eprint(rec)
-            self.eprint()
-
         for key in xattrobj:
-            rec[key] = xattrobj[key]
+            self.dataset[key] = xattrobj[key]
 
-        assert ('project' in rec)
-        project = rec['project']
+        if self.verbose:
+            print("Record:")
+            print(json.dumps(self.dataset, indent=4))
+            print()
+
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
         if self.verbose:
-            print('mapdict = ')
-            print(mapdict)
+            print('Mapfile dictionary:')
+            print(json.dumps(mapdict, indent=4))
             print()
 
-        ret, sz, access = self.iterate_files(rec, mapdict)
+        ret, sz, access = self.iterate_files(mapdict)
 
-        rec["size"] = sz
-        rec["access"] = access
-        ret.append(rec)
+        self.dataset["size"] = sz
+        self.dataset["access"] = access
+        ret.append(self.dataset)
         return ret

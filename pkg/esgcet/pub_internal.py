@@ -55,7 +55,7 @@ def run(fullmap, pub_args):
     elif project == "input4mips":
         from esgcet.input4mips import input4mips
         proj = input4mips(argdict)
-    elif project == "e3sm":
+    elif project == "e3sm" and not non_netcdf:
         from esgcet.e3sm import e3sm
         proj = e3sm(argdict)
     elif non_netcdf:
