@@ -24,7 +24,7 @@ def run(fullmap, pub_args):
     split_map = fullmap.split("/")
     fname = split_map[-1]
     fname_split = fname.split(".")
-    project = fname_split[0]
+    p = fname_split[0]
 
     files = []
     files.append(fullmap)

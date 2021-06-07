@@ -1,4 +1,4 @@
-import esgcet.pid_cite_pub as pid
+from esgcet.pid_cite_pub import ESGPubPidCite
 import argparse
 import sys
 import json
@@ -19,6 +19,8 @@ def get_args():
                         help="Optional output file destination. Default is stdout.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+    parser.add_argument("--test", dest="test", action="store_true",
+                        help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
 
     pub = parser.parse_args()
 
@@ -76,6 +78,10 @@ def run():
     else:
         data_node = a.data_node
 
+    test = False
+    if a.test:
+        test = True
+
     try:
         pid_creds = json.loads(config['user']['pid_creds'])
     except:
@@ -88,10 +94,13 @@ def run():
         print("Error opening JSON file. Exiting.", file=sys.stderr)
         exit(1)
 
+    pid = ESGPubPidCite(out_json_data, pid_creds, data_node, test=test, silent=silent,
+                        verbose=verbose)
+
     try:
-        new_json_data = pid.run([out_json_data, data_node, pid_creds, silent, verbose])
+        new_json_data = pid.do_pidcite()
     except Exception as ex:
-        print("Error running pid cite: " + str(ex), file=sys.stderr)
+        print("Error assigning pid or running activity check: " + str(ex))
         exit(1)
 
     if p:

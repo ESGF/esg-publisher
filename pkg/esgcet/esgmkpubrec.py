@@ -1,4 +1,4 @@
-from esgcet.mk_dataset as mkd
+from esgcet.args import PublisherArgs
 import argparse
 from pathlib import Path
 import configparser as cfg
@@ -9,17 +9,24 @@ import os
 
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
+
+    # ANY FILE NAME INPUT: check first to make sure it exists
     home = str(Path.home())
     def_config = home + "/.esg/esg.ini"
     parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
+    parser.add_argument("--json", dest="json", default=None,
+                        help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
     parser.add_argument("--scan-file", dest="scan_file", required=True, help="JSON output file from autocurator.")
-    parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
+    parser.add_argument("--map-data", dest="map_data", required=True,
+                        help="Mapfile json data converted using esgmapconv.")
+    parser.add_argument("--out-file", dest="out_file", default=None,
+                        help="Optional output file destination. Default is stdout.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
-    parser.add_argument("--map-data", dest="map_data", required=True, help="Mapfile json data converted using esgmapconv.")
+    parser.add_argument("--project", dest="proj", default="",
+                        help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
-    parser.add_argument("--out-file", dest="out_file", default=None, help="Optional output file destination. Default is stdout.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
@@ -136,17 +143,57 @@ def run():
         # dtn undefined
         dtn = "none"
 
-    third_arg_mkd = False
+    json_file = None
     if a.json is not None:
         json_file = a.json
-        third_arg_mkd = True
 
+    if pub.proj != "":
+        project = pub.proj
+    else:
+        try:
+            project = config['user']['project']
+        except:
+            project = None
 
     try:
-        if third_arg_mkd:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose, json_file])
+        non_netcdf = config['user']['non_netcdf'].lower()
+        if 'yes' in non_netcdf or 'true' in non_netcdf:
+            non_nc = True
         else:
-            out_json_data = mkd.run([map_json_data, scanfn, data_node, index_node, replica, data_roots, globus, dtn, silent, verbose])
+            non_nc = False
+    except:
+        non_nc = False
+
+    try:
+        proj_config = json.loads(config['user']['user_project_config'])
+    except:
+        proj_config = None
+
+    if project == "create-ip":
+        from esgcet.mkd_create_ip import ESGPubMKDCreateIP
+        mkd = ESGPubMKDCreateIP(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, False)
+    elif project == "cmip5":
+        from esgcet.mkd_cmip5 import ESGPubMKDCmip5
+        mkd = ESGPubMKDCmip5(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, False)
+    elif project == "input4mips":
+        from esgcet.mkd_input4mips import ESGPubMKDinput4MIPs
+        mkd = ESGPubMKDinput4MIPs(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
+    elif non_nc:
+        from esgcet.mkd_non_nc import ESGPubMKDNonNC
+        mkd = ESGPubMKDNonNC(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
+    elif project == "generic" or project == "cordex" or user_defined:
+        from esgcet.mk_dataset import ESGPubMakeDataset
+        mkd = ESGPubMakeDataset(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
+    else:
+        print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
+        exit(1)
+
+    try:
+        if non_nc:
+            out_json_data = mkd.get_records(map_json_data, json_file)
+        else:
+            out_json_data = mkd.get_records(map_json_data, scanfn, json_file, user_project=proj_config)
+
     except Exception as ex:
         print("Error making dataset: " + str(ex), file=sys.stderr)
         exit(1)

@@ -18,8 +18,12 @@ The output is again defaulted to stdout, but can easily be redirected using the 
 
 The other command line options are as follows::
 
-    usage: esgmkpubrec [-h] [--set-replica] [--no-replica] --scan-file SCAN_FILE [--json JSON] [--data-node DATA_NODE] [--index-node INDEX_NODE] --map-data MAP_DATA [--ini CFG]
-                   [--out-file OUT_FILE]
+    usage: esgmkpubrec [-h] [--set-replica] [--no-replica] [--json JSON]
+                   --scan-file SCAN_FILE --map-data MAP_DATA
+                   [--out-file OUT_FILE] [--data-node DATA_NODE]
+                   [--index-node INDEX_NODE] [--project PROJ] [--ini CFG]
+                   [--silent] [--verbose]
+
 
     Publish data sets to ESGF databases.
 

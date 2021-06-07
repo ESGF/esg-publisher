@@ -1,5 +1,5 @@
-import esgcet.update as up
 import os
+from esgcet.update import ESGPubUpdate
 import sys
 import json
 import argparse
@@ -68,6 +68,16 @@ def run():
     else:
         cert = a.cert
 
+    if a.verify:
+        verify = True
+    else:
+        verify = False
+
+    if a.no_auth:
+        auth = False
+    else:
+        auth = True
+
     if a.index_node is None:
         try:
             index_node = config['user']['index_node']
@@ -83,8 +93,10 @@ def run():
         print("Error opening json file. Exiting.", file=sys.stderr)
         exit(1)
 
+    up = ESGPubUpdate(index_node, cert, silent=silent, verbose=verbose, verify=verify,
+                      auth=auth)
     try:
-        up.run([new_json_data, index_node, cert, silent, verbose])
+        up.run(new_json_data)
     except Exception as ex:
         print("Error updating: " + str(ex), file=sys.stderr)
         exit(1)

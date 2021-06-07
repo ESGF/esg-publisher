@@ -1,5 +1,5 @@
-import esgcet.mapfile as mp
 import sys
+from esgcet.mapfile import ESGPubMapConv
 import json
 import os
 import configparser as cfg
@@ -49,11 +49,12 @@ def run():
     except:
         print("Error with argparse. Exiting.", file=sys.stderr)
         exit(1)
+
+    mapconv = ESGPubMapConv(fullmap)
+    map_json_data = None
     try:
-        if proj:
-            map_json_data = mp.run([fullmap, proj])
-        else:
-            map_json_data = mp.run([fullmap])
+        map_json_data = mapconv.mapfilerun()
+
     except Exception as ex:
         print("Error with converting mapfile: " + str(ex), file=sys.stderr)
         exit(1)

@@ -13,7 +13,7 @@ To install esgcet using conda, ensure the conda command is available in your she
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
-    git clone http://github.com/lisi-w/esg-publisher.git -b gen-five-pkg
+    git clone http://github.com/lisi-w/esg-publisher.git -b refactor
     cd esg-publisher
     cd pkg
     python3 setup.py install
@@ -47,7 +47,7 @@ The default config file will look like this::
 
     [DEFAULT]
     note = IMPORTANT: please configure below in the [user] section, that is what the publisher will use to read configured settings. The below are marked as necessary or optional variables.
-    version = 5.0.0a2
+    version = 5.0.0a2 (not required in user section, used by setup)
     data_node = * necessary
     index_node = * necessary
     cmor_path = * necessary, and must be an absolute path (not relative)
@@ -56,10 +56,12 @@ The default config file will look like this::
     cert = ./cert.pem * optional, default assumes cert in current directory, override to change
     test = false * optional, default assumes test is off, override to change
     project = none * optional, default will be parsed from mapfile name
+    non_netcdf = False * optional, default is False, mark as True if your dataset is not of the type .nc
     set_replica = false * optional, default assumes replica publication off
     globus_uuid = none * optional
     data_transfer_node = none * optional
     pid_creds = * necessary
+    user_project_config = none * optional, put DRS and CONST_ATTR configs for self-defined project here
     silent = false * optional
     verbose = false * optional
 
@@ -67,18 +69,19 @@ The default config file will look like this::
     data_node = esgf-data1.llnl.gov
     index_node = esgf-node.llnl.gov
     cmor_path = /export/user/cmor/Tables
-    autoc_path = autocurator
+    autoc_path = ~/autocurator
     data_roots = {"/esg/data": "esgf_data"}
     cert = ./cert.pem
     test = false
     project = CMIP6
+    non_netcdf = False
     set_replica = true
     globus_uuid = none
     data_transfer_node = none
     pid_creds = [{"url": "aims4.llnl.gov", "port": 7070, "vhost": "esgf-pid", "user": "esgf-publisher", "password": "<password>", "ssl_enabled": true, "priority": 1}]
+    user_project_config = { "my_project": { "DRS": ["variable", "product", "version"], "CONST_ATTR": [ "attr": "my_attr", ] } }
     silent = false
     verbose = false
-
 
     [user]
     data_node =
@@ -89,12 +92,15 @@ The default config file will look like this::
     cert = ./cert.pem
     test = false
     project = none
+    non_netcdf = none
     set_replica = false
     globus_uuid = none
     data_transfer_node = none
     pid_creds =
+    user_project_config = none
     silent = false
-    verbose = falsee
+    verbose = false
+
 
 Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
 
