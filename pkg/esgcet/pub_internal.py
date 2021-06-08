@@ -61,11 +61,13 @@ def run(fullmap, pub_args):
     elif non_netcdf:
         from esgcet.generic_pub import BasePublisher
         proj = BasePublisher(argdict)
-    elif project == "generic" or project == "cordex" or user_defined:
+    elif project == "generic" or project == "cordex" or user_defined or project == "none":
+        if project == "none":
+            print("Using default settings, project not specified.")
         from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher(argdict)
     else:
-        print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
+        print("Project " + project + " not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
 
     # ___________________________________________

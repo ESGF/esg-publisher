@@ -147,8 +147,8 @@ def run():
     if a.json is not None:
         json_file = a.json
 
-    if pub.proj != "":
-        project = pub.proj
+    if a.proj != "":
+        project = a.proj
     else:
         try:
             project = config['user']['project']
@@ -181,12 +181,9 @@ def run():
     elif non_nc:
         from esgcet.mkd_non_nc import ESGPubMKDNonNC
         mkd = ESGPubMKDNonNC(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
-    elif project == "generic" or project == "cordex" or user_defined:
+    else:
         from esgcet.mk_dataset import ESGPubMakeDataset
         mkd = ESGPubMakeDataset(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
-    else:
-        print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
-        exit(1)
 
     try:
         if non_nc:

@@ -20,6 +20,10 @@ def get_args():
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+    parser.add_argument("--no-auth", dest="no_auth", action="store_true",
+                        help="Run publisher without certificate, only works on certain index nodes.")
+    parser.add_argument("--verify", dest="verify", action="store_true",
+                        help="Toggle verification for publishing, default is off.")
 
     pub = parser.parse_args()
 
