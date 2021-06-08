@@ -48,7 +48,8 @@ You can also use ``--help`` to see::
           --verify              Toggle verification for publishing, default is off.
 
 
-This command can handle a singular mapfile passed to it, or a file containing a list of mapfiles (with full paths).
+This command can handle a singular mapfile passed to it, a file containing a list of mapfiles (with full paths), a directory of mapfiles, or a directory of lists of mapfiles.
+You do not need to specify how you are passing mapfiles, but all of them must be for the same project in order for them to be published with the correct metadata.
 If optional command line arguments are used, they will override anything set in the config file.
 NOTE: If, in your config file, you have specified a directory for ``autocurator`` rather than the default command, ie you are using a different ``autocurator`` than the one installed using conda, you must run the following command prior to running ``esgpublish``::
 
