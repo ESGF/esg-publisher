@@ -15,17 +15,18 @@ where ``<JSON file>`` is the output of the ``esgpidcitepub`` command.
 
 Additional command line options are as follows::
 
-    usage: esgupdate [-h] [--index-node INDEX_NODE] [--certificate CERT] --pub-rec JSON_DATA [--ini CFG]
+        usage: esgupdate [-h] [--index-node INDEX_NODE] [--certificate CERT]
+                         --pub-rec JSON_DATA [--ini CFG]
 
-    Publish data sets to ESGF databases.
+        Publish data sets to ESGF databases.
 
-    optional arguments:
-        -h, --help            show this help message and exit
-        --index-node INDEX_NODE
-                              Specify index node.
-        --certificate CERT, -c CERT
-                              Use the following certificate file in .pem form for publishing (use a myproxy login to generate).
-        --pub-rec JSON_DATA   JSON file output from esgpidcitepub or esgmkpubrec.
-        --ini CFG, -i CFG     Path to config file.
+        optional arguments:
+            -h, --help            show this help message and exit
+            --index-node INDEX_NODE
+                                  Specify index node.
+            --certificate CERT, -c CERT
+                                  Use the following certificate file in .pem form for publishing (use a myproxy login to generate).
+            --pub-rec JSON_DATA   JSON file output from esgpidcitepub or esgmkpubrec.
+            --ini CFG, -i CFG     Path to config file.
 
 You can also define most of these options in the config file if you choose.
