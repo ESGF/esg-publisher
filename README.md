@@ -1,5 +1,5 @@
 # ESGF Publisher
-[![Documentation Status](https://readthedocs.org/projects/esg-publisher/badge/?version=gen-five-pkg)](https://esg-publisher.readthedocs.io/en/gen-five-pkg/?badge=gen-five-pkg)
+[![Documentation Status](https://readthedocs.org/projects/esg-publisher/badge/?version=refactor)](https://esg-publisher.readthedocs.io/en/refactor/?badge=refactor)
 ##### The v5 version of the publisher, scans data and writes metadata to the ESGF index.
 
 ## How to test it (with conda)
