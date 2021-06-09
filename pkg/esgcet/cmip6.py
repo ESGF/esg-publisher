@@ -15,26 +15,10 @@ class cmip6(GenericPublisher):
     files = [scan_file, ]
 
     def __init__(self, argdict):
-        # maybe get args here
-        self.fullmap = argdict["fullmap"]
-        self.silent = argdict["silent"]
-        self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
-        self.autoc_command = argdict["autoc_command"]
-        self.index_node = argdict["index_node"]
-        self.data_node = argdict["data_node"]
-        self.data_roots = argdict["data_roots"]
-        self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
-        self.replica = argdict["replica"]
-        self.proj = argdict["proj"]
-        self.json_file = argdict["json_file"]
+        super().init(argdict)
         self.pid_creds = argdict["pid_creds"]
         self.cmor_tables = argdict["cmor_tables"]
         self.test = argdict["test"]
-        self.proj_config = argdict["user_project_config"]
-        self.verify = argdict["verify"]
-        self.auth = argdict["auth"]
         if self.replica:
             self.skip_prepare= argdict["skip-prepare"]
 

@@ -5,25 +5,7 @@ from esgcet.cmip6 import cmip6
 class input4mips(cmip6):
 
     def __init__(self, argdict):
-        self.fullmap = argdict["fullmap"]
-        self.silent = argdict["silent"]
-        self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
-        self.autoc_command = argdict["autoc_command"]
-        self.index_node = argdict["index_node"]
-        self.data_node = argdict["data_node"]
-        self.data_roots = argdict["data_roots"]
-        self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
-        self.replica = argdict["replica"]
-        self.proj = argdict["proj"]
-        self.json_file = argdict["json_file"]
-        self.pid_creds = argdict["pid_creds"]
-        self.test = argdict["test"]
-        self.proj_config = argdict["user_project_config"]
-        self.verify = argdict["verify"]
-        self.auth = argdict["auth"]
-        self.cmor_tables = argdict["cmor_tables"]
+        super().init(argdict)
         self.MKD_Construct = ESGPubMKDinput4MIPs
 
     def pid(self, out_json_data):

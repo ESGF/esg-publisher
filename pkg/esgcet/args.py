@@ -227,7 +227,7 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth, "skip_prepare" : skip_prepare, "non_nc": non_nc}
+                   "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc}
 
         project = project.lower()
         if project == "cmip6" or project == "input4mips":

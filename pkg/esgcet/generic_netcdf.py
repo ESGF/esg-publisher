@@ -10,23 +10,8 @@ class GenericPublisher(BasePublisher):
     scanfn = scan_file.name
 
     def __init__(self, argdict):
-        self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
-        self.silent = argdict["silent"]
-        self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
+        super().init(argdict)
         self.autoc_command = argdict["autoc_command"]
-        self.index_node = argdict["index_node"]
-        self.data_node = argdict["data_node"]
-        self.data_roots = argdict["data_roots"]
-        self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
-        self.replica = argdict["replica"]
-        self.proj = argdict["proj"]
-        self.json_file = argdict["json_file"]
-        self.proj_config = argdict["user_project_config"]
-        self.auth = argdict["auth"]
-        self.verify = argdict["verify"]
         self.MKD_Construct = ESGPubMakeDataset
 
     def check_files(self):
