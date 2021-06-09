@@ -15,7 +15,7 @@ class cmip6(GenericPublisher):
     files = [scan_file, ]
 
     def __init__(self, argdict):
-        super().init(argdict)
+        super().__init__(argdict)
         self.pid_creds = argdict["pid_creds"]
         self.cmor_tables = argdict["cmor_tables"]
         self.test = argdict["test"]

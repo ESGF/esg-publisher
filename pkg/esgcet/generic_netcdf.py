@@ -10,7 +10,7 @@ class GenericPublisher(BasePublisher):
     scanfn = scan_file.name
 
     def __init__(self, argdict):
-        super().init(argdict)
+        super().__init__(argdict)
         self.autoc_command = argdict["autoc_command"]
         self.MKD_Construct = ESGPubMakeDataset
 

@@ -9,7 +9,7 @@ import tempfile
 class cmip5(CreateIP):
 
     def __init__(self, argdict):
-        super().init(argdict)
+        super().__init__(argdict)
         self.variable_limit = 100
         self.autoc_args = ' --out_pretty --out_json {} --files "{}/*.nc"'
 

@@ -5,7 +5,7 @@ from esgcet.cmip6 import cmip6
 class input4mips(cmip6):
 
     def __init__(self, argdict):
-        super().init(argdict)
+        super().__init__(argdict)
         self.MKD_Construct = ESGPubMKDinput4MIPs
 
     def pid(self, out_json_data):
