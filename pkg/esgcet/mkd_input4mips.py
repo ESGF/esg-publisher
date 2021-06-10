@@ -4,6 +4,10 @@ from esgcet.settings import GA, GA_DELIMITED
 class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
 
     def xattr_handler(self):
+        if not self.xattr:
+            return {}
+        if len(self.xattr) < 1:
+            return {}
         return [x for x in self.xattr.values()][0]
 
     def global_attributes(self, projkey, scandata):
