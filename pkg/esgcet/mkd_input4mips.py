@@ -10,7 +10,8 @@ class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
             return {}
         return [x for x in self.xattr.values()][0]
 
-    def global_attributes(self, projkey, scandata):
+    def global_attributes(self, proj, scandata):
+        projkey = proj.lower()
         # handle Global attributes if defined for the project
         handler = self.xattr_handler()
         if projkey in GA:

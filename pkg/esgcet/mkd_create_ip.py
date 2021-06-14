@@ -14,11 +14,11 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
         self.project = "CREATE-IP"
         if s in self.source_ids:
-            self.DRS = DRS["CREATE-IP-src"]
+            self.DRS = DRS["create-ip-src"]
         elif l == 7:
-            self.DRS = DRS["CREATE-IP-model"]
+            self.DRS = DRS["create-ip-model"]
         else:
-            self.DRS = DRS["CREATE-IP-exp"]
+            self.DRS = DRS["create-ip-exp"]
 
     def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent

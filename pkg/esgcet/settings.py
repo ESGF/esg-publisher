@@ -12,19 +12,19 @@ AUTOC_PATH = None
 #    Then, set by the workflow at reasonable intervals
 
 # For each project these become the . delimited components of the dataset_id
-DRS = { 'CMIP6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'],
-         'E3SM' : [ 'source', 'model_version', 'experiment', 'grid_resolution', 'realm', 'regridding', 'data_type', 'time_frequency', 'ensemble_member'],
-    'input4MIPs' : ['activity_id', 'mip_era', 'target_mip', 'institution_id', 'source_id', 'realm', 'frequency', 'variable_id', 'grid_label'],
+DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','experiment_id','member_id','table_id','variable_id','grid_label'],
+         'e3sm' : [ 'source', 'model_version', 'experiment', 'grid_resolution', 'realm', 'regridding', 'data_type', 'time_frequency', 'ensemble_member'],
+    'input4mips' : ['activity_id', 'mip_era', 'target_mip', 'institution_id', 'source_id', 'realm', 'frequency', 'variable_id', 'grid_label'],
     'cordex' : ['project', 'product', 'domain', 'institute', 'driving_model', 'experiment', 'ensemble', 'rcm_model', 'rcm_version', 'time_frequency', 'variable' ],
-    'CREATE-IP-exp' : ['project', 'product', 'institute', 'experiment', 'realm', 'time_frequency'],
-    'CREATE-IP-src': ['project', 'product', 'institute', 'source_id', 'realm', 'time_frequency'],
-    'CREATE-IP-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'],
+    'create-ip-exp' : ['project', 'product', 'institute', 'experiment', 'realm', 'time_frequency'],
+    'create-ip-src': ['project', 'product', 'institute', 'source_id', 'realm', 'time_frequency'],
+    'create-ip-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'],
         'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble']}
 
-SPLIT_FACET = { 'E3SM' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
+SPLIT_FACET = { 'e3sm' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
 
 # Global attributes expected to be read for a particular project.  For now a simple list.  
-GA = { 'CMIP6' : ['frequency',
+GA = { 'cmip6' : ['frequency',
                      'realm',
                      'product',
                      'nominal_resolution',
@@ -53,12 +53,12 @@ GA = { 'CMIP6' : ['frequency',
 'Conventions',
 'creation_date']}
 
-GA_DELIMITED = { 'CMIP6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  },
-                 'input4MIPs' : {'target_mip_list' : ','}}
+GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  },
+                 'input4mips' : {'target_mip_list' : ','}}
 
-CONST_ATTR =  { 'CMIP6' : { 'model_cohort' : 'Registered' }}
+CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered' }}
 
-GA_MAPPED = { 'CMIP6' : { 'experiment' : 'experiment_title'} }
+GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 
 # the prefix is found in the published urls that are backed by the path prefix below
 DATA_ROOTS = {'/esg/data' : 'esgf_data',

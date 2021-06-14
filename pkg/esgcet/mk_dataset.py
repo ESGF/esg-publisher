@@ -10,7 +10,8 @@ from pathlib import Path
 
 class ESGPubMakeDataset:
 
-    def init_project(self, project):
+    def init_project(self, proj):
+        project = proj.lower()
 
         if project in DRS:
             self.DRS = DRS[project]
@@ -107,8 +108,9 @@ class ESGPubMakeDataset:
         self.const_attr()
         self.assign_dset_values(projkey, master_id, version)
 
-    def global_attributes(self, projkey, scandata):
+    def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
+        projkey = proj.lower()
         if projkey in GA:
             for facetkey in GA[projkey]:
                 # did we find a GA in the data by the the key name
@@ -121,7 +123,8 @@ class ESGPubMakeDataset:
                     else:
                         self.dataset[facetkey] = facetval
 
-    def global_attr_mapped(self, projkey, scandata):
+    def global_attr_mapped(self, proj, scandata):
+        projkey = proj.lower()
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
