@@ -39,14 +39,14 @@ GA = { 'CMIP6' : ['frequency',
        'input4MIPs' : ['contact',
 'dataset_category',
 'source_version',
+'source',
 'further_info_url',
 'title',
 'product',
 'table',
 'nominal_resolution',
 'institution',
-'target_mip_list'
-'source',
+'target_mip_list',
 'deprecated',
 'dataset_status',
 'realm_drs',
@@ -54,7 +54,7 @@ GA = { 'CMIP6' : ['frequency',
 'creation_date']}
 
 GA_DELIMITED = { 'CMIP6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  },
-                 'input4MIPs' : {'target_mip' : ','}}
+                 'input4MIPs' : {'target_mip_list' : ','}}
 
 CONST_ATTR =  { 'CMIP6' : { 'model_cohort' : 'Registered' }}
 
@@ -72,7 +72,6 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX
 # Note these are netCDF specific and will need to change if other formats are considered
-# TODO - add Globus , GridFTP
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
 "https://{}/thredds/dodsC/{}/{}.html|application/opendap-html|OPENDAP",
                  "gsiftp://{}:2811/{}/{}|application/gridftp|GridFTP",
