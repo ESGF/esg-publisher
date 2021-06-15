@@ -12,6 +12,8 @@ Usage
 
     esgunpublish --dset-id <dataset_id>
 
+The ``<dataset_id>`` can be either the ``instance_id`` or the full ``dataset_id`` corresponding to the dataset. If ``instance_id`` is used, the program will use
+the ``data-node`` option, from CLI or config file, to create the full ``dataset_id``.
 You can also specify certain command line options rather than defining them in a config file::
 
     usage: esgunpublish [-h] [--index-node INDEX_NODE] [--data-node DATA_NODE]
@@ -33,4 +35,5 @@ You can also specify certain command line options rather than defining them in a
         --dset-id DSET_ID     Dataset ID for dataset to be retracted or deleted.
         --ini CFG, -i CFG     Path to config file.
 
-You can see this message above by running ``esgunpublish -h``.
+You can see this message above by running ``esgunpublish -h``. For the ``--ini, -i`` option, the path may be relative but it must point to the file, not to the directory
+in which the config file is.
