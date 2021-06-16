@@ -11,7 +11,9 @@ from pathlib import Path
 class ESGPubMakeDataset:
 
     def init_project(self, proj):
-        project = proj.lower()
+        project = proj
+        if not self.user_project:
+            project = proj.lower()
 
         if project in DRS:
             self.DRS = DRS[project]
