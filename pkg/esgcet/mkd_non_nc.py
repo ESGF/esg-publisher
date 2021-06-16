@@ -57,6 +57,7 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
 
     def get_records(self, mapdata, xattrfn=None, user_project=None):
         self.user_project = user_project
+        self.load_xattr(xattrfn)
 
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
@@ -75,7 +76,7 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
             xattrobj = {}
 
         if len(xattrobj) > 0:
-            xattrobj = self.xattr_handler(xattrobj)
+            xattrobj = self.xattr_handler()
 
         for key in xattrobj:
             self.dataset[key] = xattrobj[key]

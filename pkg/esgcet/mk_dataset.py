@@ -338,6 +338,7 @@ class ESGPubMakeDataset:
     def get_records(self, mapdata, scanfilename, xattrfn=None, user_project=None):
 
         self.user_project = user_project
+        self.load_xattr(xattrfn)
 
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
