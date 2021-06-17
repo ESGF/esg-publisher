@@ -49,20 +49,21 @@ class PublisherArgs:
         json_file = pub.json
 
         if pub.migrate:
-            em.run({})
+            em.run(DEFAULT_ESGINI, False, False)
 
         ini_file = pub.cfg
         config = cfg.ConfigParser()
-        config_file = ini_file
+        if not os.path.exists(ini_file):
+            print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+            exit(1)
+        if os.path.isdir(ini_file):
+            print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+            exit(1)
         try:
-            config.read(config_file)
+            config.read(ini_file)
         except Exception as ex:
-            if not os.path.exists(ini_file):
-                print("No config file found. Attempting to migrate old settings.")
-                em.run(DEFAULT_ESGINI, False, False)
-            else:
-                print("Error opening config file: " + str(ex))
-                exit(1)
+            print("Error reading config file: " + str(ex))
+            exit(1)
 
         if pub.proj != "":
             project = pub.proj

@@ -35,10 +35,18 @@ def run():
 
     ini_file = a.cfg
     config = cfg.ConfigParser()
+    if not os.path.exists(ini_file):
+        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        exit(1)
+    if os.path.isdir(ini_file):
+        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        exit(1)
     try:
         config.read(ini_file)
-    except:
-        print("WARNING: no config file found.", file=sys.stderr)
+    except Exception as ex:
+        print("Error reading config file: " + str(ex))
+        exit(1)
+
 
     if not a.silent:
         try:
