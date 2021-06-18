@@ -15,6 +15,7 @@ The esgcet package for ESGF Publication
    esgupdate
    esgindexpub
    esgunpublish
+   troubleshooting
    contributing
 
 Esgcet is a package of publisher commands for publishing to the `ESGF

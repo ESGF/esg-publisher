@@ -1,15 +1,32 @@
 Installation
 ============
 
+
+Conda & Required Packages
+-------------------------
+
+We recommend creating a conda env before installing ``esgcet`` ::
+
+    conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
+
+NOTE: if you install esgcet using conda below, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
+
+You will also need to install ``esgfpid`` using pip::
+
+    pip install esgfpid
+
+NOTE: you will need a functioning version of ``autocurator`` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.
+
+
+Installing esgcet
+-----------------
+
 You can install esgcet one of two ways: conda, or git.
 
 
-To install esgcet using conda, ensure the conda command is available in your shell and run::
+To install esgcet using conda, activate the environment you created above and run::
 
-    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet
-    conda activate esgf-pub
-
-..  note:: the command above creates a new environment for the publisher.  This is recommended rather than attempting to reuse an existing environment if you wish to upgrade a previous version of the publisher.  
+    conda install -c esgf-forge -c conda-forge esgcet
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
@@ -24,21 +41,6 @@ Now you will be able to call all commands in this package from any directory. A 
 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
-Conda & Required Packages
--------------------------
-
-We recommend creating a conda env before installing ``esgcet`` ::
-
-    conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
-
-NOTE: if you installed esgcet using conda above, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
-Also, if you created the env above to install esgcet, this step is not necessary.
-
-You will also need to install ``esgfpid`` using pip::
-
-    pip install esgfpid
-
-NOTE: you will also need a functioning version of `autocurator` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.
 
 Config
 ------
@@ -54,7 +56,7 @@ The default config file will look like this::
     autoc_path = autocurator * optional, default is autocurator conda binary, can be replaced with a file path, relative or absolute
     data_roots = * necessary, must be in json loadable dictionary format
     cert = ./cert.pem * optional, default assumes cert in current directory, override to change
-    test = false * optional, default assumes test is off, override to change
+    test = false * optional, used to designate a test run in PID assignment, default assumes test is off, override to change
     project = none * optional, default will be parsed from mapfile name
     non_netcdf = False * optional, default is False, mark as True if your dataset is not of the type .nc
     set_replica = false * optional, default assumes replica publication off
@@ -103,6 +105,7 @@ The default config file will look like this::
 
 
 Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
+Note that while the ``cmor_path`` variable points to a directory, other filepaths must be complete, such as ``autoc_path`` and ``cert``. This applies to the command line arguments for these as well.
 
 If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
 See that page for more info.
@@ -112,4 +115,5 @@ Run Time Args
 
 If you prefer to set certain things at runtime, the ``esgpublish`` command has several optional command line arguments which will override options set in the config file.
 For instance, if you use the ``--cmor-tables`` command line argument to set the path to the cmor tables directory, that will override anything written in the config file under ``cmor_path``.
+If you used the old version of the publisher, you should note that the command line argument ``-ini`` which points to your config file must be a complete path, not the directory as it was in the previous version.
 More details can be found in the ``esgpublish`` section.
