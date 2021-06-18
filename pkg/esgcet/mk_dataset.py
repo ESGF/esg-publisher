@@ -229,15 +229,19 @@ class ESGPubMakeDataset:
             if self.variable_name in record:
 
                 vid = record[self.variable_name]
-                var_rec = scanobj["variables"][vid]
-                if "long_name" in var_rec.keys():
-                    record["variable_long_name"] = var_rec["long_name"]
-                elif "info" in var_rec:
-                    record["variable_long_name"] = var_rec["info"]
-                if "standard_name" in var_rec:
-                    record["cf_standard_name"] = var_rec["standard_name"]
-                record["variable_units"] = var_rec["units"]
-                record[self.variable_name] = vid
+                try:
+                    var_rec = scanobj["variables"][vid]
+                    if "long_name" in var_rec.keys():
+                        record["variable_long_name"] = var_rec["long_name"]
+                    elif "info" in var_rec:
+                        record["variable_long_name"] = var_rec["info"]
+                    if "standard_name" in var_rec:
+                        record["cf_standard_name"] = var_rec["standard_name"]
+                    record["variable_units"] = var_rec["units"]
+                    record[self.variable_name] = vid
+                except Exception as ex:
+                    self.eprint("Variable could not be extracted, exception encountered: " + str(ex))
+                    record[self.variable_name] = "none"
             else:
                 self.eprint("TODO check project settings for variable extraction")
                 record[self.variable_name] = "Multiple"
