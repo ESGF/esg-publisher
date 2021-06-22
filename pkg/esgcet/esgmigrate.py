@@ -141,9 +141,11 @@ class ESGPubMigrate(object):
                 try:
                     test = config['user'][key]
                 except:
-                    config['user'][key] = value
+                    config.set('user', key, value)
         except:
-            pass
+            config.add_section('user')
+            for key, value in new_config.items():
+                config.set('user', key, value)
         with open(config_file, "w") as cf:
             config.write(cf)
 
