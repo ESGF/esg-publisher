@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 import json
 
-DEFAULT_ESGINI = '/esg/config/esgcet'
+DEFAULT_ESGINI = '/esg/config/esgcet/'
 CONFIG_FN_DEST = "~/.esg/esg.ini"
 
 
@@ -17,10 +17,11 @@ def project_list(cfg_obj):
 
 class ESGPubMigrate(object):
 
-    def __init__(self, i, silent=False, verbose=False):
+    def __init__(self, i, newpath, silent=False, verbose=False):
         self.ini_path = i
         self.silent = silent
         self.verbose = verbose
+        self.save_path = newpath
 
     def project_migrate(self, project):
 
@@ -43,12 +44,8 @@ class ESGPubMigrate(object):
 
     def migrate(self, project=None):
 
-        if os.path.exists(CONFIG_FN_DEST):
-            print("New config file exists, exiting.", file=sys.stderr)
-            exit(0)
-
-        if not os.path.exists(self.ini_path):
-            print("Old config " + self.ini_path + " not found or unreadable.", file=sys.stderr)
+        if not os.path.exists(self.ini_path + "esg.ini"):
+            print("Old config " + self.ini_path + "esg.ini not found or unreadable.", file=sys.stderr)
             exit(1)
 
         try:
@@ -126,21 +123,27 @@ class ESGPubMigrate(object):
         d = date.today()
         t = d.strftime("%y%m%d")
         home = str(Path.home())
-        config_file = home + "/.esg/esg.ini"
-        backup = home + "/.esg/" + t + "esg.ini"
-        shutil.copyfile(config_file, backup)
+        config_file = self.save_path
+        if os.path.exists(self.save_path):
+            backup = self.save_path + ".bak"
+            shutil.copyfile(config_file, backup)
+        Path(config_file).touch()
         config = cfg.ConfigParser()
         config.read(config_file)
         new_config = {"data_node": data_node, "index_node": index_node, "data_roots": json.dumps(dr_dict), "cert": CERT_FN,
                       "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds)}
 
-        if project_config:
-            new_config["project_cfg"] = json.dumps(project_config)
-        for key, value in new_config.items():
-            try:
-                test = config['user'][key]
-            except:
-                config['user'][key] = value
+        try:
+            test = config['user']['data_node']
+            if project_config:
+                new_config["project_cfg"] = json.dumps(project_config)
+            for key, value in new_config.items():
+                try:
+                    test = config['user'][key]
+                except:
+                    config['user'][key] = value
+        except:
+            pass
         with open(config_file, "w") as cf:
             config.write(cf)
 
