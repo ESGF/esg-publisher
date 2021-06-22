@@ -21,5 +21,4 @@ Prerequisites
 
 * ``conda`` eg. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_  installation.
 * Mountpoint to located data on the same host as publisher software installation, so the publisher scan utility (eg. ``autocurator``) has access.
-* Basic dataset information provided via the esg mapfile format.   The most popular approach is using the `esgf-prepare/esgmapfile <https://esgf.github.io/esgf-prepare/>`_ 
-utility.
+* Basic dataset information provided via the esg mapfile format.   The most popular approach is using the `esgf-prepare/esgmapfile <https://esgf.github.io/esgf-prepare/>`_ utility.
