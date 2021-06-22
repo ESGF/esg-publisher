@@ -47,8 +47,8 @@ class ESGPubMigrate(object):
             print("New config file exists, exiting.", file=sys.stderr)
             exit(0)
 
-        if not os.path.exists(self.ini_path + '/esg.ini'):
-            print("esg.ini not found or unreadable", file=sys.stderr)
+        if not os.path.exists(self.ini_path):
+            print("Old config " + self.ini_path + " not found or unreadable.", file=sys.stderr)
             exit(1)
 
         try:

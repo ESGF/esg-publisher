@@ -2,16 +2,17 @@ from esgcet.esgmigrate import ESGPubMigrate
 import argparse, sys, os
 
 
-DEFAULT_ESGINI = '/esg/config/esgcet'
+DEFAULT_ESGINI = '/esg/config/esgcet/esg.ini'
 
 
 def get_args():
     parser = argparse.ArgumentParser(description="Migrate old config settings into new format.")
 
-    parser.add_argument("--old-config", dest="cfg", default=DEFAULT_ESGINI, help="Path to old config file.")
+    parser.add_argument("--old-config", dest="cfg", default=DEFAULT_ESGINI, help="Full path to old config file to migrate.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
     parser.add_argument("--project", dest="project", default=None, help='Name of a particular legacy project to migrate.')
+    parser.add_argument("--destination", dest='dest', default='~/.esg/esg.ini', help="Destination for new config file.")
 
     pub = parser.parse_args()
 
