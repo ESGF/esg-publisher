@@ -94,8 +94,8 @@ class ESGPubMigrate(object):
         except:
             svc_urls = []
 
-        DATA_TRANSFER_NODE = ""
-        GLOBUS_UUID = ""
+        DATA_TRANSFER_NODE = None
+        GLOBUS_UUID = None
 
         for line in svc_urls:
             if line[0] == "GridFTP":
@@ -117,6 +117,7 @@ class ESGPubMigrate(object):
             print(CERT_FN)
             print(DATA_TRANSFER_NODE)
             print(GLOBUS_UUID)
+            print(project)
 
         project_config = {project: self.project_migrate(project)}
 
@@ -138,14 +139,13 @@ class ESGPubMigrate(object):
             if project_config:
                 new_config["project_cfg"] = json.dumps(project_config)
             for key, value in new_config.items():
-                try:
-                    test = config['user'][key]
-                except:
+                if value:
                     config.set('user', key, value)
         except:
             config.add_section('user')
             for key, value in new_config.items():
-                config.set('user', key, value)
+                if value:
+                    config.set('user', key, value)
         with open(config_file, "w") as cf:
             config.write(cf)
 
