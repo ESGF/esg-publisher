@@ -49,20 +49,21 @@ class PublisherArgs:
         json_file = pub.json
 
         if pub.migrate:
-            em.run({})
+            em.run(DEFAULT_ESGINI, False, False)
 
         ini_file = pub.cfg
         config = cfg.ConfigParser()
-        config_file = ini_file
+        if not os.path.exists(ini_file):
+            print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+            exit(1)
+        if os.path.isdir(ini_file):
+            print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+            exit(1)
         try:
-            config.read(config_file)
+            config.read(ini_file)
         except Exception as ex:
-            if not os.path.exists(ini_file):
-                print("No config file found. Attempting to migrate old settings.")
-                em.run(DEFAULT_ESGINI, False, False)
-            else:
-                print("Error opening config file: " + str(ex))
-                exit(1)
+            print("Error reading config file: " + str(ex))
+            exit(1)
 
         if pub.proj != "":
             project = pub.proj
@@ -152,6 +153,13 @@ class PublisherArgs:
         except:
             dtn = "none"
 
+        skip_prepare = False
+
+        try:
+            skip_prep_str = config['user']['skip_prepare'].lower()
+            skip_prepare = (skip_prep_str in ["true", "yes"])
+        except:
+            pass
         if pub.set_replica and pub.no_replica:
             print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
             exit(1)
@@ -161,7 +169,7 @@ class PublisherArgs:
             replica = False
         else:
             try:
-                r = config['user']['set_replica']
+                r = config['user']['set_replica'].lower()
                 if 'yes' in r or 'true' in r:
                     replica = True
                 elif 'no' in r or 'false' in r:
@@ -200,20 +208,30 @@ class PublisherArgs:
         else:
             auth = True
 
+        try:
+            non_netcdf = config['user']['non_netcdf'].lower()
+            if 'yes' in non_netcdf or 'true' in non_netcdf:
+                non_nc = True
+            else:
+                non_nc = False
+        except:
+            non_nc = False
+
         if globus == "none" and not silent:
-            print("INFO: no Globus UUID defined. Using default: " + GLOBUS_UUID, file=sys.stderr)
+            print("INFO: no Globus UUID defined.", file=sys.stderr)
 
         if dtn == "none" and not silent:
-            print("INFO: no data transfer node defined. Using default: " + DATA_TRANSFER_NODE, file=sys.stderr)
+            print("INFO: no data transfer node defined.", file=sys.stderr)
 
         argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth}
+                   "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc}
 
-        if project == "CMIP6":
+        project = project.lower()
+        if project == "cmip6" or project == "input4mips":
             if pub.cmor_path is None:
                 try:
                     argdict["cmor_tables"] = config['user']['cmor_path']

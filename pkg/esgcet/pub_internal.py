@@ -24,7 +24,7 @@ def run(fullmap, pub_args):
     split_map = fullmap.split("/")
     fname = split_map[-1]
     fname_split = fname.split(".")
-    project = fname_split[0]
+    p = fname_split[0]
 
     files = []
     files.append(fullmap)
@@ -34,22 +34,40 @@ def run(fullmap, pub_args):
     argdict = pub_args.get_dict(fullmap)
 
     if argdict["proj"]:
-        project = argdict["proj"]
+        p = argdict["proj"]
+    project = p.lower()
+    user_defined = False
+    if argdict["user_project_config"]:
+        user_defined = True
+    non_netcdf = False
+    if argdict["non_nc"]:
+        non_netcdf = True
 
-    if project == "CMIP6":
+    if project == "cmip6":
         from esgcet.cmip6 import cmip6
         proj = cmip6(argdict)
-    elif project == "non-nc":
-        from esgcet.generic_pub import BasePublisher
-        proj = BasePublisher(argdict)
-    elif project == "generic" or project == "cordex":
-        from esgcet.generic_netcdf import GenericPublisher
-        proj = GenericPublisher(argdict)
-    elif project == "CREATE-IP":
+    elif project == "create-ip":
         from esgcet.create_ip import CreateIP
         proj = CreateIP(argdict)
+    elif project == "cmip5":
+        from esgcet.cmip5 import cmip5
+        proj = cmip5(argdict)
+    elif project == "input4mips":
+        from esgcet.input4mips import input4mips
+        proj = input4mips(argdict)
+    elif project == "e3sm" and not non_netcdf:
+        from esgcet.e3sm import e3sm
+        proj = e3sm(argdict)
+    elif non_netcdf:
+        from esgcet.generic_pub import BasePublisher
+        proj = BasePublisher(argdict)
+    elif project == "generic" or project == "cordex" or user_defined or project == "none":
+        if project == "none":
+            print("Using default settings, project not specified.")
+        from esgcet.generic_netcdf import GenericPublisher
+        proj = GenericPublisher(argdict)
     else:
-        print("Project " + project + "not supported.\nOpen an issue on our github to request additional project support.")
+        print("Project " + project + " not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
 
     # ___________________________________________
@@ -65,16 +83,30 @@ def main():
     if maps is None:
         print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
         exit(1)
-    if maps[0][-4:] != ".map":
-        myfile = open(maps[0])
-        for line in myfile:
-            length = len(line)
-            run(line[0:length - 2])
-        myfile.close()
-        # iterate through file in directory calling main func
-    else:
-        for m in maps:
-            run(m, pub_args)
+    for m in maps:
+        if os.path.isdir(m):
+            files = os.listdir(m)
+            for f in files:
+                if os.path.isdir(m + f):
+                    continue
+                run(m + f, pub_args)
+        else:
+            myfile = open(m)
+            ismap = False
+            first = True
+            for line in myfile:
+                # if parsed line is not mapfile line, run on each file
+                if first:
+                    if '#' in line:
+                        ismap = True
+                        break
+                    first = False
+
+                length = len(line)
+                run(line[0:length - 1], pub_args)
+            myfile.close()
+            if ismap:
+                run(m, pub_args)
 
 
 if __name__ == '__main__':

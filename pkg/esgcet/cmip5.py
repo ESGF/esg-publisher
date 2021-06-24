@@ -1,42 +1,17 @@
 import sys, os
-from esgcet.generic_pub import BasePublisher
-from esgcet.generic_netcdf import GenericPublisher
+from esgcet.create_ip import CreateIP
 from esgcet.mkd_cmip5 import ESGPubMKDCmip5
-from esgcet.update import ESGPubUpdate
-from esgcet.index_pub import ESGPubIndex
 from esgcet.settings import VARIABLE_LIMIT
 
 import tempfile
 
 
-class CreateIP(GenericPublisher):
+class cmip5(CreateIP):
 
     def __init__(self, argdict):
-        self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
-        self.silent = argdict["silent"]
-        self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
-        self.autoc_command = argdict["autoc_command"]
-        self.index_node = argdict["index_node"]
-        self.data_node = argdict["data_node"]
-        self.data_roots = argdict["data_roots"]
-        self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
-        self.replica = argdict["replica"]
-        self.proj = argdict["proj"]
-        self.json_file = argdict["json_file"]
-        self.proj_config = argdict["user_project_config"]
-        self.verify = argdict["verify"]
-        self.auth = argdict["auth"]
-
-        self.scans = []
-        self.datasets = []
-        self.variables = []
-
-    def cleanup(self):
-        for scan in self.scans:
-            scan.close()
+        super().__init__(argdict)
+        self.variable_limit = 100
+        self.autoc_args = ' --out_pretty --out_json {} --files "{}/*.nc"'
 
     def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
@@ -45,7 +20,7 @@ class CreateIP(GenericPublisher):
         outname = os.path.basename(datafile)
         idx = outname.rfind('.')  # was this needed for something?
 
-        autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/{}/*.nc"'
+        autstr = self.autoc_command + self.autoc_args
         files = os.listdir(destpath)
         for f in files:
             var = f.split('_')[0]
@@ -55,51 +30,30 @@ class CreateIP(GenericPublisher):
             self.scans.append(
                 tempfile.NamedTemporaryFile())  # create a temporary file which is deleted afterward for autocurator
             scan = self.scans[-1].name
-            print(autstr.format(scan, destpath, var))
-            stat = os.system(autstr.format(scan, destpath, var))
+            print(autstr.format(scan, destpath))
+            stat = os.system(autstr.format(scan, destpath))
             if os.WEXITSTATUS(stat) != 0:
                 print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
                 self.cleanup()
                 exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = ESGPubMKDCreateIP(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
-                                self.dtn, self.silent, self.verbose)
+        limit_exceeded = len(self.variables) > VARIABLE_LIMIT
+        limit = False
+        mkd = ESGPubMKDCmip5(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
+                                self.dtn, self.silent, self.verbose, limit_exceeded)
         for scan in self.scans:
             try:
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
-                # this is problematic because we will have duplicate type=Dataset records
-                #  NEED an aggregator to create the master dataset record, pull the variable-specific metadata
-                #  from all the sub-dataset records
-
                 self.datasets.append(out_json_data)
-
             except Exception as ex:
                 print("Error making dataset: " + str(ex), file=sys.stderr)
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables
-            if len(self.variables) > VARIABLE_LIMIT:
-                # NEED to ASSIGN variable field for everything to multiple in this case
+            if len(self.variables) > self.variable_limit:
+                limit = True
                 break
+
+        self.master_dataset = mkd.aggregate_datasets(self.datasets, limit)
         return 0
-
-    def update(self, placeholder):
-        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
-        for json_data in self.datasets:
-            try:
-                up.run(json_data)
-            except Exception as ex:
-                print("Error updating: " + str(ex), file=sys.stderr)
-                self.cleanup()
-                exit(1)
-
-    def index_pub(self, placeholder):
-        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
-        for dataset_records in self.datasets:
-            try:
-                ip.do_publish(dataset_records)
-            except Exception as ex:
-                print("Error running index pub: " + str(ex), file=sys.stderr)
-                self.cleanup()
-                exit(1)

@@ -35,6 +35,9 @@ class publisherClient(object):
             resp = requests.post(url, data=data, verify=self.verify, allow_redirects=True)
         if not self.silent:
             print(resp.text)
+        if resp.status_code != 200:
+            print(f"ERROR code = {resp.status_code}")
+            exit(-1 * resp.status_code)
         return resp
     
     def publish(self, xmldata):

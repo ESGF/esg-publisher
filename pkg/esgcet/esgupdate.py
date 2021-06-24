@@ -1,5 +1,5 @@
-import esgcet.update as up
 import os
+from esgcet.update import ESGPubUpdate
 import sys
 import json
 import argparse
@@ -20,6 +20,10 @@ def get_args():
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+    parser.add_argument("--no-auth", dest="no_auth", action="store_true",
+                        help="Run publisher without certificate, only works on certain index nodes.")
+    parser.add_argument("--verify", dest="verify", action="store_true",
+                        help="Toggle verification for publishing, default is off.")
 
     pub = parser.parse_args()
 
@@ -31,10 +35,18 @@ def run():
 
     ini_file = a.cfg
     config = cfg.ConfigParser()
+    if not os.path.exists(ini_file):
+        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        exit(1)
+    if os.path.isdir(ini_file):
+        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        exit(1)
     try:
         config.read(ini_file)
-    except:
-        print("WARNING: no config file found.", file=sys.stderr)
+    except Exception as ex:
+        print("Error reading config file: " + str(ex))
+        exit(1)
+
 
     if not a.silent:
         try:
@@ -68,6 +80,16 @@ def run():
     else:
         cert = a.cert
 
+    if a.verify:
+        verify = True
+    else:
+        verify = False
+
+    if a.no_auth:
+        auth = False
+    else:
+        auth = True
+
     if a.index_node is None:
         try:
             index_node = config['user']['index_node']
@@ -83,8 +105,10 @@ def run():
         print("Error opening json file. Exiting.", file=sys.stderr)
         exit(1)
 
+    up = ESGPubUpdate(index_node, cert, silent=silent, verbose=verbose, verify=verify,
+                      auth=auth)
     try:
-        up.run([new_json_data, index_node, cert, silent, verbose])
+        up.run(new_json_data)
     except Exception as ex:
         print("Error updating: " + str(ex), file=sys.stderr)
         exit(1)

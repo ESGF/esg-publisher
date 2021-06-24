@@ -2,7 +2,7 @@ from esgcet.mk_dataset import ESGPubMakeDataset
 import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
-
+import traceback
 
 class GenericPublisher(BasePublisher):
 
@@ -10,23 +10,9 @@ class GenericPublisher(BasePublisher):
     scanfn = scan_file.name
 
     def __init__(self, argdict):
-        self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
-        self.silent = argdict["silent"]
-        self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
+        super().__init__(argdict)
         self.autoc_command = argdict["autoc_command"]
-        self.index_node = argdict["index_node"]
-        self.data_node = argdict["data_node"]
-        self.data_roots = argdict["data_roots"]
-        self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
-        self.replica = argdict["replica"]
-        self.proj = argdict["proj"]
-        self.json_file = argdict["json_file"]
-        self.proj_config = argdict["user_project_config"]
-        self.auth = argdict["auth"]
-        self.verify = argdict["verify"]
+        self.MKD_Construct = ESGPubMakeDataset
 
     def check_files(self):
         pass
@@ -49,12 +35,14 @@ class GenericPublisher(BasePublisher):
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = ESGPubMakeDataset(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
+        mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
         try:
             out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)
         except Exception as ex:
             print("Error making dataset: " + str(ex), file=sys.stderr)
+            if self.verbose:
+                traceback.print_exc()
             self.cleanup()
             exit(1)
         return out_json_data

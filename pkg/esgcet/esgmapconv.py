@@ -1,5 +1,5 @@
-import esgcet.mapfile as mp
 import sys
+from esgcet.mapfile import ESGPubMapConv
 import json
 import os
 import configparser as cfg
@@ -26,7 +26,17 @@ def run():
     a = get_args()
     ini_file = a.cfg
     config = cfg.ConfigParser()
-    config.read(ini_file)
+    if not os.path.exists(ini_file):
+        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        exit(1)
+    if os.path.isdir(ini_file):
+        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        exit(1)
+    try:
+        config.read(ini_file)
+    except Exception as ex:
+        print("Error reading config file: " + str(ex))
+        exit(1)
 
     p = True
     if a.out_file is not None:
@@ -49,11 +59,12 @@ def run():
     except:
         print("Error with argparse. Exiting.", file=sys.stderr)
         exit(1)
+
+    mapconv = ESGPubMapConv(fullmap)
+    map_json_data = None
     try:
-        if proj:
-            map_json_data = mp.run([fullmap, proj])
-        else:
-            map_json_data = mp.run([fullmap])
+        map_json_data = mapconv.mapfilerun()
+
     except Exception as ex:
         print("Error with converting mapfile: " + str(ex), file=sys.stderr)
         exit(1)

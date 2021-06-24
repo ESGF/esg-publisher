@@ -7,15 +7,16 @@ from datetime import datetime, timedelta
 from esgcet.settings import *
 from pathlib import Path
 from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.mkd_create_ip import ESGPubMKDCreateIP
 
-class ESGPubMKDCmip5(ESGPubMakeDataset):
+class ESGPubMKDCmip5(ESGPubMKDCreateIP):
 
     def init_project(self):
 
         self.DRS = DRS["cmip5"]
-        self.project = "CMIP5"
+        self.project = "cmip5"
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -31,11 +32,9 @@ class ESGPubMKDCmip5(ESGPubMakeDataset):
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
-        self.variable_name = "variable_id"
+        self.variable_name = "variable"
+        self.limit_exceeded = limit_exceeded
 
-        self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
-                   "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
-                   "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351"]
 
     def get_dataset(self, mapdata, scanobj):
 
@@ -48,10 +47,12 @@ class ESGPubMKDCmip5(ESGPubMakeDataset):
         facets = self.DRS  # depends on Init_project to initialize
 
         assert(facets)
-        self.variable_name = list(scanobj["variables"].keys())[0]
-
+        for var in list(scanobj["variables"].keys()):
+            if "bnds" not in var and "_" not in var and "lon" not in var and "lat" not in var:
+                self.variable = var
         for i, f in enumerate(facets):
             self.dataset[f] = parts[i]
+        self.dataset[self.variable_name] = self.variable
 
 #        self.global_attributes(projkey, scandata)
 #        self.global_attr_mapped(projkey, scandata)

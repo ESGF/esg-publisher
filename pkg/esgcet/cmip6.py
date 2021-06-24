@@ -5,6 +5,7 @@ import json
 from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
+import sys
 
 
 class cmip6(GenericPublisher):
@@ -14,26 +15,13 @@ class cmip6(GenericPublisher):
     files = [scan_file, ]
 
     def __init__(self, argdict):
-        # maybe get args here
-        self.fullmap = argdict["fullmap"]
-        self.silent = argdict["silent"]
-        self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
-        self.autoc_command = argdict["autoc_command"]
-        self.index_node = argdict["index_node"]
-        self.data_node = argdict["data_node"]
-        self.data_roots = argdict["data_roots"]
-        self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
-        self.replica = argdict["replica"]
-        self.proj = argdict["proj"]
-        self.json_file = argdict["json_file"]
+        super().__init__(argdict)
         self.pid_creds = argdict["pid_creds"]
         self.cmor_tables = argdict["cmor_tables"]
         self.test = argdict["test"]
-        self.proj_config = argdict["user_project_config"]
-        pass
-    
+        if self.replica:
+            self.skip_prepare= argdict["skip-prepare"]
+
     def prepare_internal(self, json_map, cmor_tables):
         try:
             print("iterating through filenames for PrePARE (internal version)...")
@@ -52,13 +40,13 @@ class cmip6(GenericPublisher):
         pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
         check = FieldCheck(self.cmor_tables, silent=self.silent)
 
-        #try:
-        check.run_check(out_json_data)
-        new_json_data = pid.do_pidcite()
-        """except Exception as ex:
+        try:
+            check.run_check(out_json_data)
+            new_json_data = pid.do_pidcite()
+        except Exception as ex:
             print("Error assigning pid or running activity check: " + str(ex))
             self.cleanup()
-            exit(1)"""
+            exit(1)
         return new_json_data
 
     def workflow(self):
