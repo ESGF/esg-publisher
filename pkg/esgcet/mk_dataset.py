@@ -245,12 +245,13 @@ class ESGPubMakeDataset:
                 else:
                     var_list = list(scanobj["variables"].keys())
                     if len(var_list) < VARIABLE_LIMIT:
-                        init_lst = [self.variable_name, "variable_long_name", "cf_standard_name", "variable_units"]
+                        init_lst = [self.variable_name, "variable_long_name"]
                         if "variable_id" in init_lst:
                             init_lst.append("variable")
                         for kid in init_lst:
                             record[kid] = []
                         units_list = []
+                        cf_list = []
                         for vk in var_list:
                             if not vk in VARIABLE_EXCLUDES:
                                 var_rec = scanobj["variables"][vk]
@@ -259,14 +260,15 @@ class ESGPubMakeDataset:
                                 elif "info" in var_rec:
                                     record["variable_long_name"].append(var_rec["info"])
                                 if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
-                                    record["cf_standard_name"].append(var_rec["standard_name"])
-                                if var_rec["units"] != "1"
-                                    unit_list.append(var_rec["units"])
+                                    cf_list.append(var_rec["standard_name"])          
+                                if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
+                                    units_list.append(var_rec["units"])
                                 record["variable"].append(vk)
 
                         if self.variable_name == "variable_id":
                             record[self.variable_name] = "Multiple"
-                        record["variable_units"].append(list(set(units_list)))
+                        record["variable_units"] = list(set(units_list))
+                        record["cf_standard_name"] = list(set(cf_list))
                     else:
                         self.eprint("TODO check project settings for variable extraction")
                         record[self.variable_name] = "Multiple"
