@@ -1,6 +1,9 @@
 import sys, json
 from esgcet.settings import PID_PREFIX, PID_EXCHANGE, HTTP_SERVICE, CITATION_URLS, PID_URL
 import traceback
+import esgcet.logger as log
+
+publog = log.return_logger('PID Citation')
 
 silent = False
 verbose = False
@@ -39,7 +42,7 @@ class ESGPubPidCite(object):
         try:
             import esgfpid
         except ImportError:
-            print("PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install').", file=sys.stderr)
+            publog.exception("PID module not found. Please install the package 'esgfpid' (e.g. with 'pip install').")
             exit(1)
 
         pid_messaging_service_exchange_name = PID_EXCHANGE
@@ -50,7 +53,6 @@ class ESGPubPidCite(object):
 
         # if publish:
         http_service_path = HTTP_SERVICE
-
 
         self.pid_connector = esgfpid.Connector(handle_prefix=self.pid_prefix,
                                           messaging_service_exchange_name=pid_messaging_service_exchange_name,
@@ -69,7 +71,7 @@ class ESGPubPidCite(object):
         """
         pid_queue_return_msg = self.pid_connector.check_pid_queue_availability(send_message=send_message)
         if pid_queue_return_msg is not None:
-            print("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.", file=sys.stderr)
+            publog.error("Unable to establish connection to PID Messaging Service. Please check your esg.ini for correct pid_credentials.")
 
 
 
@@ -79,10 +81,10 @@ class ESGPubPidCite(object):
         try:
             dsrec = self.ds_records[-1]
         except:
-            print(f"Error obtaining dataset record: {str(self.ds_records)}", file=sys.stderr)
+            publog.exception("Failed to obtain dataset record: {}".format(str(self.ds_records)))
             exit(-1)
         if not 'data_node' in dsrec:
-            print("Error: record missing data node value")
+            publog.error("Record missing data node value")
             exit(-1)
         self.data_node = dsrec['data_node']
         dset = dsrec['master_id']
@@ -96,9 +98,9 @@ class ESGPubPidCite(object):
         if self.pid_connector:
             self.dataset_pid = self.pid_connector.make_handle_from_drsid_and_versionnumber(drs_id=dset, version_number=version_number)
             if not silent:
-                print("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, self.dataset_pid), file=sys.stderr)
+                publog.info("Assigned PID to dataset %s.v%s: %s " % (dset, version_number, self.dataset_pid))
         else:
-            print('Warning: no connection', file=sys.stderr)
+            publog.warning('No connection')
         # if project uses citation, build citation url
 
 
@@ -135,12 +137,11 @@ class ESGPubPidCite(object):
                 return True
             else:
                 if not silent:
-                    print("WARNING, empty pid_wizard!", file=sys.stderr)
+                    publog.warning("Empty pid_wizard!")
 
         except Exception as e:
             if not silent:
-                print("WARNING: PID module exception encountered! {}".format(str(e)), file=sys.stderr)
-                traceback.print_exc()
+                publog.exception("PID module exception encountered!")
 
         self.pid_connector.force_finish_messaging_thread()
         return False
@@ -174,7 +175,7 @@ class ESGPubPidCite(object):
                 self.update_dataset(i)
 
         except Exception as e:
-            print("ERROR: Some exception encountered! {}".format(str(e)), file=sys.stderr)
+            publog.exception("Some exception encountered!")
             self.pid_connector.force_finish_messaging_thread()
             exit(-1)
 
@@ -192,7 +193,7 @@ class ESGPubPidCite(object):
         if type(res) is list:
             self.rewrite_json(fname)
         elif not self.silent:
-            print("Something went wrong, PID/cite information were not added")
+            publog.warning("Something went wrong, PID/cite information were not added")
 
 
 

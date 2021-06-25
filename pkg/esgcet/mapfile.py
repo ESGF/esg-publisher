@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
 import traceback
+import esgcet.logger as log
+
+publog = log.return_logger('Mapfile Conversion')
 
 class ESGPubMapConv:
 
@@ -45,7 +48,7 @@ class ESGPubMapConv:
         Returns: file records.  assumes that the files all belong to the same dataset
         '''
         if len(self.map_data_arr) == 0 and not self.silent:
-            print("WARNING: empty map data")
+            publog.warning("Empty map data")
 
         ret = []
         for lst in self.map_data_arr:
@@ -66,8 +69,7 @@ class ESGPubMapConv:
         try:
             self.map_json = json.load(open(self.mapfilename))
         except:
-            print(f"Error opening json data {self.mapfilename}")
-            traceback.print_exc()
+            publog.error("Could not open json data {}".format(self.mapfilename))
 
     def map_entry(self, project, fs_root):
         norm_path = self.normalize_path(self.map_json['file'])

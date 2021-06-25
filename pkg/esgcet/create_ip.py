@@ -8,10 +8,9 @@ from esgcet.index_pub import ESGPubIndex
 import tempfile
 from esgcet.settings import VARIABLE_LIMIT
 from copy import deepcopy
-import logging
+import esgcet.logger as log
 
-publog = logging.getLogger('CREATE-IP')
-publog.setLevel('INFO')
+publog = log.return_logger('CREATE-IP')
 
 class CreateIP(GenericPublisher):
 

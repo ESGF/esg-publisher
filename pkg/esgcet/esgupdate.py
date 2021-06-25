@@ -5,6 +5,9 @@ import json
 import argparse
 import configparser as cfg
 from pathlib import Path
+import esgcet.logger as log
+
+publog = log.return_logger('esgupdate')
 
 
 def get_args():
@@ -36,17 +39,16 @@ def run():
     ini_file = a.cfg
     config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
-        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
     try:
         config.read(ini_file)
     except Exception as ex:
-        print("Error reading config file: " + str(ex))
+        publog.exception("Could not read config file")
         exit(1)
-
 
     if not a.silent:
         try:
@@ -94,7 +96,7 @@ def run():
         try:
             index_node = config['user']['index_node']
         except:
-            print("Index node not defined. Use the --index-node option or define in esg.ini.", file=sys.stderr)
+            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)
     else:
         index_node = a.index_node
@@ -102,7 +104,7 @@ def run():
     try:
         new_json_data = json.load(open(a.json_data))
     except:
-        print("Error opening json file. Exiting.", file=sys.stderr)
+        publog.exception("Could not open json file. Exiting.")
         exit(1)
 
     up = ESGPubUpdate(index_node, cert, silent=silent, verbose=verbose, verify=verify,
@@ -110,7 +112,7 @@ def run():
     try:
         up.run(new_json_data)
     except Exception as ex:
-        print("Error updating: " + str(ex), file=sys.stderr)
+        publog.exception("Failed to update record")
         exit(1)
 
 

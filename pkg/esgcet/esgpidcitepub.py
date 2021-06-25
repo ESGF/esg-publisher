@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 import configparser as cfg
 import os
+import esgcet.logger as log
+
+publog = log.return_logger('esgpidcitepub')
 
 
 def get_args():
@@ -33,15 +36,15 @@ def run():
     config = cfg.ConfigParser()
     config.read(ini_file)
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
-        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
     try:
         config.read(ini_file)
     except Exception as ex:
-        print("Error reading config file: " + str(ex))
+        publog.exception("Could not read config file")
         exit(1)
 
 
@@ -54,7 +57,7 @@ def run():
         try:
             data_node = config['user']['data_node']
         except:
-            print("Error: data node not supplied in config or command line. Exiting.", file=sys.stderr)
+            publog.exception("Data node not supplied in config or command line. Exiting.")
             exit(1)
 
     if not a.silent:
@@ -85,7 +88,7 @@ def run():
         try:
             data_node = config['user']['data_node']
         except:
-            print("Error: data node not supplied in config or command line. Exiting.", file=sys.stderr)
+            publog.exception("Data node not supplied in config or command line. Exiting.")
             exit(1)
     else:
         data_node = a.data_node
@@ -97,13 +100,13 @@ def run():
     try:
         pid_creds = json.loads(config['user']['pid_creds'])
     except:
-        print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+        publog.exception("PID credentials not defined. Define in config file esg.ini.")
         exit(1)
 
     try:
         out_json_data = json.load(open(a.json_data))
     except:
-        print("Error opening JSON file. Exiting.", file=sys.stderr)
+        publog.exception("Could not open JSON file. Exiting.")
         exit(1)
 
     pid = ESGPubPidCite(out_json_data, pid_creds, data_node, test=test, silent=silent,
@@ -112,7 +115,7 @@ def run():
     try:
         new_json_data = pid.do_pidcite()
     except Exception as ex:
-        print("Error assigning pid or running activity check: " + str(ex))
+        publog.exception("Failed assigning pid or running activity check")
         exit(1)
 
     if p:

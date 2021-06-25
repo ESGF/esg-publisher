@@ -6,10 +6,9 @@ import sys
 from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
-import logging
+import esgcet.logger as log
 
-publog = logging.getLogger('Publisher')
-publog.setLevel('INFO')
+publog = log.return_logger('Publisher')
 
 def check_files(files):
     for file in files:

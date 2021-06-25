@@ -1,9 +1,8 @@
 import sys, json, os
-import logging
+import esgcet.logger as log
 
+publog = log.return_logger('Activity Check')
 
-publog = logging.getLogger('Activity Check')
-publog.setLevel('INFO')
 
 class FieldCheck(object):
 

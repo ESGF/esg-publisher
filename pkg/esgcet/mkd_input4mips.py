@@ -1,5 +1,9 @@
 from esgcet.mk_dataset import ESGPubMakeDataset
 from esgcet.settings import GA, GA_DELIMITED
+import esgcet.logger as log
+
+publog = log.return_logger('Make Dataset input4MIPs')
+
 
 class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
 

@@ -2,6 +2,9 @@ from esgcet.pub_client import publisherClient
 import sys, json, requests
 from datetime import datetime
 from pathlib import Path
+import esgcet.logger as log
+
+publog = log.return_logger('Update Record')
 
 ''' Handles setting latest=false for previously published versions, includes finding those in the index
 '''
@@ -62,7 +65,7 @@ class ESGPubUpdate():
         """
         update_rec = self.gen_hide_xml(dsetid, type)
         if self.verbose:
-            print(update_rec)
+            publog.info(update_rec)
         self.pubCli.update(update_rec)
 
     def run(self, input_rec):
@@ -77,7 +80,7 @@ class ESGPubUpdate():
             dset_idx = 0
 
         if not input_rec[dset_idx]['type'] == 'Dataset':
-            print("Error: could not find the Dataset record.  Malformed input, exiting!", file=sys.stderr)
+            publog.error("Could not find the Dataset record.  Malformed input, exiting!")
             exit(1)
 
         mst = input_rec[dset_idx]['master_id']
@@ -87,13 +90,13 @@ class ESGPubUpdate():
         url = self.SEARCH_TEMPLATE.format(self.index_node, dnode, mst)
 
         if self.verbose:
-            print(f"Search Url: '{url}'")
+            publog.info("Search Url: '{}'".format(url))
         resp = requests.get(url, verify=self.verify)
 
         if self.verbose:
-            print(resp.text)
+            publog.info(resp.text)
         if not resp.status_code == 200:
-            print(f'Error: received {resp.status_code} from index server.', file=sys.stderr)
+            publog.error('Received {} from index server.'.format(resp.status_code))
             exit(1)
 
         res = json.loads(resp.text)
@@ -105,9 +108,9 @@ class ESGPubUpdate():
             self.update_core(dsetid,"datasets")
             self.update_core(dsetid, "files")
             if not self.silent:
-                print(f'INFO: Found previous version, updating the record: {dsetid}')
+                publog.info('INFO: Found previous version, updating the record: {}'.format(dsetid))
 
         else:
             if not self.silent:
                 version = input_rec[dset_idx]['version']
-                print(f'INFO: First dataset version for {mst}: v{version}.)')
+                publog.info('First dataset version for {}: v{}.)'.format(mst, version))

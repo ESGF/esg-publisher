@@ -5,6 +5,9 @@ import json
 import argparse
 import configparser as cfg
 from pathlib import Path
+import esgcet.logger as log
+
+publog = log.return_logger('esgunpublish')
 
 
 def get_args():
@@ -31,17 +34,16 @@ def run():
     ini_file = a.cfg
     config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
-        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
     try:
         config.read(ini_file)
     except Exception as ex:
-        print("Error reading config file: " + str(ex))
+        publog.exception("Could not read config file")
         exit(1)
-
 
     if a.cert == "./cert.pem":
         try:
@@ -55,7 +57,7 @@ def run():
         try:
             index_node = config['user']['index_node']
         except:
-            print("Index node not defined. Use the --index-node option or define in esg.ini.", file=sys.stderr)
+            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)
     else:
         index_node = a.index_node
@@ -64,7 +66,7 @@ def run():
         try:
             data_node = config['user']['data_node']
         except:
-            print("Data node not defined. Use the --data-node option or define in esg.ini.", file=sys.stderr)
+            publog.exception("Data node not defined. Use the --data-node option or define in esg.ini.")
             exit(1)
     else:
         data_node = a.data_node
@@ -79,7 +81,7 @@ def run():
     try:
         upub.run([dset_id, d, data_node, index_node, cert])
     except Exception as ex:
-        print("Error unpublishing: " + str(ex), file=sys.stderr)
+        publog.exception("Failed to unpublish")
         exit(1)
 
 

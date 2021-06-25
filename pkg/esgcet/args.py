@@ -4,12 +4,11 @@ import os, sys, json
 import esgcet.esgmigrate as em
 import configparser as cfg
 from esgcet.settings import *
-import logging
+import esgcet.logger as log
 
+publog = log.return_logger('Settings')
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
-publog = logging.getLogger('Settings')
-publog.setLevel('INFO')
 
 
 class PublisherArgs:
@@ -253,3 +252,5 @@ class PublisherArgs:
                 exit(1)
 
         return argdict
+
+

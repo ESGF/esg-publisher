@@ -6,10 +6,10 @@ from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
 import sys
-import logging
+import esgcet.logger as log
 
-publog = logging.getLogger('CMIP6')
-publog.setLevel('INFO')
+publog = log.return_logger('CMIP6')
+
 
 class cmip6(GenericPublisher):
 

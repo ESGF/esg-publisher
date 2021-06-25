@@ -4,10 +4,10 @@ from esgcet.mkd_cmip5 import ESGPubMKDCmip5
 from esgcet.settings import VARIABLE_LIMIT
 import logging
 import tempfile
+import esgcet.logger as log
 
+publog = log.return_logger('CMIP5')
 
-publog = logging.getLogger('CMIP5')
-publog.setLevel('INFO')
 
 class cmip5(CreateIP):
 
