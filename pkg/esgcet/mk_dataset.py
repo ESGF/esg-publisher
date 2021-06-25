@@ -272,7 +272,6 @@ class ESGPubMakeDataset:
                         if self.variable_name == "variable_id":
                             record["variable"] = "Multiple"
 
->>>>>>> Stashed changes
             else:
                 self.eprint("TODO check project settings for variable extraction")
                 record[self.variable_name] = "Multiple"
