@@ -8,7 +8,10 @@ from esgcet.index_pub import ESGPubIndex
 import tempfile
 from esgcet.settings import VARIABLE_LIMIT
 from copy import deepcopy
+import logging
 
+publog = logging.getLogger('CREATE-IP')
+publog.setLevel('INFO')
 
 class CreateIP(GenericPublisher):
 
@@ -43,10 +46,10 @@ class CreateIP(GenericPublisher):
             self.scans.append(
                 tempfile.NamedTemporaryFile())  # create a temporary file which is deleted afterward for autocurator
             scan = self.scans[-1].name
-            print(autstr.format(scan, destpath, var))
+            publog.info("Autocurator command: " + autstr.format(scan, destpath, var))
             stat = os.system(autstr.format(scan, destpath, var))
             if os.WEXITSTATUS(stat) != 0:
-                print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
+                publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
                 self.cleanup()
                 exit(os.WEXITSTATUS(stat))
 
@@ -60,7 +63,7 @@ class CreateIP(GenericPublisher):
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(deepcopy(out_json_data)) # herein lies the issue, copy hasn't fixed it
             except Exception as ex:
-                print("Error making dataset: " + str(ex), file=sys.stderr)
+                logging.exception("Failed to make dataset")
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables
@@ -77,7 +80,7 @@ class CreateIP(GenericPublisher):
         try:
             up.run(self.master_dataset)
         except Exception as ex:
-            print("Error updating: " + str(ex), file=sys.stderr)
+            publog.exception("Failed to update record")
             self.cleanup()
             exit(1)
 
@@ -86,6 +89,6 @@ class CreateIP(GenericPublisher):
         try:
             ip.do_publish(self.master_dataset)
         except Exception as ex:
-            print("Error running index pub: " + str(ex), file=sys.stderr)
+            publog.exception("Failed to publish to index node")
             self.cleanup()
             exit(1)

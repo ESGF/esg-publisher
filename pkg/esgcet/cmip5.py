@@ -2,9 +2,12 @@ import sys, os
 from esgcet.create_ip import CreateIP
 from esgcet.mkd_cmip5 import ESGPubMKDCmip5
 from esgcet.settings import VARIABLE_LIMIT
-
+import logging
 import tempfile
 
+
+publog = logging.getLogger('CMIP5')
+publog.setLevel('INFO')
 
 class cmip5(CreateIP):
 
@@ -30,10 +33,10 @@ class cmip5(CreateIP):
             self.scans.append(
                 tempfile.NamedTemporaryFile())  # create a temporary file which is deleted afterward for autocurator
             scan = self.scans[-1].name
-            print(autstr.format(scan, destpath))
+            publog.info("Autocurator command: " + autstr.format(scan, destpath))
             stat = os.system(autstr.format(scan, destpath))
             if os.WEXITSTATUS(stat) != 0:
-                print("Error running autocurator, exited with exit code: " + str(os.WEXITSTATUS(stat)), file=sys.stderr)
+                publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
                 self.cleanup()
                 exit(os.WEXITSTATUS(stat))
 
@@ -47,7 +50,7 @@ class cmip5(CreateIP):
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(out_json_data)
             except Exception as ex:
-                print("Error making dataset: " + str(ex), file=sys.stderr)
+                publog.exception("Occured while making dataset.")
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables

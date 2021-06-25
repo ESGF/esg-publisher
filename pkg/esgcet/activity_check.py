@@ -1,5 +1,9 @@
 import sys, json, os
+import logging
 
+
+publog = logging.getLogger('Activity Check')
+publog.setLevel('INFO')
 
 class FieldCheck(object):
 
@@ -26,7 +30,8 @@ class FieldCheck(object):
  
         if self.check_fields(src_id, act_id):
             if not self.silent:
-                print("INFO: passed source_id registration test for {}".format(src_id))
+                publog.info("Passed source_id registration test for {}".format(src_id))
         else:
-            print("ERROR: source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id), file=sys.stderr)
-            print("If you think this message has been received in error, please update your CV source repository", file=sys.stderr)
+            publog.error("Source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))
+            publog.info("If you think this message has been received in error, please update your CV source repository")
+            raise UserWarning

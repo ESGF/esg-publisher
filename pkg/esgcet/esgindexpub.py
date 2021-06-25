@@ -3,7 +3,10 @@ from esgcet.index_pub import ESGPubIndex
 import argparse
 import configparser as cfg
 from pathlib import Path
+import logging
 
+publog = logging.getLogger('esgindexpub')
+publog.setLevel('INFO')
 
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
@@ -33,7 +36,7 @@ def run():
 
     ini_file = a.cfg
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
         print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
