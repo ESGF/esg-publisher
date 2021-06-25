@@ -250,7 +250,7 @@ class ESGPubMakeDataset:
                             init_lst.append("variable")
                         for kid in init_lst:
                             record[kid] = []
-                        
+                        units_list = []
                         for vk in var_list:
                             if not vk in VARIABLE_EXCLUDES:
                                 var_rec = scanobj["variables"][vk]
@@ -258,14 +258,15 @@ class ESGPubMakeDataset:
                                     record["variable_long_name"].append(var_rec["long_name"])
                                 elif "info" in var_rec:
                                     record["variable_long_name"].append(var_rec["info"])
-                                if "standard_name" in var_rec:
+                                if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
                                     record["cf_standard_name"].append(var_rec["standard_name"])
-                                record["variable_units"].append(var_rec["units"])
+                                if var_rec["units"] != "1"
+                                    unit_list.append(var_rec["units"])
                                 record["variable"].append(vk)
 
                         if self.variable_name == "variable_id":
                             record[self.variable_name] = "Multiple"
-
+                        record["variable_units"].append(list(set(units_list)))
                     else:
                         self.eprint("TODO check project settings for variable extraction")
                         record[self.variable_name] = "Multiple"
