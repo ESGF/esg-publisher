@@ -229,7 +229,7 @@ class ESGPubMakeDataset:
             if self.variable_name in record:
 
                 vid = record[self.variable_name]
-                try:
+                if vid in scanobj["variables"]:
                     var_rec = scanobj["variables"][vid]
                     if "long_name" in var_rec.keys():
                         record["variable_long_name"] = var_rec["long_name"]
@@ -239,12 +239,45 @@ class ESGPubMakeDataset:
                         record["cf_standard_name"] = var_rec["standard_name"]
                     record["variable_units"] = var_rec["units"]
                     record[self.variable_name] = vid
-                except Exception as ex:
-                    self.eprint("Variable could not be extracted, exception encountered: " + str(ex))
-                    record[self.variable_name] = "none"
+                    if self.variable_name == "variable_id":
+                        record["variable"] = vid
+
+                else:
+                    var_list = list(scanobj["variables"].keys())
+                    if len(var_list) < VARIABLE_LIMIT:
+                        init_lst = [self.variable_name, "variable_long_name", "cf_standard_name", "variable_units"]
+                        if "variable_id" in init_lst:
+                            init_lst.append("variable")
+                        for kid in init_lst:
+                            record[kid] = []
+                        
+                        for vk in var_list:
+                            if not vk in VARIABLE_EXCLUDES:
+                                var_rec = scanobj["variables"][vk]
+                                if "long_name" in var_rec.keys():
+                                    record["variable_long_name"].append(var_rec["long_name"])
+                                elif "info" in var_rec:
+                                    record["variable_long_name"].append(var_rec["info"])
+                                if "standard_name" in var_rec:
+                                    record["cf_standard_name"].append(var_rec["standard_name"])
+                                record["variable_units"].append(var_rec["units"])
+                                record["variable"].append(vk)
+
+                        if self.variable_name == "variable_id":
+                            record[self.variable_name] = "Multiple"
+
+                    else:
+                        self.eprint("TODO check project settings for variable extraction")
+                        record[self.variable_name] = "Multiple"
+                        if self.variable_name == "variable_id":
+                            record["variable"] = "Multiple"
+
+>>>>>>> Stashed changes
             else:
                 self.eprint("TODO check project settings for variable extraction")
                 record[self.variable_name] = "Multiple"
+                if self.variable_name == "variable_id":
+                    record["variable"] = "Multiple"
         else:
             self.eprint("WARNING: no variables were extracted (is this CF compliant?)")
 
