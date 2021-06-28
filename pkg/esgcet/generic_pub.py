@@ -3,8 +3,9 @@ from esgcet.mkd_non_nc import ESGPubMKDNonNC
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
 import sys
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Generic Non-NetCDF Publisher')
 
 

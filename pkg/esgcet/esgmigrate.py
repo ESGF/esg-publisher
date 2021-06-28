@@ -6,8 +6,9 @@ import shutil
 from datetime import date
 from pathlib import Path
 import json
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('esgmigrate')
 
 DEFAULT_ESGINI = '/esg/config/esgcet/'

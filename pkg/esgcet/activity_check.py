@@ -1,6 +1,7 @@
 import sys, json, os
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Activity Check')
 
 

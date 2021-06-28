@@ -5,8 +5,9 @@ import os
 import configparser as cfg
 import argparse
 from pathlib import Path
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('esgmapconv')
 
 

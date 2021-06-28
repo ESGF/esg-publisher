@@ -2,8 +2,9 @@ from esgcet.pub_client import publisherClient
 import sys, json, requests
 from datetime import datetime
 from pathlib import Path
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Update Record')
 
 ''' Handles setting latest=false for previously published versions, includes finding those in the index

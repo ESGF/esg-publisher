@@ -4,8 +4,9 @@ from esgcet.mkd_cmip5 import ESGPubMKDCmip5
 from esgcet.settings import VARIABLE_LIMIT
 import logging
 import tempfile
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('CMIP5')
 
 

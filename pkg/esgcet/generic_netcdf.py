@@ -3,8 +3,9 @@ import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
 import traceback
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Generic NetCDF Publisher')
 
 class GenericPublisher(BasePublisher):

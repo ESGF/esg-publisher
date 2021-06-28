@@ -1,8 +1,9 @@
 import sys, json
 from esgcet.settings import PID_PREFIX, PID_EXCHANGE, HTTP_SERVICE, CITATION_URLS, PID_URL
 import traceback
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('PID Citation')
 
 silent = False

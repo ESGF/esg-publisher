@@ -8,8 +8,9 @@ from esgcet.settings import *
 from pathlib import Path
 from esgcet.mk_dataset import ESGPubMakeDataset
 from esgcet.mkd_create_ip import ESGPubMKDCreateIP
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Make Dataset CMIP5')
 
 

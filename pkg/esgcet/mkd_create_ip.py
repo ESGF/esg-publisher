@@ -7,8 +7,9 @@ from datetime import datetime, timedelta
 from esgcet.settings import *
 from pathlib import Path
 from esgcet.mk_dataset import ESGPubMakeDataset
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Make Dataset CREATE-IP')
 
 

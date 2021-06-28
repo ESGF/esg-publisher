@@ -1,8 +1,9 @@
 import json
 from datetime import datetime
 import traceback
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Mapfile Conversion')
 
 class ESGPubMapConv:

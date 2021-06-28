@@ -1,8 +1,9 @@
 from esgcet.mkd_input4mips import ESGPubMKDinput4MIPs
 from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.cmip6 import cmip6
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('input4MIPs')
 
 class input4mips(cmip6):

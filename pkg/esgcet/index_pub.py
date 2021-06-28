@@ -1,6 +1,7 @@
 from esgcet.pub_client import publisherClient
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Index Publication')
 
 

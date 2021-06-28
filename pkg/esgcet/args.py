@@ -4,8 +4,9 @@ import os, sys, json
 import esgcet.esgmigrate as em
 import configparser as cfg
 from esgcet.settings import *
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('Settings')
 
 DEFAULT_ESGINI = '/esg/config/esgcet'

@@ -5,8 +5,9 @@ import json
 import argparse
 import configparser as cfg
 from pathlib import Path
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('esgunpublish')
 
 
