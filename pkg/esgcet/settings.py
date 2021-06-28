@@ -61,9 +61,7 @@ CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered' }}
 GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 
 # the prefix is found in the published urls that are backed by the path prefix below
-DATA_ROOTS = {'/esg/data' : 'esgf_data',
- '/p/user_pub/work' :  'user_pub_work', 
- '/p/css03/esgf_publish' : 'css03_data' }
+DATA_ROOTS = { }
 
 
 # a certificate file for the index, assumes in the CWD
@@ -110,3 +108,5 @@ GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
 DATA_TRANSFER_NODE = "aimsdtn4.llnl.gov"
 
 VARIABLE_LIMIT = 75
+
+VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
