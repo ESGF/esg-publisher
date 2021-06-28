@@ -7,6 +7,11 @@ from datetime import datetime, timedelta
 from esgcet.settings import *
 from pathlib import Path
 from esgcet.mk_dataset import ESGPubMakeDataset
+import esgcet.logger as logger
+
+log = logger.Logger()
+publog = log.return_logger('Make Dataset CREATE-IP')
+
 
 class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
@@ -74,8 +79,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
                     elif f == "experiment" and ga_val in self.source_ids:
                         self.dataset["source_id"] = ga_val
                     elif not self.silent:
-                        self.eprint("WARNING: {} does not agree!".format(f))
-                        self.eprint(ga_val)
+                        publog.warning("{} does not agree!\n".format(f) + ga_val)
             self.dataset[f] = parts[i]
         self.dataset[self.variable_name] = self.variable
 
@@ -97,7 +101,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             elif data[-1]["type"] == "Dataset":
                 idx = -1
             else:
-                self.eprint("No dataset record found. Exiting")
+                publog.error("No dataset record found. Exiting")
                 exit(-4)
             dataset = data[idx]
             if self.variable_name in dataset and dataset[self.variable_name] not in vids:
@@ -122,6 +126,5 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             last_dset["variable_units"] = v_units
         last_rec[idx] = last_dset
         if self.verbose:
-            print("Aggregate record:")
-            print(json.dumps(last_dset, indent=4))
+            publog.info("Aggregate record:\n" + json.dumps(last_dset, indent=4))
         return last_rec

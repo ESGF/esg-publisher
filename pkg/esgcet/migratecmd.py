@@ -1,6 +1,9 @@
 from esgcet.esgmigrate import ESGPubMigrate
 import argparse, sys, os
 from pathlib import Path
+import esgcet.logger as log
+
+publog = log.return_logger('esgmigrate')
 
 
 DEFAULT_ESGINI = '/esg/config/esgcet/'
@@ -30,9 +33,11 @@ def main():
     project = a.project
     filepath = a.dest
 
-    em = ESGPubMigrate(ini_path, filepath, silent=silent, verbose=verbose)
-
-    em.migrate(project)
+    try:
+        em = ESGPubMigrate(ini_path, filepath, silent=silent, verbose=verbose)
+        em.migrate(project)
+    except:
+        publog.exception("Failed to migrate old config")
 
 
 if __name__ == "__main__":

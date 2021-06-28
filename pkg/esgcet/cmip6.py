@@ -6,6 +6,10 @@ from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
 import sys
+import esgcet.logger as logger
+
+log = logger.Logger()
+publog = log.return_logger('CMIP6')
 
 
 class cmip6(GenericPublisher):
@@ -24,14 +28,14 @@ class cmip6(GenericPublisher):
 
     def prepare_internal(self, json_map, cmor_tables):
         try:
-            print("iterating through filenames for PrePARE (internal version)...")
+            publog.info("Iterating through filenames for PrePARE (internal version)...")
             validator = PrePARE.PrePARE
             for info in json_map:
                 filename = info[1]
                 process = validator.checkCMIP6(cmor_tables)
                 process.ControlVocab(filename)
         except Exception as ex:
-            print("Error with PrePARE: " + str(ex), file=sys.stderr)
+            publog.exception("PrePARE failed")
             self.cleanup()
             exit(1)
 
@@ -44,7 +48,7 @@ class cmip6(GenericPublisher):
             check.run_check(out_json_data)
             new_json_data = pid.do_pidcite()
         except Exception as ex:
-            print("Error assigning pid or running activity check: " + str(ex))
+            publog.exception("Assigning pid or running activity check failed")
             self.cleanup()
             exit(1)
         return new_json_data
@@ -53,7 +57,7 @@ class cmip6(GenericPublisher):
 
         # step one: convert mapfile
         if not self.silent:
-            print("Converting mapfile...")
+            publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
         # step two: PrePARE
@@ -61,30 +65,30 @@ class cmip6(GenericPublisher):
 
         # step three: autocurator
         if not self.silent:
-            print("Done.\nRunning autocurator...")
+            publog.info("Done.\nRunning autocurator...")
         self.autocurator(map_json_data)
 
         # step four: make dataset
         if not self.silent:
-            print("Done.\nMaking dataset...")
+            publog.info("Done.\nMaking dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
 
         # step five: assign PID
         if not self.silent:
-            print("Done. Assigning PID...")
+            publog.info("Done. Assigning PID...")
         new_json_data = self.pid(out_json_data)
 
         # step six: update record if exists
         if not self.silent:
-            print("Done.\nUpdating...")
+            publog.info("Done.\nUpdating...")
         self.update(new_json_data)
 
         # step seven: publish to database
         if not self.silent:
-            print("Done.\nRunning index pub...")
+            publog.info("Done.\nRunning index pub...")
         self.index_pub(new_json_data)
 
         if not self.silent:
-            print("Done. Cleaning up.")
+            publog.info("Done. Cleaning up.")
         self.cleanup()

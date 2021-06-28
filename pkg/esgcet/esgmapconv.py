@@ -5,6 +5,10 @@ import os
 import configparser as cfg
 import argparse
 from pathlib import Path
+import esgcet.logger as logger
+
+log = logger.Logger()
+publog = log.return_logger('esgmapconv')
 
 
 def get_args():
@@ -27,15 +31,15 @@ def run():
     ini_file = a.cfg
     config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
-        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
     try:
         config.read(ini_file)
     except Exception as ex:
-        print("Error reading config file: " + str(ex))
+        publog.exception("Could not read config file")
         exit(1)
 
     p = True
@@ -57,7 +61,7 @@ def run():
     try:
         fullmap = a.map
     except:
-        print("Error with argparse. Exiting.", file=sys.stderr)
+        publog.exception("Argparse error. Exiting.")
         exit(1)
 
     mapconv = ESGPubMapConv(fullmap)
@@ -66,7 +70,7 @@ def run():
         map_json_data = mapconv.mapfilerun()
 
     except Exception as ex:
-        print("Error with converting mapfile: " + str(ex), file=sys.stderr)
+        publog.exception("Failed to convert mapfile")
         exit(1)
 
     if p:

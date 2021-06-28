@@ -1,4 +1,8 @@
 from esgcet.pub_client import publisherClient
+import esgcet.logger as logger
+
+log = logger.Logger()
+publog = log.return_logger('Index Publication')
 
 
 class ESGPubIndex:
@@ -32,6 +36,6 @@ class ESGPubIndex:
 
             new_xml = self.gen_xml(rec)
             if self.verbose:
-                print(new_xml)
+                publog.info(new_xml)
             self.pubCli.publish(new_xml)
 

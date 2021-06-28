@@ -6,7 +6,10 @@ import sys
 from esgcet.settings import *
 import configparser as cfg
 from pathlib import Path
+import esgcet.logger as logger
 
+log = logger.Logger()
+publog = log.return_logger('Publisher')
 
 def check_files(files):
     for file in files:
@@ -14,7 +17,7 @@ def check_files(files):
             myfile = open(file, 'r')
             myfile.close()
         except Exception as ex:
-            print("Error opening file " + file + ": " + str(ex))
+            publog.exception("Error opening file " + file + ". Exiting.")
             exit(1)
 
 
@@ -33,7 +36,7 @@ def run(fullmap, pub_args):
 
     argdict = pub_args.get_dict(fullmap)
 
-    if argdict["proj"]:
+    if "proj" in argdict:
         p = argdict["proj"]
     project = p.lower()
     user_defined = False
@@ -63,11 +66,11 @@ def run(fullmap, pub_args):
         proj = BasePublisher(argdict)
     elif project == "generic" or project == "cordex" or user_defined or project == "none":
         if project == "none":
-            print("Using default settings, project not specified.")
+            publog.info("Using default settings, project not specified.")
         from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher(argdict)
     else:
-        print("Project " + project + " not supported.\nOpen an issue on our github to request additional project support.")
+        publog.error("Project " + project + " not supported.\nOpen an issue on our github to request additional project support.")
         exit(1)
 
     # ___________________________________________
@@ -81,7 +84,7 @@ def main():
     pub = pub_args.get_args()
     maps = pub.map  # full mapfile path
     if maps is None:
-        print("Missing argument --map, use " + sys.argv[0] + " --help for usage.", file=sys.stderr)
+        publog.error("Missing argument --map, use " + sys.argv[0] + " --help for usage.")
         exit(1)
     for m in maps:
         if os.path.isdir(m):

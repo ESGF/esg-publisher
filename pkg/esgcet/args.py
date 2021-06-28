@@ -4,7 +4,10 @@ import os, sys, json
 import esgcet.esgmigrate as em
 import configparser as cfg
 from esgcet.settings import *
+import esgcet.logger as logger
 
+log = logger.Logger()
+publog = log.return_logger('Settings')
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
@@ -54,15 +57,15 @@ class PublisherArgs:
         ini_file = pub.cfg
         config = cfg.ConfigParser()
         if not os.path.exists(ini_file):
-            print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+            publog.error("Config file not found. " + ini_file + " does not exist.")
             exit(1)
         if os.path.isdir(ini_file):
-            print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+            publog.error("Config file path is a directory. Please use a complete file path, exiting.")
             exit(1)
         try:
             config.read(ini_file)
         except Exception as ex:
-            print("Error reading config file: " + str(ex))
+            publog.exception("reading config file")
             exit(1)
 
         if pub.proj != "":
@@ -109,7 +112,8 @@ class PublisherArgs:
         if pub.autocurator_path is None:
             try:
                 autocurator = config['user']['autoc_path']
-                if autocurator == "autocurator":
+                if autocurator == "autocurator" or autocurator == "none":
+                    autocurator = "autocurator"
                     conda_auto = True
             except:
                 autocurator = "autocurator"
@@ -121,7 +125,7 @@ class PublisherArgs:
             try:
                 index_node = config['user']['index_node']
             except:
-                print("Index node not defined. Use the --index-node option or define in esg.ini.", file=sys.stderr)
+                publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
                 exit(1)
         else:
             index_node = pub.index_node
@@ -130,17 +134,17 @@ class PublisherArgs:
             try:
                 data_node = config['user']['data_node']
             except:
-                print("Data node not defined. Use --data-node option or define in esg.ini.", file=sys.stderr)
+                publog.exception("Data node not defined. Use --data-node option or define in esg.ini.")
                 exit(1)
         else:
             data_node = pub.data_node
         try:
             data_roots = json.loads(config['user']['data_roots'])
             if data_roots == 'none':
-                print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
+                publog.error("Data roots undefined. Define in esg.ini to create file metadata.")
                 exit(1)
         except:
-            print("Data roots undefined. Define in esg.ini to create file metadata.", file=sys.stderr)
+            publog.exception("Data roots undefined. Define in esg.ini to create file metadata.")
             exit(1)
 
         try:
@@ -161,7 +165,7 @@ class PublisherArgs:
         except:
             pass
         if pub.set_replica and pub.no_replica:
-            print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
+            publog.error("Replica publication simultaneously set and disabled.")
             exit(1)
         elif pub.set_replica:
             replica = True
@@ -175,11 +179,10 @@ class PublisherArgs:
                 elif 'no' in r or 'false' in r:
                     replica = False
                 else:
-                    print("Config file error: set_replica must be true, false, yes, or no.", file=sys.stderr)
+                    publog.error("Config file error: set_replica must be true, false, yes, or no.")
                     exit(1)
             except:
-                print("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.",
-                      file=sys.stderr)
+                publog.exception("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.")
                 exit(1)
 
         test = False
@@ -218,17 +221,20 @@ class PublisherArgs:
             non_nc = False
 
         if globus == "none" and not silent:
-            print("INFO: no Globus UUID defined.", file=sys.stderr)
+            publog.info("No Globus UUID defined.")
 
         if dtn == "none" and not silent:
-            print("INFO: no data transfer node defined.", file=sys.stderr)
+            publog.info("No data transfer node defined.")
 
         argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
                    "cert": cert,
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
-                   "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica, "proj": project,
+                   "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
                    "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc}
+
+        if project and project != "none":
+            argdict["proj"] = project
 
         project = project.lower()
         if project == "cmip6" or project == "input4mips":
@@ -236,15 +242,16 @@ class PublisherArgs:
                 try:
                     argdict["cmor_tables"] = config['user']['cmor_path']
                 except:
-                    print("No path for CMOR tables defined. Use --cmor-tables option or define in config file.",
-                          file=sys.stderr)
+                    publog.exception("No path for CMOR tables defined. Use --cmor-tables option or define in config file.")
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
             try:
                 argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
             except:
-                print("PID credentials not defined. Define in config file esg.ini.", file=sys.stderr)
+                publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
 
         return argdict
+
+

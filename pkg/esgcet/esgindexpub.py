@@ -3,6 +3,10 @@ from esgcet.index_pub import ESGPubIndex
 import argparse
 import configparser as cfg
 from pathlib import Path
+import esgcet.logger as logger
+
+log = logger.Logger()
+publog = log.return_logger('esgindexpub')
 
 
 def get_args():
@@ -33,16 +37,16 @@ def run():
 
     ini_file = a.cfg
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
-        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
     config = cfg.ConfigParser()
     try:
         config.read(ini_file)
     except Exception as ex:
-        print("Error reading config file: " + str(ex))
+        publog.exception("config file")
         exit(1)
 
     if not a.silent:
@@ -81,7 +85,7 @@ def run():
         try:
             index_node = config['user']['index_node']
         except:
-            print("Index node not defined. Use the --index-node option or define in esg.ini.", file=sys.stderr)
+            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)
     else:
         index_node = a.index_node
@@ -100,12 +104,12 @@ def run():
     try:
         new_json_data = json.load(open(a.json_data))
     except:
-        print("Error opening json file. Exiting.", file=sys.stderr)
+        publog.exception("Could not open json file. Exiting.")
         exit(1)
     try:
         ip.do_publish(new_json_data)
     except Exception as ex:
-        print("Error running index pub: " + str(ex), file=sys.stderr)
+        publog.exception("Failed to publish to index node")
         exit(1)
 
 
