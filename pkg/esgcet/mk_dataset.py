@@ -238,6 +238,8 @@ class ESGPubMakeDataset:
                         record["cf_standard_name"] = var_rec["standard_name"]
                     record["variable_units"] = var_rec["units"]
                     record[self.variable_name] = vid
+                    if self.variable_name == "variable_id":
+                        record["variable"] = vid
                 except Exception as ex:
                     publog.exception("Variable could not be extracted, exception encountered")
                     record[self.variable_name] = "none"
