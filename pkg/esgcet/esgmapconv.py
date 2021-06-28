@@ -47,8 +47,6 @@ def run():
         p = False
         outfile = a.out_file
 
-
-
     proj = None
     if a.proj != "":
         proj = a.proj

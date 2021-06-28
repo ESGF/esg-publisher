@@ -7,7 +7,6 @@ import tempfile
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('CMIP5')
 
 
 class cmip5(CreateIP):
@@ -16,6 +15,7 @@ class cmip5(CreateIP):
         super().__init__(argdict)
         self.variable_limit = 100
         self.autoc_args = ' --out_pretty --out_json {} --files "{}/*.nc"'
+        self.publog = log.return_logger('CMIP5', self.silent, self.verbose)
 
     def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
@@ -34,10 +34,10 @@ class cmip5(CreateIP):
             self.scans.append(
                 tempfile.NamedTemporaryFile())  # create a temporary file which is deleted afterward for autocurator
             scan = self.scans[-1].name
-            publog.info("Autocurator command: " + autstr.format(scan, destpath))
+            self.publog.info("Autocurator command: " + autstr.format(scan, destpath))
             stat = os.system(autstr.format(scan, destpath))
             if os.WEXITSTATUS(stat) != 0:
-                publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
+                self.publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
                 self.cleanup()
                 exit(os.WEXITSTATUS(stat))
 
@@ -51,7 +51,7 @@ class cmip5(CreateIP):
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(out_json_data)
             except Exception as ex:
-                publog.exception("Occured while making dataset.")
+                self.publog.exception("Occured while making dataset.")
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables

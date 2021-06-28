@@ -6,7 +6,6 @@ import traceback
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('Generic NetCDF Publisher')
 
 class GenericPublisher(BasePublisher):
 
@@ -17,6 +16,7 @@ class GenericPublisher(BasePublisher):
         super().__init__(argdict)
         self.autoc_command = argdict["autoc_command"]
         self.MKD_Construct = ESGPubMakeDataset
+        self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
 
     def check_files(self):
         pass
@@ -34,7 +34,7 @@ class GenericPublisher(BasePublisher):
         autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
         stat = os.system(autstr.format(self.scanfn, destpath))
         if os.WEXITSTATUS(stat) != 0:
-            publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
+            self.publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
             self.cleanup()
             exit(os.WEXITSTATUS(stat))
 
@@ -44,7 +44,7 @@ class GenericPublisher(BasePublisher):
         try:
             out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)
         except Exception as ex:
-            publog.exception("Failed to make dataset")
+            self.publog.exception("Failed to make dataset")
             self.cleanup()
             exit(1)
         return out_json_data
@@ -52,30 +52,24 @@ class GenericPublisher(BasePublisher):
     def workflow(self):
 
         # step one: convert mapfile
-        if not self.silent:
-            publog.info("Converting mapfile...")
+        self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
         # step two: autocurator
-        if not self.silent:
-            publog.info("Done.\nRunning autocurator...")
+        self.publog.info("Running autocurator...")
         self.autocurator(map_json_data)
 
         # step three: make dataset
-        if not self.silent:
-            publog.info("Done.\nMaking dataset...")
+        self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
         # step four: update record if exists
-        if not self.silent:
-            publog.info("Done.\nUpdating...")
+        self.publog.info("Updating...")
         self.update(out_json_data)
 
         # step five: publish to database
-        if not self.silent:
-            publog.info("Done.\nRunning index pub...")
+        self.publog.info("Running index pub...")
         self.index_pub(out_json_data)
 
-        if not self.silent:
-            publog.info("Done. Cleaning up.")
+        self.publog.info("Done. Cleaning up.")
         self.cleanup()

@@ -9,7 +9,6 @@ import json
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('esgmigrate')
 
 DEFAULT_ESGINI = '/esg/config/esgcet/'
 CONFIG_FN_DEST = "~/.esg/esg.ini"
@@ -26,6 +25,7 @@ class ESGPubMigrate(object):
         self.silent = silent
         self.verbose = verbose
         self.save_path = newpath
+        self.publog = log.return_logger('esgmigrate', silent, verbose)
 
     def project_migrate(self, project):
 
@@ -40,22 +40,21 @@ class ESGPubMigrate(object):
             ret['CONST_ATTR'] = { x[0] : x[1] for x in SP.get_options_from_table('category_defaults') }
         except:
             ret['CONST_ATTR'] = {}
-            if self.verbose:
-                publog.info("No category defaults found for {}".format(project))
+            self.publog.debug("No category defaults found for {}".format(project))
         return ret
 
 
     def migrate(self, project=None):
 
         if not os.path.exists(self.ini_path + "esg.ini"):
-            publog.error("Old config " + self.ini_path + "esg.ini not found or unreadable.")
+            self.publog.error("Old config " + self.ini_path + "esg.ini not found or unreadable.")
             exit(1)
 
         try:
             sp = SectionParser('config:cmip6')
             sp.parse(self.ini_path)
         except Exception as e:
-            publog.exception("Exception encountered.")
+            self.publog.exception("Exception encountered.")
             return
 
         thredds_url = sp.get("thredds_url")
@@ -112,15 +111,14 @@ class ESGPubMigrate(object):
 
         CERT_FN = cert_base.replace('%(home)s', '~')
 
-        if self.verbose:
-            publog.info(str(dr_dict))
-            publog.info(str(pid_creds))
-            publog.info(data_node)
-            publog.info(index_node)
-            publog.info(CERT_FN)
-            publog.info(DATA_TRANSFER_NODE)
-            publog.info(GLOBUS_UUID)
-            publog.info(project)
+        self.publog.debug(str(dr_dict))
+        self.publog.debug(str(pid_creds))
+        self.publog.debug(data_node)
+        self.publog.debug(index_node)
+        self.publog.debug(CERT_FN)
+        self.publog.debug(DATA_TRANSFER_NODE)
+        self.publog.debug(GLOBUS_UUID)
+        self.publog.debug(project)
 
         project_config = {project: self.project_migrate(project)}
 

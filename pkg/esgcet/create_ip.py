@@ -11,7 +11,6 @@ from copy import deepcopy
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('CREATE-IP')
 
 class CreateIP(GenericPublisher):
 
@@ -24,6 +23,7 @@ class CreateIP(GenericPublisher):
         self.master_dataset = None
         self.variable_limit = 75
         self.autoc_args = ' --out_pretty --out_json {} --files "{}/{}_*.nc"'
+        self.publog = log.return_logger('CREATE-IP', self.silent, self.verbose)
 
     def cleanup(self):
         for scan in self.scans:
@@ -46,10 +46,10 @@ class CreateIP(GenericPublisher):
             self.scans.append(
                 tempfile.NamedTemporaryFile())  # create a temporary file which is deleted afterward for autocurator
             scan = self.scans[-1].name
-            publog.info("Autocurator command: " + autstr.format(scan, destpath, var))
+            self.publog.info("Autocurator command: " + autstr.format(scan, destpath, var))
             stat = os.system(autstr.format(scan, destpath, var))
             if os.WEXITSTATUS(stat) != 0:
-                publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
+                self.publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
                 self.cleanup()
                 exit(os.WEXITSTATUS(stat))
 
@@ -63,7 +63,7 @@ class CreateIP(GenericPublisher):
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(deepcopy(out_json_data)) # herein lies the issue, copy hasn't fixed it
             except Exception as ex:
-                logging.exception("Failed to make dataset")
+                self.publog.exception("Failed to make dataset")
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables
@@ -80,7 +80,7 @@ class CreateIP(GenericPublisher):
         try:
             up.run(self.master_dataset)
         except Exception as ex:
-            publog.exception("Failed to update record")
+            self.publog.exception("Failed to update record")
             self.cleanup()
             exit(1)
 
@@ -89,6 +89,6 @@ class CreateIP(GenericPublisher):
         try:
             ip.do_publish(self.master_dataset)
         except Exception as ex:
-            publog.exception("Failed to publish to index node")
+            self.publog.exception("Failed to publish to index node")
             self.cleanup()
             exit(1)

@@ -3,10 +3,13 @@ from esgcet.settings import GA, GA_DELIMITED
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('Make Dataset input4MIPs')
 
 
 class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
+
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+        super().__init__(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, limit_exceeded, user_project)
+        self.publog = log.return_logger('Make Dataset input4MIPs', silent, verbose)
 
     def xattr_handler(self):
         if not self.xattr:

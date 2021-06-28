@@ -6,7 +6,7 @@ class Logger:
     def __init__(self):
         pass
 
-    def return_logger(self, name, verbose=False, silent=False):
+    def return_logger(self, name, silent=False, verbose=False):
         publog = logging.getLogger(name)
         if silent:
             publog.setLevel(logging.WARNING)

@@ -11,6 +11,7 @@ import esgcet.logger as logger
 log = logger.Logger()
 publog = log.return_logger('Publisher')
 
+
 def check_files(files):
     for file in files:
         try:
@@ -65,7 +66,7 @@ def run(fullmap, pub_args):
         from esgcet.generic_pub import BasePublisher
         proj = BasePublisher(argdict)
     elif project == "generic" or project == "cordex" or user_defined or project == "none":
-        if project == "none":
+        if project == "none" and not argdict['silent']:
             publog.info("Using default settings, project not specified.")
         from esgcet.generic_netcdf import GenericPublisher
         proj = GenericPublisher(argdict)

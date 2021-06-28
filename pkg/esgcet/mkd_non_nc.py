@@ -8,12 +8,14 @@ from pathlib import Path
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('Make Non-NetCDF Dataset')
 
 
 class ESGPubMKDNonNC(ESGPubMakeDataset):
 
-
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+        super().__init__(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, limit_exceeded,
+                         user_project)
+        self.publog = log.return_logger('Make Non-NetCDF Dataset', silent, verbose)
 
     def get_dataset(self, mapdata):
         master_id, version = mapdata.split('#')
@@ -85,16 +87,14 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
         for key in xattrobj:
             self.dataset[key] = xattrobj[key]
 
-        if self.verbose:
-            publog.info("Record:\n" + json.dumps(self.dataset, indent=4))
-            print()
+        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
+        print()
 
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
-        if self.verbose:
-            publog.info('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
-            print()
+        self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
+        print()
 
         ret, sz, access = self.iterate_files(mapdict)
 

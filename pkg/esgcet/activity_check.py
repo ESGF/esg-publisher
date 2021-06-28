@@ -2,7 +2,6 @@ import sys, json, os
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('Activity Check')
 
 
 class FieldCheck(object):
@@ -13,6 +12,7 @@ class FieldCheck(object):
         self.sid_dict = jobj["source_id"]
         self.silent = silent
         self.idx = -1
+        self.publog = log.return_logger('Activity Check', silent=silent)
 
     def check_fields(self, source_id, activity_id):
 
@@ -29,9 +29,8 @@ class FieldCheck(object):
         act_id = input_rec[self.idx]['activity_drs']
  
         if self.check_fields(src_id, act_id):
-            if not self.silent:
-                publog.info("Passed source_id registration test for {}".format(src_id))
+            self.publog.info("Passed source_id registration test for {}".format(src_id))
         else:
-            publog.error("Source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))
-            publog.info("If you think this message has been received in error, please update your CV source repository")
+            self.publog.error("Source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))
+            self.publog.info("If you think this message has been received in error, please update your CV source repository")
             raise UserWarning

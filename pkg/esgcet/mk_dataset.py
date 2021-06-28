@@ -9,7 +9,6 @@ from pathlib import Path
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('Make Dataset')
 
 
 class ESGPubMakeDataset:
@@ -30,7 +29,6 @@ class ESGPubMakeDataset:
         else:
             raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -48,6 +46,7 @@ class ESGPubMakeDataset:
         self.DRS = None
         self.CONST_ATTR = None
         self.variable_name = "variable_id"
+        self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
 
     def set_project(self, project_in):
         self.project = project_in
@@ -101,8 +100,7 @@ class ESGPubMakeDataset:
             if f in scandata:
                 ga_val = scandata[f]
                 if not parts[i] == ga_val:
-                    if not self.silent:
-                        publog.warning("{} does not agree!".format(f))
+                    self.publog.warning("{} does not agree!".format(f))
             self.dataset[f] = parts[i]
 
         self.global_attributes(projkey, scandata)
@@ -134,8 +132,7 @@ class ESGPubMakeDataset:
                     facetval = scandata[gakey]
                     self.dataset[facetkey] = facetval
                 else:
-                    if not self.silent:
-                        publog.warning("GA to be mapped {} is missing!".format(facetkey))
+                    self.publog.warning("GA to be mapped {} is missing!".format(facetkey))
 
     def const_attr(self):
         if self.CONST_ATTR:
@@ -202,14 +199,14 @@ class ESGPubMakeDataset:
         rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.dataset["project"])
 
         if not proj_root in self.data_roots:
-            publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
+            self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
             exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
-            publog.warning("No files present")
+            self.publog.warning("No files present")
         if "datetime_start" in ret:
             ret.pop("datetime_start")
             ret.pop("datetime_end")
@@ -269,20 +266,19 @@ class ESGPubMakeDataset:
                             record["variable_units"] = list(set(units_list))
                             record["cf_standard_name"] = list(set(cf_list))
                     
-                                        record[self.variable_name] = "Multiple"
                         if self.variable_name == "variable_id":
                             record["variable"] = "Multiple"
-                            
+
                 except Exception as ex:
-                    publog.exception("Variable could not be extracted, exception encountered")
+                    self.publog.exception("Variable could not be extracted, exception encountered")
                     record[self.variable_name] = "none"
             else:
-                publog.warning("TODO check project settings for variable extraction")
+                self.publog.warning("TODO check project settings for variable extraction")
                 record[self.variable_name] = "Multiple"
                 if self.variable_name == "variable_id":
                     record["variable"] = "Multiple"
         else:
-            publog.warning("No variables were extracted (is this CF compliant?)")
+            self.publog.warning("No variables were extracted (is this CF compliant?)")
 
         geo_units = []
         if "axes" in scanobj:
@@ -324,7 +320,7 @@ class ESGPubMakeDataset:
                         tu_start_inc = time_obj["values"][0]
                         tu_end_inc = time_obj["values"][-1]
                     else:
-                        publog.warning("Time values not located...")
+                        self.publog.warning("Time values not located...")
                         proc_time = False
                     if proc_time:
                         try:
@@ -347,7 +343,7 @@ class ESGPubMakeDataset:
                     record["height_top"] = plev["values"][0]
                     record["height_bottom"] = plev["values"][-1]
         else:
-            publog.warning("No axes extracted from data files")
+            self.publog.warning("No axes extracted from data files")
 
     def iterate_files(self, mapdata, scandata):
         ret = []
@@ -358,7 +354,7 @@ class ESGPubMakeDataset:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
                 if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
-                    publog.warning("Autocurator data not found for file: " + fullpath)
+                    self.publog.warning("Autocurator data not found for file: " + fullpath)
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
@@ -393,20 +389,17 @@ class ESGPubMakeDataset:
 
         self.proc_xattr(xattrfn)
 
-        if self.verbose:
-            publog.info("Record:\n" + json.dumps(self.dataset, indent=4))
-            print()
+        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
+        print()
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
-        if self.verbose:
-            publog.info('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
-            print()
+        self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
+        print()
         scandict = self.get_scanfile_dict(scanobj['file'])
-        if self.verbose:
-            publog.info('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
-            print()
+        self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
+        print()
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access

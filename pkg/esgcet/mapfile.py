@@ -4,7 +4,6 @@ import traceback
 import esgcet.logger as logger
 
 log = logger.Logger()
-publog = log.return_logger('Mapfile Conversion')
 
 class ESGPubMapConv:
 
@@ -16,6 +15,7 @@ class ESGPubMapConv:
         self.map_data_arr = []
         self.map_json = {}
         self.silent = silent
+        self.publog = log.return_logger('Mapfile Conversion', silent=silent)
 
     def normalize_path(self, path, project=None):
         if project is None:
@@ -48,8 +48,8 @@ class ESGPubMapConv:
         ''' Input: Takes a 2-D array representation of the parsed map.
         Returns: file records.  assumes that the files all belong to the same dataset
         '''
-        if len(self.map_data_arr) == 0 and not self.silent:
-            publog.warning("Empty map data")
+        if len(self.map_data_arr) == 0:
+            self.publog.warning("Empty map data")
 
         ret = []
         for lst in self.map_data_arr:
@@ -70,7 +70,7 @@ class ESGPubMapConv:
         try:
             self.map_json = json.load(open(self.mapfilename))
         except:
-            publog.error("Could not open json data {}".format(self.mapfilename))
+            self.publog.error("Could not open json data {}".format(self.mapfilename))
 
     def map_entry(self, project, fs_root):
         norm_path = self.normalize_path(self.map_json['file'])
