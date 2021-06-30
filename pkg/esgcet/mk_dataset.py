@@ -29,6 +29,7 @@ class ESGPubMakeDataset:
         else:
             raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -327,6 +328,8 @@ class ESGPubMakeDataset:
                             days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         except:
                             tu_date = '0' + tu_date
+                            while len(tu_date.split('-')[0]) < 4:
+                                tu_date = '0' + tu_date
                             days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         dt_start = days_since_dt + timedelta(days=tu_start_inc)
                         dt_end = days_since_dt + timedelta(days=tu_end_inc)
