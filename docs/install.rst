@@ -45,7 +45,7 @@ NOTE: if you are intending to publish CMIP6 data, the publisher will run the Pre
 Config
 ------
 
-The config file will contain the following settings::
+The config file will contain the following settings:
 
  * version
     * This will be predefined in the [DEFAULT] section, it is used by setup to determine at time of
