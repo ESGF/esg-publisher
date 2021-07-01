@@ -45,32 +45,24 @@ NOTE: if you are intending to publish CMIP6 data, the publisher will run the Pre
 Config
 ------
 
-The config file will contain the following settings::
+The config file will contain the following settings:
 
  * version
-    * This will be predefined in the [DEFAULT] section, it is used by setup to determine at time of
-    install if your config file has all the latest settings.
+    * This will be predefined in the [DEFAULT] section, it is used by setup to determine at time of install if your config file has all the latest settings.
  * data_node
-    * Required. This is the ESGF node at which the data is stored that you are publishing.
-    It will be concatenated with the dataset_id to form the full id for your dataset.
+    * Required. This is the ESGF node at which the data is stored that you are publishing. It will be concatenated with the dataset_id to form the full id for your dataset.
  * index_node
-    * Required. This is the ESGF node where your dataset will be published and indexed.
-    You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
+    * Required. This is the ESGF node where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
  * cmor_path
-    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables,
-    used by the publisher to run PrePARE to verify the structure of CMIP6 data.
+    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data.
  * autoc_path
-    * Optional. This is the path for the autocurator executable.
-    The default assumes that you have installed it via conda.
-    If you have not installed it via conda, please replace with a file path to your installed binary.
+    * Optional. This is the path for the autocurator executable. The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.
  * data_roots
     * Required. Must be in a json string loadable by python. Maps file roots to names.
  * cert
-    * Optional. This is the full path to the certificate file used for publishing.
-    Default assumes a file "cert.pem" in your current directory. Replace to override.
+    * Optional. This is the full path to the certificate file used for publishing. Default assumes a file "cert.pem" in your current directory. Replace to override.
  * test
-    * Optional. This can be set to True or False, and it will run the esgfpid service in test mode.
-    Default assumes False. Override if you are not doing production publishing.
+    * Optional. This can be set to True or False, and it will run the esgfpid service in test mode. Default assumes False. Override if you are not doing production publishing.
  * project
     * Optional. ESGF project to which your data belongs. Default will be parsed from the mapfile name.
  * non_netcdf
@@ -84,13 +76,11 @@ The config file will contain the following settings::
  * pid_creds
     * Required for some projects (CMIP6, input4MIPs). Input esgfpid credentials in a json loadable string.
  * user_project_config
-    * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR into a
-    json loadable dictionary.
+    * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR into a json loadable dictionary.
  * silent
     * Optional. Enable or disable silent mode, which represses all INFO logging messages. Default is False, silent mode disabled.
  * verbose
-    * Optional. Enable or disable verbose mode, which outputs additional DEBUG logging messages.
-    Default is False, verbose mode disabled.
+    * Optional. Enable or disable verbose mode, which outputs additional DEBUG logging messages. Default is False, verbose mode disabled.
 
 Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
 Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.ini`` when you install ``esgcet``.
