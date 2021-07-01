@@ -39,6 +39,8 @@ def run(fullmap, pub_args):
 
     if "proj" in argdict:
         p = argdict["proj"]
+    else:
+        argdict["proj"] = p
     project = p.lower()
     user_defined = False
     if argdict["user_project_config"]:

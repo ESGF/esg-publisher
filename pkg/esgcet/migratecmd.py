@@ -1,8 +1,9 @@
 from esgcet.esgmigrate import ESGPubMigrate
 import argparse, sys, os
 from pathlib import Path
-import esgcet.logger as log
+import esgcet.logger as logger
 
+log = logger.Logger()
 publog = log.return_logger('esgmigrate')
 
 
