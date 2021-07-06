@@ -221,7 +221,7 @@ class PublisherArgs:
             non_nc = False
 
         try:
-            mountpoints = config['user']['mountpoint_map']
+            mountpoints = json.loads(config['user']['mountpoint_map'])
         except:
             mountpoints = None
 

@@ -35,7 +35,7 @@ class ESGPubMapConv:
             parts = line.rstrip().split(' | ')
             if self.normalize:
                 parts[1] = self.normalize_path(parts[1])
-            if mountpoints:
+            if mountpoints and self.project:
                 mapstr = parts[1]
                 root = mapstr.split(self.project)[0][:-1]
                 parts[1] = mapstr.replace(root, mountpoints[root])
