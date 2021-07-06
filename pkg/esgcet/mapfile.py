@@ -27,7 +27,7 @@ class ESGPubMapConv:
         proj_root = '/'.join(pparts[0:idx])
         return('/'.join(pparts[idx:]), proj_root)
 
-    def parse_map(self):
+    def parse_map(self, mountpoints=None):
         """  """
         ret = []
         for line in self.map_data:
@@ -35,6 +35,10 @@ class ESGPubMapConv:
             parts = line.rstrip().split(' | ')
             if self.normalize:
                 parts[1] = self.normalize_path(parts[1])
+            if mountpoints:
+                mapstr = parts[1]
+                root = mapstr.split(self.project)[0][:-1]
+                parts[1] = mapstr.replace(root, mountpoints[root])
 
             ret.append(parts)
 
@@ -86,9 +90,9 @@ class ESGPubMapConv:
         return ' | '.join(outarr)
 
 
-    def mapfilerun(self):
+    def mapfilerun(self, mountpoints=None):
 
         with open(self.mapfilename) as self.map_data:
-            ret = self.parse_map()
+            ret = self.parse_map(mountpoints)
 
         return ret

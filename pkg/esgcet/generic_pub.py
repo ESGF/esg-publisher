@@ -27,6 +27,7 @@ class BasePublisher(object):
         self.auth = argdict["auth"]
         self.proj_config = argdict["user_project_config"]
         self.verify = argdict["verify"]
+        self.mountpoints = argdict["mountpoints"]
         self.publog = log.return_logger('Generic Non-NetCDF Publisher', self.silent, self.verbose)
 
     def cleanup(self):
@@ -37,7 +38,7 @@ class BasePublisher(object):
         mapconv = ESGPubMapConv(self.fullmap)
         map_json_data = None
         try:
-            map_json_data = mapconv.mapfilerun()
+            map_json_data = mapconv.mapfilerun(self.mountpoints)
 
         except Exception as ex:
             self.publog.exception("Failed to convert mapfile")

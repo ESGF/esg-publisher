@@ -220,6 +220,11 @@ class PublisherArgs:
         except:
             non_nc = False
 
+        try:
+            mountpoints = config['user']['mountpoint_map']
+        except:
+            mountpoints = None
+
         if globus == "none" and not silent:
             publog.info("No Globus UUID defined.")
 
@@ -231,7 +236,7 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc}
+                   "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc, "mountpoints": mountpoints}
 
         if project and project != "none":
             argdict["proj"] = project
