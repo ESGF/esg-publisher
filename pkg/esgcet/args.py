@@ -242,7 +242,7 @@ class PublisherArgs:
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
                    "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc, "mountpoints": mountpoints}
 
-        if project and project != "none":
+        if project and "none" not in project:
             argdict["proj"] = project
 
         project = project.lower()
