@@ -59,6 +59,8 @@ The config file will contain the following settings:
     * Optional. This is the path for the autocurator executable. The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.
  * data_roots
     * Required. Must be in a json string loadable by python. Maps file roots to names.
+ * mountpoint_map
+    * Optional. Must be in a json string loadable by python. Changes specified sym link file roots in mapfile to actual file roots like so: {"/symlink/dir": "/actual/path"}
  * cert
     * Optional. This is the full path to the certificate file used for publishing. Default assumes a file "cert.pem" in your current directory. Replace to override.
  * test

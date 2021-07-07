@@ -222,6 +222,8 @@ class PublisherArgs:
 
         try:
             mountpoints = json.loads(config['user']['mountpoint_map'])
+            if mountpoints == "none":
+                mountpoints = None
         except:
             mountpoints = None
 
