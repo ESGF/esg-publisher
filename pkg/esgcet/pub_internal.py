@@ -35,7 +35,7 @@ def run(fullmap, pub_args):
 
     check_files(files)
 
-    argdict = pub_args.get_dict(fullmap)
+    argdict = pub_args.get_dict(fullmap, p)
 
     if "proj" in argdict:
         p = argdict["proj"]

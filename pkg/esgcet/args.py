@@ -46,7 +46,7 @@ class PublisherArgs:
 
         return pub
 
-    def get_dict(self, fullmap):
+    def get_dict(self, fullmap, fn_project):
 
         pub = self.get_args()
         json_file = pub.json
@@ -73,8 +73,10 @@ class PublisherArgs:
         else:
             try:
                 project = config['user']['project']
+                if "none" in project:
+                    project = fn_project
             except:
-                project = None
+                project = fn_project
 
         if not pub.silent:
             try:
