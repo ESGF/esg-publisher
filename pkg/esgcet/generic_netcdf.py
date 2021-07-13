@@ -18,9 +18,6 @@ class GenericPublisher(BasePublisher):
         self.MKD_Construct = ESGPubMakeDataset
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
 
-    def check_files(self):
-        pass
-
     def cleanup(self):
         self.scan_file.close()
 
