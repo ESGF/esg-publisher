@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
 import traceback
+import esgcet.logger as logger
+
+log = logger.Logger()
 
 class ESGPubMapConv:
 
@@ -12,6 +15,7 @@ class ESGPubMapConv:
         self.map_data_arr = []
         self.map_json = {}
         self.silent = silent
+        self.publog = log.return_logger('Mapfile Conversion', silent=silent)
 
     def normalize_path(self, path, project=None):
         if project is None:
@@ -23,7 +27,7 @@ class ESGPubMapConv:
         proj_root = '/'.join(pparts[0:idx])
         return('/'.join(pparts[idx:]), proj_root)
 
-    def parse_map(self):
+    def parse_map(self, mountpoints=None):
         """  """
         ret = []
         for line in self.map_data:
@@ -31,6 +35,10 @@ class ESGPubMapConv:
             parts = line.rstrip().split(' | ')
             if self.normalize:
                 parts[1] = self.normalize_path(parts[1])
+            if mountpoints and self.project:
+                mapstr = parts[1]
+                root = mapstr.split(self.project)[0][:-1]
+                parts[1] = mapstr.replace(root, mountpoints[root])
 
             ret.append(parts)
 
@@ -44,8 +52,8 @@ class ESGPubMapConv:
         ''' Input: Takes a 2-D array representation of the parsed map.
         Returns: file records.  assumes that the files all belong to the same dataset
         '''
-        if len(self.map_data_arr) == 0 and not self.silent:
-            print("WARNING: empty map data")
+        if len(self.map_data_arr) == 0:
+            self.publog.warning("Empty map data")
 
         ret = []
         for lst in self.map_data_arr:
@@ -66,8 +74,7 @@ class ESGPubMapConv:
         try:
             self.map_json = json.load(open(self.mapfilename))
         except:
-            print(f"Error opening json data {self.mapfilename}")
-            traceback.print_exc()
+            self.publog.error("Could not open json data {}".format(self.mapfilename))
 
     def map_entry(self, project, fs_root):
         norm_path = self.normalize_path(self.map_json['file'])
@@ -83,9 +90,9 @@ class ESGPubMapConv:
         return ' | '.join(outarr)
 
 
-    def mapfilerun(self):
+    def mapfilerun(self, mountpoints=None):
 
         with open(self.mapfilename) as self.map_data:
-            ret = self.parse_map()
+            ret = self.parse_map(mountpoints)
 
         return ret

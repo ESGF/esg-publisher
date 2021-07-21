@@ -5,6 +5,10 @@ import configparser as cfg
 import sys
 import json
 import os
+import esgcet.logger as logger
+
+log = logger.Logger()
+publog = log.return_logger('esgmkpubrec')
 
 
 def get_args():
@@ -42,15 +46,15 @@ def run():
     config = cfg.ConfigParser()
     config.read(ini_file)
     if not os.path.exists(ini_file):
-        print("Error: config file not found. " + ini_file + " does not exist.", file=sys.stderr)
+        publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
-        print("Config file path is a directory. Please use a complete file path.", file=sys.stderr)
+        publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
     try:
         config.read(ini_file)
     except Exception as ex:
-        print("Error reading config file: " + str(ex))
+        publog.exception("Could not read config file")
         exit(1)
 
 
@@ -86,20 +90,20 @@ def run():
     try:
         map_json_data = json.load(open(a.map_data, 'r'))
     except:
-        print("Error with argparse. Exiting.", file=sys.stderr)
+        publog.exception("Argparse error. Exiting.")
         exit(1)
 
     try:
         scanfn = a.scan_file
     except:
-        print("Error with argparse. Exiting.", file=sys.stderr)
+        publog.exception("Argparse error. Exiting.")
         exit(1)
 
     if a.data_node is None:
         try:
             data_node = config['user']['data_node']
         except:
-            print("Error: data node not supplied in config or command line. Exiting.", file=sys.stderr)
+            publog.exception("Data node not supplied in config or command line. Exiting.")
             exit(1)
     else:
         data_node = a.data_node
@@ -108,13 +112,13 @@ def run():
         try:
             index_node = config['user']['index_node']
         except:
-            print("Error: index node not supplied in config or command line. Exiting.", file=sys.stderr)
+            publog.exception("Index node not supplied in config or command line. Exiting.")
             exit(1)
     else:
         index_node = a.index_node
 
     if a.set_replica and a.no_replica:
-        print("Error: replica publication simultaneously set and disabled.", file=sys.stderr)
+        publog.exception("Replica publication simultaneously set and disabled.")
         exit(1)
     elif a.set_replica:
         replica = True
@@ -128,19 +132,19 @@ def run():
             elif 'no' in r or 'false' in r:
                 replica = False
             else:
-                print("Config file error: set_replica must be true, false, yes, or no.", file=sys.stderr)
+                publog.error("Set_replica must be true, false, yes, or no.")
                 exit(1)
         except:
-            print("Set_replica not defined. Use --set-replica or --no-replica or define in config file.", file=sys.stderr)
+            publog.exception("Set_replica not defined. Use --set-replica or --no-replica or define in config file.")
             exit(1)
 
     try:
         data_roots = json.loads(config['user']['data_roots'])
         if data_roots == 'none':
-            print("Data roots undefined. Define in config file to create file metadata.", file=sys.stderr)
+            publog.error("Data roots undefined. Define in config file to create file metadata.")
             exit(1)
     except:
-        print("Data roots undefined. Define in config file to create file metadata.", file=sys.stderr)
+        publog.exception("Data roots undefined. Define in config file to create file metadata.")
         exit(1)
 
     try:
@@ -204,7 +208,7 @@ def run():
             out_json_data = mkd.get_records(map_json_data, scanfn, json_file, user_project=proj_config)
 
     except Exception as ex:
-        print("Error making dataset: " + str(ex), file=sys.stderr)
+        publog.exception("Failed to make dataset")
         exit(1)
 
     if p:

@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 
 from esgcet.settings import *
 from pathlib import Path
+import esgcet.logger as logger
+
+log = logger.Logger()
 
 
 class ESGPubMakeDataset:
@@ -44,13 +47,10 @@ class ESGPubMakeDataset:
         self.DRS = None
         self.CONST_ATTR = None
         self.variable_name = "variable_id"
+        self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
 
     def set_project(self, project_in):
         self.project = project_in
-
-    def eprint(self, *a):
-
-        print(*a, file=sys.stderr)
 
     def unpack_values(self, invals):
         for x in invals:
@@ -101,8 +101,7 @@ class ESGPubMakeDataset:
             if f in scandata:
                 ga_val = scandata[f]
                 if not parts[i] == ga_val:
-                    if not self.silent:
-                        self.eprint("WARNING: {} does not agree!".format(f))
+                    self.publog.warning("{} does not agree!".format(f))
             self.dataset[f] = parts[i]
 
         self.global_attributes(projkey, scandata)
@@ -134,8 +133,7 @@ class ESGPubMakeDataset:
                     facetval = scandata[gakey]
                     self.dataset[facetkey] = facetval
                 else:
-                    if not self.silent:
-                        self.eprint("WARNING: GA to be mapped {} is missing!".format(facetkey))
+                    self.publog.warning("GA to be mapped {} is missing!".format(facetkey))
 
     def const_attr(self):
         if self.CONST_ATTR:
@@ -202,15 +200,14 @@ class ESGPubMakeDataset:
         rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.dataset["project"])
 
         if not proj_root in self.data_roots:
-            self.eprint(
-                'Error:  The file system root {} not found.  Please check your configuration.'.format(proj_root))
+            self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
             exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
-            self.eprint("WARNING: no files present")
+            self.publog.warning("No files present")
         if "datetime_start" in ret:
             ret.pop("datetime_start")
             ret.pop("datetime_end")
@@ -230,23 +227,59 @@ class ESGPubMakeDataset:
 
                 vid = record[self.variable_name]
                 try:
-                    var_rec = scanobj["variables"][vid]
-                    if "long_name" in var_rec.keys():
-                        record["variable_long_name"] = var_rec["long_name"]
-                    elif "info" in var_rec:
-                        record["variable_long_name"] = var_rec["info"]
-                    if "standard_name" in var_rec:
-                        record["cf_standard_name"] = var_rec["standard_name"]
-                    record["variable_units"] = var_rec["units"]
-                    record[self.variable_name] = vid
+                    if vid in scanobj["variables"]:
+                        var_rec = scanobj["variables"][vid]
+                        if "long_name" in var_rec.keys():
+                            record["variable_long_name"] = var_rec["long_name"]
+                        elif "info" in var_rec:
+                            record["variable_long_name"] = var_rec["info"]
+                        if "standard_name" in var_rec:
+                            record["cf_standard_name"] = var_rec["standard_name"]
+                        record["variable_units"] = var_rec["units"]
+                        record[self.variable_name] = vid
+                        if self.variable_name == "variable_id":
+                            record["variable"] = vid
+                    else:
+                        var_list = list(scanobj["variables"].keys())
+                        if len(var_list) < VARIABLE_LIMIT:
+                            init_lst = [self.variable_name, "variable_long_name"]
+                            if "variable_id" in init_lst:
+                                init_lst.append("variable")
+                            for kid in init_lst:
+                                record[kid] = []
+                            units_list = []
+                            cf_list = []
+                            for vk in var_list:
+                                if not vk in VARIABLE_EXCLUDES:
+                                    var_rec = scanobj["variables"][vk]
+                                    if "long_name" in var_rec.keys():
+                                        record["variable_long_name"].append(var_rec["long_name"])
+                                    elif "info" in var_rec:
+                                        record["variable_long_name"].append(var_rec["info"])
+                                    if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
+                                        cf_list.append(var_rec["standard_name"])          
+                                    if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
+                                        units_list.append(var_rec["units"])
+                                    record["variable"].append(vk)
+
+                            if self.variable_name == "variable_id":
+                                record[self.variable_name] = "Multiple"
+                            record["variable_units"] = list(set(units_list))
+                            record["cf_standard_name"] = list(set(cf_list))
+                    
+                        if self.variable_name == "variable_id":
+                            record["variable"] = "Multiple"
+
                 except Exception as ex:
-                    self.eprint("Variable could not be extracted, exception encountered: " + str(ex))
+                    self.publog.exception("Variable could not be extracted, exception encountered")
                     record[self.variable_name] = "none"
             else:
-                self.eprint("TODO check project settings for variable extraction")
+                self.publog.warning("TODO check project settings for variable extraction")
                 record[self.variable_name] = "Multiple"
+                if self.variable_name == "variable_id":
+                    record["variable"] = "Multiple"
         else:
-            self.eprint("WARNING: no variables were extracted (is this CF compliant?)")
+            self.publog.warning("No variables were extracted (is this CF compliant?)")
 
         geo_units = []
         if "axes" in scanobj:
@@ -288,13 +321,15 @@ class ESGPubMakeDataset:
                         tu_start_inc = time_obj["values"][0]
                         tu_end_inc = time_obj["values"][-1]
                     else:
-                        self.eprint("WARNING: Time values not located...")
+                        self.publog.warning("Time values not located...")
                         proc_time = False
                     if proc_time:
                         try:
                             days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         except:
                             tu_date = '0' + tu_date
+                            while len(tu_date.split('-')[0]) < 4:
+                                tu_date = '0' + tu_date
                             days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
                         dt_start = days_since_dt + timedelta(days=tu_start_inc)
                         dt_end = days_since_dt + timedelta(days=tu_end_inc)
@@ -311,7 +346,7 @@ class ESGPubMakeDataset:
                     record["height_top"] = plev["values"][0]
                     record["height_bottom"] = plev["values"][-1]
         else:
-            self.eprint("WARNING: No axes extracted from data files")
+            self.publog.warning("No axes extracted from data files")
 
     def iterate_files(self, mapdata, scandata):
         ret = []
@@ -322,7 +357,7 @@ class ESGPubMakeDataset:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
                 if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
-                    self.eprint("WARNING: autocurator data not found for file: " + fullpath)
+                    self.publog.warning("Autocurator data not found for file: " + fullpath)
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
@@ -357,23 +392,17 @@ class ESGPubMakeDataset:
 
         self.proc_xattr(xattrfn)
 
-        if self.verbose:
-            print("Record:")
-            print(json.dumps(self.dataset, indent=4))
-            print()
+        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
+        print()
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
-        if self.verbose:
-            print('Mapfile dictionary:')
-            print(json.dumps(mapdict, indent=4))
-            print()
+        self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
+        print()
         scandict = self.get_scanfile_dict(scanobj['file'])
-        if self.verbose:
-            print('Autocurator Scanfile dictionary:')
-            print(json.dumps(scandict, indent=4))
-            print()
+        self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
+        print()
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access

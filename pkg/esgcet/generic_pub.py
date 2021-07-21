@@ -3,6 +3,9 @@ from esgcet.mkd_non_nc import ESGPubMKDNonNC
 from esgcet.update import ESGPubUpdate
 from esgcet.index_pub import ESGPubIndex
 import sys
+import esgcet.logger as logger
+
+log = logger.Logger()
 
 
 class BasePublisher(object):
@@ -24,19 +27,22 @@ class BasePublisher(object):
         self.auth = argdict["auth"]
         self.proj_config = argdict["user_project_config"]
         self.verify = argdict["verify"]
+        self.mountpoints = argdict["mountpoints"]
+        self.project = argdict["proj"]
+        self.publog = log.return_logger('Generic Non-NetCDF Publisher', self.silent, self.verbose)
 
     def cleanup(self):
         pass
 
     def mapfile(self):
 
-        mapconv = ESGPubMapConv(self.fullmap)
+        mapconv = ESGPubMapConv(self.fullmap, project=self.project)
         map_json_data = None
         try:
-            map_json_data = mapconv.mapfilerun()
+            map_json_data = mapconv.mapfilerun(self.mountpoints)
 
         except Exception as ex:
-            print("Error with converting mapfile: " + str(ex), file=sys.stderr)
+            self.publog.exception("Failed to convert mapfile")
             self.cleanup()
             exit(1)
         return map_json_data
@@ -47,7 +53,7 @@ class BasePublisher(object):
         try:
             out_json_data = mkd.get_records(map_json_data, self.json_file, user_project=self.proj_config)
         except Exception as ex:
-            print("Error making dataset: " + str(ex), file=sys.stderr)
+            self.publog.exception("Failed to make dataset")
             self.cleanup()
             exit(1)
         return out_json_data
@@ -57,7 +63,7 @@ class BasePublisher(object):
         try:
             up.run(json_data)
         except Exception as ex:
-            print("Error updating: " + str(ex), file=sys.stderr)
+            self.publog.exception("Failed to update record")
             self.cleanup()
             exit(1)
 
@@ -66,30 +72,25 @@ class BasePublisher(object):
         try:
             ip.do_publish(dataset_records)
         except Exception as ex:
-            print("Error running index pub: " + str(ex), file=sys.stderr)
+            self.publog.exception("Failed to publish to index node")
             self.cleanup()
             exit(1)
 
     def workflow(self):
 
         # step one: convert mapfile
-        if not self.silent:
-            print("Converting mapfile...")
+        self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
         # step two: make dataset
-        if not self.silent:
-            print("Done.\nMaking dataset...")
+        self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
-        if not self.silent:
-            print("Done.\nUpdating...")
+        self.publog.info("Updating...")
         self.update(out_json_data)
 
-        if not self.silent:
-            print("Done.\nRunning index pub...")
+        self.publog.info("Running index pub...")
         self.index_pub(out_json_data)
 
-        if not self.silent:
-            print("Done.")
+        self.publog.info("Done.")
 

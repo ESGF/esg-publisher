@@ -1,4 +1,7 @@
 import requests
+import esgcet.logger as logger
+
+log = logger.Logger()
 
 class publisherClient(object):
     """  REST API wrapper for the esg-seach/ws APIs
@@ -23,6 +26,7 @@ class publisherClient(object):
         self.silent = silent
         self.verify = verify
         self.use_cert = auth
+        self.publog = log.return_logger('Publisher Client', silent, verbose)
 
     def post_data(self, url, data):
         """ Internal method to post data to a url via requests
@@ -33,10 +37,9 @@ class publisherClient(object):
             resp = requests.post(url, data=data, cert=(self.certFile, self.keyFile), verify=self.verify, allow_redirects=True)
         else:
             resp = requests.post(url, data=data, verify=self.verify, allow_redirects=True)
-        if not self.silent:
-            print(resp.text)
+        self.publog.info(resp.text)
         if resp.status_code != 200:
-            print(f"ERROR code = {resp.status_code}")
+            self.publog.error("code = {}".format(resp.status_code))
             exit(-1 * resp.status_code)
         return resp
     
@@ -47,9 +50,9 @@ class publisherClient(object):
         try:
             response = self.post_data(self.publishUrl, xmldata)
         except requests.exceptions.SSLError as e:
-            print("SSL error!", e )
+            self.publog.exception("SSL error!")
         except Exception as e:
-            print("Some other error!", e )
+            self.publog.exception("Some other error!")
 
     def update(self, xmldata):
         """  Invoke the update API call
@@ -60,9 +63,9 @@ class publisherClient(object):
             response = self.post_data(self.updateUrl, xmldata)
 
         except requests.exceptions.SSLError as e:
-            print("SSL error!", e )
+            self.publog.exception("SSL error!")
         except Exception as e:
-            print("Some other error!", e )
+            self.publog.exception("Some other error!")
 
     def retract(self, object_id):
         """  Invoke the retract API call
@@ -70,15 +73,14 @@ class publisherClient(object):
         """
         
         data = { 'id' : object_id }
-        if self.verbose:
-            print (data)
+        self.publog.debug(data)
 
         try:
             response = self.post_data(self.retractUrl, data)
         except requests.exceptions.SSLError as e:
-            print("SSL error!", e )
+            self.publog.exception("SSL error!")
         except Exception as e:
-            print("Some other error!", e )
+            self.publog.exception("Some other error!")
         # root = etree.fromstring(response.content)
         # text = root[0].text
         # return (response.status_code, text)
@@ -89,11 +91,10 @@ class publisherClient(object):
         """
 
         data = { 'id' : object_id }
-        if self.verbose:
-            print(data)
+        self.publog.debug(data)
         try:
             response = self.post_data(self.deleteUrl, data)
         except requests.exceptions.SSLError as e:
-            print("SSL error!", e )
+            self.publog.exception("SSL error!")
         except Exception as e:
-            print("Some other error!", e )
+            self.publog.exception("Some other error!")

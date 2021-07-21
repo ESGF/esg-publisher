@@ -7,6 +7,10 @@ from datetime import datetime, timedelta
 from esgcet.settings import *
 from pathlib import Path
 from esgcet.mk_dataset import ESGPubMakeDataset
+import esgcet.logger as logger
+
+log = logger.Logger()
+
 
 class ESGPubMKDCreateIP(ESGPubMakeDataset):
 
@@ -43,6 +47,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
                    "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
                    "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351"]
+        self.publog = log.return_logger('Make Dataset CREATE-IP', self.silent, self.verbose)
 
     def get_dataset(self, mapdata, scanobj):
 
@@ -73,9 +78,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
                         self.dataset["experiment"] = ga_val
                     elif f == "experiment" and ga_val in self.source_ids:
                         self.dataset["source_id"] = ga_val
-                    elif not self.silent:
-                        self.eprint("WARNING: {} does not agree!".format(f))
-                        self.eprint(ga_val)
+                    self.publog.warning("{} does not agree!\n".format(f) + ga_val)
             self.dataset[f] = parts[i]
         self.dataset[self.variable_name] = self.variable
 
@@ -97,7 +100,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             elif data[-1]["type"] == "Dataset":
                 idx = -1
             else:
-                self.eprint("No dataset record found. Exiting")
+                self.publog.error("No dataset record found. Exiting")
                 exit(-4)
             dataset = data[idx]
             if self.variable_name in dataset and dataset[self.variable_name] not in vids:
@@ -121,7 +124,5 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             last_dset["cf_standard_name"] = cf_std_names
             last_dset["variable_units"] = v_units
         last_rec[idx] = last_dset
-        if self.verbose:
-            print("Aggregate record:")
-            print(json.dumps(last_dset, indent=4))
+        self.publog.debug("Aggregate record:\n" + json.dumps(last_dset, indent=4))
         return last_rec

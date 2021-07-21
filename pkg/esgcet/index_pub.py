@@ -1,4 +1,7 @@
 from esgcet.pub_client import publisherClient
+import esgcet.logger as logger
+
+log = logger.Logger()
 
 
 class ESGPubIndex:
@@ -7,6 +10,7 @@ class ESGPubIndex:
         self.silent = silent
         self.verbose = verbose
         self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
+        self.publog = log.return_logger('Index Publication', silent, verbose)
 
     def gen_xml(self, d):
         out = []
@@ -31,7 +35,6 @@ class ESGPubIndex:
         for rec in dataset:
 
             new_xml = self.gen_xml(rec)
-            if self.verbose:
-                print(new_xml)
+            self.publog.debug(new_xml)
             self.pubCli.publish(new_xml)
 

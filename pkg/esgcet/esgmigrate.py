@@ -6,6 +6,9 @@ import shutil
 from datetime import date
 from pathlib import Path
 import json
+import esgcet.logger as logger
+
+log = logger.Logger()
 
 DEFAULT_ESGINI = '/esg/config/esgcet/'
 CONFIG_FN_DEST = "~/.esg/esg.ini"
@@ -22,13 +25,13 @@ class ESGPubMigrate(object):
         self.silent = silent
         self.verbose = verbose
         self.save_path = newpath
+        self.publog = log.return_logger('esgmigrate', silent, verbose)
 
     def project_migrate(self, project):
 
         if not project:
             return None
         path = self.ini_path
-        print(project)
         SP = SectionParser("project:{}".format(project), directory=path)
         SP.parse(path)
 
@@ -37,22 +40,21 @@ class ESGPubMigrate(object):
             ret['CONST_ATTR'] = { x[0] : x[1] for x in SP.get_options_from_table('category_defaults') }
         except:
             ret['CONST_ATTR'] = {}
-            if self.verbose:
-                print("No category defaults found for {}".format(project))
+            self.publog.debug("No category defaults found for {}".format(project))
         return ret
 
 
     def migrate(self, project=None):
 
         if not os.path.exists(self.ini_path + "esg.ini"):
-            print("Old config " + self.ini_path + "esg.ini not found or unreadable.", file=sys.stderr)
+            self.publog.error("Old config " + self.ini_path + "esg.ini not found or unreadable.")
             exit(1)
 
         try:
             sp = SectionParser('config:cmip6')
             sp.parse(self.ini_path)
         except Exception as e:
-            print("Exception encountered {}".format(str(e)), file=sys.stderr)
+            self.publog.exception("Exception encountered.")
             return
 
         thredds_url = sp.get("thredds_url")
@@ -109,15 +111,14 @@ class ESGPubMigrate(object):
 
         CERT_FN = cert_base.replace('%(home)s', '~')
 
-        if self.verbose:
-            print(str(dr_dict))
-            print(str(pid_creds))
-            print(data_node)
-            print(index_node)
-            print(CERT_FN)
-            print(DATA_TRANSFER_NODE)
-            print(GLOBUS_UUID)
-            print(project)
+        self.publog.debug(str(dr_dict))
+        self.publog.debug(str(pid_creds))
+        self.publog.debug(data_node)
+        self.publog.debug(index_node)
+        self.publog.debug(CERT_FN)
+        self.publog.debug(DATA_TRANSFER_NODE)
+        self.publog.debug(GLOBUS_UUID)
+        self.publog.debug(project)
 
         project_config = {project: self.project_migrate(project)}
 
