@@ -49,6 +49,8 @@ class publisherClient(object):
         """
         try:
             response = self.post_data(self.publishUrl, xmldata)
+            if response.status_code != 200:
+                raise RuntimeError('Publish returned status code' + str(response.status_code))
         except requests.exceptions.SSLError as e:
             self.publog.exception("SSL error!")
         except Exception as e:
@@ -61,6 +63,8 @@ class publisherClient(object):
 
         try:
             response = self.post_data(self.updateUrl, xmldata)
+            if response.status_code != 200:
+                raise RuntimeError('Update returned status code' + str(response.status_code))
 
         except requests.exceptions.SSLError as e:
             self.publog.exception("SSL error!")
