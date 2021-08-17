@@ -21,6 +21,8 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             self.DRS = DRS["create-ip-model"]
         elif l == 7:
             self.DRS = DRS["create-ip-src"]
+        elif l == 8:
+            self.DRS = DRS["create-ip-var"]
         else:
             self.DRS = DRS["create-ip-exp"]
 
