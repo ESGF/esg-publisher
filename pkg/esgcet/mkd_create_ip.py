@@ -17,10 +17,12 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
     def init_project(self, s, l):
 
         self.project = "CREATE-IP"
-        if s in self.source_ids:
-            self.DRS = DRS["create-ip-src"]
-        elif l == 7:
+        if s in self.models:
             self.DRS = DRS["create-ip-model"]
+        elif l == 7:
+            self.DRS = DRS["create-ip-src"]
+        elif l == 8:
+            self.DRS = DRS["create-ip-var"]
         else:
             self.DRS = DRS["create-ip-exp"]
 
@@ -44,7 +46,7 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.variable_name = "variable_id"
         self.variable = None
 
-        self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
+        self.models = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
                    "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
                    "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351"]
         self.publog = log.return_logger('Make Dataset CREATE-IP', self.silent, self.verbose)

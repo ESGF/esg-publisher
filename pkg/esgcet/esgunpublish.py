@@ -64,16 +64,20 @@ def run():
     else:
         index_node = a.index_node
 
-    if a.data_node is None:
-        try:
-            data_node = config['user']['data_node']
-        except:
-            publog.exception("Data node not defined. Use the --data-node option or define in esg.ini.")
-            exit(1)
-    else:
-        data_node = a.data_node
-
     dset_id = a.dset_id
+
+    if not '|' in dset_id:
+        if a.data_node is None:
+            try:
+                data_node = config['user']['data_node']
+            except:
+                publog.exception("Data node not defined. Use the --data-node option or define in esg.ini.")
+                exit(1)
+        else:
+            data_node = a.data_node
+    else:
+        data_node = None
+
 
     if a.delete:
         d = True
