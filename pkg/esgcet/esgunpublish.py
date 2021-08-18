@@ -3,8 +3,8 @@ import os
 import sys
 import json
 import argparse
-import configparser as cfg
 from pathlib import Path
+import esgcet.args as pub_args
 import esgcet.logger as logger
 
 log = logger.Logger()
@@ -15,7 +15,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Unpublish data sets from ESGF databases.")
 
     home = str(Path.home())
-    def_config = home + "/.esg/esg.ini"
+    def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
@@ -24,7 +24,7 @@ def get_args():
     parser.add_argument("--dset-id", dest="dset_id", required=True,
                         help="Dataset ID for dataset to be retracted or deleted.")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Disable certificate authentication.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
 
     pub = parser.parse_args()
 
@@ -34,22 +34,18 @@ def get_args():
 def run():
     a = get_args()
     ini_file = a.cfg
-    config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
         publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
         publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
-    try:
-        config.read(ini_file)
-    except Exception as ex:
-        publog.exception("Could not read config file")
-        exit(1)
+    args = pub_args.PublisherArgs()
+    config = args.load_config(ini_file)
 
     if a.cert == "./cert.pem":
         try:
-            cert = config['user']['cert']
+            cert = config['cert']
         except:
             cert = a.cert
     else:
@@ -57,7 +53,7 @@ def run():
 
     if a.index_node is None:
         try:
-            index_node = config['user']['index_node']
+            index_node = config['index_node']
         except:
             publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)
@@ -69,7 +65,7 @@ def run():
     if not '|' in dset_id:
         if a.data_node is None:
             try:
-                data_node = config['user']['data_node']
+                data_node = config['data_node']
             except:
                 publog.exception("Data node not defined. Use the --data-node option or define in esg.ini.")
                 exit(1)

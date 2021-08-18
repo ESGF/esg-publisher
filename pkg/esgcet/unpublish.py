@@ -10,6 +10,7 @@ def run(args):
     data_node = args[2]
     hostname = args[3]
     cert_fn = args[4]
+    auth = args[5]
 
 
     # ensure that dataset id is in correct format, use the set data node as a default
@@ -18,7 +19,7 @@ def run(args):
         dset_id_new = '{}|{}'.format(dset_id, data_node)
         dset_id = dset_id_new
         
-    pubCli = publisherClient(cert_fn, hostname)
+    pubCli = publisherClient(cert_fn, hostname, auth=auth)
 
     if do_delete:
         pubCli.delete(dset_id)

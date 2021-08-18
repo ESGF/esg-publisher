@@ -3,8 +3,8 @@ import argparse
 import sys
 import json
 from pathlib import Path
-import configparser as cfg
 import os
+import esgcet.args as pub_args
 import esgcet.logger as logger
 
 log = logger.Logger()
@@ -14,11 +14,11 @@ publog = log.return_logger('esgpidcitepub')
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
     home = str(Path.home())
-    def_config = home + "/.esg/esg.ini"
+    def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--pub-rec", dest="json_data", required=True,
                         help="Dataset and file json data; output from esgmkpubrec.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
     parser.add_argument("--out-file", dest="out_file", default=None,
                         help="Optional output file destination. Default is stdout.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
@@ -34,20 +34,14 @@ def get_args():
 def run():
     a = get_args()
     ini_file = a.cfg
-    config = cfg.ConfigParser()
-    config.read(ini_file)
     if not os.path.exists(ini_file):
         publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
         publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
-    try:
-        config.read(ini_file)
-    except Exception as ex:
-        publog.exception("Could not read config file")
-        exit(1)
-
+    args = pub_args.PublisherArgs()
+    config = args.load_config(ini_file)
 
     p = True
     if a.out_file is not None:
@@ -56,14 +50,14 @@ def run():
 
     if a.data_node is None:
         try:
-            data_node = config['user']['data_node']
+            data_node = config['data_node']
         except:
             publog.exception("Data node not supplied in config or command line. Exiting.")
             exit(1)
 
     if not a.silent:
         try:
-            s = config['user']['silent']
+            s = config['silent']
             if 'true' in s or 'yes' in s:
                 silent = True
             else:
@@ -75,7 +69,7 @@ def run():
 
     if not a.verbose:
         try:
-            v = config['user']['verbose']
+            v = config['verbose']
             if 'true' in v or 'yes' in v:
                 verbose = True
             else:
@@ -87,7 +81,7 @@ def run():
 
     if a.data_node is None:
         try:
-            data_node = config['user']['data_node']
+            data_node = config['data_node']
         except:
             publog.exception("Data node not supplied in config or command line. Exiting.")
             exit(1)
@@ -99,7 +93,7 @@ def run():
         test = True
 
     try:
-        pid_creds = json.loads(config['user']['pid_creds'])
+        pid_creds = json.loads(config['pid_creds'])
     except:
         publog.exception("PID credentials not defined. Define in config file esg.ini.")
         exit(1)
