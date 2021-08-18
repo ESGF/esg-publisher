@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument("--delete", dest="delete", action="store_true", help="Specify deletion of dataset (default is retraction).")
     parser.add_argument("--dset-id", dest="dset_id", required=True,
                         help="Dataset ID for dataset to be retracted or deleted.")
+    parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Disable certificate authentication.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
 
     pub = parser.parse_args()
@@ -79,8 +80,13 @@ def run():
     else:
         d = False
 
+    if a.no_auth:
+        auth = False
+    else:
+        auth = True
+
     try:
-        upub.run([dset_id, d, data_node, index_node, cert])
+        upub.run([dset_id, d, data_node, index_node, cert, auth])
     except Exception as ex:
         publog.exception("Failed to unpublish")
         exit(1)
