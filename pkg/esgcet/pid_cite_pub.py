@@ -24,6 +24,8 @@ class ESGPubPidCite(object):
             test - register PID in test mode, essential for testing """
         self.ds_records = ds_recs
         self.pid_creds = pid_creds
+        if type(self.pid_creds) == dict:
+            self.pid_creds = [ self.pid_creds, ]
         self.silent = silent
         self.verbose = verbose
         self.test_publication = test
