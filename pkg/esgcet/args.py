@@ -148,12 +148,12 @@ class PublisherArgs:
         else:
             data_node = pub.data_node
         try:
-            data_roots = json.loads(config['data_roots'])
+            data_roots = config['data_roots']
             if data_roots == 'none':
-                publog.error("Data roots undefined. Define in esg.ini to create file metadata.")
+                publog.error("Data roots undefined. Define in config file to create file metadata.")
                 exit(1)
         except:
-            publog.exception("Data roots undefined. Define in esg.ini to create file metadata.")
+            publog.exception("Data roots undefined. Define in config file to create file metadata.")
             exit(1)
 
         try:
@@ -204,7 +204,7 @@ class PublisherArgs:
             autoc_command = autocurator
         
         try:
-            proj_config = json.loads(config['user_project_config'])
+            proj_config = config['user_project_config']
         except:
             proj_config = None
 
@@ -230,7 +230,7 @@ class PublisherArgs:
             non_nc = False
 
         try:
-            mountpoints = json.loads(config['mountpoint_map'])
+            mountpoints = config['mountpoint_map']
             if mountpoints == "none":
                 mountpoints = None
         except:
@@ -263,7 +263,7 @@ class PublisherArgs:
             else:
                 argdict["cmor_tables"] = pub.cmor_path
             try:
-                argdict["pid_creds"] = json.loads(config['pid_creds'])
+                argdict["pid_creds"] = config['pid_creds']
             except:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)

@@ -133,7 +133,7 @@ def run():
             exit(1)
 
     try:
-        data_roots = json.loads(config['data_roots'])
+        data_roots = config['data_roots']
         if data_roots == 'none':
             publog.error("Data roots undefined. Define in config file to create file metadata.")
             exit(1)

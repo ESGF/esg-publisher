@@ -93,9 +93,9 @@ def run():
         test = True
 
     try:
-        pid_creds = json.loads(config['pid_creds'])
+        pid_creds = config['pid_creds']
     except:
-        publog.exception("PID credentials not defined. Define in config file esg.ini.")
+        publog.exception("PID credentials not defined. Define in config file.")
         exit(1)
 
     try:
