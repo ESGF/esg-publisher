@@ -19,7 +19,7 @@ You can also use ``--help`` to see::
                           [--index-node INDEX_NODE] [--certificate CERT]
                           [--project PROJ] [--cmor-tables CMOR_PATH]
                           [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
-                          [--ini CFG] [--silent] [--verbose] [--no-auth] [--verify]
+                          [--config CFG] [--silent] [--verbose] [--no-auth] [--verify]
 
         Publish data sets to ESGF databases.
 
@@ -41,7 +41,7 @@ You can also use ``--help`` to see::
           --autocurator AUTOCURATOR_PATH
                                 Path to autocurator repository folder.
           --map MAP             mapfile or file containing a list of mapfiles.
-          --ini CFG, -i CFG     Path to config file.
+          --config CFG, -cfg CFG     Path to config file.
           --silent              Enable silent mode.
           --verbose             Enable verbose mode.
           --no-auth             Run publisher without certificate, only works on certain index nodes.

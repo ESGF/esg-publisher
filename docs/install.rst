@@ -47,8 +47,6 @@ Config
 
 The config file will contain the following settings:
 
- * version
-    * This will be predefined in the [DEFAULT] section, it is used by setup to determine at time of install if your config file has all the latest settings.
  * data_node
     * Required. This is the ESGF node at which the data is stored that you are publishing. It will be concatenated with the dataset_id to form the full id for your dataset.
  * index_node
@@ -60,7 +58,7 @@ The config file will contain the following settings:
  * data_roots
     * Required. Must be in a json string loadable by python. Maps file roots to names.
  * mountpoint_map
-    * Optional. Must be in a json string loadable by python. Changes specified sym link file roots in mapfile to actual file roots like so: {"/symlink/dir": "/actual/path"}
+    * Optional. Must be in yaml dictionary format. Changes specified sym link file roots in mapfile to actual file roots like so: /symlink/dir: "/actual/path"
  * cert
     * Optional. This is the full path to the certificate file used for publishing. Default assumes a file "cert.pem" in your current directory. Replace to override.
  * test
@@ -76,16 +74,16 @@ The config file will contain the following settings:
  * data_transfer_node
     * Optional. Specify the Data Transfer Node for your dataset. Default is none.
  * pid_creds
-    * Required for some projects (CMIP6, input4MIPs). Input esgfpid credentials in a json loadable string.
+    * Required for some projects (CMIP6, input4MIPs). Input esgfpid credentials as a dictionary.
  * user_project_config
-    * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR into a json loadable dictionary.
+    * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR in a dictionary designated by project.
  * silent
     * Optional. Enable or disable silent mode, which represses all INFO logging messages. Default is False, silent mode disabled.
  * verbose
     * Optional. Enable or disable verbose mode, which outputs additional DEBUG logging messages. Default is False, verbose mode disabled.
 
-Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
-Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.ini`` when you install ``esgcet``.
+Fill out the necessary variables, and either leave or override the optional configurations.
+Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.yaml`` when you install ``esgcet``.
 Note that while the ``cmor_path`` variable points to a directory, other filepaths must be complete, such as ``autoc_path`` and ``cert``. This applies to the command line arguments for these as well.
 
 If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
@@ -96,5 +94,5 @@ Run Time Args
 
 If you prefer to set certain things at runtime, the ``esgpublish`` command has several optional command line arguments which will override options set in the config file.
 For instance, if you use the ``--cmor-tables`` command line argument to set the path to the cmor tables directory, that will override anything written in the config file under ``cmor_path``.
-If you used the old version of the publisher, you should note that the command line argument ``-ini`` which points to your config file must be a complete path, not the directory as it was in the previous version.
+If you used the old version of the publisher, you should note that the command line argument ``--config`` which points to your config file must be a complete path, not the directory as it was in the previous version.
 More details can be found in the ``esgpublish`` section.

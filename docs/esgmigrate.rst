@@ -2,7 +2,7 @@ esgmigrate
 ==========
 
 The ``esgmigrate`` command migrates old config settings from the old publisher into a new config file formatted for the current new publisher.
-The output will be found in ``$HOME/.esg/esg.ini`` which is the default config file path the publisher will read from.
+The output will be found in ``$HOME/.esg/esg.yaml`` which is the default config file path the publisher will read from.
 
 Usage
 -----
@@ -11,7 +11,7 @@ Usage
 
     esgmigrate
 
-By default, esgmigrate will attempt to read the old config file at ``/esg/config/esgcet`` and will write the new config file to ``$HOME/.esg/esg.ini``.
+By default, esgmigrate will attempt to read the old config file at ``/esg/config/esgcet`` and will write the new config file to ``$HOME/.esg/esg.yaml``.
 To override these defaults, use the optional command line arguments below.
 
 Additional command line options are as follows::

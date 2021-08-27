@@ -22,7 +22,7 @@ The other command line options are as follows::
                            --scan-file SCAN_FILE --map-data MAP_DATA
                            [--out-file OUT_FILE] [--data-node DATA_NODE]
                            [--index-node INDEX_NODE] [--project PROJ]
-                           [--ini CFG] [--silent] [--verbose]
+                           [--config CFG] [--silent] [--verbose]
 
 
         Publish data sets to ESGF databases.
@@ -41,7 +41,7 @@ The other command line options are as follows::
             --index-node INDEX_NODE
                                   Specify index node.
             --project PROJ        Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.
-            --ini CFG, -i CFG     Path to config file.
+            --config CFG, -cfg CFG     Path to config file.
             --silent              Enable silent mode.
             --verbose             Enable verbose mode.
 

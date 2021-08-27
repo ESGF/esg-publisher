@@ -18,7 +18,7 @@ You can also specify certain command line options rather than defining them in a
 
     usage: esgunpublish [-h] [--index-node INDEX_NODE] [--data-node DATA_NODE]
                     [--certificate CERT] [--delete] --dset-id DSET_ID
-                    [--ini CFG]
+                    [--config CFG]
 
     Unpublish data sets from ESGF databases.
 
@@ -33,7 +33,7 @@ You can also specify certain command line options rather than defining them in a
                               unpublishing (use a myproxy login to generate).
         --delete              Specify deletion of dataset (default is retraction).
         --dset-id DSET_ID     Dataset ID for dataset to be retracted or deleted.
-        --ini CFG, -i CFG     Path to config file.
+        --config CFG, -cfg CFG     Path to config file.
 
 You can see this message above by running ``esgunpublish -h``. For the ``--ini, -i`` option, the path may be relative but it must point to the file, not to the directory
 in which the config file is.
