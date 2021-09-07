@@ -85,6 +85,7 @@ class ESGPubMakeDataset:
         parts = master_id.split('.')
 
         projkey = parts[0]
+        self.first_val = projkey
         scandata = scanobj['dataset']
 
 
@@ -198,7 +199,7 @@ class ESGPubMakeDataset:
             if kn not in ("id", "file"):
                 ret[kn] = mapdata[kn]
 
-        rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.dataset["project"])
+        rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.first_val)
 
         if not proj_root in self.data_roots:
             self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
