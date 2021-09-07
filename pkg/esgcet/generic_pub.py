@@ -50,6 +50,7 @@ class BasePublisher(object):
     def mk_dataset(self, map_json_data):
         mkd = ESGPubMKDNonNC(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
+        mkd.set_project(self.project)
         try:
             out_json_data = mkd.get_records(map_json_data, self.json_file, user_project=self.proj_config)
         except Exception as ex:

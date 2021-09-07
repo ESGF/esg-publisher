@@ -87,6 +87,7 @@ class ESGPubMakeDataset:
         projkey = parts[0]
         scandata = scanobj['dataset']
 
+
         if self.project:
             projkey = self.project
         self.init_project(projkey)
