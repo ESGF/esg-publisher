@@ -36,7 +36,7 @@ GA = { 'cmip6' : ['frequency',
                      'further_info_url',
                      'activity_id',
                      'data_specs_version', 'title'],
-       'input4MIPs' : ['contact',
+       'input4mips' : ['contact',
 'dataset_category',
 'source_version',
 'source',
@@ -92,7 +92,7 @@ HTTP_SERVICE = '/thredds/fileServer/'
 CITATION_URLS = { 'CMIP6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'},
-'input4MIPs' : {'test' :
+'input4mips' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}
                   
