@@ -6,6 +6,8 @@ import configparser as cfg
 from esgcet.settings import *
 import esgcet.logger as logger
 
+import esgcet
+
 log = logger.Logger()
 publog = log.return_logger('Settings')
 
@@ -41,7 +43,8 @@ class PublisherArgs:
         parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
         parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
-
+        parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
+        
         pub = parser.parse_args()
 
         return pub
