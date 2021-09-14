@@ -48,6 +48,7 @@ class ESGPubMakeDataset:
         self.CONST_ATTR = None
         self.variable_name = "variable_id"
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
+        self.xattr = None
 
     def set_project(self, project_in):
         self.project = project_in
@@ -63,6 +64,8 @@ class ESGPubMakeDataset:
                 yield (x)
 
     def load_xattr(self, xattrfn):
+        if self.xattr:
+            return
         if (xattrfn):
             self.xattr = json.load(open(xattrfn))
         else:

@@ -53,8 +53,8 @@ GA = { 'cmip6' : ['frequency',
 'Conventions',
 'creation_date']}
 
-GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  },
-                 'input4mips' : {'target_mip_list' : ','}}
+GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
+#                 'input4mips' : {'target_mip_list' : ','}}
 
 CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered' }}
 

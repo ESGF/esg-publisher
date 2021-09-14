@@ -31,11 +31,7 @@ class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
                 elif facetkey in scandata:
                     facetval = scandata[facetkey]
                     # is this a delimited attribute ?
-                if facetkey in GA_DELIMITED[projkey]:
-                    delimiter = GA_DELIMITED[projkey][facetkey]
-                    self.dataset[facetkey] = facetval.split(delimiter)
-                else:
-                    self.dataset[facetkey] = facetval
+                self.dataset[facetkey] = facetval
 
     def proc_xattr(self, xattrfn):
         pass
