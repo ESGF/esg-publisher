@@ -362,7 +362,8 @@ class ESGPubMakeDataset:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
                 if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
-                    self.publog.warning("Autocurator data not found for file: " + fullpath)
+                    self.publog.error("Autocurator data not found for file: " + fullpath)
+                    exit(1)
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)

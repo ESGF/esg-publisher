@@ -104,6 +104,7 @@ class PublisherArgs:
                 verbose = False
         else:
             verbose = True
+            silent = False
 
         if pub.cert == "./cert.pem":
             try:

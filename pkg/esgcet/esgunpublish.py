@@ -10,6 +10,7 @@ import esgcet.logger as logger
 log = logger.Logger()
 publog = log.return_logger('esgunpublish')
 
+import esgcet
 
 def get_args():
     parser = argparse.ArgumentParser(description="Unpublish data sets from ESGF databases.")
@@ -24,6 +25,9 @@ def get_args():
     parser.add_argument("--dset-id", dest="dset_id", required=True,
                         help="Dataset ID for dataset to be retracted or deleted.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
+    parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
+
 
     pub = parser.parse_args()
 
@@ -65,6 +69,8 @@ def run():
 
     dset_id = a.dset_id
 
+
+
     if not '|' in dset_id:
         if a.data_node is None:
             try:
@@ -82,6 +88,15 @@ def run():
         d = True
     else:
         d = False
+
+    if pub.index_node is None:
+        try:
+            index_node = config['user']['index_node']
+        except:
+            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
+            exit(1)
+    else:
+        index_node = pub.index_node
 
     try:
         upub.run([dset_id, d, data_node, index_node, cert])
