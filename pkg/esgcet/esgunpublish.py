@@ -36,6 +36,7 @@ def get_args():
 
 def run():
     a = get_args()
+
     ini_file = a.cfg
     config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
@@ -49,6 +50,7 @@ def run():
     except Exception as ex:
         publog.exception("Could not read config file")
         exit(1)
+
 
     if a.cert == "./cert.pem":
         try:
@@ -98,8 +100,38 @@ def run():
     else:
         index_node = pub.index_node
 
+    if pub.no_auth:
+        auth = False
+    else:
+        auth = True
+
+    if not pub.silent:
+        try:
+            s = config['user']['silent']
+            if 'true' in s or 'yes' in s:
+                silent = True
+            else:
+                silent = False
+        except:
+            silent = False
+    else:
+        silent = True
+
+    if not pub.verbose:
+        try:
+            v = config['user']['verbose']
+            if 'true' in v or 'yes' in v:
+                verbose = True
+            else:
+                verbose = False
+        except:
+            verbose = False
+    else:
+        verbose = True
+        silent = False
+
     try:
-        upub.run([dset_id, d, data_node, index_node, cert])
+        upub.run([dset_id, d, data_node, index_node, cert, auth])
     except Exception as ex:
         publog.exception("Failed to unpublish")
         exit(1)
