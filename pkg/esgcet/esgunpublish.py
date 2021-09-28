@@ -27,7 +27,8 @@ def get_args():
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
-
+    parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
+    parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
     pub = parser.parse_args()
 
@@ -91,21 +92,21 @@ def run():
     else:
         d = False
 
-    if pub.index_node is None:
+    if a.index_node is None:
         try:
             index_node = config['user']['index_node']
         except:
             publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)
     else:
-        index_node = pub.index_node
+        index_node = a.index_node
 
-    if pub.no_auth:
+    if a.no_auth:
         auth = False
     else:
         auth = True
 
-    if not pub.silent:
+    if not a.silent:
         try:
             s = config['user']['silent']
             if 'true' in s or 'yes' in s:
@@ -117,7 +118,7 @@ def run():
     else:
         silent = True
 
-    if not pub.verbose:
+    if not a.verbose:
         try:
             v = config['user']['verbose']
             if 'true' in v or 'yes' in v:
