@@ -132,7 +132,7 @@ def run():
         silent = False
 
     try:
-        upub.run([dset_id, d, data_node, index_node, cert, auth])
+        upub.run([dset_id, d, data_node, index_node, cert, auth, verbose, silent])
     except Exception as ex:
         publog.exception("Failed to unpublish")
         exit(1)

@@ -1,9 +1,11 @@
 from esgcet.pub_client import publisherClient
 import sys, json
-from esgcet.settings import INDEX_NODE, CERT_FN, DATA_NODE
+
 
 
 def run(args):
+
+
 
     dset_id = args[0]
     do_delete = args[1]
@@ -11,6 +13,8 @@ def run(args):
     hostname = args[3]
     cert_fn = args[4]
     auth = args[5]
+    verbose = args[6]    
+    silent = args[7]
 
     # ensure that dataset id is in correct format, use the set data node as a default
     if not '|' in dset_id:
@@ -18,7 +22,7 @@ def run(args):
         dset_id_new = '{}|{}'.format(dset_id, data_node)
         dset_id = dset_id_new
         
-    pubCli = publisherClient(cert_fn, hostname, auth=auth)
+    pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=verbose, silent=silent)
 
     if do_delete:
         pubCli.delete(dset_id)
