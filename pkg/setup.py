@@ -8,8 +8,9 @@ import configparser as cfg
 from shutil import copyfile
 
 
+import esgcet
+VERSION = esgcet.__version__
 
-VERSION = '5.1.0b4'
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'

@@ -1,7 +1,6 @@
 package:
   name: esgcet
-  version: 5.1.0b4
-
+  version: 5.1.0b5
 
 source:
   git_rev: refactor

@@ -10,6 +10,7 @@ import esgcet.logger as logger
 log = logger.Logger()
 publog = log.return_logger('esgunpublish')
 
+import esgcet
 
 def get_args():
     parser = argparse.ArgumentParser(description="Unpublish data sets from ESGF databases.")
@@ -24,6 +25,10 @@ def get_args():
     parser.add_argument("--dset-id", dest="dset_id", required=True,
                         help="Dataset ID for dataset to be retracted or deleted.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
+    parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
+    parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
+    parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
     pub = parser.parse_args()
 
@@ -32,6 +37,7 @@ def get_args():
 
 def run():
     a = get_args()
+
     ini_file = a.cfg
     config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
@@ -45,6 +51,7 @@ def run():
     except Exception as ex:
         publog.exception("Could not read config file")
         exit(1)
+
 
     if a.cert == "./cert.pem":
         try:
@@ -65,6 +72,8 @@ def run():
 
     dset_id = a.dset_id
 
+
+
     if not '|' in dset_id:
         if a.data_node is None:
             try:
@@ -83,8 +92,47 @@ def run():
     else:
         d = False
 
+    if a.index_node is None:
+        try:
+            index_node = config['user']['index_node']
+        except:
+            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
+            exit(1)
+    else:
+        index_node = a.index_node
+
+    if a.no_auth:
+        auth = False
+    else:
+        auth = True
+
+    if not a.silent:
+        try:
+            s = config['user']['silent']
+            if 'true' in s or 'yes' in s:
+                silent = True
+            else:
+                silent = False
+        except:
+            silent = False
+    else:
+        silent = True
+
+    if not a.verbose:
+        try:
+            v = config['user']['verbose']
+            if 'true' in v or 'yes' in v:
+                verbose = True
+            else:
+                verbose = False
+        except:
+            verbose = False
+    else:
+        verbose = True
+        silent = False
+
     try:
-        upub.run([dset_id, d, data_node, index_node, cert])
+        upub.run([dset_id, d, data_node, index_node, cert, auth, verbose, silent])
     except Exception as ex:
         publog.exception("Failed to unpublish")
         exit(1)

@@ -48,6 +48,7 @@ class ESGPubMakeDataset:
         self.CONST_ATTR = None
         self.variable_name = "variable_id"
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
+        self.xattr = None
 
     def set_project(self, project_in):
         self.project = project_in
@@ -63,6 +64,8 @@ class ESGPubMakeDataset:
                 yield (x)
 
     def load_xattr(self, xattrfn):
+        if self.xattr:
+            return
         if (xattrfn):
             self.xattr = json.load(open(xattrfn))
         else:
@@ -359,7 +362,8 @@ class ESGPubMakeDataset:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
                 if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
-                    self.publog.warning("Autocurator data not found for file: " + fullpath)
+                    self.publog.error("Autocurator data not found for file: " + fullpath)
+                    exit(1)
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
