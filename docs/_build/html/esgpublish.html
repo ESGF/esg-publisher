@@ -42,7 +42,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="esgcet 5.0.0a documentation" href="index.html"/>
         <link rel="next" title="esgmapconv" href="esgmapconv.html"/>
-        <link rel="prev" title="Installation" href="install.html"/> 
+        <link rel="prev" title="esgmigrate" href="esgmigrate.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -91,7 +91,11 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Publisher Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autocurator.html">Autocurator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmor.html">CMOR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgmigrate.html">esgmigrate</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">esgpublish</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 </ul>
@@ -101,6 +105,9 @@
 <li class="toctree-l1"><a class="reference internal" href="esgpidcitepub.html">esgpidcitepub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgupdate.html">esgupdate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgindexpub.html">esgindexpub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgunpublish.html">esgunpublish</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting &amp; Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
 
             
@@ -164,7 +171,7 @@
         <a href="esgmapconv.html" class="btn btn-neutral float-right" title="esgmapconv" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="esgmigrate.html" class="btn btn-neutral" title="esgmigrate" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
   </div>
   
@@ -185,8 +192,12 @@ If an error occurs, a helpful statement will be printed explaining which step we
 </div>
 <p>You can also use <code class="docutils literal notranslate"><span class="pre">--help</span></code> to see:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ esgpublish --help
-usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--json JSON] [--data-node DATA_NODE] [--index-node INDEX_NODE] [--certificate CERT] [--project PROJ]
-                  [--cmor-tables CMOR_PATH] [--autocurator AUTOCURATOR_PATH] --map MAP
+usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--esgmigrate]
+                  [--json JSON] [--data-node DATA_NODE]
+                  [--index-node INDEX_NODE] [--certificate CERT]
+                  [--project PROJ] [--cmor-tables CMOR_PATH]
+                  [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
+                  [--ini CFG] [--silent] [--verbose] [--no-auth] [--verify]
 
 Publish data sets to ESGF databases.
 
@@ -208,10 +219,21 @@ optional arguments:
   --autocurator AUTOCURATOR_PATH
                         Path to autocurator repository folder.
   --map MAP             mapfile or file containing a list of mapfiles.
+  --ini CFG, -i CFG     Path to config file.
+  --silent              Enable silent mode.
+  --verbose             Enable verbose mode.
+  --no-auth             Run publisher without certificate, only works on certain index nodes.
+  --verify              Toggle verification for publishing, default is off.
 </pre></div>
 </div>
-<p>This command can handle a singular mapfile passed to it, or a file containing a list of mapfiles (with full paths).
-If optional command line arguments are used, they will override anything set in the config file.</p>
+<p>This command can handle a singular mapfile passed to it, a file containing a list of mapfiles (with full paths), a directory of mapfiles, or a directory of lists of mapfiles.
+You do not need to specify how you are passing mapfiles, but all of them must be for the same project in order for them to be published with the correct metadata.
+If optional command line arguments are used, they will override anything set in the config file.
+NOTE: If, in your config file, you have specified a directory for <code class="docutils literal notranslate"><span class="pre">autocurator</span></code> rather than the default command, ie you are using a different <code class="docutils literal notranslate"><span class="pre">autocurator</span></code> than the one installed using conda, you must run the following command prior to running <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
+</pre></div>
+</div>
+<p>If you do not run this and are not using the conda installed <code class="docutils literal notranslate"><span class="pre">autocurator</span></code>, the program will not work.</p>
 </div>
 </div>
 
@@ -228,7 +250,7 @@ If optional command line arguments are used, they will override anything set in 
         <a href="esgmapconv.html" class="btn btn-neutral float-right" title="esgmapconv" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="esgmigrate.html" class="btn btn-neutral" title="esgmigrate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
