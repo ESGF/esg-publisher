@@ -41,7 +41,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="esgcet 5.0.0a documentation" href="#"/>
-        <link rel="next" title="Installation" href="install.html"/> 
+        <link rel="next" title="Publisher Introduction" href="intro.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -90,13 +90,21 @@
             
             
               <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Publisher Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autocurator.html">Autocurator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmor.html">CMOR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgmigrate.html">esgmigrate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgpublish.html">esgpublish</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgmapconv.html">esgmapconv</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgmkpubrec.html">esgmkpubrec</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgpidcitepub.html">esgpidcitepub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgupdate.html">esgupdate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgindexpub.html">esgindexpub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgunpublish.html">esgunpublish</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting &amp; Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
 
             
@@ -157,7 +165,7 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="intro.html" class="btn btn-neutral float-right" title="Publisher Introduction" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
   </div>
@@ -169,12 +177,45 @@
             
   <div class="section" id="the-esgcet-package-for-esgf-publication">
 <h1>The esgcet package for ESGF Publication<a class="headerlink" href="#the-esgcet-package-for-esgf-publication" title="Permalink to this headline">¶</a></h1>
+<p>Esgcet is a package of publisher commands for publishing to the <a class="reference external" href="https://esgf-node.llnl.gov/projects/esgf-llnl/">ESGF</a> search database.</p>
+<div class="section" id="tl-dr">
+<h2>TL;DR<a class="headerlink" href="#tl-dr" title="Permalink to this headline">¶</a></h2>
+<p>if you have conda you can install the publisher wih the following into a fresh environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">esgf</span><span class="o">-</span><span class="n">pub</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">esgf</span><span class="o">-</span><span class="n">forge</span> <span class="n">esgcet</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">esgf</span><span class="o">-</span><span class="n">pub</span>
+<span class="n">esgpublish</span> <span class="c1"># will print the usage information.</span>
+</pre></div>
+</div>
+<p>You may also look at the inital <code class="docutils literal notranslate"><span class="pre">~/.esg/esg.ini</span></code> and fill in the missing information based on the provided examples.</p>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Publisher Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#prerequisites">Prerequisites</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="whatsnew.html#v5-1-0-b5">v5.1.0-b5</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#conda-required-packages">Conda &amp; Required Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-esgcet">Installing esgcet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#config">Config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#run-time-args">Run Time Args</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autocurator.html">Autocurator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autocurator.html#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autocurator.html#running-autocurator">Running Autocurator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cmor.html">CMOR</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cmor.html#esgprep">esgprep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cmor.html#clone-git-repository">Clone Git Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="esgmigrate.html">esgmigrate</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="esgmigrate.html#usage">Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="esgpublish.html">esgpublish</a><ul>
@@ -201,9 +242,18 @@
 <li class="toctree-l2"><a class="reference internal" href="esgindexpub.html#usage">Usage</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="esgunpublish.html">esgunpublish</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="esgunpublish.html#usage">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting &amp; Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#updates-to-this-document">Updates to this document</a></li>
+</ul>
+</li>
 </ul>
 </div>
-<p>Esgcet is a package of publisher commands for publishing to the <a class="reference external" href="https://esgf-node.llnl.gov/projects/esgf-llnl/">ESGF</a> search database.</p>
+</div>
 </div>
 
 
@@ -216,7 +266,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="intro.html" class="btn btn-neutral float-right" title="Publisher Introduction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

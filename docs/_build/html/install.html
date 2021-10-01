@@ -41,8 +41,8 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="esgcet 5.0.0a documentation" href="index.html"/>
-        <link rel="next" title="esgpublish" href="esgpublish.html"/>
-        <link rel="prev" title="The esgcet package for ESGF Publication" href="index.html"/> 
+        <link rel="next" title="Autocurator" href="autocurator.html"/>
+        <link rel="prev" title="Publisher Introduction" href="intro.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -91,18 +91,26 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Publisher Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#conda-required-packages">Conda &amp; Required Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-esgcet">Installing esgcet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#config">Config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#run-time-args">Run Time Args</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="autocurator.html">Autocurator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmor.html">CMOR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgmigrate.html">esgmigrate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgpublish.html">esgpublish</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgmapconv.html">esgmapconv</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgmkpubrec.html">esgmkpubrec</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgpidcitepub.html">esgpidcitepub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgupdate.html">esgupdate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgindexpub.html">esgindexpub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgunpublish.html">esgunpublish</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting &amp; Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
 
             
@@ -163,10 +171,10 @@
   
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
-        <a href="esgpublish.html" class="btn btn-neutral float-right" title="esgpublish" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="autocurator.html" class="btn btn-neutral float-right" title="Autocurator" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="The esgcet package for ESGF Publication" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="intro.html" class="btn btn-neutral" title="Publisher Introduction" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
   </div>
   
@@ -177,69 +185,180 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>Install esgcet by running</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">lisi</span><span class="o">-</span><span class="n">w</span><span class="o">/</span><span class="n">esg</span><span class="o">-</span><span class="n">publisher</span><span class="o">.</span><span class="n">git</span> <span class="o">-</span><span class="n">b</span> <span class="n">gen</span><span class="o">-</span><span class="n">five</span><span class="o">-</span><span class="n">pkg</span>
-<span class="n">cd</span> <span class="n">pkg</span>
-<span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
-</pre></div>
-</div>
-<p>Now you will be able to call all commands in this package from any directory. A default config file, <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> will populate in <code class="docutils literal notranslate"><span class="pre">$HOME/.esg</span></code> where <code class="docutils literal notranslate"><span class="pre">$HOME</span></code> is your home directory.
-Setup will also make autocurator in <code class="docutils literal notranslate"><span class="pre">$HOME/autocurator</span></code> and put the CMOR tables necessary for PrePARE into <code class="docutils literal notranslate"><span class="pre">$HOME/cmor/Tables</span></code> by cloning and both repositories. If these directories already exist,
-that part will fail but the package will still install, just be sure to edit the paths for CMOR and autocurator in the config file as needed.</p>
 <div class="section" id="conda-required-packages">
 <h2>Conda &amp; Required Packages<a class="headerlink" href="#conda-required-packages" title="Permalink to this headline">¶</a></h2>
 <p>We recommend creating a conda env before installing <code class="docutils literal notranslate"><span class="pre">esgcet</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">esgf</span><span class="o">-</span><span class="n">pub</span><span class="o">-</span><span class="n">v5</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pip</span> <span class="n">requests</span> <span class="n">libnetcdf</span> <span class="n">cmor</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">esgf</span><span class="o">-</span><span class="n">pub</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">esgf</span><span class="o">-</span><span class="n">forge</span> <span class="n">pip</span> <span class="n">libnetcdf</span> <span class="n">cmor</span> <span class="n">autocurator</span> <span class="n">esgconfigparser</span>
 </pre></div>
 </div>
+<p>NOTE: if you install esgcet using conda below, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).</p>
 <p>You will also need to install <code class="docutils literal notranslate"><span class="pre">esgfpid</span></code> using pip:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">esgfpid</span>
 </pre></div>
 </div>
+<p>NOTE: you will need a functioning version of <code class="docutils literal notranslate"><span class="pre">autocurator</span></code> in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.</p>
+</div>
+<div class="section" id="installing-esgcet">
+<h2>Installing esgcet<a class="headerlink" href="#installing-esgcet" title="Permalink to this headline">¶</a></h2>
+<p>You can install esgcet one of two ways: conda, or git.</p>
+<p>To install esgcet using conda, activate the environment you created above and run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">esgf</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">esgcet</span>
+</pre></div>
+</div>
+<p>To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">lisi</span><span class="o">-</span><span class="n">w</span><span class="o">/</span><span class="n">esg</span><span class="o">-</span><span class="n">publisher</span><span class="o">.</span><span class="n">git</span> <span class="o">-</span><span class="n">b</span> <span class="n">refactor</span>
+<span class="n">cd</span> <span class="n">esg</span><span class="o">-</span><span class="n">publisher</span>
+<span class="n">cd</span> <span class="n">pkg</span>
+<span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>Now you will be able to call all commands in this package from any directory. A default config file, <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> will populate in <code class="docutils literal notranslate"><span class="pre">$HOME/.esg</span></code> where <code class="docutils literal notranslate"><span class="pre">$HOME</span></code> is your home directory.</p>
+<p>NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.</p>
 </div>
 <div class="section" id="config">
 <h2>Config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h2>
-<p>The default config file will look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">DEFAULT</span><span class="p">]</span>
-<span class="n">note</span> <span class="o">=</span> <span class="n">IMPORTANT</span><span class="p">:</span> <span class="n">please</span> <span class="n">configure</span> <span class="n">below</span> <span class="ow">in</span> <span class="n">the</span> <span class="p">[</span><span class="n">user</span><span class="p">]</span> <span class="n">section</span><span class="p">,</span> <span class="n">that</span> <span class="ow">is</span> <span class="n">what</span> <span class="n">the</span> <span class="n">publisher</span> <span class="n">will</span> <span class="n">use</span> <span class="n">to</span> <span class="n">read</span> <span class="n">configured</span> <span class="n">settings</span><span class="o">.</span> <span class="n">The</span> <span class="n">below</span> <span class="n">are</span> <span class="n">marked</span> <span class="k">as</span> <span class="n">necessary</span> <span class="ow">or</span> <span class="n">optional</span> <span class="n">variables</span><span class="o">.</span>
-<span class="n">data_node</span> <span class="o">=</span> <span class="o">*</span> <span class="n">necessary</span>
-<span class="n">index_node</span> <span class="o">=</span> <span class="o">*</span> <span class="n">necessary</span>
-<span class="n">cmor_path</span> <span class="o">=</span> <span class="o">~/</span><span class="n">cmor</span><span class="o">/</span><span class="n">Tables</span> <span class="o">*</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">where</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">installed</span> <span class="ow">in</span> <span class="n">setup</span>
-<span class="n">autoc_path</span> <span class="o">=</span> <span class="o">~/</span><span class="n">autocurator</span> <span class="o">*</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">where</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">installed</span> <span class="ow">in</span> <span class="n">setup</span>
-<span class="n">data_roots</span> <span class="o">=</span> <span class="o">*</span> <span class="n">necessary</span><span class="p">,</span> <span class="n">dictionary</span> <span class="nb">format</span> <span class="n">json</span> <span class="n">loadable</span>
-<span class="n">cert</span> <span class="o">=</span> <span class="o">./</span><span class="n">cert</span><span class="o">.</span><span class="n">pem</span> <span class="o">*</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span> <span class="n">assumes</span> <span class="n">cert</span> <span class="ow">in</span> <span class="n">current</span> <span class="n">directory</span><span class="p">,</span> <span class="n">override</span> <span class="n">to</span> <span class="n">change</span>
-<span class="n">test</span> <span class="o">=</span> <span class="n">false</span> <span class="o">*</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span> <span class="n">assumes</span> <span class="n">test</span> <span class="ow">is</span> <span class="n">off</span><span class="p">,</span> <span class="n">override</span> <span class="n">to</span> <span class="n">change</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">none</span> <span class="o">*</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span> <span class="n">will</span> <span class="n">be</span> <span class="n">parsed</span> <span class="kn">from</span> <span class="nn">mapfile</span> <span class="n">name</span>
-<span class="n">set_replica</span> <span class="o">=</span> <span class="n">false</span> <span class="o">*</span> <span class="n">optional</span><span class="p">,</span> <span class="n">default</span> <span class="n">assumes</span> <span class="n">replica</span> <span class="n">publication</span> <span class="n">off</span>
-<span class="n">globus_uuid</span> <span class="o">=</span> <span class="n">none</span> <span class="o">*</span> <span class="n">optional</span>
-<span class="n">data_transfer_node</span> <span class="o">=</span> <span class="n">none</span> <span class="o">*</span> <span class="n">optional</span>
-<span class="n">pid_creds</span> <span class="o">=</span> <span class="o">*</span> <span class="n">necessary</span>
-<span class="n">silent</span> <span class="o">=</span> <span class="n">false</span> <span class="o">*</span> <span class="n">optional</span>
-<span class="n">verbose</span> <span class="o">=</span> <span class="n">false</span> <span class="o">*</span> <span class="n">optional</span>
-
-<span class="p">[</span><span class="n">user</span><span class="p">]</span>
-<span class="n">data_node</span> <span class="o">=</span>
-<span class="n">index_node</span> <span class="o">=</span>
-<span class="n">cmor_path</span> <span class="o">=</span> <span class="o">~/</span><span class="n">cmor</span><span class="o">/</span><span class="n">Tables</span>
-<span class="n">autoc_path</span> <span class="o">=</span> <span class="o">~/</span><span class="n">autocurator</span>
-<span class="n">data_roots</span> <span class="o">=</span>
-<span class="n">cert</span> <span class="o">=</span> <span class="o">./</span><span class="n">cert</span><span class="o">.</span><span class="n">pem</span>
-<span class="n">test</span> <span class="o">=</span> <span class="n">false</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">none</span>
-<span class="n">set_replica</span> <span class="o">=</span> <span class="n">false</span>
-<span class="n">globus_uuid</span> <span class="o">=</span> <span class="n">none</span>
-<span class="n">data_transfer_node</span> <span class="o">=</span> <span class="n">none</span>
-<span class="n">pid_creds</span> <span class="o">=</span>
-<span class="n">silent</span> <span class="o">=</span> <span class="n">false</span>
-<span class="n">verbose</span> <span class="o">=</span> <span class="n">false</span>
-</pre></div>
-</div>
-<p>Fill out the necessary variables, and either leave or override the optional configurations.</p>
+<p>The config file will contain the following settings:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>version</dt><dd><ul>
+<li><p>This will be predefined in the [DEFAULT] section, it is used by setup to determine at time of install if your config file has all the latest settings.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>data_node</dt><dd><ul>
+<li><p>Required. This is the ESGF node at which the data is stored that you are publishing. It will be concatenated with the dataset_id to form the full id for your dataset.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>index_node</dt><dd><ul>
+<li><p>Required. This is the ESGF node where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>cmor_path</dt><dd><ul>
+<li><p>Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>autoc_path</dt><dd><ul>
+<li><p>Optional. This is the path for the autocurator executable. The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>data_roots</dt><dd><ul>
+<li><p>Required. Must be in a json string loadable by python. Maps file roots to names.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>mountpoint_map</dt><dd><ul>
+<li><p>Optional. Must be in a json string loadable by python. Changes specified sym link file roots in mapfile to actual file roots like so: {“/symlink/dir”: “/actual/path”}</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>cert</dt><dd><ul>
+<li><p>Optional. This is the full path to the certificate file used for publishing. Default assumes a file “cert.pem” in your current directory. Replace to override.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>test</dt><dd><ul>
+<li><p>Optional. This can be set to True or False, and it will run the esgfpid service in test mode. Default assumes False. Override if you are not doing production publishing.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>project</dt><dd><ul>
+<li><p>Optional. ESGF project to which your data belongs. Default will be parsed from the mapfile name.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>non_netcdf</dt><dd><ul>
+<li><p>Optional. Enable or disable publication settings for non NetCDF data, default assumes False.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>set_replica</dt><dd><ul>
+<li><p>Optional. Enable or disable replica publication settings. Default assumes False, or replica publication off.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>globus_uuid</dt><dd><ul>
+<li><p>Optional. Specify Globus UUID. Default leaves out Globus URL from dataset metadata.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>data_transfer_node</dt><dd><ul>
+<li><p>Optional. Specify the Data Transfer Node for your dataset. Default is none.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>pid_creds</dt><dd><ul>
+<li><p>Required for some projects (CMIP6, input4MIPs). Input esgfpid credentials in a json loadable string.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>user_project_config</dt><dd><ul>
+<li><p>Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR into a json loadable dictionary.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>silent</dt><dd><ul>
+<li><p>Optional. Enable or disable silent mode, which represses all INFO logging messages. Default is False, silent mode disabled.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>verbose</dt><dd><ul>
+<li><p>Optional. Enable or disable verbose mode, which outputs additional DEBUG logging messages. Default is False, verbose mode disabled.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the <code class="docutils literal notranslate"><span class="pre">user</span></code> section, not the default nor example.
+Example config settings can be found in the default esg.ini config file which will be created at <code class="docutils literal notranslate"><span class="pre">$HOME/.esg/esg.ini</span></code> when you install <code class="docutils literal notranslate"><span class="pre">esgcet</span></code>.
+Note that while the <code class="docutils literal notranslate"><span class="pre">cmor_path</span></code> variable points to a directory, other filepaths must be complete, such as <code class="docutils literal notranslate"><span class="pre">autoc_path</span></code> and <code class="docutils literal notranslate"><span class="pre">cert</span></code>. This applies to the command line arguments for these as well.</p>
+<p>If you have an old config file from the previous iteration of the publisher, you can use <code class="docutils literal notranslate"><span class="pre">esgmigrate</span></code> to migrate over those settings to a new config file which can be read by the current publisher.
+See that page for more info.</p>
 </div>
 <div class="section" id="run-time-args">
 <h2>Run Time Args<a class="headerlink" href="#run-time-args" title="Permalink to this headline">¶</a></h2>
 <p>If you prefer to set certain things at runtime, the <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> command has several optional command line arguments which will override options set in the config file.
 For instance, if you use the <code class="docutils literal notranslate"><span class="pre">--cmor-tables</span></code> command line argument to set the path to the cmor tables directory, that will override anything written in the config file under <code class="docutils literal notranslate"><span class="pre">cmor_path</span></code>.
+If you used the old version of the publisher, you should note that the command line argument <code class="docutils literal notranslate"><span class="pre">-ini</span></code> which points to your config file must be a complete path, not the directory as it was in the previous version.
 More details can be found in the <code class="docutils literal notranslate"><span class="pre">esgpublish</span></code> section.</p>
 </div>
 </div>
@@ -254,10 +373,10 @@ More details can be found in the <code class="docutils literal notranslate"><spa
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="esgpublish.html" class="btn btn-neutral float-right" title="esgpublish" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="autocurator.html" class="btn btn-neutral float-right" title="Autocurator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="The esgcet package for ESGF Publication" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="intro.html" class="btn btn-neutral" title="Publisher Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

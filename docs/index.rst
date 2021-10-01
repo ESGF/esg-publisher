@@ -20,6 +20,7 @@ You may also look at the inital ``~/.esg/esg.ini`` and fill in the missing infor
    :maxdepth: 2
 
    intro
+   whatsnew
    install
    autocurator
    cmor

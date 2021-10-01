@@ -14,8 +14,12 @@ Usage
 You can also use ``--help`` to see::
 
         $ esgpublish --help
-        usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--json JSON] [--data-node DATA_NODE] [--index-node INDEX_NODE] [--certificate CERT] [--project PROJ]
-                          [--cmor-tables CMOR_PATH] [--autocurator AUTOCURATOR_PATH] --map MAP
+        usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--esgmigrate]
+                          [--json JSON] [--data-node DATA_NODE]
+                          [--index-node INDEX_NODE] [--certificate CERT]
+                          [--project PROJ] [--cmor-tables CMOR_PATH]
+                          [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
+                          [--ini CFG] [--silent] [--verbose] [--no-auth] [--verify]
 
         Publish data sets to ESGF databases.
 
@@ -37,6 +41,18 @@ You can also use ``--help`` to see::
           --autocurator AUTOCURATOR_PATH
                                 Path to autocurator repository folder.
           --map MAP             mapfile or file containing a list of mapfiles.
+          --ini CFG, -i CFG     Path to config file.
+          --silent              Enable silent mode.
+          --verbose             Enable verbose mode.
+          --no-auth             Run publisher without certificate, only works on certain index nodes.
+          --verify              Toggle verification for publishing, default is off.
 
-This command can handle a singular mapfile passed to it, or a file containing a list of mapfiles (with full paths).
+
+This command can handle a singular mapfile passed to it, a file containing a list of mapfiles (with full paths), a directory of mapfiles, or a directory of lists of mapfiles.
+You do not need to specify how you are passing mapfiles, but all of them must be for the same project in order for them to be published with the correct metadata.
 If optional command line arguments are used, they will override anything set in the config file.
+NOTE: If, in your config file, you have specified a directory for ``autocurator`` rather than the default command, ie you are using a different ``autocurator`` than the one installed using conda, you must run the following command prior to running ``esgpublish``::
+
+    export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
+
+If you do not run this and are not using the conda installed ``autocurator``, the program will not work.

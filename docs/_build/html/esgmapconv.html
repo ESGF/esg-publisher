@@ -91,7 +91,11 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Publisher Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autocurator.html">Autocurator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmor.html">CMOR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgmigrate.html">esgmigrate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgpublish.html">esgpublish</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">esgmapconv</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
@@ -101,6 +105,9 @@
 <li class="toctree-l1"><a class="reference internal" href="esgpidcitepub.html">esgpidcitepub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgupdate.html">esgupdate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgindexpub.html">esgindexpub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgunpublish.html">esgunpublish</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting &amp; Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
 
             
@@ -180,10 +187,25 @@ That data is the input to the <code class="docutils literal notranslate"><span c
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">esgmapconv</span></code> is used with the following syntax:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgmapconv</span> <span class="o">&lt;</span><span class="n">mapfile</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgmapconv</span> <span class="o">--</span><span class="nb">map</span> <span class="o">&lt;</span><span class="n">mapfile</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal notranslate"><span class="pre">&lt;mapfile&gt;</span></code> is the absolute path to a single mapfile. The output will be printed to stdout, but can be easily redirected to a chosen file using <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">filename.json</span></code>.</p>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;mapfile&gt;</span></code> is the absolute path to a single mapfile. The output will be printed to stdout, but can be easily redirected to a chosen file using the <code class="docutils literal notranslate"><span class="pre">--out-file</span></code> option.</p>
+<p>You can also use the other command line options for additional configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">esgmapconv</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">project</span> <span class="n">PROJ</span><span class="p">]</span> <span class="o">--</span><span class="nb">map</span> <span class="n">MAP</span> <span class="p">[</span><span class="o">--</span><span class="n">out</span><span class="o">-</span><span class="n">file</span> <span class="n">OUT_FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ini</span> <span class="n">CFG</span><span class="p">]</span>
+
+<span class="n">Publish</span> <span class="n">data</span> <span class="n">sets</span> <span class="n">to</span> <span class="n">ESGF</span> <span class="n">databases</span><span class="o">.</span>
+
+<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
+    <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>           <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+    <span class="o">--</span><span class="n">project</span> <span class="n">PROJ</span>       <span class="n">Set</span><span class="o">/</span><span class="n">overide</span> <span class="n">the</span> <span class="n">project</span> <span class="k">for</span> <span class="n">the</span> <span class="n">given</span> <span class="n">mapfile</span><span class="p">,</span> <span class="k">for</span> <span class="n">use</span> <span class="k">with</span> <span class="n">selecting</span> <span class="n">the</span> <span class="n">DRS</span> <span class="ow">or</span> <span class="n">specific</span> <span class="n">features</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">PrePARE</span><span class="p">,</span> <span class="n">PID</span><span class="o">.</span>
+    <span class="o">--</span><span class="nb">map</span> <span class="n">MAP</span>            <span class="n">Mapfile</span> <span class="n">ending</span> <span class="ow">in</span> <span class="o">.</span><span class="n">map</span> <span class="n">extension</span><span class="p">,</span> <span class="n">contains</span> <span class="n">metadata</span> <span class="n">about</span> <span class="n">the</span> <span class="n">record</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">out</span><span class="o">-</span><span class="n">file</span> <span class="n">OUT_FILE</span>  <span class="n">Output</span> <span class="n">file</span> <span class="k">for</span> <span class="nb">map</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">JSON</span> <span class="nb">format</span><span class="o">.</span> <span class="n">Default</span> <span class="ow">is</span> <span class="n">printed</span> <span class="n">to</span> <span class="n">standard</span> <span class="n">out</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">ini</span> <span class="n">CFG</span><span class="p">,</span> <span class="o">-</span><span class="n">i</span> <span class="n">CFG</span>    <span class="n">Path</span> <span class="n">to</span> <span class="n">config</span> <span class="n">file</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Using the command line option <code class="docutils literal notranslate"><span class="pre">-h</span></code> will display the above message.
+The above options (excluding <code class="docutils literal notranslate"><span class="pre">--map</span></code>) can be defined in the config file instead of the command line if you choose.</p>
 </div>
 </div>
 

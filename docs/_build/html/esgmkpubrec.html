@@ -91,7 +91,11 @@
             
             
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Publisher Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autocurator.html">Autocurator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmor.html">CMOR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgmigrate.html">esgmigrate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgpublish.html">esgpublish</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgmapconv.html">esgmapconv</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">esgmkpubrec</a><ul>
@@ -101,6 +105,9 @@
 <li class="toctree-l1"><a class="reference internal" href="esgpidcitepub.html">esgpidcitepub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgupdate.html">esgupdate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="esgindexpub.html">esgindexpub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esgunpublish.html">esgunpublish</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting &amp; Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
 
             
@@ -181,12 +188,41 @@ This output is the input to the <code class="docutils literal notranslate"><span
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">esgmkpubrec</span></code> is used with the following syntax:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgmkpubrec</span> <span class="o">&lt;</span><span class="n">JSON</span> <span class="n">file</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">scan</span> <span class="n">file</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">esgmkpubrec</span> <span class="o">--</span><span class="n">scan</span><span class="o">-</span><span class="n">file</span> <span class="o">&lt;</span><span class="n">scan</span> <span class="n">file</span><span class="o">&gt;</span> <span class="o">--</span><span class="nb">map</span><span class="o">-</span><span class="n">data</span> <span class="o">&lt;</span><span class="n">JSON</span> <span class="n">file</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">&lt;JSON</span> <span class="pre">file&gt;</span></code> is the aforementioned output from <code class="docutils literal notranslate"><span class="pre">esgmapconv</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;scan</span> <span class="pre">file&gt;</span></code> is the output of <code class="docutils literal notranslate"><span class="pre">autocurator&lt;https://github.com/lisi-w/autocurator&gt;`_.</span>
-<span class="pre">The</span> <span class="pre">output</span> <span class="pre">is</span> <span class="pre">again</span> <span class="pre">defaulted</span> <span class="pre">to</span> <span class="pre">stdout,</span> <span class="pre">but</span> <span class="pre">can</span> <span class="pre">easily</span> <span class="pre">be</span> <span class="pre">redirected</span> <span class="pre">using</span> <span class="pre">``&gt;</span> <span class="pre">filename.json</span></code>.
-This command requires that <code class="docutils literal notranslate"><span class="pre">data_node</span></code>, <code class="docutils literal notranslate"><span class="pre">index_node</span></code>, and <code class="docutils literal notranslate"><span class="pre">replica</span></code> are all defined in the <code class="docutils literal notranslate"><span class="pre">esg.ini</span></code> config file.</p>
+<span class="pre">The</span> <span class="pre">output</span> <span class="pre">is</span> <span class="pre">again</span> <span class="pre">defaulted</span> <span class="pre">to</span> <span class="pre">stdout,</span> <span class="pre">but</span> <span class="pre">can</span> <span class="pre">easily</span> <span class="pre">be</span> <span class="pre">redirected</span> <span class="pre">using</span> <span class="pre">the</span> <span class="pre">``--out-file</span></code> option.</p>
+<p>The other command line options are as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">esgmkpubrec</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">replica</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">replica</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">json</span> <span class="n">JSON</span><span class="p">]</span>
+                   <span class="o">--</span><span class="n">scan</span><span class="o">-</span><span class="n">file</span> <span class="n">SCAN_FILE</span> <span class="o">--</span><span class="nb">map</span><span class="o">-</span><span class="n">data</span> <span class="n">MAP_DATA</span>
+                   <span class="p">[</span><span class="o">--</span><span class="n">out</span><span class="o">-</span><span class="n">file</span> <span class="n">OUT_FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">node</span> <span class="n">DATA_NODE</span><span class="p">]</span>
+                   <span class="p">[</span><span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">node</span> <span class="n">INDEX_NODE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">project</span> <span class="n">PROJ</span><span class="p">]</span>
+                   <span class="p">[</span><span class="o">--</span><span class="n">ini</span> <span class="n">CFG</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">silent</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">verbose</span><span class="p">]</span>
+
+
+<span class="n">Publish</span> <span class="n">data</span> <span class="n">sets</span> <span class="n">to</span> <span class="n">ESGF</span> <span class="n">databases</span><span class="o">.</span>
+
+<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
+    <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+    <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">replica</span>         <span class="n">Enable</span> <span class="n">replica</span> <span class="n">publication</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">replica</span>          <span class="n">Disable</span> <span class="n">replica</span> <span class="n">publication</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">json</span> <span class="n">JSON</span>           <span class="n">Load</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">JSON</span> <span class="n">file</span> <span class="ow">in</span> <span class="o">.</span><span class="n">json</span> <span class="n">form</span><span class="o">.</span> <span class="n">The</span> <span class="n">attributes</span> <span class="n">will</span> <span class="n">override</span> <span class="nb">any</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">DRS</span> <span class="n">structure</span> <span class="ow">or</span> <span class="k">global</span> <span class="n">attributes</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">scan</span><span class="o">-</span><span class="n">file</span> <span class="n">SCAN_FILE</span>
+                          <span class="n">JSON</span> <span class="n">output</span> <span class="n">file</span> <span class="kn">from</span> <span class="nn">autocurator.</span>
+    <span class="o">--</span><span class="nb">map</span><span class="o">-</span><span class="n">data</span> <span class="n">MAP_DATA</span>   <span class="n">Mapfile</span> <span class="n">json</span> <span class="n">data</span> <span class="n">converted</span> <span class="n">using</span> <span class="n">esgmapconv</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">out</span><span class="o">-</span><span class="n">file</span> <span class="n">OUT_FILE</span>   <span class="n">Optional</span> <span class="n">output</span> <span class="n">file</span> <span class="n">destination</span><span class="o">.</span> <span class="n">Default</span> <span class="ow">is</span> <span class="n">stdout</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">node</span> <span class="n">DATA_NODE</span>
+                          <span class="n">Specify</span> <span class="n">data</span> <span class="n">node</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">node</span> <span class="n">INDEX_NODE</span>
+                          <span class="n">Specify</span> <span class="n">index</span> <span class="n">node</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">project</span> <span class="n">PROJ</span>        <span class="n">Set</span><span class="o">/</span><span class="n">overide</span> <span class="n">the</span> <span class="n">project</span> <span class="k">for</span> <span class="n">the</span> <span class="n">given</span> <span class="n">mapfile</span><span class="p">,</span> <span class="k">for</span> <span class="n">use</span> <span class="k">with</span> <span class="n">selecting</span> <span class="n">the</span> <span class="n">DRS</span> <span class="ow">or</span> <span class="n">specific</span> <span class="n">features</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">PrePARE</span><span class="p">,</span> <span class="n">PID</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">ini</span> <span class="n">CFG</span><span class="p">,</span> <span class="o">-</span><span class="n">i</span> <span class="n">CFG</span>     <span class="n">Path</span> <span class="n">to</span> <span class="n">config</span> <span class="n">file</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">silent</span>              <span class="n">Enable</span> <span class="n">silent</span> <span class="n">mode</span><span class="o">.</span>
+    <span class="o">--</span><span class="n">verbose</span>             <span class="n">Enable</span> <span class="n">verbose</span> <span class="n">mode</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>NOTE: <code class="docutils literal notranslate"><span class="pre">esgmkpubrec</span></code> has customized settings and features depending on the project. If the project is undefined, it will use default settings which may not work for your project and could result in errors. It is highly recommended to specify your project, and also use the config file to specify if it is non-netcdf data.</p>
 </div>
 </div>
 
