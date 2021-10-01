@@ -10,6 +10,7 @@ from shutil import copyfile
 
 import esgcet
 VERSION = esgcet.__version__
+
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
