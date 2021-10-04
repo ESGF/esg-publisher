@@ -65,6 +65,12 @@ class ESGPubMigrate(object):
         res = urlparse(index_url)
         index_node = res.netloc
 
+
+        try:
+            cmor_path = sp.get('cmor_table_path')
+        except:
+            cmor_path = "/usr/local/cmip6-cmor-tables/Tables"
+
         try:
             pid_creds_in = sp.get_options_from_table('pid_credentials')
         except:
@@ -133,7 +139,8 @@ class ESGPubMigrate(object):
         config = cfg.ConfigParser()
         config.read(config_file)
         new_config = {"data_node": data_node, "index_node": index_node, "data_roots": json.dumps(dr_dict), "cert": CERT_FN,
-                      "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds)}
+                      "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds)
+                      "cmor_path" : cmor_table_path }
 
         try:
             test = config['user']['data_node']
