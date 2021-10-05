@@ -5,7 +5,7 @@ import json
 from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-import sys
+import sys, os
 import esgcet.logger as logger
 
 log = logger.Logger()
@@ -20,7 +20,7 @@ class cmip6(GenericPublisher):
     def __init__(self, argdict):
         super().__init__(argdict)
         self.pid_creds = argdict["pid_creds"]
-        self.cmor_tables = argdict["cmor_tables"]
+        self.cmor_tables = os.path.expanduser(argdict["cmor_tables"])
         self.test = argdict["test"]
         if self.replica:
             self.skip_prepare= argdict["skip-prepare"]
@@ -28,6 +28,7 @@ class cmip6(GenericPublisher):
 
     def prepare_internal(self, json_map, cmor_tables):
         try:
+            assert(os.path.isdir(cmor_tables), f"{cmor_tables} exists and is a directory")
             self.publog.info("Iterating through filenames for PrePARE (internal version)...")
             validator = PrePARE.PrePARE
             for info in json_map:

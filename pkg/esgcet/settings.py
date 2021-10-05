@@ -89,7 +89,7 @@ PID_PREFIX = '21.14100' # for testing use CMIP6,  need to be project-specific
 PID_EXCHANGE = 'esgffed-exchange'
 HTTP_SERVICE = '/thredds/fileServer/'
 
-CITATION_URLS = { 'CMIP6' : {'test' :
+CITATION_URLS = { 'cmip6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'},
 'input4mips' : {'test' :

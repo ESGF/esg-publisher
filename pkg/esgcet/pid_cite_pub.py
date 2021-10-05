@@ -147,7 +147,7 @@ class ESGPubPidCite(object):
     def update_dataset(self, index):
 
         dset_rec = self.ds_records[index]
-        project = dset_rec['project']
+        project = dset_rec['project'].lower()
         if self.test_publication:
             keystr = 'test'
         else:
