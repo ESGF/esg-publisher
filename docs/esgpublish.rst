@@ -56,3 +56,6 @@ NOTE: If, in your config file, you have specified a directory for ``autocurator`
     export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 
 If you do not run this and are not using the conda installed ``autocurator``, the program will not work.
+
+.. warning::
+    Please do not attempt to run `esg-publisher` commands with a legacy esg.ini file using the ``-i`` argumement.   You will need to migrate the config using :ref:`migrate`.
