@@ -205,8 +205,17 @@ class ESGPubMakeDataset:
         rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.first_val)
 
         if not proj_root in self.data_roots:
-            self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
-            exit(1)
+
+            root_found = False
+            for root in self.data_roots:
+                if self.first_val in root:
+                    proj_root = self.first_val
+                    rel_path = rel_path.replace(f"{self.first_val}/","")
+                    root_found = True
+                    break
+            if not root_found:
+                self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
+                exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         if "number_of_files" in ret:
