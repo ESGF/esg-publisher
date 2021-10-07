@@ -206,10 +206,13 @@ class ESGPubMakeDataset:
 
         if not proj_root in self.data_roots:
 
+            # Need to handle the case where the root might contain the
+            # project ID, ensure that the original root and the id are
+            # found.`
             root_found = False
             for root in self.data_roots:
-                if self.first_val in root:
-                    proj_root = self.first_val
+                if self.first_val in root and proj_root in root:
+                    proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
                     break
