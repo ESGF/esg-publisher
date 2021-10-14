@@ -192,7 +192,7 @@ class ESGPubMakeDataset:
 
         fparts = fullfn.split('/')
         title = fparts[-1]
-        ret['id'] = "{}.{}|{}".format(ret['instance_id'], title, mapdata["data_node"])
+        ret['id'] = "{}.{}|{}".format(ret['instance_id'], title, self.data_node)
         ret['title'] = title
         ret["dataset_id"] = dataset_id
         if "tracking_id" in fn_trid:
