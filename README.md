@@ -1,12 +1,29 @@
 # ESGF Publisher
 
-## v5.0.0a12 Pre-release
+`v5.1.0b6` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
 
-`v5.0.0a12` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
-
-See: https://esg-publisher.readthedocs.io/en/gen-five-pkg/index.html
+See: https://esg-publisher.readthedocs.io/en/latest
 
 ### Release notes:
+
+#### v5.1.0b6
+
+* **CRITICAL:** corrected File record ID format to include |data_node to conform to prior specification
+* Support for data root specifications that include the project string in the root
+* Bug fixes: citiaton case for command line project path, support tilde for homedir in cmor path property in config file
+
+#### v5.1.0b5
+
+* Update to support input4MIPs project
+* Added `--version` argument
+* Additonal arguments for esgunpublish
+* Halt publishing if a file listed in the mapfile isn’t found by autocurator (it will not through an error as)
+
+#### v5.1.0b1
+
+* Refactored classses for improved code reuse (among other features)
+* `--no-auth` mode for testing with esgf-docker publisher API
+
 
 #### v5.0.0a12
 
