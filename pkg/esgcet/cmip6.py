@@ -23,7 +23,7 @@ class cmip6(GenericPublisher):
         self.cmor_tables = os.path.expanduser(argdict["cmor_tables"])
         self.test = argdict["test"]
         if self.replica:
-            self.skip_prepare= argdict["skip-prepare"]
+            self.skip_prepare= argdict["skip_prepare"]
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
 
     def prepare_internal(self, json_map, cmor_tables):
@@ -61,7 +61,8 @@ class cmip6(GenericPublisher):
         map_json_data = self.mapfile()
 
         # step two: PrePARE
-        self.prepare_internal(map_json_data, self.cmor_tables)
+        if not self.skip_prepare:
+            self.prepare_internal(map_json_data, self.cmor_tables)
 
         # step three: autocurator
         self.publog.info("Running autocurator...")
