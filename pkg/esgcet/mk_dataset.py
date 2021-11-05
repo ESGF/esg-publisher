@@ -49,6 +49,7 @@ class ESGPubMakeDataset:
         self.variable_name = "variable_id"
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
         self.xattr = None
+        self.tracking_id_set = set()
 
     def set_project(self, project_in):
         self.project = project_in
@@ -196,6 +197,10 @@ class ESGPubMakeDataset:
         ret['title'] = title
         ret["dataset_id"] = dataset_id
         if "tracking_id" in fn_trid:
+            if fn_trid["tracking_id"] in self.tracking_id_set:
+                self.publog.error(f"Duplicate tracking_id {fn_trid["tracking_id"]} encountered!")
+                exit(1)
+            tracking_id_set.add(fn_trid["tracking_id"])
             ret["tracking_id"] = fn_trid["tracking_id"]
 
         for kn in mapdata:
