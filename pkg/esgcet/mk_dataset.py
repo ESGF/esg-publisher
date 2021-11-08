@@ -202,7 +202,7 @@ class ESGPubMakeDataset:
             if kn not in ("id", "file"):
                 ret[kn] = mapdata[kn]
 
-        rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.first_val)
+        rel_path, proj_root = self.normalize_path(fullfn, self.data_roots)
 
         if not proj_root in self.data_roots:
 
@@ -426,3 +426,22 @@ class ESGPubMakeDataset:
         self.dataset["access"] = access
         ret.append(self.dataset)
         return ret
+
+    @staticmethod
+    def normalize_path(path, data_roots):
+
+        proj_root = None
+
+        # Check each data root to see if it matches the provided path
+        for data_root, _ in data_roots.items():
+
+            path_match = "{}/".format(data_root.rstrip("/"))
+            if path.startswith(path_match):
+
+                rel_path = path[len(path_match):]
+                proj_root = data_root.rstrip("/")
+
+        if not proj_root:
+            raise(BaseException("File Path does not match any data roots!"))
+
+        return rel_path, proj_root
