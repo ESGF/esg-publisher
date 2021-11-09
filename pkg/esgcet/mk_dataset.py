@@ -200,7 +200,7 @@ class ESGPubMakeDataset:
             if fn_trid["tracking_id"] in self.tracking_id_set:
                 self.publog.error(f"Duplicate tracking_id {fn_trid['tracking_id']} encountered!")
                 exit(1)
-            tracking_id_set.add(fn_trid["tracking_id"])
+            self.tracking_id_set.add(fn_trid["tracking_id"])
             ret["tracking_id"] = fn_trid["tracking_id"]
 
         for kn in mapdata:
