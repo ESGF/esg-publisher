@@ -198,7 +198,7 @@ class ESGPubMakeDataset:
         ret["dataset_id"] = dataset_id
         if "tracking_id" in fn_trid:
             if fn_trid["tracking_id"] in self.tracking_id_set:
-                self.publog.error(f"Duplicate tracking_id {fn_trid["tracking_id"]} encountered!")
+                self.publog.error(f"Duplicate tracking_id {fn_trid['tracking_id']} encountered!")
                 exit(1)
             tracking_id_set.add(fn_trid["tracking_id"])
             ret["tracking_id"] = fn_trid["tracking_id"]
@@ -217,7 +217,7 @@ class ESGPubMakeDataset:
             root_found = False
             for root in self.data_roots:
                 if self.first_val in root and proj_root in root:
-                    proj_root = root
+                    pro8j_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
                     break
