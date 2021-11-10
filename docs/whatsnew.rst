@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v5.1.0-b7
+---------
+
+* Bug fix and refactoring: improved data root handling for paths that contain multiple instances of the project name in the path
+* Bug fix for the skip_prepare argument (applies to CMIP6 replica publishing to bypass PrePARE)
+* Feature to ensure that file tracking_ids are never duplicated within a dataset
+
 v5.1.0-b6
 ---------
 
