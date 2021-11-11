@@ -1,7 +1,7 @@
 Publisher Introduction
 ======================
 
-The **esg-publisher** or ``esgcet`` package is Python module, a collection of command-line utilities to scan, manipulate and push dataset metadata to an *ESGF index node*.  The basic publication process includes several basic steps and sometimes `optional` steps. Publisher functionality is available via several submodles/classes in the package. 
+The **esg-publisher** or ``esgcet`` Python package contains a collection of command-line utilities to scan, manipulate and push dataset metadata to an *ESGF index node*.  The basic publication process includes several basic steps and sometimes `optional` steps. Publisher functionality is available via several submodles/classes in the package. 
 
 
 The publisher software has undergone a significant change starting with v5.* of the software.  Prior versions involved storage of dataset metadata in the legacy ESGF data node PostgreSQL database and generation of `THREDDS` catalogs.   The actual publication to the ESGF index occured via catalog harvesting.  Instead, the more recent publisher simplifies the process with the following phases:
