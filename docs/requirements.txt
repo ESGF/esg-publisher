@@ -1,2 +1,2 @@
 sphinx_glpi_theme
-docutils<0.18
+docutils==0.16
