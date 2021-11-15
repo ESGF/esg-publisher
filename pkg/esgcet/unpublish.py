@@ -1,7 +1,7 @@
 from esgcet.pub_client import publisherClient
 import sys, json
 
-
+from esgcet.pid_cite_pub import ESGPubPidCite
 
 def run(args):
 
@@ -28,6 +28,11 @@ def run(args):
         pubCli.delete(dset_id)
     else:
         pubCli.retract(dset_id)
+
+    dataset = {}
+
+    
+
 
 def main():
     run(sys.argv[1:])

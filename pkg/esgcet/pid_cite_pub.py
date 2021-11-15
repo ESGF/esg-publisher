@@ -144,6 +144,29 @@ class ESGPubPidCite(object):
         self.pid_connector.force_finish_messaging_thread()
         return False
 
+    def pid_unpublish():
+
+        rec = self.ds_records
+
+        drs_id = rec["master_id"]
+        version = rec["version"]
+
+
+        self.establish_pid_connection()
+        self.pid_connector.start_messaging_thread()
+
+
+        try:
+            pid_connector.unpublish_one_version(drs_id=datasetName, version_number=version)
+            return True
+        except Exception as e:
+            self.publog.exception("PID module exception encountered!")
+
+
+        self.pid_connector.force_finish_messaging_thread()
+        return False
+
+
     def update_dataset(self, index):
 
         dset_rec = self.ds_records[index]
