@@ -3,9 +3,12 @@ import sys, json
 
 from esgcet.pid_cite_pub import ESGPubPidCite
 
+import esgcet.logger as logger
+
+log = logger.Logger()
+
+
 def run(args):
-
-
 
     dset_id = args[0]
     do_delete = args[1]
@@ -15,7 +18,29 @@ def run(args):
     auth = args[5]
     verbose = args[6]    
     silent = args[7]
+    #  args[8]  are the pid_creds see below
+    dataset = {}
 
+    logger = log.return_logger('Unpublish', silent, verbose)
+
+    dparts = dset_id.split('.')
+
+    if '|' in dparts[-1]:
+
+        lastsplit = dparts[-1].split('|')
+        dataset["version"] = lastsplit[0][1:]
+        data_node = lastsplit[1]
+    else:
+        dataset["version"] = dparts[-1][1:]
+
+    dataset['data_node'] = data_node
+    dataset['master_id'] = '.'.join(dparts[0:-1])
+
+    if len(args > 8):
+        pid_module = ESGPubPidCite(dataset, args[8], data_node, test, silent, verbose)
+        ret = pid_module.pid_unpublish()
+        if not ret:
+            logger.warning("PID Module did not return success")
     # ensure that dataset id is in correct format, use the set data node as a default
     if not '|' in dset_id:
 
@@ -28,10 +53,6 @@ def run(args):
         pubCli.delete(dset_id)
     else:
         pubCli.retract(dset_id)
-
-    dataset = {}
-
-    
 
 
 def main():
