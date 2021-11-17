@@ -131,8 +131,22 @@ def run():
         verbose = True
         silent = False
 
+
+    args= [dset_id, d, data_node, index_node, cert, auth, verbose, silent]
+
+
+    parts = dset_id.split('.')
+    if parts[0].lower() == "cmip6":
+
+        try:
+            pid_creds = json.loads(config['user']['pid_creds'])
+            args.append(pid_creds)
+        except:
+            publog.exception("PID credentials not defined. Define in config file esg.ini.")
+            exit(1)    
+
     try:
-        upub.run([dset_id, d, data_node, index_node, cert, auth, verbose, silent])
+        upub.run(args)
     except Exception as ex:
         publog.exception("Failed to unpublish")
         exit(1)
