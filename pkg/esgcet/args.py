@@ -250,7 +250,7 @@ class PublisherArgs:
             argdict["proj"] = project
 
         project = project.lower()
-        if project == "cmip6" or project == "input4mips":
+        if project == "cmip6":
             if pub.cmor_path is None:
                 try:
                     argdict["cmor_tables"] = config['user']['cmor_path']
@@ -259,6 +259,7 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
+        if project == "cmip6" or project == "input4mips" or "pid_prefix" in proj_config:  
             try:
                 argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
             except:
