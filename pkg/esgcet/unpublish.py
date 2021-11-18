@@ -33,10 +33,6 @@ def run(args):
         dset_id_new = '{}|{}'.format(dset_id, data_node)
         dset_id = dset_id_new
 
-
-
-    log.debug(f"data_node: {data_node}")
-
     if len(args) > 8:
         version = second_split[-1][1:]
         master_id = '.'.join(second_split[0:-1])
@@ -45,7 +41,6 @@ def run(args):
         if not ret:
             logger.warning("PID Module did not return success")
     # ensure that dataset id is in correct format, use the set data node as a default
-
         
     pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=verbose, silent=silent)
 
