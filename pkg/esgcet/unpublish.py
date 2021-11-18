@@ -36,8 +36,8 @@ def run(args):
     dataset['data_node'] = data_node
     dataset['master_id'] = '.'.join(dparts[0:-1])
 
-    if len(args > 8):
-        pid_module = ESGPubPidCite(dataset, args[8], data_node, test, silent, verbose)
+    if len(args) > 8:
+        pid_module = ESGPubPidCite(dataset, args[8], data_node, False, silent, verbose)
         ret = pid_module.pid_unpublish()
         if not ret:
             logger.warning("PID Module did not return success")

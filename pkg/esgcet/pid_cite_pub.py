@@ -144,7 +144,7 @@ class ESGPubPidCite(object):
         self.pid_connector.force_finish_messaging_thread()
         return False
 
-    def pid_unpublish():
+    def pid_unpublish(self):
 
         rec = self.ds_records
 
@@ -157,7 +157,7 @@ class ESGPubPidCite(object):
 
 
         try:
-            pid_connector.unpublish_one_version(drs_id=datasetName, version_number=version)
+            self.pid_connector.unpublish_one_version(drs_id=drs_id, version_number=version, data_node=self.data_node)
             return True
         except Exception as e:
             self.publog.exception("PID module exception encountered!")
