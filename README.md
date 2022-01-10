@@ -1,6 +1,6 @@
 # ESGF Publisher
 
-`v5.1.0b6` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
+`v5.1.0b7` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
 
 See: https://esg-publisher.readthedocs.io/en/latest
 
