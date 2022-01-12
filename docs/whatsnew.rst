@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v5.1.0-b8
+---------
+* Change skip_prepare semantics (applies to CMIP6 *non*-replica publishing to bypass PrePARE -
+  should only be used where data has already passed PrePARE outside of the publisher)
+
 v5.1.0-b7
 ---------
 
