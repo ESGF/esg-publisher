@@ -71,7 +71,7 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # Eg replace /thredds/fileServer with the prefix for NginX
 # Note these are netCDF specific and will need to change if other formats are considered
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
-"https://{}/thredds/dodsC/{}/{}.html|application/opendap-html|OPENDAP",
+"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
                  "gsiftp://{}:2811/{}/{}|application/gridftp|GridFTP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
