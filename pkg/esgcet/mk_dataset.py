@@ -175,6 +175,8 @@ class ESGPubMakeDataset:
                 return None
         elif "gsiftp" in template:
             if self.dtn != 'none':
+                if ':' in self.dtn:
+                template = template.replace(':2811','')
                 return template.format(self.dtn, root, rel)
             else:
                 return None
@@ -194,6 +196,9 @@ class ESGPubMakeDataset:
         fparts = fullfn.split('/')
         title = fparts[-1]
         ret['id'] = "{}.{}|{}".format(ret['instance_id'], title, self.data_node)
+        ret['master_id'] = f"{ret['master_id']}.{title}"
+
+        ret['instance_id'] = "{}.{}".format(ret['instance_id'], title)
         ret['title'] = title
         ret["dataset_id"] = dataset_id
         if "tracking_id" in fn_trid:
