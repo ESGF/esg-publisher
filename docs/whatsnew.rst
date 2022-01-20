@@ -3,14 +3,9 @@ Release Notes
 
 v5.1.0-b8
 ---------
-* Change skip_prepare semantics and add force_prepare option so that they behave like
-  skip_validation and force_validation in the legacy publisher:
+* Change set-replica semantics with respect to PrePARE and add force_prepare option
    - default behavior is to run PrePARE for non-replica but not for replica
-   - with skip_prepare=True, PrePARE is *never* run
    - with force_prepare=True, PrePARE is *always* run
-   - if both are set, the publisher reports an error and exits
-  (skip_prepare=True should only be used where the data node manager has already ensured
-  that the data has passed PrePARE outside of the publisher)
 
 v5.1.0-b7
 ---------
