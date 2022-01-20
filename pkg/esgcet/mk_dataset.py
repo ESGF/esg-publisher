@@ -176,7 +176,7 @@ class ESGPubMakeDataset:
         elif "gsiftp" in template:
             if self.dtn != 'none':
                 if ':' in self.dtn:
-                template = template.replace(':2811','')
+                    template = template.replace(':2811','')
                 return template.format(self.dtn, root, rel)
             else:
                 return None
