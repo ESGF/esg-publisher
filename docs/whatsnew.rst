@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v5.1.0-b8
+---------
+* Change set-replica semantics with respect to PrePARE and add force_prepare option
+   - default behavior is to run PrePARE for non-replica but not for replica
+   - with force_prepare=True, PrePARE is *always* run
+
 v5.1.0-b7
 ---------
 

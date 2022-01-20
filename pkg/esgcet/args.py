@@ -164,12 +164,21 @@ class PublisherArgs:
             dtn = "none"
 
         skip_prepare = False
-
         try:
             skip_prep_str = config['user']['skip_prepare'].lower()
             skip_prepare = (skip_prep_str in ["true", "yes"])
         except:
             pass
+        force_prepare = False
+        try:
+            force_prep_str = config['user']['force_prepare'].lower()
+            force_prepare = (force_prep_str in ["true", "yes"])
+        except:
+            pass
+        if skip_prepare and force_prepare:
+            publog.error("PrePARE simultaneously skipped and forced.")
+            exit(1)
+
         if pub.set_replica and pub.no_replica:
             publog.error("Replica publication simultaneously set and disabled.")
             exit(1)
@@ -244,7 +253,8 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc, "mountpoints": mountpoints}
+                   "auth": auth, "skip_prepare": skip_prepare, "force_prepare": force_prepare,
+                   "non_nc": non_nc, "mountpoints": mountpoints}
 
         if project and "none" not in project:
             argdict["proj"] = project
