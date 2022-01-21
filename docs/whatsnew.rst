@@ -3,9 +3,15 @@ Release Notes
 
 v5.1.0-b8
 ---------
-* Change set-replica semantics with respect to PrePARE and add force_prepare option
-   - default behavior is to run PrePARE for non-replica but not for replica
-   - with force_prepare=True, PrePARE is *always* run
+
+* Change ``set-replica`` semantics with respect to PrePARE and add ``force_prepare`` option.
+
+  #. Default behavior is to run PrePARE for non-replica but not for replica.
+  #. Wth ``force_prepare=True``, PrePARE is *always* run.
+
+* esgunpublish now unpublishes PID from handle database.
+* Allow for custom gridftp ports (specify with ``<hostname>:<port>``).
+* Correct file instance_id and master_id.
 
 v5.1.0-b7
 ---------
