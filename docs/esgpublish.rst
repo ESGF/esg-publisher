@@ -11,6 +11,7 @@ Usage
 
         esgpublish --map <mapfile>
 
+The mapfile (``--map``) is the only truly *required* argumement, as other are typically supplied through the config file.
 You can also use ``--help`` to see::
 
         $ esgpublish --help
@@ -40,7 +41,7 @@ You can also use ``--help`` to see::
                         Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.
           --autocurator AUTOCURATOR_PATH
                                 Path to autocurator repository folder.
-          --map MAP             mapfile or file containing a list of mapfiles.
+          --map MAP             Required.  mapfile or file containing a list of mapfiles.
           --ini CFG, -i CFG     Path to config file.
           --silent              Enable silent mode.
           --verbose             Enable verbose mode.
