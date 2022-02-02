@@ -20,7 +20,10 @@ class cmip6(GenericPublisher):
     def __init__(self, argdict):
         super().__init__(argdict)
         self.pid_creds = argdict["pid_creds"]
-        self.cmor_tables = os.path.expanduser(argdict["cmor_tables"])
+        if "cmor_tables" in argdict:
+            self.cmor_tables = os.path.expanduser(argdict["cmor_tables"])
+        else:
+            self.cmor_tables = ""
         self.test = argdict["test"]
         if self.replica:
             self.skip_prepare = not argdict["force_prepare"]
@@ -30,6 +33,7 @@ class cmip6(GenericPublisher):
 
     def prepare_internal(self, json_map, cmor_tables):
         try:
+            assert(len(cmor_tables) > 0, f"{cmor_tables} are specified from config")
             assert(os.path.isdir(cmor_tables), f"{cmor_tables} exists and is a directory")
             self.publog.info("Iterating through filenames for PrePARE (internal version)...")
             validator = PrePARE.PrePARE
