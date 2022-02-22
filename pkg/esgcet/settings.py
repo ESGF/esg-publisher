@@ -64,6 +64,8 @@ GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 DATA_ROOTS = { }
 
 
+SOURCE_ID_LIMITS = { 'cmip6' : 25}
+
 # a certificate file for the index, assumes in the CWD
 CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 
