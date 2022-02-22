@@ -18,12 +18,8 @@ class FieldCheck(object):
         self.project_key = "cmip6"
         self.project_str = "CMIP6"
 
-    def check_source(self, source_id):
-        if source_id not in self.sid_dict:
-            return False        
 
     def check_activity(self, source_id, activity_id):
-
 
         if source_id not in self.sid_dict:
             return False
@@ -44,7 +40,7 @@ class FieldCheck(object):
         act_id = input_rec[self.idx]['activity_drs']
         inst_id = input_rec[self.idx]['institution_id']
 
-        if not self.check_source(src_id): 
+        if not src_id in self.sid_dict: 
             self.publog.error("Source_id {} is unregistered with the {} Controlled Vocabulary (CV). Publication halted".format(src_id, self.project_str))
             self.publog.error("If you think this message has been received in error, please update your CV source repository")
             raise UserWarning
