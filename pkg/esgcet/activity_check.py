@@ -45,8 +45,8 @@ class FieldCheck(object):
             self.publog.error("If you think this message has been received in error, please update your CV source repository")
             raise UserWarning
 
-        if self.project in SOURCE_ID_LIMITS and len(source_id) > SOURCE_ID_LIMITS[self.project_key]:
-            self.publog.error(f"Source_id {src_id} exceeds the {SOURCE_ID_LIMITS[self.project]} character limit for project {self.project_str}. Publication halted.")
+        if self.project_key in SOURCE_ID_LIMITS and len(src_id) > SOURCE_ID_LIMITS[self.project_key]:
+            self.publog.error(f"Source_id {src_id} exceeds the {SOURCE_ID_LIMITS[self.project_key]} character limit for project {self.project_str}. Publication halted.")
             raise UserWarning          
 
         if not self.check_activity(src_id, act_id):
