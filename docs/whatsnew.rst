@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v5.1.0-b9
+
+* Improved Controlled-vocabulary agreement checks and upgraded rules (for CMIP6)
+*  Bug fix for input4MIPs (omit CMOR tables load)
+   
 v5.1.0-b8
 ---------
 
