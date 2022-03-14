@@ -2,6 +2,7 @@ from esgcet.pub_client import publisherClient
 import sys, json
 
 from esgcet.pid_cite_pub import ESGPubPidCite
+from esgcet.search_check import ESGSearchCheck
 
 import esgcet.logger as logger
 
@@ -33,6 +34,15 @@ def run(args):
         dset_id_new = '{}|{}'.format(dset_id, data_node)
         dset_id = dset_id_new
 
+    searchcheck = ESGSearchCheck(hostname, verbose, silent)
+    found, retracted = searchcheck.run_che
+    if not found:
+        exit(-1)
+
+    if (not retracted) and (not do_delete):
+        logger.info("Use --delete to permanently erase the retracted record")
+        exit(-1)
+        
     if len(args) > 8:
         version = second_split[-1][1:]
         master_id = '.'.join(second_split[0:-1])
