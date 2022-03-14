@@ -1,7 +1,13 @@
 Release Notes
 =============
 
+b5.1.0-b10
+----------
+
+* **CRTICAL**:  esgunpublish checks dataset id argument for publication prior to unpublication to prevent server-side erroneus deletions.
+
 v5.1.0-b9
+---------
 
 * Improved Controlled-vocabulary agreement checks and upgraded rules (for CMIP6)
 *  Bug fix for input4MIPs (omit CMOR tables load)
@@ -12,7 +18,7 @@ v5.1.0-b8
 * Change ``set-replica`` semantics with respect to PrePARE and add ``force_prepare`` option.
 
   #. Default behavior is to run PrePARE for non-replica but not for replica.
-  #. Wth ``force_prepare=True``, PrePARE is *always* run.
+  #. With ``force_prepare=True``, PrePARE is *always* run.
 
 * esgunpublish now unpublishes PID from handle database.
 * Allow for custom gridftp ports (specify with ``<hostname>:<port>``).
@@ -28,7 +34,7 @@ v5.1.0-b7
 v5.1.0-b6
 ---------
 
-* CRITICAL:  corrected File record ID format to include ``|data_node`` to conform to prior specification
+* **CRITICAL**:  corrected File record ID format to include ``|data_node`` to conform to prior specification
 * Support for data root specifications that include the project string in the root
 * Bug fixes: citiaton case for command line project path, support tilde for homedir in cmor path property in config file
 
