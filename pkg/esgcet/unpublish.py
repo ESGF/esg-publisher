@@ -35,14 +35,14 @@ def run(args):
         dset_id = dset_id_new
 
     searchcheck = ESGSearchCheck(hostname, verbose, silent)
-    found, retracted = searchcheck.run_che
+    found, retracted = searchcheck.run_check(dset_id)
     if not found:
         exit(-1)
 
     if (not retracted) and (not do_delete):
         logger.info("Use --delete to permanently erase the retracted record")
-        exit(-1)
-        
+        exit(0)
+
     if len(args) > 8:
         version = second_split[-1][1:]
         master_id = '.'.join(second_split[0:-1])
