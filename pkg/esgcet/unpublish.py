@@ -34,12 +34,13 @@ def run(args):
         dset_id_new = '{}|{}'.format(dset_id, data_node)
         dset_id = dset_id_new
 
-    searchcheck = ESGSearchCheck(hostname, verbose, silent)
-    found, retracted = searchcheck.run_check(dset_id)
+    searchcheck = ESGSearchCheck(hostname, silent, verbose)
+    found, notretracted = searchcheck.run_check(dset_id)
+
     if not found:
         exit(-1)
 
-    if (not retracted) and (not do_delete):
+    if (not notretracted) and (not do_delete):
         logger.info("Use --delete to permanently erase the retracted record")
         exit(0)
 

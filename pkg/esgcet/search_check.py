@@ -10,7 +10,7 @@ log = logger.Logger()
 class ESGSearchCheck():
 
 
-    def __init__(self, index_node,  silent=False, verbose=False, verify=False):
+    def __init__(self, index_node,  silent=False, verbose=False, verify=True):
         """
             index_node (string):  The node to search for the update 
             cert_fn (string):  Filename for certicate to use to push updates to the API
@@ -18,7 +18,6 @@ class ESGSearchCheck():
             verbose (bool):  extended output, useful for debugging
         """
         self.index_node = index_node 
-        self.cert_fn = cert_fn
         self.silent = silent
         self.verbose = verbose
         self.verify = verify
@@ -53,8 +52,8 @@ class ESGSearchCheck():
             if len(docs) < 1:
                 raise RuntimeError("Error in response from index server, record not found!")
             dsetid = docs[0]['id']
-            retracted = bool(docs[0]['retracted'])
-            if not retracted:
+            retracted = docs[0]['retracted']
+            if retracted:
                 self.publog.info("Dataset already retracted")
                 return True, False
             return True, True
