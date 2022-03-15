@@ -22,8 +22,12 @@ def get_args():
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
                         help="Use the following certificate file in .pem form for unpublishing (use a myproxy login to generate).")
     parser.add_argument("--delete", dest="delete", action="store_true", help="Specify deletion of dataset (default is retraction).")
-    parser.add_argument("--dset-id", dest="dset_id", required=True,
+    parser.add_argument("--dset-id", dest="dset_id", default=None,
                         help="Dataset ID for dataset to be retracted or deleted.")
+    parser.add_argument("--map", dest="map", default=None, nargs="+",
+                        help="Path(s) to a mapfile or directory(s) containing mapfiles.")    
+    parser.add_argument("--use-list", dest="dset_list", default=None,
+                        help="Path to a file containing list of dataset_ids.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
@@ -70,11 +74,14 @@ def run():
     else:
         index_node = a.index_node
 
-    dset_id = a.dset_id
 
+    dset_id = None
 
+    if a.dset_id:
 
-    if not '|' in dset_id:
+        dset_id = a.dset_id
+
+    if not '|' in dset_id or (a.map):
         if a.data_node is None:
             try:
                 data_node = config['user']['data_node']
@@ -91,15 +98,6 @@ def run():
         d = True
     else:
         d = False
-
-    if a.index_node is None:
-        try:
-            index_node = config['user']['index_node']
-        except:
-            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
-            exit(1)
-    else:
-        index_node = a.index_node
 
     if a.no_auth:
         auth = False
@@ -119,28 +117,35 @@ def run():
         silent = True
 
     if not a.verbose:
-        try:
-            v = config['user']['verbose']
-            if 'true' in v or 'yes' in v:
-                verbose = True
-            else:
+        if not a.slient:
+            try:
+                v = config['user']['verbose']
+                if 'true' in v or 'yes' in v:
+                    verbose = True
+                else:
+                    verbose = False
+            except:
                 verbose = False
-        except:
-            verbose = False
     else:
         verbose = True
         silent = False
 
 
-    args= [dset_id, d, data_node, index_node, cert, auth, verbose, silent]
+    args = {    "delete": d, 
+             "data_node": data_node, 
+             "index_node": index_node, 
+             "cert": cert 
+             "auth" :auth, 
+             "verbose" : verbose,
+             "slient" :silent }
 
 
     parts = dset_id.split('.')
-    if parts[0].lower() == "cmip6":
+    if parts[0].lower() in ["cmip6", "input4mips"]:
 
         try:
             pid_creds = json.loads(config['user']['pid_creds'])
-            args.append(pid_creds)
+            args["pid_creds"] = pid_creds
         except:
             publog.exception("PID credentials not defined. Define in config file esg.ini.")
             exit(1)    

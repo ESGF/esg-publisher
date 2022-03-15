@@ -94,17 +94,18 @@ class PublisherArgs:
             silent = True
 
         if not pub.verbose:
-            try:
-                v = config['user']['verbose']
-                if 'true' in v or 'yes' in v:
-                    verbose = True
-                else:
+            if not pub.silent
+                try:
+                    v = config['user']['verbose']
+                    if 'true' in v or 'yes' in v:
+                        verbose = True
+                    else:
+                        verbose = False
+                except:
                     verbose = False
-            except:
-                verbose = False
         else:
-            verbose = True
-            silent = False
+                verbose = True
+                silent = False
 
         if pub.cert == "./cert.pem":
             try:
