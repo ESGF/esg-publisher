@@ -16,7 +16,7 @@ def map_to_dataset(fullmap):
     map_json_data = None
     try:
         map_json_data = mapconv.mapfilerun()
-
+        return map_json_data[0][0].replace("#",".v") 
     except Exception as ex:
         return None
 
