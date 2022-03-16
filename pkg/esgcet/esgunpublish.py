@@ -134,7 +134,7 @@ def run():
     args = {    "delete": d, 
              "data_node": data_node, 
              "index_node": index_node, 
-             "cert": cert 
+             "cert": cert, 
              "auth" :auth, 
              "verbose" : verbose,
              "slient" :silent }

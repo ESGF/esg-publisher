@@ -1,19 +1,30 @@
 esgunpublish
 ============
 
-The ``esgunpublish`` command retracts, or, upon specification, deletes a specified dataset. The output of this command is either a success or failure message
-accompanied with the id of the dataset that was retracted. Exercise caution when deleting datasets as, if replicas have been made or if you will be republishing,
-you should retract rather than delete outright.
+The ``esgunpublish`` command retracts, or, upon specification, deletes a specified dataset(s). The output of this command is either a success or failure message
+accompanied with the id of the dataset that was retracted.  Exercise caution when deleting datasets as, if replicas have been made or if you will be republishing,
+you should retract rather than delete outright.  There are three input methods for specifying input dataset(s)
 
 Usage
 -----
 
-``esgunpublish`` is used with the following syntax::
+For a single dataset ``esgunpublish`` is used with the following syntax::
 
     esgunpublish --dset-id <dataset_id>
 
 The ``<dataset_id>`` can be either the ``instance_id`` or the full ``dataset_id`` corresponding to the dataset. If ``instance_id`` is used, the program will use
 the ``data-node`` option, from CLI or config file, to create the full ``dataset_id``.
+
+For multiple datasets there are two additional options.  Option 1. use a list in a text file with ``--use-list``. ::
+
+    esgunpublish --use-list /path/to/textfile
+
+Option 2: Specify the mapfile or a path to a directory containing mapfile(s).  A datanode must be specified as mapfiles don't contain the datanode in the dataset id::
+
+    esgunpublish --map /path/to/mapfiles
+
+
+
 You can also specify certain command line options rather than defining them in a config file::
 
     usage: esgunpublish [-h] [--index-node INDEX_NODE] [--data-node DATA_NODE]
