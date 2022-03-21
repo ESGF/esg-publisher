@@ -40,15 +40,6 @@ def get_args():
 
     return pub
 
-def check_for_pid_proj(dset_arr):
-
-    for dset in dset_arr:
-
-        parts = dset.split('.')
-        if parts[0].lower() in ["cmip6", "input4mips"]:
-            return True            
-
-    return false
 
 def map_to_dataset(fullmap):
 
@@ -198,7 +189,7 @@ def run():
         logger.warning("No unpublish input method specified.")
         exit(1)
 
-    if (check_for_pid_proj(args["dataset_id_lst"])):
+    if (unpub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
             pid_creds = json.loads(config['user']['pid_creds'])
             args["pid_creds"] = pid_creds

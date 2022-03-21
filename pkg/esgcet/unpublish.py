@@ -11,6 +11,16 @@ log = logger.Logger()
 
 
 
+def check_for_pid_proj(dset_arr):
+
+    for dset in dset_arr:
+
+        parts = dset.split('.')
+        if parts[0].lower() in ["cmip6", "input4mips"]:
+            return True            
+
+    return false
+
 
 def run(args):
     
@@ -54,7 +64,7 @@ def single_unpublish(dset_id, args, pub_log):
         pub_log.info("Use --delete to permanently erase the retracted record")
         return(0)
 
-    if pid_creds in args:
+    if "pid_creds" in args and check_for_pid_proj([dset_id]):
         version = second_split[-1][1:]
         master_id = '.'.join(second_split[0:-1])
         pid_module = ESGPubPidCite({}, args[8], data_node, False, silent, verbose)
