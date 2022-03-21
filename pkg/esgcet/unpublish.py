@@ -3,64 +3,27 @@ import sys, json
 
 from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.search_check import ESGSearchCheck
-from esgcet.mapfile import ESGPubMapConv
+
 
 import esgcet.logger as logger
 
 log = logger.Logger()
 
 
-def map_to_dataset(fullmap):
-
-    mapconv = ESGPubMapConv(fullmap, project=self.project)
-    map_json_data = None
-    try:
-        map_json_data = mapconv.mapfilerun()
-        return map_json_data[0][0].replace("#",".v") 
-    except Exception as ex:
-        return None
 
 
 def run(args):
     
-    logger = log.return_logger('Unpublish', silent, verbose)
+    pub_log = log.return_logger('Unpublish', args["silent"], args["verbose"])
     status = 0
 
-    if "dataset_id" in args:
-        return single_unpublish(args["dataset_id"], args)
-    elif "map" in args:
-        for m in args["map"]:
-            if os.path.isdir(m):
-                os.listdir(m)
-                if os.path.isdir(m):
-                    files = os.listdir(m)
-                    for f in files:
-                        if os.path.isdir(m + f):
-                            continue
-                        dataset_id = map_to_dataset(m + f)
-                        if dataset_id is None:
-                            status += -1
-                        else:
-                            status += single_unpublish(dataset_id, pub_args)
-            else:
-                dataset_id = map_to_dataset(m)
-                status += single_unpublish
 
-    elif "dset_list" in args:
-        try:
-            for line in open(args("dset_list")):
-                ret = single_unpublish(line.strip())
-                status += ret
-            if status != 0:
-                logger.warning("Some datasets were not found or problem with unpublish")
-                exit(1)  
-        except:
-            logger.exception(f"Error opening {args['dset_list']} file.")
-    else:
-        logger.warning("No unpublish input method specified.")
-        exit(1)
+    for dset_id in args("dataset_id_lst"):
 
-def single_unpublish(dset_id, args):
+        status += single_unpublish(args["dataset_id"], args, pub_log)
+    return status
+
+def single_unpublish(dset_id, args, pub_log):
 
     do_delete = args["delete"]
 
@@ -88,7 +51,7 @@ def single_unpublish(dset_id, args):
         return(-1)
 
     if (not notretracted) and (not do_delete):
-        logger.info("Use --delete to permanently erase the retracted record")
+        pub_log.info("Use --delete to permanently erase the retracted record")
         return(0)
 
     if pid_creds in args:
@@ -97,7 +60,7 @@ def single_unpublish(dset_id, args):
         pid_module = ESGPubPidCite({}, args[8], data_node, False, silent, verbose)
         ret = pid_module.pid_unpublish(master_id, version)
         if not ret:
-            logger.warning("PID Module did not return success")
+            pub_log.warning("PID Module did not return success")
     # ensure that dataset id is in correct format, use the set data node as a default
         
     pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=verbose, silent=silent)
