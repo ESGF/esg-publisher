@@ -28,9 +28,9 @@ def run(args):
     status = 0
 
 
-    for dset_id in args("dataset_id_lst"):
+    for dset_id in args["dataset_id_lst"]:
 
-        status += single_unpublish(args["dataset_id"], args, pub_log)
+        status += single_unpublish(dset_id, args, pub_log)
     return status
 
 def single_unpublish(dset_id, args, pub_log):

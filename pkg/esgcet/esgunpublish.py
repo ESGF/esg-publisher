@@ -150,7 +150,7 @@ def run():
         silent = True
 
     if not a.verbose:
-        if not a.slient:
+        if not a.silent:
             try:
                 v = config['user']['verbose']
                 if 'true' in v or 'yes' in v:
@@ -170,7 +170,7 @@ def run():
              "cert": cert, 
              "auth" :auth, 
              "verbose" : verbose,
-             "slient" :silent }
+             "silent" :silent }
 
 
     if len(dset_id) > 0:
@@ -180,9 +180,9 @@ def run():
         args["dataset_id_lst"] = maps_to_dataset_list(a.map)
     elif a.dset_list:
         try:
-            dset_arr = [line.rstrip() for line in open(args("dset_list"))]
+            dset_arr = [line.rstrip() for line in open(a.dset_list)]
         except:
-            logger.exception(f"Error opening {args['dset_list']} file.")
+            publog.exception(f"Error opening {args['dset_list']} file.")
 
         args["dataset_id_lst"] = dset_arr
     else:
