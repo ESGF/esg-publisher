@@ -10,7 +10,7 @@ import esgcet.logger as logger
 from esgcet.mapfile import ESGPubMapConv
 
 log = logger.Logger()
-publog = log.return_logger('esgunpublish')
+publog = log.return_logger('esgunpublish', verbose=True)
 
 import esgcet
 
@@ -43,7 +43,7 @@ def get_args():
 
 def map_to_dataset(fullmap):
 
-    mapconv = ESGPubMapConv(fullmap, project=self.project)
+    mapconv = ESGPubMapConv(fullmap)
     map_json_data = None
     try:
         map_json_data = mapconv.mapfilerun()
@@ -181,6 +181,7 @@ def run():
     elif a.dset_list:
         try:
             dset_arr = [line.rstrip() for line in open(a.dset_list)]
+            publog.debug(f"Array length = {len(dset_arr)}")
         except:
             publog.exception(f"Error opening {args['dset_list']} file.")
 
