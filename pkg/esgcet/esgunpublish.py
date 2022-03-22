@@ -189,7 +189,7 @@ def run():
         logger.warning("No unpublish input method specified.")
         exit(1)
 
-    if (unpub.check_for_pid_proj(args["dataset_id_lst"])):
+    if (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
             pid_creds = json.loads(config['user']['pid_creds'])
             args["pid_creds"] = pid_creds

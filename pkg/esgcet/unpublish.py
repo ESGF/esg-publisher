@@ -19,7 +19,7 @@ def check_for_pid_proj(dset_arr):
         if parts[0].lower() in ["cmip6", "input4mips"]:
             return True            
 
-    return false
+    return False
 
 
 def run(args):
