@@ -1,10 +1,16 @@
 # ESGF Publisher
 
-`v5.1.0b8` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
+`v5.1.0b10` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
 
 See: https://esg-publisher.readthedocs.io/en/latest
 
 ### Release notes:
+
+#### v5.1.0-b9,10
+
+* CRTICAL: esgunpublish checks dataset id argument for publication prior to unpublication to prevent server-side erroneus deletions.
+* Improved Controlled-vocabulary agreement checks and upgraded rules (for CMIP6)
+* Bug fix for input4MIPs (omit CMOR tables load)
 
 #### v5.1.0-b8
 
