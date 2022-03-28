@@ -24,27 +24,36 @@ Option 2: Specify the mapfile or a path to a directory containing mapfile(s).  A
     esgunpublish --map /path/to/mapfiles
 
 
-
 You can also specify certain command line options rather than defining them in a config file::
 
     usage: esgunpublish [-h] [--index-node INDEX_NODE] [--data-node DATA_NODE]
-                    [--certificate CERT] [--delete] --dset-id DSET_ID
-                    [--ini CFG]
+                        [--certificate CERT] [--delete] [--dset-id DSET_ID]
+                        [--map MAP [MAP ...]] [--use-list DSET_LIST] [--ini CFG]
+                        [--version] [--no-auth] [--silent] [--verbose]
 
     Unpublish data sets from ESGF databases.
 
     optional arguments:
         -h, --help            show this help message and exit
         --index-node INDEX_NODE
-                              Specify index node.
+                                Specify index node.
         --data-node DATA_NODE
-                              Specify data node.
+                                Specify data node.
         --certificate CERT, -c CERT
-                              Use the following certificate file in .pem form for
-                              unpublishing (use a myproxy login to generate).
+                                Use the following certificate file in .pem form for
+                                unpublishing (use a myproxy login to generate).
         --delete              Specify deletion of dataset (default is retraction).
         --dset-id DSET_ID     Dataset ID for dataset to be retracted or deleted.
+        --map MAP [MAP ...]   Path(s) to a mapfile or directory(s) containing
+                                mapfiles.
+        --use-list DSET_LIST  Path to a file containing list of dataset_ids.
         --ini CFG, -i CFG     Path to config file.
+        --version             Print the version and exit
+        --no-auth             Run publisher without certificate, only works on
+                                certain index nodes.
+        --silent              Enable silent mode.
+        --verbose             Enable verbose mode.
+
 
 You can see this message above by running ``esgunpublish -h``. For the ``--ini, -i`` option, the path may be relative but it must point to the file, not to the directory
 in which the config file is.
