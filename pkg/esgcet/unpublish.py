@@ -67,7 +67,7 @@ def single_unpublish(dset_id, args, pub_log, searchcheck):
     if "pid_creds" in args and check_for_pid_proj([dset_id]):
         version = second_split[-1][1:]
         master_id = '.'.join(second_split[0:-1])
-        pid_module = ESGPubPidCite({}, args[8], data_node, False, silent, verbose)
+        pid_module = ESGPubPidCite({}, args["pid_creds"], data_node, False, silent, verbose)
         ret = pid_module.pid_unpublish(master_id, version)
         if not ret:
             pub_log.warning("PID Module did not return success")

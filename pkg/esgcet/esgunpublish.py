@@ -10,7 +10,7 @@ import esgcet.logger as logger
 from esgcet.mapfile import ESGPubMapConv
 
 log = logger.Logger()
-publog = log.return_logger('esgunpublish', verbose=True)
+publog = log.return_logger('esgunpublish')
 
 import esgcet
 
@@ -181,7 +181,6 @@ def run():
     elif a.dset_list:
         try:
             dset_arr = [line.rstrip() for line in open(a.dset_list)]
-            publog.debug(f"Array length = {len(dset_arr)}")
         except:
             publog.exception(f"Error opening {args['dset_list']} file.")
 

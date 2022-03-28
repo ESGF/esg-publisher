@@ -56,7 +56,7 @@ GA = { 'cmip6' : ['frequency',
 GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
 #                 'input4mips' : {'target_mip_list' : ','}}
 
-CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered' }}
+CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered', 'project' : 'CMIP6' }}
 
 GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 

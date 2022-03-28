@@ -8,7 +8,7 @@ log = logger.Logger()
 silent = False
 verbose = False
 pid_creds = {}
-
+import traceback
 
 def get_url(arr):
     return arr[0].split('|')[0]
@@ -139,6 +139,7 @@ class ESGPubPidCite(object):
                 self.publog.warning("Empty pid_wizard!")
 
         except Exception as e:
+            traceback.print_exc()
             self.publog.exception("PID module exception encountered!")
 
         self.pid_connector.force_finish_messaging_thread()
@@ -154,6 +155,7 @@ class ESGPubPidCite(object):
             self.pid_connector.finish_messaging_thread()
             return True
         except Exception as e:
+            traceback.print_exc()
             self.pid_connector.force_finish_messaging_thread()
             self.publog.exception("PID module exception encountered!")
 
@@ -190,6 +192,7 @@ class ESGPubPidCite(object):
                 self.update_dataset(i)
 
         except Exception as e:
+            traceback.print_exc()
             self.publog.exception("Some exception encountered!")
             self.pid_connector.force_finish_messaging_thread()
             exit(-1)
