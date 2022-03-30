@@ -39,6 +39,7 @@ def run(args):
 
 def single_unpublish(dset_id, args, pub_log, searchcheck):
 
+    hostname = args["index_node"]
     do_delete = args["delete"]
     data_node = args["data_node"]
     cert_fn = args["cert"]
@@ -67,13 +68,13 @@ def single_unpublish(dset_id, args, pub_log, searchcheck):
     if "pid_creds" in args and check_for_pid_proj([dset_id]):
         version = second_split[-1][1:]
         master_id = '.'.join(second_split[0:-1])
-        pid_module = ESGPubPidCite({}, args["pid_creds"], data_node, False, silent, verbose)
+        pid_module = ESGPubPidCite({}, args["pid_creds"], data_node, False, args["silent"], args["verbose"])
         ret = pid_module.pid_unpublish(master_id, version)
         if not ret:
             pub_log.warning("PID Module did not return success")
     # ensure that dataset id is in correct format, use the set data node as a default
         
-    pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=verbose, silent=silent)
+    pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=args["verbose"], silent=args["silent"])
 
     if do_delete:
         pubCli.delete(dset_id)
