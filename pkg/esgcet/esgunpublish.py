@@ -186,7 +186,7 @@ def run():
 
         args["dataset_id_lst"] = dset_arr
     else:
-        logger.warning("No unpublish input method specified.")
+        publog.error("No unpublish input method specified.  Please use from one of the following arguments: --map --use-list --dset-id ; type esgunpublish --help for more info")
         exit(1)
 
     if (upub.check_for_pid_proj(args["dataset_id_lst"])):
