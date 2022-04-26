@@ -30,7 +30,7 @@ To install esgcet using conda, activate the environment you created above and ru
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
-    git clone http://github.com/lisi-w/esg-publisher.git -b refactor
+    git clone http://github.com/ESGF/esg-publisher.git -b refactor
     cd esg-publisher
     cd pkg
     python3 setup.py install
