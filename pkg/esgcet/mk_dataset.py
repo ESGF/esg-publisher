@@ -112,8 +112,8 @@ class ESGPubMakeDataset:
 
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
-        self.const_attr()
         self.assign_dset_values(projkey, master_id, version)
+        self.const_attr()
 
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project

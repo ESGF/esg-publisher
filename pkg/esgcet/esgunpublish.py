@@ -7,6 +7,8 @@ import configparser as cfg
 from pathlib import Path
 import esgcet.logger as logger
 
+from esgcet.mapfile import ESGPubMapConv
+
 log = logger.Logger()
 publog = log.return_logger('esgunpublish')
 
@@ -37,6 +39,37 @@ def get_args():
     pub = parser.parse_args()
 
     return pub
+
+
+def map_to_dataset(fullmap):
+
+    mapconv = ESGPubMapConv(fullmap)
+    map_json_data = None
+    try:
+        map_json_data = mapconv.mapfilerun()
+        return map_json_data[0][0].replace("#",".v") 
+    except Exception as ex:
+        return None
+
+
+def maps_to_dataset_list(maps):
+    dset_list = []
+    for m in maps:
+        if os.path.isdir(m):
+            os.listdir(m)
+            if os.path.isdir(m):
+                files = os.listdir(m)
+                for f in files:
+                    if os.path.isdir(m + f):
+                        continue
+                    dataset_id = map_to_dataset(m + f)
+                    if not dataset_id is None:
+                        dset_list.append(dataset_id)
+        else:
+            dataset_id = map_to_dataset(m)
+            dset_list.append(dataset_id)
+
+    return dset_list
 
 
 def run():
@@ -75,7 +108,7 @@ def run():
         index_node = a.index_node
 
 
-    dset_id = None
+    dset_id = ""
 
     if a.dset_id:
 
@@ -117,7 +150,7 @@ def run():
         silent = True
 
     if not a.verbose:
-        if not a.slient:
+        if not a.silent:
             try:
                 v = config['user']['verbose']
                 if 'true' in v or 'yes' in v:
@@ -134,15 +167,29 @@ def run():
     args = {    "delete": d, 
              "data_node": data_node, 
              "index_node": index_node, 
-             "cert": cert 
+             "cert": cert, 
              "auth" :auth, 
              "verbose" : verbose,
-             "slient" :silent }
+             "silent" :silent }
 
 
-    parts = dset_id.split('.')
-    if parts[0].lower() in ["cmip6", "input4mips"]:
+    if len(dset_id) > 0:
+        args["dataset_id_lst"] = [dset_id]
+    elif a.map:
 
+        args["dataset_id_lst"] = maps_to_dataset_list(a.map)
+    elif a.dset_list:
+        try:
+            dset_arr = [line.rstrip() for line in open(a.dset_list)]
+        except:
+            publog.exception(f"Error opening {args['dset_list']} file.")
+
+        args["dataset_id_lst"] = dset_arr
+    else:
+        publog.error("No unpublish input method specified.  Please use from one of the following arguments: --map --use-list --dset-id ; type esgunpublish --help for more info")
+        exit(1)
+
+    if (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
             pid_creds = json.loads(config['user']['pid_creds'])
             args["pid_creds"] = pid_creds
@@ -150,12 +197,13 @@ def run():
             publog.exception("PID credentials not defined. Define in config file esg.ini.")
             exit(1)    
 
+    status = 0
     try:
-        upub.run(args)
+        status = upub.run(args)
     except Exception as ex:
         publog.exception("Failed to unpublish")
         exit(1)
-
+    exit(status)
 
 def main():
     run()
