@@ -26,7 +26,7 @@ def get_args():
                         help="Run publisher without certificate, only works on certain index nodes.")
     parser.add_argument("--verify", dest="verify", action="store_true",
                         help="Toggle server certificate verification for publishing, default is off.")
-    parse.add_argument("--xml-list", dest="xml_list", default=None,
+    parser.add_argument("--xml-list", dest="xml_list", default=None,
                         help="Publish directly from xml files listed.")
     pub = parser.parse_args()
 

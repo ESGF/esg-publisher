@@ -51,8 +51,8 @@ class ESGPubIndex:
             self.publog.debug(new_xml)
             self.pubCli.publish(new_xml)
         return rc
-        
-    def pub_xml(self, doc)
+
+    def pub_xml(self, doc):
         self.pubCli.publish(doc)
 
     def archive_rec(self, rec, new_xml):
