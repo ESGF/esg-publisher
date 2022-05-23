@@ -79,7 +79,8 @@ def run(fullmap, pub_args):
     # ___________________________________________
     # WORKFLOW - one line call
 
-    proj.workflow()
+    return proj.workflow()
+
 
 
 def main():
@@ -89,13 +90,15 @@ def main():
     if maps is None:
         publog.error("Missing argument --map, use " + sys.argv[0] + " --help for usage.")
         exit(1)
+
+    rc = True
     for m in maps:
         if os.path.isdir(m):
             files = os.listdir(m)
             for f in files:
                 if os.path.isdir(m + f):
                     continue
-                run(m + f, pub_args)
+                rc = rc and run(m + f, pub_args)
         else:
             myfile = open(m)
             ismap = False
@@ -109,11 +112,13 @@ def main():
                     first = False
 
                 length = len(line)
-                run(line[0:length - 1], pub_args)
+                rc = rc and run(line[0:length - 1], pub_args)
             myfile.close()
             if ismap:
-                run(m, pub_args)
+                rc = rc and run(m, pub_args)
 
+    if not rc:
+        exit(1)
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

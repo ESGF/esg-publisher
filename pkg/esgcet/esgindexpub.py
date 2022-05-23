@@ -17,7 +17,7 @@ def get_args():
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
                         help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
-    parser.add_argument("--pub-rec", dest="json_data", required=True,
+    parser.add_argument("--pub-rec", dest="json_data", default=None,
                         help="JSON file output from esgpidcitepub or esgmkpubrec.")
     parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
@@ -25,8 +25,9 @@ def get_args():
     parser.add_argument("--no-auth", dest="no_auth", action="store_true",
                         help="Run publisher without certificate, only works on certain index nodes.")
     parser.add_argument("--verify", dest="verify", action="store_true",
-                        help="Toggle verification for publishing, default is off.")
-
+                        help="Toggle server certificate verification for publishing, default is off.")
+    parse.add_argument("--xml-list", dest="xml_list", default=None,
+                        help="Publish directly from xml files listed.")
     pub = parser.parse_args()
 
     return pub
@@ -47,6 +48,10 @@ def run():
         config.read(ini_file)
     except Exception as ex:
         publog.exception("config file")
+        exit(1)
+
+    if not (a.json_data or a.xml_list):
+        publog.error("Input data argument missing.  Please provide either records in .json form or a list of xml files for index publishing")
         exit(1)
 
     if not a.silent:
@@ -100,18 +105,30 @@ def run():
     else:
         auth = True
 
+    rc = True
     ip = ESGPubIndex(index_node, cert, silent=silent, verbose=verbose, verify=verify, auth=auth)
-    try:
-        new_json_data = json.load(open(a.json_data))
-    except:
-        publog.exception("Could not open json file. Exiting.")
-        exit(1)
-    try:
-        ip.do_publish(new_json_data)
-    except Exception as ex:
-        publog.exception("Failed to publish to index node")
-        exit(1)
 
+    if a.json_data:
+        try:
+            new_json_data = json.load(open(a.json_data))
+        except:
+            publog.exception("Could not open json file. Exiting.")
+            exit(1)
+        try:
+            rc = rc and ip.do_publish(new_json_data)
+        except Exception as ex:
+            publog.exception("Failed to publish to index node")
+            exit(1)
+    else:
+        try:
+            with open(a.xml_list) as inf:
+                for line in inf:
+                    ip.xml_pub(open(line.strip()).read())
+        except Exception as ex:
+            publog.exception(f"Index publishing failure: {ex}")
+            exit(1)
+    if not rc:
+        exit(1)
 
 def main():
     run()

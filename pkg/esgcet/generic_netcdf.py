@@ -67,7 +67,8 @@ class GenericPublisher(BasePublisher):
 
         # step five: publish to database
         self.publog.info("Running index pub...")
-        self.index_pub(out_json_data)
+        rc = self.index_pub(out_json_data)
 
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
+        return rc

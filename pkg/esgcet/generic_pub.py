@@ -70,12 +70,14 @@ class BasePublisher(object):
 
     def index_pub(self,dataset_records):
         ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
+        rc = True
         try:
-            ip.do_publish(dataset_records)
+            rc = ip.do_publish(dataset_records)
         except Exception as ex:
             self.publog.exception("Failed to publish to index node")
             self.cleanup()
             exit(1)
+        return rc
 
     def workflow(self):
 
@@ -91,7 +93,9 @@ class BasePublisher(object):
         self.update(out_json_data)
 
         self.publog.info("Running index pub...")
-        self.index_pub(out_json_data)
+        
+        rc = self.index_pub(out_json_data)
 
         self.publog.info("Done.")
 
+        return rc
