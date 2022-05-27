@@ -277,6 +277,14 @@ class PublisherArgs:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
 
+        if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
+            try:
+                argdict["enable_archive"] = True
+                argdict["archive_path"] = config["user"]["archive_location"]
+                argdict["archive_path_length"] = config["user"]["archive_depth"]
+            except:
+                publog.exception("Configuration file error: check archive (and other) settings")
+                exit(1)
         return argdict
 
 

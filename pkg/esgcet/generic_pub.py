@@ -69,7 +69,12 @@ class BasePublisher(object):
             exit(1)
 
     def index_pub(self,dataset_records):
-        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
+        arch_cfg = None
+        if self.argdict["enable_archive"]:
+            arch_cfg = { "length" :self.argdict["arch_path_length"] , 
+                          "archive_path" : self.argdict["archive_path"]}
+
+        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=self.archive)
         rc = True
         try:
             rc = ip.do_publish(dataset_records)

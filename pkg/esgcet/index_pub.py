@@ -69,12 +69,15 @@ class ESGPubIndex:
             pathlen = len(dsparts)
         subpath = '/'.join(parts[0:pathlen])
 
+
         destpath = os.path.join(self.arch_cfg["archive_path"], subpath)
         try:
-            os.system(f"mkdir -p {destpath}")
+            res = os.system(f"mkdir -p {destpath}")
+            if not res == 0:
+                raise RuntimeError(f"{destpath} {res} (possible permission error?)")
         except Exception as ex:
             self.publog.exception(f"Error creating archive directory {ex}")
-            return False
+            exit(1)
         try:
             with open(os.path.join(destpath, fname), "w") as outf:
                 ouf.write(new_xml)
