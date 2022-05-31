@@ -67,7 +67,7 @@ class ESGPubIndex:
         pathlen = self.arch_cfg["length"] 
         if pathlen  > len(dsparts):
             pathlen = len(dsparts)
-        subpath = '/'.join(parts[0:pathlen])
+        subpath = '/'.join(dsparts[0:pathlen])
 
 
         destpath = os.path.join(self.arch_cfg["archive_path"], subpath)
@@ -80,7 +80,8 @@ class ESGPubIndex:
             exit(1)
         try:
             with open(os.path.join(destpath, fname), "w") as outf:
-                ouf.write(new_xml)
+                outf.write(new_xml)
         except Exception as ex:
             self.publog.exception(f"Error writing xml file to archive. {ex}")
             return False
+        return True

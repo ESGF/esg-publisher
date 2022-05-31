@@ -280,11 +280,16 @@ class PublisherArgs:
         if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
             try:
                 argdict["enable_archive"] = True
+
                 argdict["archive_path"] = config["user"]["archive_location"]
                 argdict["archive_path_length"] = config["user"]["archive_depth"]
+                if not os.path.isdir(argdict["archive_path"]):
+                    publog.exception(f"Error with archive path {argdict['archive_path']}")
+                    exit(1)
             except:
                 publog.exception("Configuration file error: check archive (and other) settings")
                 exit(1)
+
         return argdict
 
 
