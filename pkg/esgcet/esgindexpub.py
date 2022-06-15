@@ -123,7 +123,7 @@ def run():
         try:
             with open(a.xml_list) as inf:
                 for line in inf:
-                    ip.xml_pub(open(line.strip()).read())
+                    ip.pub_xml(open(line.strip()).read())
         except Exception as ex:
             publog.exception(f"Index publishing failure: {ex}")
             exit(1)

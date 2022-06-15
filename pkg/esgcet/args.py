@@ -270,7 +270,7 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
-        if project == "cmip6" or project == "input4mips" or "pid_prefix" in proj_config:  
+        if project == "cmip6" or project == "input4mips" or (proj_config and "pid_prefix" in proj_config):  
             try:
                 argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
             except:
