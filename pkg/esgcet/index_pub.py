@@ -61,7 +61,9 @@ class ESGPubIndex:
             id_key = "dataset_id"
         else:
             id_key = "id"
-        dsparts = rec[id_key].split('.')
+        pathid = rec[id_key]
+        pathid = pathid[:pathid.find('|')]
+        dsparts = pathid.split('.')
         fname = rec["id"] + ".xml"
 
         pathlen = self.arch_cfg["length"] 
