@@ -1,7 +1,7 @@
 CMOR
 ====
 
-Before running the publisher, you will also need to obtain a directory of CMOR tables, used by PrePARE to check the metadata of your files.
+Before running the publisher for CMIP6, you will need to obtain a directory of CMOR tables, used by PrePARE to check the metadata of your files.
 You can get this directory either using ``esgprep`` or by cloning the git repository.
 
 esgprep

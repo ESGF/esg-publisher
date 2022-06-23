@@ -5,7 +5,7 @@ b5.1.0-b11
 ----------
 
 * Updated arguments for esgunpublish
-* XML archive functionality
+* XML archive functionality (see :ref:`arch_info`.)
 * bugfix for use of lower case cmip6 (should become case-insensitive)
 
 b5.1.0-b10

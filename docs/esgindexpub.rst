@@ -35,4 +35,4 @@ You can also use the other command line options to configure some variables outs
         --verify              Toggle verification for publishing, default is off.
         --xml-list            Publish directly from xml files listed (supply a file containing paths to the files).
 
-Use the command line option ``-h`` to see the message above.  Note that the ``--xml-list`` option is intended to be used following the use of the "enable_archive" setting and the presence of "archived" publication records in xml format.  Before use of the ``esgindxpub`` command in this context, create a list of these files to supply to the command.
+Use the command line option ``-h`` to see the message above.  Note that the ``--xml-list`` option is intended to be used following the use of the "enable_archive" setting and the presence of "archived" publication records in xml format (see :ref:`arch_info`).  Before use of the ``esgindxpub`` command in this context, create a list of these files to supply to the command.

@@ -1,6 +1,14 @@
 Installation
 ============
 
+You can install the ``esg-publisher`` (aka the ``esgcet`` Python package) one of two ways: conda, or git.
+
+For the **basic** installation: to install esgcet using conda, use the following to create a new environment populated with the publisher software and required packages: ::
+
+    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet
+    conda activate esgf-pub
+
+Other installation methods require several pre-requisites, as described below.
 
 Conda & Required Packages
 -------------------------
@@ -8,6 +16,7 @@ Conda & Required Packages
 We recommend creating a conda env before installing ``esgcet`` ::
 
     conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
+    conda activate esgf-pub
 
 NOTE: if you install esgcet using conda below, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
 
@@ -17,16 +26,18 @@ You will also need to install ``esgfpid`` using pip::
 
 NOTE: you will need a functioning version of ``autocurator`` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.
 
+Conda Install
+-------------
 
-Installing esgcet
------------------
-
-You can install esgcet one of two ways: conda, or git.
-
-
-To install esgcet using conda, activate the environment you created above and run::
+Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
     conda install -c esgf-forge -c conda-forge esgcet
+
+
+
+Installing esgcet via git
+-------------------------
+
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
@@ -34,7 +45,6 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     cd esg-publisher
     cd pkg
     python3 setup.py install
-
 
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
