@@ -27,7 +27,7 @@ def get_args():
     parser.add_argument("--verify", dest="verify", action="store_true",
                         help="Toggle server certificate verification for publishing, default is off.")
     parser.add_argument("--xml-list", dest="xml_list", default=None,
-                        help="Publish directly from xml files listed.")
+                        help="Publish directly from xml files listed (supply a file containing paths to the files).")
     pub = parser.parse_args()
 
     return pub
