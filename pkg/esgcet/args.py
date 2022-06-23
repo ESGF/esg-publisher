@@ -289,7 +289,8 @@ class PublisherArgs:
             except:
                 publog.exception("Configuration file error: check archive (and other) settings")
                 exit(1)
-
+        else:
+            argdict["enable_archive"] = False
         return argdict
 
 
