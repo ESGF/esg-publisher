@@ -60,3 +60,21 @@ If you do not run this and are not using the conda installed ``autocurator``, th
 
 .. warning::
     Please do not attempt to run `esg-publisher` commands with a legacy esg.ini file using the ``-i`` argumement.   You will need to migrate the config using :ref:`migrate`.
+
+.. _arch_info:
+
+Archiving Info
+--------------
+
+Dataset records (metadata) can be preserved in xml form for future use if the need arises to rebuild an index.
+(This functionality replaces the ability to reharvest THREDDS catalog that was available with the prior ESGF/publisher architecture)
+There are three config file options that must be set in order to enable the archive:
+
+* enable_archive
+   * Set to True to enable the feature
+* archive_location
+   * Path on local file system to build directory tree and write xml files for record archive.
+* archive_depth
+   * Controls the directory depth of subdirectories to create/use in the xml archive
+
+The ``esgindexpub`` subcommand has the ``--xml-list`` option.  Supply a file containing a list of paths to xml files within the archive.

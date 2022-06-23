@@ -15,8 +15,8 @@ where ``<JSON file>`` is the output of the ``esgpidcitepub`` command.
 
 You can also use the other command line options to configure some variables outside of the config file (or to define where to find the config file)::
 
-    usage: esgindexpub [-h] [--index-node INDEX_NODE] [--certificate CERT] 
-                        --pub-rec JSON_DATA [--ini CFG] [--silent] 
+    usage: esgindexpub [-h] [--index-node INDEX_NODE] [--certificate CERT]
+                        --pub-rec JSON_DATA [--ini CFG] [--silent]
                         [--verbose] [--no-auth] [--verify]
 
     Publish data sets to ESGF databases.
@@ -33,6 +33,6 @@ You can also use the other command line options to configure some variables outs
         --verbose             Enable verbose mode.
         --no-auth             Run publisher without certificate, only works on certain index nodes.
         --verify              Toggle verification for publishing, default is off.
+        --xml-list            Publish directly from xml files listed (supply a file containing paths to the files).
 
-
-Use the command line option ``-h`` to see the message above.
+Use the command line option ``-h`` to see the message above.  Note that the ``--xml-list`` option is intended to be used following the use of the "enable_archive" setting and the presence of "archived" publication records in xml format.  Before use of the ``esgindxpub`` command in this context, create a list of these files to supply to the command.

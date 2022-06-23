@@ -22,7 +22,7 @@ copyright = '2020, Elysia Witham, Sasha Ames'
 author = 'Elysia Witham, Sasha Ames'
 
 # The full version, including alpha/beta/rc tags
-release = '5.1.0b7'
+release = '5.1.0b11'
 
 
 # -- General configuration ---------------------------------------------------

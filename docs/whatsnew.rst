@@ -4,6 +4,10 @@ Release Notes
 b5.1.0-b11
 ----------
 
+* Updated arguments for esgunpublish
+* XML archive functionality
+* bugfix for use of lower case cmip6 (should become case-insensitive)
+
 b5.1.0-b10
 ----------
 
@@ -14,7 +18,7 @@ v5.1.0-b9
 
 * Improved Controlled-vocabulary agreement checks and upgraded rules (for CMIP6)
 *  Bug fix for input4MIPs (omit CMOR tables load)
-   
+
 v5.1.0-b8
 ---------
 
