@@ -77,4 +77,4 @@ There are three config file options that must be set in order to enable the arch
 * archive_depth
    * Controls the directory depth of subdirectories to create/use in the xml archive
 
-The ``esgindexpub`` subcommand has the ``--xml-list`` option.  Supply a file containing a list of paths to xml files within the archive.
+The ``esgindexpub`` subcommand has the ``--xml-list`` option.  Supply a file containing a list of paths to xml files within the archive in order to push the recods to the index node.

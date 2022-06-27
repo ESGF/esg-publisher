@@ -94,11 +94,11 @@ The config file will contain the following settings:
  * verbose
     * Optional. Enable or disable verbose mode, which outputs additional DEBUG logging messages. Default is False, verbose mode disabled.
  * enable_archive
-    * Optional.  Enable the writeout of dataset/file record in xml files to a local file system.
+    * Optional.  Enable the writeout of dataset/file record in xml files to a local file system. (see :ref:`arch_info`)
  * archive_location
-    * Optional. (Required when enable_archive = True) Path on local file system to build directory tree and write xml files for record archive.
+    * Optional. (Required when enable_archive = True) Path on local file system to build directory tree and write xml files for record archive. 
  * archive_depth
-    * Optional. (Required when enable_archive = True) sets the directory depth of subdirectories to create/use in the xml archive (see :ref:`arch_info`.)
+    * Optional. (Required when enable_archive = True) sets the directory depth of subdirectories to create/use in the xml archive. (see :ref:`arch_info`)
 
 Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
 Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.ini`` when you install ``esgcet``.
@@ -112,7 +112,7 @@ See that page for more info.
 Run Time Args
 -------------
 
-If you prefer to set certain things at runtime, the ``esgpublish`` command has several optional command line arguments which will override options set in the config file.
+If you prefer to set your configuration to publish at runtime, the ``esgpublish`` command has several optional command line arguments which will override options set in the config file.  
 For instance, if you use the ``--cmor-tables`` command line argument to set the path to the cmor tables directory, that will override anything written in the config file under ``cmor_path``.
 If you used the old version of the publisher, you should note that the command line argument ``-ini`` which points to your config file must be a complete path, not the directory as it was in the previous version.
-More details can be found in the ``esgpublish`` section.
+More details can be found in the ``esgpublish`` section.  Some settings are not available on the command line and must be placed in the config file, such as the xml "archive" utility.
