@@ -67,7 +67,7 @@ Archiving Info
 --------------
 
 Dataset records (metadata) can be preserved in xml form for future use if the need arises to rebuild an index.
-(This functionality replaces the ability to reharvest THREDDS catalog that was available with the prior ESGF/publisher architecture)
+(This functionality replaces the ability to reharvest THREDDS catalog that was available with the prior ESGF/publisher architecture).  XML files are created for both the dataset and every file record: one file per each record, eg. if there are *two* files for a dataset, *three* xml files are generated in total.
 There are three config file options that must be set in order to enable the archive:
 
 * enable_archive
