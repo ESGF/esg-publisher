@@ -276,7 +276,8 @@ class PublisherArgs:
             except:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
-
+        if "cmip6_clone" in config['user'] and project == config['user']['cmip6_clone'].lower():
+            argdict["cmip6-clone"] = project
         if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
             try:
                 argdict["enable_archive"] = True

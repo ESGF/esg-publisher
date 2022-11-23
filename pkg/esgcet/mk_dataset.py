@@ -23,7 +23,8 @@ class ESGPubMakeDataset:
             if project in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[project]
         elif self.user_project and project in self.user_project:
-            self.DRS = self.user_project[project]['DRS']
+            if 'DRS' in self.user_project[project]:
+                self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
