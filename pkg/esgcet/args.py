@@ -278,6 +278,7 @@ class PublisherArgs:
                 exit(1)
         if "cmip6_clone" in config['user'] and project == config['user']['cmip6_clone'].lower():
             argdict["cmip6-clone"] = project
+            argdict["user_project_config"]["clone_project"] = "cmip6"
         if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
             try:
                 argdict["enable_archive"] = True

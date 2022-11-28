@@ -25,6 +25,8 @@ class ESGPubMakeDataset:
         elif self.user_project and project in self.user_project:
             if 'DRS' in self.user_project[project]:
                 self.DRS = self.user_project[project]['DRS']
+            else:
+                self.DRS = DRS[self.user_project["clone_project"]]
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
@@ -111,14 +113,20 @@ class ESGPubMakeDataset:
                     self.publog.warning("{} does not agree!".format(f))
             self.dataset[f] = parts[i]
 
+        self.dataset['project'] = projkey
+
+        if "clone_project" in self.user_project:
+            projkey = ""
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
         self.assign_dset_values(projkey, master_id, version)
         self.const_attr()
 
+
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
         projkey = proj.lower()
+
         if projkey in GA:
             for facetkey in GA[projkey]:
                 # did we find a GA in the data by the the key name
@@ -133,6 +141,7 @@ class ESGPubMakeDataset:
 
     def global_attr_mapped(self, proj, scandata):
         projkey = proj.lower()
+
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
@@ -160,7 +169,6 @@ class ESGPubMakeDataset:
         self.dataset['replica'] = self.replica
         self.dataset['latest'] = 'true'
         self.dataset['type'] = 'Dataset'
-        self.dataset['project'] = projkey
         self.dataset['version'] = version
 
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
