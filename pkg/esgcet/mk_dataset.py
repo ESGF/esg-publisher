@@ -234,7 +234,7 @@ class ESGPubMakeDataset:
             root_found = False
             for root in self.data_roots:
                 if self.first_val in root and proj_root in root:
-                    pro8j_root = root
+                    proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
                     break
@@ -456,7 +456,6 @@ class ESGPubMakeDataset:
 
         # Check each data root to see if it matches the provided path
         for data_root, _ in data_roots.items():
-
             path_match = "{}/".format(data_root.rstrip("/"))
             if path.startswith(path_match):
 

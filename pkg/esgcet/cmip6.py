@@ -23,7 +23,7 @@ class cmip6(GenericPublisher):
         if "cmor_tables" in argdict:
             self.cmor_tables = os.path.expanduser(argdict["cmor_tables"])
         else:
-            self.cmor_tables = ""
+            self.cmor_tables = None
         self.test = argdict["test"]
         if self.replica:
             self.skip_prepare = not argdict["force_prepare"]
@@ -49,15 +49,23 @@ class cmip6(GenericPublisher):
     def pid(self, out_json_data):
       
         pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
-        check = FieldCheck(self.cmor_tables, silent=self.silent)
-
+        
+        if self.cmor_tables:
+            check = FieldCheck(self.cmor_tables, silent=self.silent)
+            try:
+                check.run_check(out_json_data)
+            except:
+                self.publog.exception("Activity/Metadata agreement check failed!")
+                self.cleanup()
+                exit(1)
+            
         try:
-            check.run_check(out_json_data)
             new_json_data = pid.do_pidcite()
         except Exception as ex:
-            self.publog.exception("Assigning pid or running activity check failed")
+            self.publog.exception("Assigning pid failed")
             self.cleanup()
             exit(1)
+
         return new_json_data
 
     def workflow(self):
