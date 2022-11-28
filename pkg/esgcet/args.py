@@ -213,6 +213,7 @@ class PublisherArgs:
         try:
             proj_config = json.loads(config['user']['user_project_config'])
         except:
+            publog.warning("User project config missing or could not be parsed.")
             proj_config = None
 
         os.system("cert_path=" + cert)
