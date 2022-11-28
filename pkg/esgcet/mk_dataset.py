@@ -22,15 +22,18 @@ class ESGPubMakeDataset:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[project]
+        elif self.user_project and self.user_project["clone_project"]:
+            cloneproj = self.user_project["clone_project"]
+            self.DRS = DRS[cloneproj]
+            if cloneproj in CONST_ATTR:
+                self.CONST_ATTR = CONST_ATTR[cloneproj]
         elif self.user_project and project in self.user_project:
             if 'DRS' in self.user_project[project]:
                 self.DRS = self.user_project[project]['DRS']
-            else:
-                self.DRS = DRS[self.user_project["clone_project"]]
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
-            raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+            raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
     def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
@@ -115,11 +118,11 @@ class ESGPubMakeDataset:
 
         self.dataset['project'] = projkey
 
-        if "clone_project" in self.user_project:
-            projkey = ""
+        if self.user_project and "clone_project" in self.user_project:
+            projkey = self.user_project["clone_project"]
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
-        self.assign_dset_values(projkey, master_id, version)
+        self.assign_dset_values(master_id, version)
         self.const_attr()
 
 
@@ -156,7 +159,7 @@ class ESGPubMakeDataset:
             for facetkey in self.CONST_ATTR:
                 self.dataset[facetkey] = self.CONST_ATTR[facetkey]
 
-    def assign_dset_values(self, projkey, master_id, version):
+    def assign_dset_values(self, master_id, version):
 
         self.dataset['data_node'] = self.data_node
         self.dataset['index_node'] = self.index_node
