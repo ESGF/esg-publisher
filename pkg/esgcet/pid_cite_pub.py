@@ -167,6 +167,10 @@ class ESGPubPidCite(object):
 
         dset_rec = self.ds_records[index]
         project = dset_rec['project'].lower()
+
+        # At present we only support the stock templates from CMIP6
+        if not project in CITATION_URLS:
+            return
         if self.test_publication:
             keystr = 'test'
         else:

@@ -15,15 +15,15 @@ class ESGPubMakeDataset:
 
     def init_project(self, proj):
         project = proj
-        if not self.user_project:
-            project = proj.lower()
 
         if project in DRS:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[project]
-        elif self.user_project and self.user_project["clone_project"]:
+        elif self.user_project and "clone_project" in self.user_project:
             cloneproj = self.user_project["clone_project"]
+            if cloneproj not in DRS:
+                raise(RuntimeError(f"Project {cloneproj} Data Record Syntax (DRS) not defined. Define in esg.ini"))
             self.DRS = DRS[cloneproj]
             if cloneproj in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[cloneproj]
@@ -101,7 +101,7 @@ class ESGPubMakeDataset:
 
         if self.project:
             projkey = self.project
-        self.init_project(projkey)
+        self.init_project(projkey.lower())
 
         facets = self.DRS  # depends on Init_project to initialize
 
@@ -116,14 +116,15 @@ class ESGPubMakeDataset:
                     self.publog.warning("{} does not agree!".format(f))
             self.dataset[f] = parts[i]
 
-        self.dataset['project'] = projkey
-
+        priorkey = projkey
         if self.user_project and "clone_project" in self.user_project:
             projkey = self.user_project["clone_project"]
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
         self.assign_dset_values(master_id, version)
         self.const_attr()
+        if not 'project' in self.dataset:
+            self.dataset['project'] = priorkey
 
 
     def global_attributes(self, proj, scandata):
