@@ -52,8 +52,8 @@ Now you will be able to call all commands in this package from any directory. A 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
 
-Config
-------
+Config File (esg.ini)
+---------------------
 
 The config file will contain the following settings:
 
@@ -108,6 +108,27 @@ Additionally, a *required* setting if omitted can be satisfied via inclusion as 
 
 If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
 See that page for more info.
+
+
+Project Configuration
+---------------------
+
+You may define a custom project in several ways.  First, using the
+``user_project_config`` setting, specify an alternate *DRS* and constant attribute values (``CONST_ATTR``) for your project.
+``DRS`` is followed an array with the components.
+``version`` is *always* the ultimate component of the dataset.  
+
+If your project desires to use the features of CMIP6 included extracted Global Attributes use the ``cmip6_clone``
+config file property and assign to your custom project name within the ``user_project_config``.  The project name must be overridden using ``CONST_ATTR`` ``project setting`` (see example below).  If you CMIP6 project wishes to register PIDs, you must assign a ``pid_prefix`` within 
+config settings.
+
+Example CMIP6 cloned project 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To configure a project let us use *primavera* as an example.   Use the following: ::
+
+   cmip6_clone = primavera
+   user_project_config = { "primavera" : { "CONST_ATTR" : { "project" : "primavera"}, "pid_prefix" : "21.14100" } }
+
 
 Run Time Args
 -------------
