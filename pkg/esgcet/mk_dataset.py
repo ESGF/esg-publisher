@@ -27,13 +27,14 @@ class ESGPubMakeDataset:
             self.DRS = DRS[cloneproj]
             if cloneproj in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[cloneproj]
-        elif self.user_project and project in self.user_project:
+        if self.user_project and project in self.user_project:
             if 'DRS' in self.user_project[project]:
                 self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+        #print(f"CONST ATTR: {self.CONST_ATTR}")
 
     def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
@@ -123,6 +124,7 @@ class ESGPubMakeDataset:
         self.global_attr_mapped(projkey, scandata)
         self.assign_dset_values(master_id, version)
         self.const_attr()
+        #print(f"project: {self.dataset['project']}")
         if not 'project' in self.dataset:
             self.dataset['project'] = priorkey
 
