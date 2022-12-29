@@ -48,8 +48,9 @@ class cmip6(GenericPublisher):
 
     def pid(self, out_json_data):
       
-        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
-        
+        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test,
+                            silent=self.silent, verbose=self.verbose,
+                            project_family='CMIP6')
         if self.cmor_tables:
             check = FieldCheck(self.cmor_tables, silent=self.silent)
             try:
