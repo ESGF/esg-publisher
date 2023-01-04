@@ -16,7 +16,8 @@ def get_url(arr):
 class ESGPubPidCite(object):
     """ for PID services wraps calls to obtain a PID, add to records and generate citiation metadata """
 
-    def __init__(self, ds_recs, pid_creds, data_node, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX):
+    def __init__(self, ds_recs, pid_creds, data_node, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX,
+                 project_family=None):
         """ Constructor
             ds_rec - a dataset record (dictionary/json)
             pid_creds - credentials typically loaded from config file, contains PID server, password, etc.
@@ -28,6 +29,7 @@ class ESGPubPidCite(object):
         self.verbose = verbose
         self.test_publication = test
         self.pid_prefix = pid_prefix
+        self.project_family = project_family
         self.data_node = data_node
         self.publog = log.return_logger('PID Citation', silent, verbose)
 
@@ -166,8 +168,9 @@ class ESGPubPidCite(object):
     def update_dataset(self, index):
 
         dset_rec = self.ds_records[index]
-        project = dset_rec['project'].lower()
-
+        # project is taken from the record metadata unless project_family is a truthy value
+        # (defaults to None, but might be e.g. 'CMIP6')
+        project = (self.project_family or dset_rec['project']).lower()
         # At present we only support the stock templates from CMIP6
         if not project in CITATION_URLS:
             return
