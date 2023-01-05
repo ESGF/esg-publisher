@@ -213,7 +213,8 @@ class PublisherArgs:
         try:
             proj_config = json.loads(config['user']['user_project_config'])
         except:
-            proj_config = None
+            publog.warning("User project config missing or could not be parsed.")
+            proj_config = {}
 
         os.system("cert_path=" + cert)
 
@@ -270,13 +271,18 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
-        if project == "cmip6" or project == "input4mips" or (proj_config and "pid_prefix" in proj_config):  
+        if project == "cmip6" or project == "input4mips" or (project in proj_config and "pid_prefix" in proj_config[project]):  
             try:
                 argdict["pid_creds"] = json.loads(config['user']['pid_creds'])
             except:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
-
+        if "cmip6_clone" in config['user'] and project == config['user']['cmip6_clone'].lower():
+            if "pid_creds" in argdict:
+                argdict["cmip6-clone"] = project
+            if not argdict["user_project_config"]:
+                argdict["user_project_config"] = {}
+            argdict["user_project_config"]["clone_project"] = "cmip6"
         if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
             try:
                 argdict["enable_archive"] = True
