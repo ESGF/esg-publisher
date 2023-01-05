@@ -1,6 +1,6 @@
 package:
   name: esgcet
-  version: 5.1.0b11
+  version: 5.1.0b12
 
 source:
   git_rev: refactor
@@ -37,4 +37,3 @@ about:
   summary: gen five publisher
   license: BSD
   license_file: bsd-3-clause.txt
-
