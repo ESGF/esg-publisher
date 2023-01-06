@@ -15,19 +15,29 @@ class ESGPubMakeDataset:
 
     def init_project(self, proj):
         project = proj
-        if not self.user_project:
-            project = proj.lower()
 
         if project in DRS:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[project]
+        elif self.user_project and "clone_project" in self.user_project:
+            cloneproj = self.user_project["clone_project"]
+            if cloneproj not in DRS:
+                raise(RuntimeError(f"Project {cloneproj} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+            self.DRS = DRS[cloneproj]
+            if cloneproj in CONST_ATTR:
+                self.CONST_ATTR = CONST_ATTR[cloneproj]
+            else:
+                self.CONST_ATTR = {}
+            if 'CONST_ATTR' in self.user_project[project]:
+                self.CONST_ATTR.update(self.user_project[project]['CONST_ATTR'])
         elif self.user_project and project in self.user_project:
-            self.DRS = self.user_project[project]['DRS']
+            if 'DRS' in self.user_project[project]:
+                self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
-            raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+            raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
     def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
@@ -95,7 +105,7 @@ class ESGPubMakeDataset:
 
         if self.project:
             projkey = self.project
-        self.init_project(projkey)
+        self.init_project(projkey.lower())
 
         facets = self.DRS  # depends on Init_project to initialize
 
@@ -110,14 +120,21 @@ class ESGPubMakeDataset:
                     self.publog.warning("{} does not agree!".format(f))
             self.dataset[f] = parts[i]
 
+        priorkey = projkey
+        if self.user_project and "clone_project" in self.user_project:
+            projkey = self.user_project["clone_project"]
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
-        self.assign_dset_values(projkey, master_id, version)
+        self.assign_dset_values(master_id, version)
         self.const_attr()
+        if not 'project' in self.dataset:
+            self.dataset['project'] = priorkey
+
 
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
         projkey = proj.lower()
+
         if projkey in GA:
             for facetkey in GA[projkey]:
                 # did we find a GA in the data by the the key name
@@ -132,6 +149,7 @@ class ESGPubMakeDataset:
 
     def global_attr_mapped(self, proj, scandata):
         projkey = proj.lower()
+
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
@@ -146,7 +164,7 @@ class ESGPubMakeDataset:
             for facetkey in self.CONST_ATTR:
                 self.dataset[facetkey] = self.CONST_ATTR[facetkey]
 
-    def assign_dset_values(self, projkey, master_id, version):
+    def assign_dset_values(self, master_id, version):
 
         self.dataset['data_node'] = self.data_node
         self.dataset['index_node'] = self.index_node
@@ -159,7 +177,6 @@ class ESGPubMakeDataset:
         self.dataset['replica'] = self.replica
         self.dataset['latest'] = 'true'
         self.dataset['type'] = 'Dataset'
-        self.dataset['project'] = projkey
         self.dataset['version'] = version
 
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
@@ -222,7 +239,7 @@ class ESGPubMakeDataset:
             root_found = False
             for root in self.data_roots:
                 if self.first_val in root and proj_root in root:
-                    pro8j_root = root
+                    proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
                     break
@@ -444,7 +461,6 @@ class ESGPubMakeDataset:
 
         # Check each data root to see if it matches the provided path
         for data_root, _ in data_roots.items():
-
             path_match = "{}/".format(data_root.rstrip("/"))
             if path.startswith(path_match):
 

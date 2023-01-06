@@ -49,7 +49,7 @@ def run(fullmap, pub_args):
     if argdict["non_nc"]:
         non_netcdf = True
 
-    if project == "cmip6":
+    if project == "cmip6" or "cmip6-clone" in argdict:
         from esgcet.cmip6 import cmip6
         proj = cmip6(argdict)
     elif project == "create-ip":
