@@ -1,4 +1,5 @@
-from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.mk_dataset_autoc import ESGPubMakeAutocDataset
+from esgcet.mk_dataset_xarray import ESGPubMakeXArrayDataset
 import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
@@ -14,12 +15,26 @@ class GenericPublisher(BasePublisher):
 
     def __init__(self, argdict):
         super().__init__(argdict)
-        self.autoc_command = argdict["autoc_command"]
-        self.MKD_Construct = ESGPubMakeDataset
+        
+        if argdict["autoc_command"]:
+            self.autoc_command = argdict["autoc_command"]
+            self.MKD_Construct = ESGPubMakeAutocDataset
+        else:
+            self.autoc_command = None
+            self.MKD_Construct = ESGPubMakeXArrayDataset
+    
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
 
     def cleanup(self):
         self.scan_file.close()
+
+    def xarray_load(self, map_json_data):
+        datafile = map_json_data[0][1]
+        destpath = os.path.dirname(datafile)
+
+        filespec = f"{destpath}/*.nc"
+
+        self.xarray_set = xarray.open_mf
 
     def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
@@ -39,8 +54,13 @@ class GenericPublisher(BasePublisher):
         mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
         mkd.set_project(self.project)
+
+        if self.autoc_command:
+            scan_arg = self.scanfn
+        else:
+            scan_arg = self.xarray_set
         try:
-            out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)
+            out_json_data = mkd.get_records(map_json_data, scan_arg, self.json_file, user_project=self.proj_config)
         except Exception as ex:
             self.publog.exception("Failed to make dataset")
             self.cleanup()

@@ -95,13 +95,10 @@ class ESGPubMakeDataset:
     def get_dataset(self, mapdata, scanobj):
 
         master_id, version = mapdata.split('#')
-
         parts = master_id.split('.')
-
         projkey = parts[0]
         self.first_val = projkey
-        scandata = scanobj['dataset']
-
+        scandata = self.get_attrs_dict(scanobj)
 
         if self.project:
             projkey = self.project
@@ -256,13 +253,6 @@ class ESGPubMakeDataset:
             ret.pop("datetime_start")
             ret.pop("datetime_end")
 
-        return ret
-
-    def get_scanfile_dict(self, scandata):
-        ret = {}
-        for key in scandata:
-            rec = scandata[key]
-            ret[rec['name']] = rec
         return ret
 
     def update_metadata(self, record, scanobj):
@@ -428,6 +418,7 @@ class ESGPubMakeDataset:
             mapobj = json.load(open(mapdata))
         else:
             mapobj = mapdata
+
         scanobj = json.load(open(scanfilename))
 
         self.get_dataset(mapobj[0][0], scanobj)
