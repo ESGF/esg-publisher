@@ -120,7 +120,7 @@ class ESGPubPidCite(object):
                                         file_handle=file_rec['tracking_id'],
                                         checksum=file_rec['checksum'],
                                         file_size=file_rec['size'],
-                                        publish_path=file_rec['publish_path']),
+                                        publish_path=file_rec['publish_path'],
                                         checksum_type=file_rec['checksum_type'],
                                         file_version=file_rec['version'] )
             else:
