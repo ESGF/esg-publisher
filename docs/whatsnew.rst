@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+b5.1.0-b13
+----------
+
+* **BUGFIX**: corrected file URL format for PID/Handle publishing (previously published URLs via v5.* were malformed).
+* CMIP6 Cloned project support 
+* **NOTE**:  this version is unavailable on Conda (``esgf-forge`` channel), please use ``pip install esgcet`` and confirm the upgrade with ``esgpublish --version``.
+
 b5.1.0-b11
 ----------
 
