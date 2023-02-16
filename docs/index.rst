@@ -12,8 +12,8 @@ if you have conda you can install the publisher wih the following into a fresh e
 ::
      conda create -n esgf-pub -c conda-forge -c esgf-forge esgcet
      conda activate esgf-pub
-     pip install esgcet # upgrade
-     esgpublish --version #  Ensure you have upgraded to v5.1.0-b13
+     pip install esgcet==v5.1.0b13 # must specify version
+     esgpublish --version #  Ensure you have upgraded to v5.1.0b13
      esgpublish # will print the usage information.
 
 You may also look at the inital ``~/.esg/esg.ini`` and fill in the missing information based on the provided examples.
