@@ -248,6 +248,7 @@ class ESGPubMakeDataset:
                 exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
+        ret["publish_path"] = f"{self.data_roots[proj_root]}/{rel_path}"
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
