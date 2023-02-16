@@ -22,7 +22,7 @@ Pip Install
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
     conda activate esgf-pub
-    pip install esgcet
+    pip install esgcet==5.1.0b13  # Must specify version for Beta release
 
 
 Installing esgcet via git
