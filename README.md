@@ -1,10 +1,20 @@
 # ESGF Publisher
 
-`v5.1.0b10` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
+`v5.1.0b13` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
 
 See: https://esg-publisher.readthedocs.io/en/latest
 
 ### Release notes:
+
+#### v5.1.0-b11-13
+
+* **BUGFIX**: corrected file URL format for PID/Handle publishing (previously published URLs via v5.* were malformed).
+* CMIP6 Cloned project support
+* NOTE: this version is unavailable on Conda (esgf-forge channel), please use pip install esgcet and confirm the upgrade with esgpublish --version.
+* Updated arguments for esgunpublish
+* XML archive functionality (see :ref:`arch_info`.)
+* bugfix for use of lower case cmip6 (should become case-insensitive)
+
 
 #### v5.1.0-b9,10
 
