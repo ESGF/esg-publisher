@@ -15,50 +15,12 @@ class ESGPubMakeAutocDataset(ESGPubMakeDataset):
     def get_attrs_dict(self, scanobj):
         return scanobj['dataset']
 
-    def set_variables(self, record, scanobj, vid):
-        if vid in scanobj["variables"]:
-                var_rec = scanobj["variables"][vid]
-                if "long_name" in var_rec.keys():
-                    record["variable_long_name"] = var_rec["long_name"]
-                elif "info" in var_rec:
-                    record["variable_long_name"] = var_rec["info"]
-                if "standard_name" in var_rec:
-                    record["cf_standard_name"] = var_rec["standard_name"]
-                record["variable_units"] = var_rec["units"]
-                record[self.variable_name] = vid
-                if self.variable_name == "variable_id":
-                    record["variable"] = vid
-        else:
-            var_list = list(scanobj["variables"].keys())
-            if len(var_list) < VARIABLE_LIMIT:
-                init_lst = [self.variable_name, "variable_long_name"]
-                if "variable_id" in init_lst:
-                    init_lst.append("variable")
-                for kid in init_lst:
-                    record[kid] = []
-                units_list = []
-                cf_list = []
-                for vk in var_list:
-                    if not vk in VARIABLE_EXCLUDES:
-                        var_rec = scanobj["variables"][vk]
-                        if "long_name" in var_rec.keys():
-                            record["variable_long_name"].append(var_rec["long_name"])
-                        elif "info" in var_rec:
-                            record["variable_long_name"].append(var_rec["info"])
-                        if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
-                            cf_list.append(var_rec["standard_name"])          
-                        if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
-                            units_list.append(var_rec["units"])
-                        record["variable"].append(vk)
 
-                if self.variable_name == "variable_id":
-                    record[self.variable_name] = "Multiple"
-                record["variable_units"] = list(set(units_list))
-                record["cf_standard_name"] = list(set(cf_list))
-        
-            if self.variable_name == "variable_id":
-                record["variable"] = "Multiple"
-
+    def get_variables(self, scanobj):
+        return scanobj["variables"]
+    
+    def get_variable_list(self, variables):
+        return list(variables.keys())
 
     def set_bounds(self, record, scanobj):
         geo_units = []

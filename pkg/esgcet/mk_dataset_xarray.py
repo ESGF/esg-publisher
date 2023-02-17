@@ -19,6 +19,12 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
             ret[fn] = {"tracking_id": ds.tracking_id}
         return ret
     
+    def get_variables(self, scanobj):
+        return scanobj.variables
+
+    def get_variable_list(self, variable):
+        return [x for x in variable]
+
     def set_bounds(self, record, scanobj):
 
         geo_units = []
@@ -27,11 +33,13 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
             lat = scanobj.coords["latitude"]
             record["north_degrees"] = lat[-1].values.item()
             record["south_degrees"] = lat[0].values.item()
+            geo_units.append(lat.units)
         # longitude
         if "longitude" in scanobj.coords:
             lon = scanobj.coords["longitude"]
             record["east_degrees"] = lon[-1].values.item()
             record["west_degrees"] = lon[0].values.item()
+            geo_units.append(lon.units)
         # time
         if "time" in scanobj.coords:
             ti = scanobj.coords["time"]
@@ -40,7 +48,9 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
         # plev
         if "plev" in scanobj.coords:
             plev = scanobj.coords["plev"]
+            record["height_top"] = plev[0].values.item() 
+            record["height_bottom"] = plev[-1].values.item() 
+            geo_units.append(plev.units)
         if len(geo_units) > 0:
             record["geo_units"] = geo_units
-        
-
+            
