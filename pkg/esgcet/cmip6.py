@@ -80,8 +80,10 @@ class cmip6(GenericPublisher):
             self.prepare_internal(map_json_data, self.cmor_tables)
 
         # step three: autocurator
-        self.publog.info("Running autocurator...")
-        self.autocurator(map_json_data)
+#        self.publog.info("Running autocurator...")
+#        self.autocurator(map_json_data)
+        self.publog.info("Xarray extraction")
+        self.xarray_load(map_json_data)
 
         # step four: make dataset
         self.publog.info("Making dataset...")
