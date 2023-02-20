@@ -271,7 +271,7 @@ class ESGPubMakeDataset:
             if self.variable_name == "variable_id":
                 record["variable"] = vid
         else:
-            var_list = self.get_variable_list(variables):
+            var_list = self.get_variable_list(variables)
             if len(var_list) < VARIABLE_LIMIT:
                 init_lst = [self.variable_name, "variable_long_name"]
                 if "variable_id" in init_lst:

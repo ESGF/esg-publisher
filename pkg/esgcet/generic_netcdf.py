@@ -17,12 +17,12 @@ class GenericPublisher(BasePublisher):
     def __init__(self, argdict):
         super().__init__(argdict)
         
-        if argdict["autoc_command"]:
-            self.autoc_command = argdict["autoc_command"]
-            self.MKD_Construct = ESGPubMakeAutocDataset
-        else:
-            self.autoc_command = None
-            self.MKD_Construct = ESGPubMakeXArrayDataset
+#        if argdict["autoc_command"]:
+#            self.autoc_command = argdict["autoc_command"]
+#            self.MKD_Construct = ESGPubMakeAutocDataset
+#        else:
+        self.autoc_command = None
+        self.MKD_Construct = ESGPubMakeXArrayDataset
     
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
 
