@@ -5,6 +5,7 @@ import tempfile
 from esgcet.generic_pub import BasePublisher
 import traceback
 import esgcet.logger as logger
+import xarray
 
 log = logger.Logger()
 
@@ -34,7 +35,7 @@ class GenericPublisher(BasePublisher):
 
         filespec = f"{destpath}/*.nc"
 
-        self.xarray_set = xarray.open_mf
+        self.xarray_set = xarray.open_mfdataset(filespec)
 
     def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
@@ -73,9 +74,11 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
+
         # step two: autocurator
-        self.publog.info("Running autocurator...")
-        self.autocurator(map_json_data)
+#        self.publog.info("Running autocurator...")
+        self.publog.info("Xarray extraction")
+        self.xarray_load(map_json_data)
 
         # step three: make dataset
         self.publog.info("Making dataset...")
