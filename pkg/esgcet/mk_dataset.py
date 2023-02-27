@@ -333,7 +333,7 @@ class ESGPubMakeDataset:
 
         return ret, sz, access
 
-    def get_records(self, mapdata, scanfilename, xattrfn=None, user_project=None):
+    def get_records(self, mapdata, scanobj, xattrfn=None, user_project=None):
 
         self.user_project = user_project
         self.load_xattr(xattrfn)
@@ -342,8 +342,6 @@ class ESGPubMakeDataset:
             mapobj = json.load(open(mapdata))
         else:
             mapobj = mapdata
-
-        scanobj = json.load(open(scanfilename))
 
         self.get_dataset(mapobj[0][0], scanobj)
         self.update_metadata(self.dataset, scanobj)

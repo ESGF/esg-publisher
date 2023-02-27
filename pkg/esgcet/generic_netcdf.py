@@ -57,7 +57,7 @@ class GenericPublisher(BasePublisher):
         mkd.set_project(self.project)
 
         if self.autoc_command:
-            scan_arg = self.scanfn
+            scan_arg = json.load(open(self.scanfn))
         else:
             scan_arg = self.xarray_set
         try:
