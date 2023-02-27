@@ -1,4 +1,4 @@
-from mk_dataset import ESGPubMakeDataset
+from esgcet.mk_dataset import ESGPubMakeDataset
 
 class ESGPubMakeAutocDataset(ESGPubMakeDataset):
 
@@ -14,7 +14,6 @@ class ESGPubMakeAutocDataset(ESGPubMakeDataset):
 
     def get_attrs_dict(self, scanobj):
         return scanobj['dataset']
-
 
     def get_variables(self, scanobj):
         return scanobj["variables"]

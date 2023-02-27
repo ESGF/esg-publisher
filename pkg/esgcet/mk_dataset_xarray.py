@@ -1,6 +1,6 @@
-import xarray, netcdf4
+import xarray, netCDF4
 
-from mk_dataset import ESGPubMakeDataset
+from esgcet.mk_dataset import ESGPubMakeDataset
 
 class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
 
