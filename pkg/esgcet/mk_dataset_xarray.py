@@ -5,7 +5,7 @@ from esgcet.mk_dataset import ESGPubMakeDataset
 class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
 
     def __init__(self, *args):
-        super().__init__(args)
+        super().__init__(*args)
 
     def get_attrs_dict(self, scanobj):
         return scanobj.attrs
@@ -22,7 +22,7 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
     def get_variables(self, scanobj):
         res = {}
         for x in scanobj.variables:
-            res[x] = x.attrs
+            res[x] = scanobj.variables[x].attrs
         return res
     
     def get_variable_list(self, variable):

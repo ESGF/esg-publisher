@@ -258,6 +258,8 @@ class ESGPubMakeDataset:
 
     def set_variables(self, record, scanobj):
         variables = self.get_variables(scanobj)
+        # use the correct facet id string to get the variable if pre-specified in the record
+        vid = record[self.variable_name]
         if vid in variables:
             var_rec = variables[vid]
             if "long_name" in var_rec:
@@ -266,7 +268,8 @@ class ESGPubMakeDataset:
                 record["variable_long_name"] = var_rec["info"]
             if "standard_name" in var_rec:
                 record["cf_standard_name"] = var_rec["standard_name"]
-            record["variable_units"] = var_rec["units"]
+            if "units" in var_rec:
+                record["variable_units"] = var_rec["units"]
             record[self.variable_name] = vid
             if self.variable_name == "variable_id":
                 record["variable"] = vid
