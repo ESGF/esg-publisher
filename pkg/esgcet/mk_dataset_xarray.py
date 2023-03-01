@@ -13,7 +13,7 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
     def get_scanfile_dict(self, scandata, mapdata):
         ret = {}
         for rec in mapdata:
-            fn = rec[1]
+            fn = rec['file']
             print(f"TEST: {fn}")
             ds = netcdf4.Dataset(fn))
             ret[fn] = {"tracking_id": ds.tracking_id}
