@@ -260,7 +260,7 @@ class ESGPubMakeDataset:
         variables = self.get_variables(scanobj)
         if vid in variables:
             var_rec = variables[vid]
-            if "long_name" in var_rec.keys():
+            if "long_name" in var_rec:
                 record["variable_long_name"] = var_rec["long_name"]
             elif "info" in var_rec:
                 record["variable_long_name"] = var_rec["info"]
@@ -283,7 +283,7 @@ class ESGPubMakeDataset:
                 for vk in var_list:
                     if not vk in VARIABLE_EXCLUDES:
                         var_rec = variables[vk]
-                        if "long_name" in var_rec.keys():
+                        if "long_name" in var_rec:
                             record["variable_long_name"].append(var_rec["long_name"])
                         elif "info" in var_rec:
                             record["variable_long_name"].append(var_rec["info"])

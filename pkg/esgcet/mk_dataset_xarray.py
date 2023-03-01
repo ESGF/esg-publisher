@@ -20,8 +20,11 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
         return ret
     
     def get_variables(self, scanobj):
-        return scanobj.variables
-
+        res = {}
+        for x in scanobj.variables:
+            res[x] = x.attrs
+        return res
+    
     def get_variable_list(self, variable):
         return [x for x in variable]
 
