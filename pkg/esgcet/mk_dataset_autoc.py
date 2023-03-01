@@ -5,9 +5,9 @@ class ESGPubMakeAutocDataset(ESGPubMakeDataset):
     def __init__(self, *args):
         super().__init__(args)
 
-    def get_scanfile_dict(self, scandata):
+    def get_scanfile_dict(self, scandata, mapdata):
         ret = {}
-        for key in scandata:
+        for key in scandata['file']:
             rec = scandata[key]
             ret[rec['name']] = rec
         return ret

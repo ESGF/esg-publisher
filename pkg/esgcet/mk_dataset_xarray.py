@@ -10,12 +10,12 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
     def get_attrs_dict(self, scanobj):
         return scanobj.attrs
 
-    def get_scanfile_dict(self, fn_list):
+    def get_scanfile_dict(self, scandata, mapdata):
         ret = {}
-
-        for fn in fn_list:
-            ds = netcdf4.Dataset(fn)
-
+        for rec in mapdata:
+            fn = rec[1]
+            print(f"TEST: {fn}")
+            ds = netcdf4.Dataset(fn))
             ret[fn] = {"tracking_id": ds.tracking_id}
         return ret
     
