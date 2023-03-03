@@ -15,7 +15,7 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
         for rec in mapdata:
             fn = rec['file']
             print(f"TEST: {fn}")
-            ds = netcdf4.Dataset(fn))
+            ds = netCDF4.Dataset(fn)
             ret[fn] = {"tracking_id": ds.tracking_id}
         return ret
     
@@ -46,8 +46,8 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
         # time
         if "time" in scanobj.coords:
             ti = scanobj.coords["time"]
-            record["datetime_start"] = ti[0].values.item().isoformat() 
-            record["datetime_end"] = ti[-1].values.item().isoformat()
+            record["datetime_start"] = ti[0].values.item().isoformat() + "Z" 
+            record["datetime_end"] = ti[-1].values.item().isoformat() + "Z"
         # plev
         if "plev" in scanobj.coords:
             plev = scanobj.coords["plev"]

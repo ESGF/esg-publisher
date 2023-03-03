@@ -361,7 +361,7 @@ class ESGPubMakeDataset:
 
         self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
         print()
-        scandict = self.get_scanfile_dict(scanobj, mapdata)
+        scandict = self.get_scanfile_dict(scanobj, mapdict)
         self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
         print()
         ret, sz, access = self.iterate_files(mapdict, scandict)
