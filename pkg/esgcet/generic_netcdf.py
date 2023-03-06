@@ -34,8 +34,6 @@ class GenericPublisher(BasePublisher):
         destpath = os.path.dirname(datafile)
 
         filespec = f"{destpath}/*.nc"
-
-        print(f"Opening {filespec}")
         self.xarray_set = xarray.open_mfdataset(filespec)
 
     def autocurator(self, map_json_data):

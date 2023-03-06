@@ -54,7 +54,10 @@ if make_config:
         install_requires = [
             "requests",
              "esgfpid",
-            "ESGConfigParser==1.0.0a1"
+            "ESGConfigParser==1.0.0a1",
+            "xarray",
+            "netcdf4",
+            "dask"
         ],
         packages = find_packages(exclude=['ez_setup']),
         include_package_data = True,
