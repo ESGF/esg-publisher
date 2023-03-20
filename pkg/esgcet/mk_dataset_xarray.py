@@ -28,6 +28,14 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
     def get_variable_list(self, variable):
         return [x for x in variable]
 
+    def _get_time_str(self, timeval):
+        if type(timeval.item()) is int:
+            x = str(timeval)
+            idx = x.index('.')
+            return x[:idx] + 'Z'
+        else:
+            return timeval.item().isoformat() + "Z"
+
     def set_bounds(self, record, scanobj):
 
         geo_units = []
@@ -46,8 +54,8 @@ class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
         # time
         if "time" in scanobj.coords:
             ti = scanobj.coords["time"]
-            record["datetime_start"] = ti[0].values.item().isoformat() + "Z" 
-            record["datetime_end"] = ti[-1].values.item().isoformat() + "Z"
+            record["datetime_start"] = self._get_time_str(ti[0].values)
+            record["datetime_end"] = self._get_time_str(ti[-1].values)
         # plev
         if "plev" in scanobj.coords:
             plev = scanobj.coords["plev"]
