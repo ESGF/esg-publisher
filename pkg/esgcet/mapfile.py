@@ -7,25 +7,14 @@ log = logger.Logger()
 
 class ESGPubMapConv:
 
-    def __init__(self, mapfilename, project=None, normalize=False, silent=False):
+    def __init__(self, mapfilename, project=None, silent=False):
 
         self.mapfilename = mapfilename
         self.project = project
-        self.normalize = normalize
         self.map_data_arr = []
         self.map_json = {}
         self.silent = silent
         self.publog = log.return_logger('Mapfile Conversion', silent=silent)
-
-    def normalize_path(self, path, project=None):
-        if project is None:
-            project = self.project
-        pparts = path.split('/')
-        idx = pparts.index(project)
-        if idx < 0:
-            raise(BaseException("Incorrect Project in File Path!"))
-        proj_root = '/'.join(pparts[0:idx])
-        return('/'.join(pparts[idx:]), proj_root)
 
     def parse_map(self, mountpoints=None):
         """  """
@@ -33,8 +22,6 @@ class ESGPubMapConv:
         for line in self.map_data:
 
             parts = line.rstrip().split(' | ')
-            if self.normalize:
-                parts[1] = self.normalize_path(parts[1])
             if mountpoints and self.project:
                 mapstr = parts[1]
                 root = mapstr.split(self.project)[0][:-1]
@@ -76,20 +63,6 @@ class ESGPubMapConv:
             self.map_json = json.load(open(self.mapfilename))
         except:
             self.publog.error("Could not open json data {}".format(self.mapfilename))
-
-    def map_entry(self, project, fs_root):
-        norm_path = self.normalize_path(self.map_json['file'])
-        abs_path = "{}/{}".format(fs_root, norm_path)
-        outarr = []
-
-        outarr.append(self.map_json['id'])
-        outarr.append(abs_path)
-        outarr.append(self.map_json['size'])
-        for x in self.map_json:
-            if not x in ['id', 'file', 'size']:
-                outarr.append("{}={}".format(x,self.map_json[x]))
-        return ' | '.join(outarr)
-
 
     def mapfilerun(self, mountpoints=None):
 

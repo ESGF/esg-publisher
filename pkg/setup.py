@@ -8,7 +8,9 @@ import configparser as cfg
 from shutil import copyfile
 
 
-VERSION = '5.1.0a2'
+import esgcet
+VERSION = esgcet.__version__
+
 print("esgcet version =", VERSION)
 HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
@@ -27,13 +29,14 @@ if make_config:
         name = 'esgcet',
         version = VERSION,
         description = 'ESGCET publication package',
-        author = 'Elysia Witham, Sasha Ames',
-        author_email = 'witham3@llnl.gov',
+        author = 'Sasha Ames',
+        author_email = 'ames4@llnl.gov',
         url = 'http://esgf.llnl.gov',
         install_requires = [
             "requests",
              "esgfpid",
-            "ESGConfigParser==1.0.0a1"
+            "ESGConfigParser==1.0.0a1",
+            "pyyaml"
         ],
         packages = find_packages(exclude=['ez_setup']),
         include_package_data = True,
@@ -56,8 +59,8 @@ else:
         name = 'esgcet',
         version = VERSION,
         description = 'ESGCET publication package',
-        author = 'Elysia Witham, Sasha Ames',
-        author_email = 'witham3@llnl.gov',
+        author = 'Sasha Ames',
+        author_email = 'ames4@llnl.gov',
         url = 'http://esgf.llnl.gov',
         install_requires = [
             "requests",

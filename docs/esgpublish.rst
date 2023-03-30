@@ -11,6 +11,7 @@ Usage
 
         esgpublish --map <mapfile>
 
+The mapfile (``--map``) is the only truly *required* argumement, as other are typically supplied through the config file.
 You can also use ``--help`` to see::
 
         $ esgpublish --help
@@ -40,7 +41,7 @@ You can also use ``--help`` to see::
                         Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.
           --autocurator AUTOCURATOR_PATH
                                 Path to autocurator repository folder.
-          --map MAP             mapfile or file containing a list of mapfiles.
+          --map MAP             Required.  mapfile or file containing a list of mapfiles.
           --config CFG, -cfg CFG     Path to config file.
           --silent              Enable silent mode.
           --verbose             Enable verbose mode.
@@ -56,3 +57,24 @@ NOTE: If, in your config file, you have specified a directory for ``autocurator`
     export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 
 If you do not run this and are not using the conda installed ``autocurator``, the program will not work.
+
+.. warning::
+    Please do not attempt to run `esg-publisher` commands with a legacy esg.ini file using the ``-i`` argumement.   You will need to migrate the config using :ref:`migrate`.
+
+.. _arch_info:
+
+Archiving Info
+--------------
+
+Dataset records (metadata) can be preserved in xml form for future use if the need arises to rebuild an index.
+(This functionality replaces the ability to reharvest THREDDS catalog that was available with the prior ESGF/publisher architecture).  XML files are created for both the dataset and every file record: one file per each record, eg. if there are *two* files for a dataset, *three* xml files are generated in total.
+There are three config file options that must be set in order to enable the archive:
+
+* enable_archive
+   * Set to True to enable the feature
+* archive_location
+   * Path on local file system to build directory tree and write xml files for record archive.
+* archive_depth
+   * Controls the directory depth of subdirectories to create/use in the xml archive
+
+The ``esgindexpub`` subcommand has the ``--xml-list`` option.  Supply a file containing a list of paths to xml files within the archive in order to push the recods to the index node.

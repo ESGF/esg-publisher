@@ -6,6 +6,8 @@ from esgcet.settings import *
 import esgcet.logger as logger
 import yaml
 
+import esgcet
+
 log = logger.Logger()
 publog = log.return_logger('Settings')
 
@@ -41,7 +43,8 @@ class PublisherArgs:
         parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
         parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
-
+        parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
+        
         pub = parser.parse_args()
 
         return pub
@@ -98,16 +101,18 @@ class PublisherArgs:
             silent = True
 
         if not pub.verbose:
-            try:
-                v = config['verbose']
-                if 'true' in v or 'yes' in v:
-                    verbose = True
-                else:
+            if not pub.silent:
+                try:
+                    v = config['user']['verbose']
+                    if 'true' in v or 'yes' in v:
+                        verbose = True
+                    else:
+                        verbose = False
+                except:
                     verbose = False
-            except:
-                verbose = False
         else:
             verbose = True
+            silent = False
 
         if pub.cert == "./cert.pem":
             try:
@@ -167,12 +172,21 @@ class PublisherArgs:
             dtn = "none"
 
         skip_prepare = False
-
         try:
             skip_prep_str = config['skip_prepare'].lower()
             skip_prepare = (skip_prep_str in ["true", "yes"])
         except:
             pass
+        force_prepare = False
+        try:
+            force_prep_str = config['user']['force_prepare'].lower()
+            force_prepare = (force_prep_str in ["true", "yes"])
+        except:
+            pass
+        if skip_prepare and force_prepare:
+            publog.error("PrePARE simultaneously skipped and forced.")
+            exit(1)
+
         if pub.set_replica and pub.no_replica:
             publog.error("Replica publication simultaneously set and disabled.")
             exit(1)
@@ -206,7 +220,8 @@ class PublisherArgs:
         try:
             proj_config = config['user_project_config']
         except:
-            proj_config = None
+            publog.warning("User project config missing or could not be parsed.")
+            proj_config = {}
 
         os.system("cert_path=" + cert)
 
@@ -247,13 +262,14 @@ class PublisherArgs:
                    "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth, "skip_prepare": skip_prepare, "non_nc": non_nc, "mountpoints": mountpoints}
+                   "auth": auth, "skip_prepare": skip_prepare, "force_prepare": force_prepare,
+                   "non_nc": non_nc, "mountpoints": mountpoints}
 
         if project and "none" not in project:
             argdict["proj"] = project
 
         project = project.lower()
-        if project == "cmip6" or project == "input4mips":
+        if project == "cmip6":
             if pub.cmor_path is None:
                 try:
                     argdict["cmor_tables"] = config['cmor_path']
@@ -262,12 +278,32 @@ class PublisherArgs:
                     exit(1)
             else:
                 argdict["cmor_tables"] = pub.cmor_path
+        if project == "cmip6" or project == "input4mips" or (project in proj_config and "pid_prefix" in proj_config[project]):  
             try:
                 argdict["pid_creds"] = config['pid_creds']
             except:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
+        if "cmip6_clone" in config['user'] and project == config['user']['cmip6_clone'].lower():
+            if "pid_creds" in argdict:
+                argdict["cmip6-clone"] = project
+            if not argdict["user_project_config"]:
+                argdict["user_project_config"] = {}
+            argdict["user_project_config"]["clone_project"] = "cmip6"
+        if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
+            try:
+                argdict["enable_archive"] = True
 
+                argdict["archive_path"] = config["user"]["archive_location"]
+                argdict["archive_path_length"] = config["user"]["archive_depth"]
+                if not os.path.isdir(argdict["archive_path"]):
+                    publog.exception(f"Error with archive path {argdict['archive_path']}")
+                    exit(1)
+            except:
+                publog.exception("Configuration file error: check archive (and other) settings")
+                exit(1)
+        else:
+            argdict["enable_archive"] = False
         return argdict
 
 

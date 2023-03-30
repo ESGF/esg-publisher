@@ -1,1 +1,2 @@
 sphinx_glpi_theme
+docutils==0.16

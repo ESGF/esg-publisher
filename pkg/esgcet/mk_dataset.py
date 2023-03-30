@@ -15,19 +15,29 @@ class ESGPubMakeDataset:
 
     def init_project(self, proj):
         project = proj
-        if not self.user_project:
-            project = proj.lower()
 
         if project in DRS:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
                 self.CONST_ATTR = CONST_ATTR[project]
+        elif self.user_project and "clone_project" in self.user_project:
+            cloneproj = self.user_project["clone_project"]
+            if cloneproj not in DRS:
+                raise(RuntimeError(f"Project {cloneproj} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+            self.DRS = DRS[cloneproj]
+            if cloneproj in CONST_ATTR:
+                self.CONST_ATTR = CONST_ATTR[cloneproj]
+            else:
+                self.CONST_ATTR = {}
+            if 'CONST_ATTR' in self.user_project[project]:
+                self.CONST_ATTR.update(self.user_project[project]['CONST_ATTR'])
         elif self.user_project and project in self.user_project:
-            self.DRS = self.user_project[project]['DRS']
+            if 'DRS' in self.user_project[project]:
+                self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
-            raise (BaseException("Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
+            raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
     def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         self.silent = silent
@@ -48,6 +58,8 @@ class ESGPubMakeDataset:
         self.CONST_ATTR = None
         self.variable_name = "variable_id"
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
+        self.xattr = None
+        self.tracking_id_set = set()
 
     def set_project(self, project_in):
         self.project = project_in
@@ -63,6 +75,8 @@ class ESGPubMakeDataset:
                 yield (x)
 
     def load_xattr(self, xattrfn):
+        if self.xattr:
+            return
         if (xattrfn):
             self.xattr = json.load(open(xattrfn))
         else:
@@ -85,11 +99,13 @@ class ESGPubMakeDataset:
         parts = master_id.split('.')
 
         projkey = parts[0]
+        self.first_val = projkey
         scandata = scanobj['dataset']
+
 
         if self.project:
             projkey = self.project
-        self.init_project(projkey)
+        self.init_project(projkey.lower())
 
         facets = self.DRS  # depends on Init_project to initialize
 
@@ -104,14 +120,21 @@ class ESGPubMakeDataset:
                     self.publog.warning("{} does not agree!".format(f))
             self.dataset[f] = parts[i]
 
+        priorkey = projkey
+        if self.user_project and "clone_project" in self.user_project:
+            projkey = self.user_project["clone_project"]
         self.global_attributes(projkey, scandata)
         self.global_attr_mapped(projkey, scandata)
+        self.assign_dset_values(master_id, version)
         self.const_attr()
-        self.assign_dset_values(projkey, master_id, version)
+        if not 'project' in self.dataset:
+            self.dataset['project'] = priorkey
+
 
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
         projkey = proj.lower()
+
         if projkey in GA:
             for facetkey in GA[projkey]:
                 # did we find a GA in the data by the the key name
@@ -126,6 +149,7 @@ class ESGPubMakeDataset:
 
     def global_attr_mapped(self, proj, scandata):
         projkey = proj.lower()
+
         if projkey in GA_MAPPED:
             for gakey in GA_MAPPED[projkey]:
                 if gakey in scandata:
@@ -140,7 +164,7 @@ class ESGPubMakeDataset:
             for facetkey in self.CONST_ATTR:
                 self.dataset[facetkey] = self.CONST_ATTR[facetkey]
 
-    def assign_dset_values(self, projkey, master_id, version):
+    def assign_dset_values(self, master_id, version):
 
         self.dataset['data_node'] = self.data_node
         self.dataset['index_node'] = self.index_node
@@ -153,7 +177,6 @@ class ESGPubMakeDataset:
         self.dataset['replica'] = self.replica
         self.dataset['latest'] = 'true'
         self.dataset['type'] = 'Dataset'
-        self.dataset['project'] = projkey
         self.dataset['version'] = version
 
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
@@ -169,6 +192,8 @@ class ESGPubMakeDataset:
                 return None
         elif "gsiftp" in template:
             if self.dtn != 'none':
+                if ':' in self.dtn:
+                    template = template.replace(':2811','')
                 return template.format(self.dtn, root, rel)
             else:
                 return None
@@ -187,23 +212,43 @@ class ESGPubMakeDataset:
 
         fparts = fullfn.split('/')
         title = fparts[-1]
-        ret['id'] = "{}.{}".format(ret['instance_id'], title)
+        ret['id'] = "{}.{}|{}".format(ret['instance_id'], title, self.data_node)
+        ret['master_id'] = f"{ret['master_id']}.{title}"
+
+        ret['instance_id'] = "{}.{}".format(ret['instance_id'], title)
         ret['title'] = title
         ret["dataset_id"] = dataset_id
         if "tracking_id" in fn_trid:
+            if fn_trid["tracking_id"] in self.tracking_id_set:
+                self.publog.error(f"Duplicate tracking_id {fn_trid['tracking_id']} encountered!")
+                exit(1)
+            self.tracking_id_set.add(fn_trid["tracking_id"])
             ret["tracking_id"] = fn_trid["tracking_id"]
 
         for kn in mapdata:
             if kn not in ("id", "file"):
                 ret[kn] = mapdata[kn]
 
-        rel_path, proj_root = self.mapconv.normalize_path(fullfn, self.dataset["project"])
+        rel_path, proj_root = self.normalize_path(fullfn, self.data_roots)
 
         if not proj_root in self.data_roots:
-            self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
-            exit(1)
+
+            # Need to handle the case where the root might contain the
+            # project ID, ensure that the original root and the id are
+            # found.`
+            root_found = False
+            for root in self.data_roots:
+                if self.first_val in root and proj_root in root:
+                    proj_root = root
+                    rel_path = rel_path.replace(f"{self.first_val}/","")
+                    root_found = True
+                    break
+            if not root_found:
+                self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
+                exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
+        ret["publish_path"] = f"{self.data_roots[proj_root]}/{rel_path}"
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
@@ -357,7 +402,8 @@ class ESGPubMakeDataset:
             fullpath = maprec['file']
             if fullpath not in scandata.keys():
                 if not self.limit_exceeded and self.project != "CREATE-IP" and self.project != "cmip5":
-                    self.publog.warning("Autocurator data not found for file: " + fullpath)
+                    self.publog.error("Autocurator data not found for file: " + fullpath)
+                    exit(1)
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
@@ -408,3 +454,21 @@ class ESGPubMakeDataset:
         self.dataset["access"] = access
         ret.append(self.dataset)
         return ret
+
+    @staticmethod
+    def normalize_path(path, data_roots):
+
+        proj_root = None
+
+        # Check each data root to see if it matches the provided path
+        for data_root, _ in data_roots.items():
+            path_match = "{}/".format(data_root.rstrip("/"))
+            if path.startswith(path_match):
+
+                rel_path = path[len(path_match):]
+                proj_root = data_root.rstrip("/")
+
+        if not proj_root:
+            raise(BaseException("File Path does not match any data roots!"))
+
+        return rel_path, proj_root

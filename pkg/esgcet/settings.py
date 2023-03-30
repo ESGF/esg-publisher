@@ -37,7 +37,7 @@ GA = { 'cmip6' : ['frequency',
                      'further_info_url',
                      'activity_id',
                      'data_specs_version', 'title'],
-       'input4MIPs' : ['contact',
+       'input4mips' : ['contact',
 'dataset_category',
 'source_version',
 'source',
@@ -54,16 +54,18 @@ GA = { 'cmip6' : ['frequency',
 'Conventions',
 'creation_date']}
 
-GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  },
-                 'input4mips' : {'target_mip_list' : ','}}
+GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
+#                 'input4mips' : {'target_mip_list' : ','}}
 
-CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered' }}
+CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered', 'project' : 'CMIP6' }}
 
 GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 
 # the prefix is found in the published urls that are backed by the path prefix below
 DATA_ROOTS = { }
 
+
+SOURCE_ID_LIMITS = { 'cmip6' : 25}
 
 # a certificate file for the index, assumes in the CWD
 CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
@@ -72,7 +74,7 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # Eg replace /thredds/fileServer with the prefix for NginX
 # Note these are netCDF specific and will need to change if other formats are considered
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
-"https://{}/thredds/dodsC/{}/{}.html|application/opendap-html|OPENDAP",
+"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
                  "gsiftp://{}:2811/{}/{}|application/gridftp|GridFTP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
@@ -90,10 +92,10 @@ PID_PREFIX = '21.14100' # for testing use CMIP6,  need to be project-specific
 PID_EXCHANGE = 'esgffed-exchange'
 HTTP_SERVICE = '/thredds/fileServer/'
 
-CITATION_URLS = { 'CMIP6' : {'test' :
+CITATION_URLS = { 'cmip6' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'},
-'input4MIPs' : {'test' :
+'input4mips' : {'test' :
 'http://cera-www.dkrz.de/WDCC/testmeta/CMIP6/{}.v{}.json' ,
         'prod' : 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/{}.v{}.json'}
                   

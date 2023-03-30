@@ -5,7 +5,7 @@ import json
 from cmip6_cv import PrePARE
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-import sys
+import sys, os
 import esgcet.logger as logger
 
 log = logger.Logger()
@@ -20,14 +20,21 @@ class cmip6(GenericPublisher):
     def __init__(self, argdict):
         super().__init__(argdict)
         self.pid_creds = argdict["pid_creds"]
-        self.cmor_tables = argdict["cmor_tables"]
+        if "cmor_tables" in argdict:
+            self.cmor_tables = os.path.expanduser(argdict["cmor_tables"])
+        else:
+            self.cmor_tables = None
         self.test = argdict["test"]
         if self.replica:
-            self.skip_prepare= argdict["skip-prepare"]
+            self.skip_prepare = not argdict["force_prepare"]
+        else:
+            self.skip_prepare = argdict["skip_prepare"]
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
 
     def prepare_internal(self, json_map, cmor_tables):
         try:
+            assert(len(cmor_tables) > 0, f"{cmor_tables} are specified from config")
+            assert(os.path.isdir(cmor_tables), f"{cmor_tables} exists and is a directory")
             self.publog.info("Iterating through filenames for PrePARE (internal version)...")
             validator = PrePARE.PrePARE
             for info in json_map:
@@ -41,16 +48,25 @@ class cmip6(GenericPublisher):
 
     def pid(self, out_json_data):
       
-        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
-        check = FieldCheck(self.cmor_tables, silent=self.silent)
-
+        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test,
+                            silent=self.silent, verbose=self.verbose,
+                            project_family='CMIP6')
+        if self.cmor_tables:
+            check = FieldCheck(self.cmor_tables, silent=self.silent)
+            try:
+                check.run_check(out_json_data)
+            except:
+                self.publog.exception("Activity/Metadata agreement check failed!")
+                self.cleanup()
+                exit(1)
+            
         try:
-            check.run_check(out_json_data)
             new_json_data = pid.do_pidcite()
         except Exception as ex:
-            self.publog.exception("Assigning pid or running activity check failed")
+            self.publog.exception("Assigning pid failed")
             self.cleanup()
             exit(1)
+
         return new_json_data
 
     def workflow(self):
@@ -60,7 +76,8 @@ class cmip6(GenericPublisher):
         map_json_data = self.mapfile()
 
         # step two: PrePARE
-        self.prepare_internal(map_json_data, self.cmor_tables)
+        if not self.skip_prepare:
+            self.prepare_internal(map_json_data, self.cmor_tables)
 
         # step three: autocurator
         self.publog.info("Running autocurator...")
@@ -81,7 +98,8 @@ class cmip6(GenericPublisher):
 
         # step seven: publish to database
         self.publog.info("Running index pub...")
-        self.index_pub(new_json_data)
+        rc = self.index_pub(new_json_data)
 
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
+        return rc

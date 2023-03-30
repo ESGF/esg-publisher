@@ -38,6 +38,7 @@ class GenericPublisher(BasePublisher):
     def mk_dataset(self, map_json_data):
         mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
+        mkd.set_project(self.project)
         try:
             out_json_data = mkd.get_records(map_json_data, self.scanfn, self.json_file, user_project=self.proj_config)
         except Exception as ex:
@@ -66,7 +67,8 @@ class GenericPublisher(BasePublisher):
 
         # step five: publish to database
         self.publog.info("Running index pub...")
-        self.index_pub(out_json_data)
+        rc = self.index_pub(out_json_data)
 
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
+        return rc

@@ -50,6 +50,7 @@ class BasePublisher(object):
     def mk_dataset(self, map_json_data):
         mkd = ESGPubMKDNonNC(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
                                 self.silent, self.verbose)
+        mkd.set_project(self.project)
         try:
             out_json_data = mkd.get_records(map_json_data, self.json_file, user_project=self.proj_config)
         except Exception as ex:
@@ -68,13 +69,20 @@ class BasePublisher(object):
             exit(1)
 
     def index_pub(self,dataset_records):
-        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
+        arch_cfg = None
+        if self.argdict["enable_archive"]:
+            arch_cfg = { "length" : int(self.argdict["archive_path_length"]) , 
+                          "archive_path" : self.argdict["archive_path"]}
+
+        ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg)
+        rc = True
         try:
-            ip.do_publish(dataset_records)
+            rc = ip.do_publish(dataset_records)
         except Exception as ex:
             self.publog.exception("Failed to publish to index node")
             self.cleanup()
             exit(1)
+        return rc
 
     def workflow(self):
 
@@ -90,7 +98,9 @@ class BasePublisher(object):
         self.update(out_json_data)
 
         self.publog.info("Running index pub...")
-        self.index_pub(out_json_data)
+        
+        rc = self.index_pub(out_json_data)
 
         self.publog.info("Done.")
 
+        return rc
