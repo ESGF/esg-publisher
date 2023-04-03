@@ -36,7 +36,7 @@ def main():
 
     try:
         em = ESGPubMigrate(ini_path, filepath, silent=silent, verbose=verbose)
-        if a.v5:
+        if a.newcfg:
             em.migrate_new()
         else:
             em.migrate(project)
