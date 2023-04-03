@@ -15,7 +15,7 @@ DEFAULT_ESGINI = '/esg/config/esgcet/'
 CONFIG_FN_DEST = "~/.esg/esg.yaml"
 
 # These are the keys that 
-MIGRATE_KEYS = ['pid_creds', 'data_roots', 'project_cfg']
+MIGRATE_KEYS = ['pid_creds', 'data_roots', 'user_project_config']
 
 def project_list(cfg_obj):
     return [x[0] for x in cfg_obj.get_options_from_table('project_options')]
@@ -35,13 +35,16 @@ class ESGPubMigrate(object):
         ini_file = self.ini_path
         if os.path.isdir(ini_file):
             ini_file = os.path.join(ini_file, 'esg.ini')
+        config.read(ini_file)        
+        cf_user = config['user']
 
-        cf_all_file = config.read_file(ini_file)    
-        cf_user = cf_all_file['user']
-
-        for key in MIGRATE_KEYS:
-            cf_user[key] = json.loads(cf_user[key])
-        self.write_config(cf_user)
+        cf_dict = {}
+        for key in cf_user:
+            if key in MIGRATE_KEYS:
+                cf_dict[key] = json.loads(cf_user[key])
+            else:
+                cf_dict[key] = cf_user[key]
+        self.write_config(cf_dict)
 
     def project_migrate(self, project):
 
