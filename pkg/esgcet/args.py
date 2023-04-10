@@ -103,7 +103,7 @@ class PublisherArgs:
         if not pub.verbose:
             if not pub.silent:
                 try:
-                    v = config['user']['verbose']
+                    v = config['verbose']
                     if 'true' in v or 'yes' in v:
                         verbose = True
                     else:
@@ -179,7 +179,7 @@ class PublisherArgs:
             pass
         force_prepare = False
         try:
-            force_prep_str = config['user']['force_prepare'].lower()
+            force_prep_str = config['force_prepare'].lower()
             force_prepare = (force_prep_str in ["true", "yes"])
         except:
             pass
@@ -284,18 +284,18 @@ class PublisherArgs:
             except:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
-        if "cmip6_clone" in config['user'] and project == config['user']['cmip6_clone'].lower():
+        if "cmip6_clone" in config and project == config['cmip6_clone'].lower():
             if "pid_creds" in argdict:
                 argdict["cmip6-clone"] = project
             if not argdict["user_project_config"]:
                 argdict["user_project_config"] = {}
             argdict["user_project_config"]["clone_project"] = "cmip6"
-        if "enable_archive" in config['user'] and config['user'].get("enable_archive", False):
+        if "enable_archive" in config and config.get("enable_archive", False):
             try:
                 argdict["enable_archive"] = True
 
-                argdict["archive_path"] = config["user"]["archive_location"]
-                argdict["archive_path_length"] = config["user"]["archive_depth"]
+                argdict["archive_path"] = config["archive_location"]
+                argdict["archive_path_length"] = config["archive_depth"]
                 if not os.path.isdir(argdict["archive_path"]):
                     publog.exception(f"Error with archive path {argdict['archive_path']}")
                     exit(1)
