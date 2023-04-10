@@ -30,7 +30,7 @@ def get_args():
                         help="Path(s) to a mapfile or directory(s) containing mapfiles.")    
     parser.add_argument("--use-list", dest="dset_list", default=None,
                         help="Path to a file containing list of dataset_ids.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
