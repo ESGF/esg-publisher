@@ -50,6 +50,10 @@ def run():
         publog.error("Input data argument missing.  Please provide either records in .json form or a list of xml files for index publishing")
         exit(1)
 
+    if not (a.json_data or a.xml_list):
+        publog.error("Input data argument missing.  Please provide either records in .json form or a list of xml files for index publishing")
+        exit(1)
+
     if not a.silent:
         try:
             s = config['silent']

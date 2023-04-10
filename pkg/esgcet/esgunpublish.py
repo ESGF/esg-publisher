@@ -26,11 +26,11 @@ def get_args():
     parser.add_argument("--delete", dest="delete", action="store_true", help="Specify deletion of dataset (default is retraction).")
     parser.add_argument("--dset-id", dest="dset_id", default=None,
                         help="Dataset ID for dataset to be retracted or deleted.")
-    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
     parser.add_argument("--map", dest="map", default=None, nargs="+",
                         help="Path(s) to a mapfile or directory(s) containing mapfiles.")    
     parser.add_argument("--use-list", dest="dset_list", default=None,
                         help="Path to a file containing list of dataset_ids.")
+    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
@@ -71,7 +71,6 @@ def maps_to_dataset_list(maps):
 
     return dset_list
 
-
 def run():
     a = get_args()
 
@@ -83,10 +82,7 @@ def run():
         raise RuntimeError(f"Config file not found. {cfg_file} does not exist.")
 
     args = pub_args.PublisherArgs()
-    
     config = args.load_config(cfg_file)
-
-
     if a.cert == "./cert.pem":
         try:
             cert = config['cert']
@@ -132,7 +128,7 @@ def run():
         
     if not a.silent:
         try:
-            s = config['user']['silent']
+            s = config['silent']
             if 'true' in s or 'yes' in s:
                 silent = True
             else:
@@ -145,7 +141,7 @@ def run():
     if not a.verbose:
         if not a.silent:
             try:
-                v = config['user']['verbose']
+                v = config['verbose']
                 if 'true' in v or 'yes' in v:
                     verbose = True
                 else:
@@ -181,14 +177,13 @@ def run():
 
     if (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
-            pid_creds = json.loads(config['user']['pid_creds'])
+            pid_creds = json.loads(config['pid_creds'])
             args["pid_creds"] = pid_creds
         except:
             publog.exception("PID credentials not defined. Define in config file esg.ini.")
             exit(1)    
 
     status = 0
-
     try:
         status = upub.run(args)
     except Exception as ex:

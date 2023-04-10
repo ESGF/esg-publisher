@@ -15,13 +15,8 @@ where ``<JSON file>`` is the output of the ``esgpidcitepub`` command.
 
 You can also use the other command line options to configure some variables outside of the config file (or to define where to find the config file)::
 
-<<<<<<< HEAD
     usage: esgindexpub [-h] [--index-node INDEX_NODE] [--certificate CERT] 
                         --pub-rec JSON_DATA [--config CFG] [--silent]
-=======
-    usage: esgindexpub [-h] [--index-node INDEX_NODE] [--certificate CERT]
-                        --pub-rec JSON_DATA [--ini CFG] [--silent]
->>>>>>> refactor-esgf
                         [--verbose] [--no-auth] [--verify]
 
     Publish data sets to ESGF databases.

@@ -28,7 +28,7 @@ For multiple datasets there are two additional options.  **Option 1:** use a lis
 
     usage: esgunpublish [-h] [--index-node INDEX_NODE] [--data-node DATA_NODE]
                         [--certificate CERT] [--delete] [--dset-id DSET_ID]
-                        [--map MAP [MAP ...]] [--use-list DSET_LIST] [--config CFG] 
+                        [--map MAP [MAP ...]] [--use-list DSET_LIST] [--ini CFG]
                         [--version] [--no-auth] [--silent] [--verbose]
 
     Unpublish data sets from ESGF databases.

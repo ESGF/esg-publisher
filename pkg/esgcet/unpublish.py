@@ -25,6 +25,7 @@ def check_for_pid_proj(dset_arr):
 def run(args):
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     dset_id = args[0]
     do_delete = args[1]
     data_node = args[2]
@@ -32,6 +33,8 @@ def run(args):
     cert_fn = args[4]
     auth = args[5]
 =======
+=======
+>>>>>>> refactor-esgf
     hostname = args["index_node"]
     verbose = args["verbose"]    
     silent = args["silent"]
@@ -39,6 +42,9 @@ def run(args):
     pub_log = log.return_logger('Unpublish', args["silent"], args["verbose"])
     searchcheck = ESGSearchCheck(hostname, silent, verbose)
     status = 0
+<<<<<<< HEAD
+>>>>>>> refactor-esgf
+=======
 >>>>>>> refactor-esgf
 
     for dset_id in args["dataset_id_lst"]:
@@ -84,7 +90,11 @@ def single_unpublish(dset_id, args, pub_log, searchcheck):
     # ensure that dataset id is in correct format, use the set data node as a default
         
 <<<<<<< HEAD
+<<<<<<< HEAD
     pubCli = publisherClient(cert_fn, hostname, auth=auth)
+=======
+    pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=args["verbose"], silent=args["silent"])
+>>>>>>> refactor-esgf
 =======
     pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=args["verbose"], silent=args["silent"])
 >>>>>>> refactor-esgf

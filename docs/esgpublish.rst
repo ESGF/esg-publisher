@@ -42,7 +42,7 @@ You can also use ``--help`` to see::
           --autocurator AUTOCURATOR_PATH
                                 Path to autocurator repository folder.
           --map MAP             Required.  mapfile or file containing a list of mapfiles.
-          --config CFG, -cfg CFG     Path to config file.
+          --ini CFG, -i CFG     Path to config file.
           --silent              Enable silent mode.
           --verbose             Enable verbose mode.
           --no-auth             Run publisher without certificate, only works on certain index nodes.

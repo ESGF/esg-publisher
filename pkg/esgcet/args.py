@@ -8,6 +8,8 @@ import yaml
 
 import esgcet
 
+import esgcet
+
 log = logger.Logger()
 publog = log.return_logger('Settings')
 
