@@ -26,7 +26,7 @@ The other command line options are as follows::
             --data-node DATA_NODE
                                   Specify data node.
             --pub-rec JSON_DATA   Dataset and file json data; output from esgmkpubrec.
-            --ini CFG, -i CFG     Path to config file.
+            --config CFG, -cfg CFG     Path to config file.
             --out-file OUT_FILE   Optional output file destination. Default is stdout.
 
 You can also define the above options (aside from ``--pub-rec``) in the config file if you choose.

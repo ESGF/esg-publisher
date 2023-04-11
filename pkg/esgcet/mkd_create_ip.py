@@ -21,6 +21,8 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
             self.DRS = DRS["create-ip-src"]
         elif l == 7:
             self.DRS = DRS["create-ip-model"]
+        elif l == 8:
+            self.DRS = DRS["create-ip-var"]
         else:
             self.DRS = DRS["create-ip-exp"]
 
@@ -44,9 +46,10 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         self.variable_name = "variable_id"
         self.variable = None
 
-        self.source_ids = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
+        self.models = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
                    "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
                    "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351"]
+        self.source_ids = [ "20CRv2c", "C-GLORSv5", "CERA-20C", "CFSR", "CREATE-MRE", "ECDAv31", "ERA-Interim", "ERA40-CRUTS3-10", "ERA5", "ERAInterim-CRUTS3-10", "GECCO2", "GODAS", "JRA-25", "JRA-55," "JRA-55-mdl-iso", "MERRA", "MERRA-CRUTS3-10", "MERRA2", "MERRA2-ASM", "MOVE-G2i", "MRE2ensemble", "NCEP-NCAR-CRUTS3-10", "ORAP5", "ORAS4", "ORAensemble"]
         self.publog = log.return_logger('Make Dataset CREATE-IP', self.silent, self.verbose)
 
     def get_dataset(self, mapdata, scanobj):

@@ -1,9 +1,9 @@
 import sys, json, os
 from esgcet.index_pub import ESGPubIndex
 import argparse
-import configparser as cfg
 from pathlib import Path
 import esgcet.logger as logger
+import esgcet.args as pub_args
 
 log = logger.Logger()
 publog = log.return_logger('esgindexpub')
@@ -13,13 +13,13 @@ def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
 
     home = str(Path.home())
-    def_config = home + "/.esg/esg.ini"
+    def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
                         help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
     parser.add_argument("--pub-rec", dest="json_data", default=None,
                         help="JSON file output from esgpidcitepub or esgmkpubrec.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true",
@@ -43,11 +43,11 @@ def run():
     if os.path.isdir(ini_file):
         publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
-    config = cfg.ConfigParser()
-    try:
-        config.read(ini_file)
-    except Exception as ex:
-        publog.exception("config file")
+    args = pub_args.PublisherArgs()
+    config = args.load_config(ini_file)
+
+    if not (a.json_data or a.xml_list):
+        publog.error("Input data argument missing.  Please provide either records in .json form or a list of xml files for index publishing")
         exit(1)
 
     if not (a.json_data or a.xml_list):
@@ -56,7 +56,7 @@ def run():
 
     if not a.silent:
         try:
-            s = config['user']['silent']
+            s = config['silent']
             if 'true' in s or 'yes' in s:
                 silent = True
             else:
@@ -68,7 +68,7 @@ def run():
 
     if not a.verbose:
         try:
-            v = config['user']['verbose']
+            v = config['verbose']
             if 'true' in v or 'yes' in v:
                 verbose = True
             else:
@@ -80,7 +80,7 @@ def run():
 
     if a.cert == "./cert.pem":
         try:
-            cert = config['user']['cert']
+            cert = config['cert']
         except:
             cert = a.cert
     else:
@@ -88,7 +88,7 @@ def run():
 
     if a.index_node is None:
         try:
-            index_node = config['user']['index_node']
+            index_node = config['index_node']
         except:
             publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)

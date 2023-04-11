@@ -16,7 +16,7 @@ where ``<JSON file>`` is the output of the ``esgpidcitepub`` command.
 Additional command line options are as follows::
 
         usage: esgupdate [-h] [--index-node INDEX_NODE] [--certificate CERT]
-                         --pub-rec JSON_DATA [--ini CFG] [--silent]
+                         --pub-rec JSON_DATA [--config CFG] [--silent]
                          [--verbose] [--no-auth] [--verify]
 
         Publish data sets to ESGF databases.
@@ -28,7 +28,7 @@ Additional command line options are as follows::
             --certificate CERT, -c CERT
                                   Use the following certificate file in .pem form for publishing (use a myproxy login to generate).
             --pub-rec JSON_DATA   JSON file output from esgpidcitepub or esgmkpubrec.
-            --ini CFG, -i CFG     Path to config file.
+            --config CFG, -cfg CFG     Path to config file.
             --silent              Enable silent mode.
             --verbose             Enable verbose mode.
             --no-auth             Run publisher without certificate, only works on certain index nodes.

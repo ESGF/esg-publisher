@@ -16,7 +16,7 @@ if you have conda you can install the publisher wih the following into a fresh e
      esgpublish --version #  Ensure you have upgraded to v5.1.0b13
      esgpublish # will print the usage information.
 
-You may also look at the inital ``~/.esg/esg.ini`` and fill in the missing information based on the provided examples.
+You may also look at the inital ``~/.esg/esg.yaml`` and fill in the missing information based on the provided examples.
 
 .. toctree::
    :maxdepth: 2

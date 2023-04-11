@@ -9,8 +9,6 @@ import esgcet.logger as logger
 
 log = logger.Logger()
 
-
-
 def check_for_pid_proj(dset_arr):
 
     for dset in dset_arr:
@@ -25,9 +23,13 @@ def check_for_pid_proj(dset_arr):
 def run(args):
 
     hostname = args["index_node"]
+    data_node = args["data_node"]
     verbose = args["verbose"]    
     silent = args["silent"]
-    
+    auth = args["auth"]
+    cert_fn = args["cert"]
+    do_delete = args["delete"]
+
     pub_log = log.return_logger('Unpublish', args["silent"], args["verbose"])
     searchcheck = ESGSearchCheck(hostname, silent, verbose)
     status = 0

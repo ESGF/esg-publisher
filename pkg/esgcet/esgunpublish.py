@@ -3,8 +3,8 @@ import os
 import sys
 import json
 import argparse
-import configparser as cfg
 from pathlib import Path
+import esgcet.args as pub_args
 import esgcet.logger as logger
 
 from esgcet.mapfile import ESGPubMapConv
@@ -18,7 +18,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Unpublish data sets from ESGF databases.")
 
     home = str(Path.home())
-    def_config = home + "/.esg/esg.ini"
+    def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
@@ -30,7 +30,7 @@ def get_args():
                         help="Path(s) to a mapfile or directory(s) containing mapfiles.")    
     parser.add_argument("--use-list", dest="dset_list", default=None,
                         help="Path to a file containing list of dataset_ids.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
@@ -71,28 +71,21 @@ def maps_to_dataset_list(maps):
 
     return dset_list
 
-
 def run():
     a = get_args()
 
-    ini_file = a.cfg
-    config = cfg.ConfigParser()
-    if not os.path.exists(ini_file):
-        publog.error("Config file not found. " + ini_file + " does not exist.")
-        exit(1)
-    if os.path.isdir(ini_file):
-        publog.error("Config file path is a directory. Please use a complete file path.")
-        exit(1)
-    try:
-        config.read(ini_file)
-    except Exception as ex:
-        publog.exception("Could not read config file")
-        exit(1)
+    cfg_file = a.cfg
+    if os.path.isdir(cfg_file):
+        cfg_file = os.path.join(cfg_file, "esg.yaml")
+    if not os.path.exists(cfg_file):
+        publog.error(f"Config file not found. {cfg_file} does not exist.")
+        raise RuntimeError(f"Config file not found. {cfg_file} does not exist.")
 
-
+    args = pub_args.PublisherArgs()
+    config = args.load_config(cfg_file)
     if a.cert == "./cert.pem":
         try:
-            cert = config['user']['cert']
+            cert = config['cert']
         except:
             cert = a.cert
     else:
@@ -100,24 +93,21 @@ def run():
 
     if a.index_node is None:
         try:
-            index_node = config['user']['index_node']
+            index_node = config['index_node']
         except:
             publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
             exit(1)
     else:
         index_node = a.index_node
 
-
     dset_id = ""
-
     if a.dset_id:
-
         dset_id = a.dset_id
 
     if not '|' in dset_id or (a.map):
         if a.data_node is None:
             try:
-                data_node = config['user']['data_node']
+                data_node = config['data_node']
             except:
                 publog.exception("Data node not defined. Use the --data-node option or define in esg.ini.")
                 exit(1)
@@ -125,7 +115,6 @@ def run():
             data_node = a.data_node
     else:
         data_node = None
-
 
     if a.delete:
         d = True
@@ -136,10 +125,10 @@ def run():
         auth = False
     else:
         auth = True
-
+        
     if not a.silent:
         try:
-            s = config['user']['silent']
+            s = config['silent']
             if 'true' in s or 'yes' in s:
                 silent = True
             else:
@@ -152,7 +141,7 @@ def run():
     if not a.verbose:
         if not a.silent:
             try:
-                v = config['user']['verbose']
+                v = config['verbose']
                 if 'true' in v or 'yes' in v:
                     verbose = True
                 else:
@@ -163,8 +152,7 @@ def run():
         verbose = True
         silent = False
 
-
-    args = {    "delete": d, 
+    args = { "delete": d, 
              "data_node": data_node, 
              "index_node": index_node, 
              "cert": cert, 
@@ -172,11 +160,9 @@ def run():
              "verbose" : verbose,
              "silent" :silent }
 
-
     if len(dset_id) > 0:
         args["dataset_id_lst"] = [dset_id]
     elif a.map:
-
         args["dataset_id_lst"] = maps_to_dataset_list(a.map)
     elif a.dset_list:
         try:
@@ -191,7 +177,7 @@ def run():
 
     if (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
-            pid_creds = json.loads(config['user']['pid_creds'])
+            pid_creds = config['pid_creds']
             args["pid_creds"] = pid_creds
         except:
             publog.exception("PID credentials not defined. Define in config file esg.ini.")

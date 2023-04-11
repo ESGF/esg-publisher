@@ -19,42 +19,24 @@ DEFAULT_ESGINI = '/esg/config/esgcet'
 if not os.path.exists(FULLPATH):
     os.makedirs(FULLPATH)
 
-if os.path.exists(FULLPATH + "/esg.ini"):
-    config_exists = True
-else:
-    config_exists = False
-
-make_config = False
-if config_exists:
-    try:
-        config = cfg.ConfigParser()
-        config.read(FULLPATH + "/esg.ini")
-        if config['version'] != VERSION:
-            print("Config file not up to date, saving back up and overwriting original.", file=sys.stderr)
-            copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
-            make_config = True
-        else:
-            make_config = False
-    except:
-        print("Error with existing config, saving back up and overwriting original.", file=sys.stderr)
-        copyfile(FULLPATH + "/esg.ini", FULLPATH + "/esg.ini.bak")
-        make_config = True
+if os.path.exists(FULLPATH + "/esg.yaml"):
+    make_config = False
 else:
     make_config = True
-
 
 if make_config:
     setup(
         name = 'esgcet',
         version = VERSION,
         description = 'ESGCET publication package',
-        author = 'Elysia Witham, Sasha Ames',
-        author_email = 'witham3@llnl.gov',
+        author = 'Sasha Ames',
+        author_email = 'ames4@llnl.gov',
         url = 'http://esgf.llnl.gov',
         install_requires = [
             "requests",
              "esgfpid",
-            "ESGConfigParser==1.0.0a1"
+            "ESGConfigParser==1.0.0a1",
+            "pyyaml"
         ],
         packages = find_packages(exclude=['ez_setup']),
         include_package_data = True,
@@ -69,7 +51,7 @@ if make_config:
                                           'esgmapconv=esgcet.esgmapconv:main',
                                           'esgmigrate=esgcet.migratecmd:main',
                                           'esgunpublish=esgcet.esgunpublish:main']},
-        data_files=[(FULLPATH, ['esg.ini'])]
+        data_files=[(FULLPATH, ['esg.yaml'])]
 
     )
 else:
@@ -77,8 +59,8 @@ else:
         name = 'esgcet',
         version = VERSION,
         description = 'ESGCET publication package',
-        author = 'Elysia Witham, Sasha Ames',
-        author_email = 'witham3@llnl.gov',
+        author = 'Sasha Ames',
+        author_email = 'ames4@llnl.gov',
         url = 'http://esgf.llnl.gov',
         install_requires = [
             "requests",

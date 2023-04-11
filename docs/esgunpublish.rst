@@ -44,10 +44,10 @@ For multiple datasets there are two additional options.  **Option 1:** use a lis
                                 unpublishing (use a myproxy login to generate).
         --delete              Specify deletion of dataset (default is retraction).
         --dset-id DSET_ID     Dataset ID for dataset to be retracted or deleted.
+        --config CFG, -cfg CFG     Path to config file.
         --map MAP [MAP ...]   Path(s) to a mapfile or directory(s) containing
                                 mapfiles.
         --use-list DSET_LIST  Path to a file containing list of dataset_ids.
-        --ini CFG, -i CFG     Path to config file.
         --version             Print the version and exit
         --no-auth             Run publisher without certificate, only works on
                                 certain index nodes.
