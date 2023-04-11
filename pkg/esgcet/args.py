@@ -125,18 +125,17 @@ class PublisherArgs:
         else:
             cert = pub.cert
 
-        conda_auto = False
+        if pub.xarray:
+            autocurator = None
         if pub.autocurator_path is None:
             try:
                 autocurator = config['autoc_path']
-                if autocurator == "autocurator" or autocurator == "none":
-                    autocurator = "autocurator"
-                    conda_auto = True
+                if autocurator == "none":
+                    autocurator = None
             except:
-                autocurator = "autocurator"
-                conda_auto = True
-        else:
-            autocurator = pub.autocurator_path
+                autocurator = None
+            else:
+                autocurator = pub.autocurator_path
 
         if pub.index_node is None:
             try:
@@ -215,11 +214,6 @@ class PublisherArgs:
         if pub.test:
             test = True
 
-        if not conda_auto:
-            autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
-        else:
-            autoc_command = autocurator
-        
         try:
             proj_config = config['user_project_config']
         except:
@@ -262,7 +256,7 @@ class PublisherArgs:
 
         argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
                    "cert": cert,
-                   "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
+                   "autoc_command": autocurator, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
                    "auth": auth, "skip_prepare": skip_prepare, "force_prepare": force_prepare,
