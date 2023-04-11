@@ -127,15 +127,12 @@ class PublisherArgs:
 
         if pub.xarray:
             autocurator = None
-        if pub.autocurator_path is None:
-            try:
-                autocurator = config['autoc_path']
-                if autocurator == "none":
-                    autocurator = None
-            except:
+        elif pub.autocurator_path is None:
+            autocurator = config.get('autoc_path', None)
+            if autocurator == "none":
                 autocurator = None
-            else:
-                autocurator = pub.autocurator_path
+        else:
+            autocurator = pub.autocurator_path
 
         if pub.index_node is None:
             try:
