@@ -1,8 +1,8 @@
 from esgcet.args import PublisherArgs
 import argparse
 from pathlib import Path
-import configparser as cfg
 import sys
+import esgcet.args as pub_args
 import json
 import os
 import esgcet.logger as logger
@@ -16,7 +16,7 @@ def get_args():
 
     # ANY FILE NAME INPUT: check first to make sure it exists
     home = str(Path.home())
-    def_config = home + "/.esg/esg.ini"
+    def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
     parser.add_argument("--json", dest="json", default=None,
@@ -30,7 +30,7 @@ def get_args():
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--project", dest="proj", default="",
                         help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
@@ -43,20 +43,14 @@ def run():
 
     a = get_args()
     ini_file = a.cfg
-    config = cfg.ConfigParser()
-    config.read(ini_file)
     if not os.path.exists(ini_file):
         publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
         publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
-    try:
-        config.read(ini_file)
-    except Exception as ex:
-        publog.exception("Could not read config file")
-        exit(1)
-
+    args = pub_args.PublisherArgs()
+    config = args.load_config(ini_file)
 
     p = True
     if a.out_file is not None:
@@ -65,7 +59,7 @@ def run():
 
     if not a.silent:
         try:
-            s = config['user']['silent']
+            s = config['silent']
             if 'true' in s or 'yes' in s:
                 silent = True
             else:
@@ -77,7 +71,7 @@ def run():
 
     if not a.verbose:
         try:
-            v = config['user']['verbose']
+            v = config['verbose']
             if 'true' in v or 'yes' in v:
                 verbose = True
             else:
@@ -101,7 +95,7 @@ def run():
 
     if a.data_node is None:
         try:
-            data_node = config['user']['data_node']
+            data_node = config['data_node']
         except:
             publog.exception("Data node not supplied in config or command line. Exiting.")
             exit(1)
@@ -110,7 +104,7 @@ def run():
 
     if a.index_node is None:
         try:
-            index_node = config['user']['index_node']
+            index_node = config['index_node']
         except:
             publog.exception("Index node not supplied in config or command line. Exiting.")
             exit(1)
@@ -126,7 +120,7 @@ def run():
         replica = False
     else:
         try:
-            r = config['user']['set_replica']
+            r = config['set_replica']
             if 'yes' in r or 'true' in r:
                 replica = True
             elif 'no' in r or 'false' in r:
@@ -139,7 +133,7 @@ def run():
             exit(1)
 
     try:
-        data_roots = json.loads(config['user']['data_roots'])
+        data_roots = config['data_roots']
         if data_roots == 'none':
             publog.error("Data roots undefined. Define in config file to create file metadata.")
             exit(1)
@@ -148,13 +142,13 @@ def run():
         exit(1)
 
     try:
-        globus = json.loads(config['user']['globus_uuid'])
+        globus = json.loads(config['globus_uuid'])
     except:
         # globus undefined
         globus = "none"
 
     try:
-        dtn = config['user']['data_transfer_node']
+        dtn = config['data_transfer_node']
     except:
         # dtn undefined
         dtn = "none"
@@ -167,12 +161,12 @@ def run():
         project = a.proj
     else:
         try:
-            project = config['user']['project']
+            project = config['project']
         except:
             project = None
 
     try:
-        non_netcdf = config['user']['non_netcdf'].lower()
+        non_netcdf = config['non_netcdf'].lower()
         if 'yes' in non_netcdf or 'true' in non_netcdf:
             non_nc = True
         else:
@@ -181,7 +175,7 @@ def run():
         non_nc = False
 
     try:
-        proj_config = json.loads(config['user']['user_project_config'])
+        proj_config = json.loads(config['user_project_config'])
     except:
         proj_config = None
 

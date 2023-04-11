@@ -19,6 +19,7 @@ DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
     'create-ip-exp' : ['project', 'product', 'institute', 'experiment', 'realm', 'time_frequency'],
     'create-ip-src': ['project', 'product', 'institute', 'source_id', 'realm', 'time_frequency'],
     'create-ip-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'],
+    'create-ip-var': ['project', 'product', 'institute', 'model', 'source_id', 'time_frequency', 'realm', 'variable'],
         'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble']}
 
 SPLIT_FACET = { 'e3sm' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }

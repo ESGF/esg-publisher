@@ -1,0 +1,27 @@
+---
+data_node: "esgf-data1.llnl.gov"
+index_node: "esgf-node.llnl.gov"
+cmor_path: "/export/user/cmor/Tables"
+autoc_path: "autocurator"
+data_roots:
+  /esg/data: "esgf_data"
+cert: "./cert.pem"
+test: "false"
+project: "CMIP6"
+mountpoint_map:
+  /home/user1: "/esg/data"
+non_netcdf: "false"
+set_replica: "false"
+globus_uuid: "none"
+data_transfer_node: "none"
+pid_creds:
+  url: "aims4.llnl.gov"
+  port: 7070
+  vhost: "esgf-pid"
+  user: "esgf-publisher"
+  password: "<password>"
+  ssl_enabled: "true"
+  priority: 1
+user_project_config: "none"
+silent: "false"
+verbose: "true"

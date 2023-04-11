@@ -20,7 +20,7 @@ You can also use ``--help`` to see::
                           [--index-node INDEX_NODE] [--certificate CERT]
                           [--project PROJ] [--cmor-tables CMOR_PATH]
                           [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
-                          [--ini CFG] [--silent] [--verbose] [--no-auth] [--verify]
+                          [--config CFG] [--silent] [--verbose] [--no-auth] [--verify]
 
         Publish data sets to ESGF databases.
 

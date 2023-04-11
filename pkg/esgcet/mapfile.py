@@ -25,7 +25,8 @@ class ESGPubMapConv:
             if mountpoints and self.project:
                 mapstr = parts[1]
                 root = mapstr.split(self.project)[0][:-1]
-                parts[1] = mapstr.replace(root, mountpoints[root])
+                if root in mountpoints:
+                    parts[1] = mapstr.replace(root, mountpoints[root])
 
             ret.append(parts)
 

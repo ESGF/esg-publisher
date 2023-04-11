@@ -2,10 +2,10 @@ import sys
 from esgcet.mapfile import ESGPubMapConv
 import json
 import os
-import configparser as cfg
 import argparse
 from pathlib import Path
 import esgcet.logger as logger
+import esgcet.args as pub_args
 
 log = logger.Logger()
 publog = log.return_logger('esgmapconv')
@@ -15,11 +15,11 @@ def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
 
     home = str(Path.home())
-    def_config = home + "/.esg/esg.ini"
+    def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
     parser.add_argument("--map", dest="map", required=True, help="Mapfile ending in .map extension, contains metadata about the record.")
     parser.add_argument("--out-file", dest="out_file", help="Output file for map data in JSON format. Default is printed to standard out.")
-    parser.add_argument("--ini", "-i", dest="cfg", default=def_config, help="Path to config file.")
+    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
 
     pub = parser.parse_args()
 
@@ -29,19 +29,15 @@ def get_args():
 def run():
     a = get_args()
     ini_file = a.cfg
-    config = cfg.ConfigParser()
     if not os.path.exists(ini_file):
         publog.error("Config file not found. " + ini_file + " does not exist.")
         exit(1)
     if os.path.isdir(ini_file):
         publog.error("Config file path is a directory. Please use a complete file path.")
         exit(1)
-    try:
-        config.read(ini_file)
-    except Exception as ex:
-        publog.exception("Could not read config file")
-        exit(1)
 
+    args = pub_args.PublisherArgs()
+    config = args.load_config(ini_file)
     p = True
     if a.out_file is not None:
         p = False
@@ -52,7 +48,7 @@ def run():
         proj = a.proj
     else:
         try:
-            proj = config['user']['project']
+            proj = config['project']
         except:
             pass
 

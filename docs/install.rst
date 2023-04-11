@@ -1,15 +1,6 @@
 Installation
 ============
 
-You can install the ``esg-publisher`` (aka the ``esgcet`` Python package) one of two ways: conda, or git.
-
-For the **basic** installation: to install esgcet using conda, use the following to create a new environment populated with the publisher software and required packages: ::
-
-    conda create -n esgf-pub -c esgf-forge -c conda-forge esgcet
-    conda activate esgf-pub
-
-Other installation methods require several pre-requisites, as described below.
-
 Conda & Required Packages
 -------------------------
 
@@ -18,21 +9,20 @@ We recommend creating a conda env before installing ``esgcet`` ::
     conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
     conda activate esgf-pub
 
-NOTE: if you install esgcet using conda below, the cmor package (different from tables) should be installed at the time you install esgcet automatically, and having cmor in your env may cause conflicts (but not always).
 
 You will also need to install ``esgfpid`` using pip::
 
     pip install esgfpid
 
-NOTE: you will need a functioning version of ``autocurator`` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.
+NOTE: you will need a functioning version of ``autocurator`` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.  The ``autocurator`` package in the ``esgf-forge`` conda channel provides a working albeit not the most recent version of this module.
 
-Conda Install
--------------
+Pip Install
+-----------
 
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
-    conda install -c esgf-forge -c conda-forge esgcet
-
+    conda activate esgf-pub
+    pip install esgcet==5.1.0b13  # Must specify version for Beta release
 
 
 Installing esgcet via git
@@ -57,8 +47,6 @@ Config File (esg.ini)
 
 The config file will contain the following settings:
 
- * version
-    * This will be predefined in the [DEFAULT] section, it is used by setup to determine at time of install if your config file has all the latest settings.
  * data_node
     * Required. This is the ESGF node at which the data is stored that you are publishing. It will be concatenated with the dataset_id to form the full id for your dataset.
  * index_node
@@ -70,7 +58,7 @@ The config file will contain the following settings:
  * data_roots
     * Required. Must be in a json string loadable by python. Maps file roots to names that appears in urls.
  * mountpoint_map
-    * Optional. Must be in a json string loadable by python. Changes specified sym link file roots in mapfile to actual file roots like so: {"/symlink/dir": "/actual/path"}
+    * Optional. Must be in yaml dictionary format. Changes specified sym link file roots in mapfile to actual file roots like so: /symlink/dir: "/actual/path"
  * cert
     * Required, unless running in ``--no-auth`` mode. This is the full path to the certificate file used for publishing. Default assumes a file "cert.pem" in your current directory. Replace to override.
  * test
@@ -86,9 +74,9 @@ The config file will contain the following settings:
  * data_transfer_node
     * Optional. If you run the GridFTP service, set the hostname of that node, whether it the same as your data node or a sepearte Data Transfer Node for gsiftp urls in file records.  Default of "none" will omit.
  * pid_creds
-    * Settings and credentials for RabbitMQ server access for the PID sefvice, required for some projects (CMIP6, input4MIPs). Input esgfpid credentials in a json loadable string.
+    * Settings and credentials for RabbitMQ server access for the PID sefvice, required for some projects (CMIP6, input4MIPs). 
  * user_project_config
-    * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR into a json loadable dictionary.
+    * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR in a dictionary designated by project.
  * silent
     * Optional. Enable or disable silent mode, which suppresses all INFO logging messages.  Errors and messages from sub-modules are not suppressed. Default is False, silent mode disabled.
  * verbose
@@ -100,8 +88,8 @@ The config file will contain the following settings:
  * archive_depth
     * Optional. (Required when enable_archive = True) sets the directory depth of subdirectories to create/use in the xml archive. (see :ref:`arch_info`)
 
-Fill out the necessary variables, and either leave or override the optional configurations. Note that the section the publisher reads is the ``user`` section, not the default nor example.
-Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.ini`` when you install ``esgcet``.
+Fill out the necessary variables, and either leave or override the optional configurations.
+Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.yaml`` when you install ``esgcet``.
 Note that while the ``cmor_path`` variable points to a directory, other filepaths must be complete, such as ``autoc_path`` and ``cert``. This applies to the command line arguments for these as well.
 Additionally, a *required* setting if omitted can be satisfied via inclusion as ccommand line arguments.
 
@@ -135,5 +123,6 @@ Run Time Args
 
 If you prefer to set your configuration to publish at runtime, the ``esgpublish`` command has several optional command line arguments which will override options set in the config file.  
 For instance, if you use the ``--cmor-tables`` command line argument to set the path to the cmor tables directory, that will override anything written in the config file under ``cmor_path``.
-If you used the old version of the publisher, you should note that the command line argument ``-ini`` which points to your config file must be a complete path, not the directory as it was in the previous version.
+
+If you used the old (v4 or earlier) version of the publisher, you should note that the command line argument ``--config`` which points to your config file must be a complete path, not the directory as it was in the previous version.
 More details can be found in the ``esgpublish`` section.  Some settings are not available on the command line and must be placed in the config file, such as the xml "archive" utility.

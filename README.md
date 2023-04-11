@@ -25,7 +25,7 @@ conda activate esgf-pub
 pip install esgfpid # needed for publishing
 cd pkg
 python setup.py install 
-# edit $HOME/.esg/esg.ini for system-specific settings
+# edit $HOME/.esg/esg.yaml for system-specific settings
 
 #  For CMIP6 publishing you need the cmor tables.  All files in CMIP6 must pass PrePARE. Options:
 #  (1)  git clone https://github.com/PCMDI/cmip6-cmor-tables
