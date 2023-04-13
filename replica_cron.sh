@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cd /export/ames4/git/esg-publisher
+srcdir=`dirname $0`
+
+cd $srcdir
 
 running=`ps -fe | grep pub-2-0 | wc -l`
 
