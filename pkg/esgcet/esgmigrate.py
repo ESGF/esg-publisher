@@ -44,6 +44,7 @@ class ESGPubMigrate(object):
                 cf_dict[key] = json.loads(cf_user[key])
             else:
                 cf_dict[key] = cf_user[key]
+        del cf_dict['note']
         self.write_config(cf_dict)
 
     def project_migrate(self, project):
@@ -173,27 +174,6 @@ class ESGPubMigrate(object):
         if os.path.exists(self.save_path):
             backup = f"{self.save_path}.{t}.bak"
             shutil.copyfile(config_file, backup)
-        Path(config_file).touch()
-        config = cfg.ConfigParser()
-        config.read(config_file)
-        new_config = {"data_node": data_node, "index_node": index_node, "data_roots": json.dumps(dr_dict), "cert": CERT_FN,
-                      "globus_uuid": GLOBUS_UUID, "data_transfer_node": DATA_TRANSFER_NODE, "pid_creds": json.dumps(pid_creds),
-                      "cmor_path" : cmor_path }
-
-        try:
-            test = config['user']['data_node']
-            if project_config:
-                new_config["project_cfg"] = json.dumps(project_config)
-            for key, value in new_config.items():
-                if value:
-                    config.set('user', key, value)
-        except:
-            config.add_section('user')
-            for key, value in new_config.items():
-                if value:
-                    config.set('user', key, value)
-        with open(config_file, "w") as cf:
-            config.write(cf)
 
         with open(config_file, 'w') as f:
             yaml.dump(new_config, f)
