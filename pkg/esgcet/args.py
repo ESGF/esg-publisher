@@ -282,7 +282,14 @@ class PublisherArgs:
                 argdict["cmor_tables"] = pub.cmor_path
         if project == "cmip6" or project == "input4mips" or (project in proj_config and "pid_prefix" in proj_config[project]):  
             try:
-                argdict["pid_creds"] = config['pid_creds']
+                # Unpack the PID credentials format from the yaml to be compatible with the legacy format
+                pid_creds = config['pid_creds']
+                creds_lst = []
+                for it in pid_creds:
+                    rec = pid_creds[it]
+                    rec['url'] = it
+                    creds_lst.append(rec)
+                argdict['pid_creds'] = creds_lst
             except:
                 publog.exception("PID credentials not defined. Define in config file esg.ini.")
                 exit(1)
