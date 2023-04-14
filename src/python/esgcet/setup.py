@@ -65,7 +65,7 @@ setup(
     url = 'http://esgf.llnl.gov',
     install_requires = [
         "psycopg2>=2.0,<2.8",
-        "SQLAlchemy>0.5.3,<1.3",
+        "SQLAlchemy>0.5.3,<1.4",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
         "requests>=2.20.0",
@@ -76,7 +76,7 @@ setup(
     ],
     setup_requires = [
         "psycopg2>=2.0,<2.8",
-        "SQLAlchemy>0.5.3,<1.3",
+        "SQLAlchemy>0.5.3,<1.4",
         "lxml>=2.0",
         "sqlalchemy_migrate>=0.6,<0.12",
         "requests>=2.20.0",
