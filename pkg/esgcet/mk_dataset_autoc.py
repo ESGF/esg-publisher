@@ -1,9 +1,5 @@
-from esgcet.mk_dataset import ESGPubMakeDataset
-
-class ESGPubMakeAutocDataset(ESGPubMakeDataset):
-
-    def __init__(self, *args):
-        super().__init__(args)
+from esgcet.handler_base import ESGPubHandlerBase
+class ESGPubMakeAutocDataset(ESGPubHandlerBase):
 
     def get_scanfile_dict(self, scandata, mapdata):
         ret = {}

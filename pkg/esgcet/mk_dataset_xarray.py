@@ -1,11 +1,6 @@
 import xarray, netCDF4
-
-from esgcet.mk_dataset import ESGPubMakeDataset
-
-class ESGPubMakeXArrayDataset(ESGPubMakeDataset):
-
-    def __init__(self, *args):
-        super().__init__(*args)
+from esgcet.handler_base import ESGPubHandlerBase
+class ESGPubXArrayHandler(ESGPubHandlerBase):
 
     def get_attrs_dict(self, scanobj):
         return scanobj.attrs

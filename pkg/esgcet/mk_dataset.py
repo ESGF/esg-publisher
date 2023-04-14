@@ -12,8 +12,15 @@ log = logger.Logger()
 
 
 class ESGPubMakeDataset:
-
+    """
+    Base class (abstract) to assemble the ESGF index records (dataset and file records).
+    """
     def init_project(self, proj):
+        """
+        Intialize the specific project metadata based on a stock or custom configuration
+
+        proj: Name of the project to be process
+        """
         project = proj
 
         if project in DRS:
@@ -39,7 +46,22 @@ class ESGPubMakeDataset:
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+        """
+        Constructor
+
+        data_node (string):  ESGF Data Node to host the data 
+        index_node (string):  ESGF Index Node to 
+        replica (bool):  Is data a replca
+        globus (string):  Globus endpoint UUID
+        data_roots (dict): mapping of logical to file system roots for data
+        dtn (string):  legacy server name for gridftp urls
+        handler_class (class):  class type of the handler to construct the (format) handler object
+        silent (bool):  Run in silent mode (suppress all output but errors)
+        verbose (bool):  Print verbose (debug), 
+        limit_exceeded (bool):
+        user_project (dict):  User-defined project config info
+        """
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -56,25 +78,48 @@ class ESGPubMakeDataset:
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
+        #  The default for variables, specific projects may use "variable" instead
         self.variable_name = "variable_id"
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
         self.xattr = None
         self.tracking_id_set = set()
+        self.handler = handler_class(self.publog)
 
     def set_project(self, project_in):
+        """
+        Configure the project
+        """
         self.project = project_in
 
     def unpack_values(self, invals):
+        """
+        convert a dictionary of items under the key "values" to a list of the values
+
+        invals (dict): input dictionary
+        return list
+        """
         for x in invals:
             if x['values']:
                 yield x['values']
 
     def prune_list(self, ll):
+        """
+        Shorten the list only actual items (no Nones)
+
+        ll (list):  input list
+
+        return list
+        """
         for x in ll:
             if not x is None:
                 yield (x)
 
     def load_xattr(self, xattrfn):
+        """
+        Load a set of "extended attributes" ie. additional key-value pairs for the dataset record from a file
+        Default method, specific projects may format attributes diffeerntly
+        xattrfn (string):  Full path to a .json file containing the pairs
+        """
         if self.xattr:
             return
         if (xattrfn):
@@ -83,6 +128,9 @@ class ESGPubMakeDataset:
             self.xattr = {}
 
     def proc_xattr(self, xattrfn):
+        """
+        Load and process the extended attributes
+        """
         self.load_xattr(xattrfn)
         if len(self.xattr) > 0:
             tmp_xattr = self.xattr_handler()
@@ -90,6 +138,9 @@ class ESGPubMakeDataset:
                 self.dataset[key] = tmp_xattr[key]
 
     def xattr_handler(self):
+        """
+        Base method for handling the extended attributes
+        """
         return self.xattr
 
     def get_dataset(self, mapdata, scanobj):
@@ -257,7 +308,7 @@ class ESGPubMakeDataset:
         return ret
 
     def set_variables(self, record, scanobj):
-        variables = self.get_variables(scanobj)
+        variables = self.handler.get_variables(scanobj)
         # use the correct facet id string to get the variable if pre-specified in the record
         vid = record[self.variable_name]
         if vid in variables:
@@ -274,7 +325,7 @@ class ESGPubMakeDataset:
             if self.variable_name == "variable_id":
                 record["variable"] = vid
         else:
-            var_list = self.get_variable_list(variables)
+            var_list = self.handler.get_variable_list(variables)
             if len(var_list) < VARIABLE_LIMIT:
                 init_lst = [self.variable_name, "variable_long_name"]
                 if "variable_id" in init_lst:
