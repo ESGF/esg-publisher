@@ -1,5 +1,5 @@
 from esgcet.handler_base import ESGPubHandlerBase
-class ESGPubMakeAutocDataset(ESGPubHandlerBase):
+class ESGPubAutocHandler(ESGPubHandlerBase):
 
     def get_scanfile_dict(self, scandata, mapdata):
         ret = {}

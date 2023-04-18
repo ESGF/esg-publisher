@@ -2,7 +2,7 @@ from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.activity_check import FieldCheck
 import tempfile
 import json
-from cmip6_cv import PrePARE
+
 from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
 import sys, os
@@ -32,6 +32,7 @@ class cmip6(GenericPublisher):
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
 
     def prepare_internal(self, json_map, cmor_tables):
+        from cmip6_cv import PrePARE
         try:
             assert(len(cmor_tables) > 0, f"{cmor_tables} are specified from config")
             assert(os.path.isdir(cmor_tables), f"{cmor_tables} exists and is a directory")

@@ -1,5 +1,7 @@
-from esgcet.mk_dataset_autoc import ESGPubMakeAutocDataset
-from esgcet.mk_dataset_xarray import ESGPubMakeXArrayDataset
+from esgcet.mk_dataset_autoc import ESGPubAutocHandler
+from esgcet.mk_dataset_xarray import ESGPubXArrayHandler
+from esgcet.mk_dataset import ESGPubMakeDataset
+
 import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
@@ -16,14 +18,15 @@ class GenericPublisher(BasePublisher):
 
     def __init__(self, argdict):
         super().__init__(argdict)
-        
+
+        self.MKD_Construct = ESGPubMakeDataset        
         if argdict["autoc_command"]:
             self.autoc_command = argdict["autoc_command"]
-            self.MKD_Construct = ESGPubMakeAutocDataset
+            self.format_handler = ESGPubAutocHandler
         else:
             self.autoc_command = None
-            self.MKD_Construct = ESGPubMakeXArrayDataset
-    
+            self.format_handler = ESGPubXArrayHandler
+
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
 
     def cleanup(self):
@@ -52,13 +55,14 @@ class GenericPublisher(BasePublisher):
 
     def mk_dataset(self, map_json_data):
         mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
-                                self.silent, self.verbose)
+                                self.format_handler, self.silent, self.verbose)
         mkd.set_project(self.project)
 
         if self.autoc_command:
             scan_arg = json.load(open(self.scanfn))
         else:
             scan_arg = self.xarray_set
+
         try:
             out_json_data = mkd.get_records(map_json_data, scan_arg, self.json_file, user_project=self.proj_config)
         except Exception as ex:

@@ -10,7 +10,6 @@ import esgcet.logger as logger
 
 log = logger.Logger()
 
-
 class ESGPubMakeDataset:
     """
     Base class (abstract) to assemble the ESGF index records (dataset and file records).
@@ -149,7 +148,7 @@ class ESGPubMakeDataset:
         parts = master_id.split('.')
         projkey = parts[0]
         self.first_val = projkey
-        scandata = self.get_attrs_dict(scanobj)
+        scandata = self.handler.get_attrs_dict(scanobj)
 
         if self.project:
             projkey = self.project
@@ -358,7 +357,7 @@ class ESGPubMakeDataset:
     def update_metadata(self, record, scanobj):
 
         self.set_variables(record, scanobj)
-        self.set_bounds(record, scanobj)
+        self.handler.set_bounds(record, scanobj)
 
     def iterate_files(self, mapdata, scandata):
         ret = []
@@ -412,7 +411,7 @@ class ESGPubMakeDataset:
 
         self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
         print()
-        scandict = self.get_scanfile_dict(scanobj, mapdict)
+        scandict = self.handler.get_scanfile_dict(scanobj, mapdict)
         self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
         print()
         ret, sz, access = self.iterate_files(mapdict, scandict)

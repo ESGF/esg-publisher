@@ -26,26 +26,8 @@ class ESGPubMKDCreateIP(ESGPubMakeDataset):
         else:
             self.DRS = DRS["create-ip-exp"]
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
-        self.silent = silent
-        self.verbose = verbose
-        self.data_roots = data_roots
-        self.globus = globus
-        self.data_node = data_node
-        self.index_node = index_node
-        self.replica = replica
-        self.dtn = dtn
-        self.limit_exceeded = limit_exceeded
-
-        self.mapconv = ESGPubMapConv("")
-        self.dataset = {}
-        self.project = None
-        self.user_project = user_project
-        self.DRS = None
-        self.CONST_ATTR = None
-        self.variable_name = "variable_id"
-        self.variable = None
-
+    def __init__(self, *args, **kwargs):
+        super(ESGPubMakeDataset,self).__init__(args, kwargs)
         self.models = ["CCSM-CAM", "CFSR", "CREATE-MRE2models", "CREATE-MRE3models", "CREATE-MREmodels", "GEOS-5",
                    "IFS-Cy31r2", "IFS-Cy41r2", "JRA-25", "JRA-55", "MITgcm", "MOM3", "MOM4", "MRICOMv3",
                    "NCEP-Global-Operational-Model", "NEMOv3", "NEMOv32-LIM2", "NEMOv34-LIM2", "ORAmodels", "ensda-v351"]
