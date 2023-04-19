@@ -90,17 +90,6 @@ class ESGPubMakeDataset:
         """
         self.project = project_in
 
-    def unpack_values(self, invals):
-        """
-        convert a dictionary of items under the key "values" to a list of the values
-
-        invals (dict): input dictionary
-        return list
-        """
-        for x in invals:
-            if x['values']:
-                yield x['values']
-
     def prune_list(self, ll):
         """
         Shorten the list only actual items (no Nones)

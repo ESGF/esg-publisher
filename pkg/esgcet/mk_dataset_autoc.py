@@ -8,6 +8,17 @@ class ESGPubAutocHandler(ESGPubHandlerBase):
             ret[rec['name']] = rec
         return ret
 
+    def unpack_values(self, invals):
+        """
+        convert a dictionary of items under the key "values" to a list of the values
+
+        invals (dict): input dictionary
+        return list
+        """
+        for x in invals:
+            if x['values']:
+                yield x['values']
+
     def get_attrs_dict(self, scanobj):
         return scanobj['dataset']
 
