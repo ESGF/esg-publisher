@@ -79,9 +79,12 @@ class GenericPublisher(BasePublisher):
 
 
         # step two: autocurator
-#        self.publog.info("Running autocurator...")
-        self.publog.info("Xarray extraction")
-        self.xarray_load(map_json_data)
+        if self.autoc_command:
+            self.publog.info("Running autocurator...")
+            self.autocurator(map_json_data)
+        else:
+            self.publog.info("Xarray extraction")
+            self.xarray_load(map_json_data)
 
         # step three: make dataset
         self.publog.info("Making dataset...")
