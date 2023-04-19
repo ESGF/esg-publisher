@@ -1,8 +1,10 @@
 import xarray, netCDF4
 from esgcet.handler_base import ESGPubHandlerBase
+import os.path
 class ESGPubXArrayHandler(ESGPubHandlerBase):
 
-    def xarray_load(self, map_data):
+    @staticmethod
+    def xarray_load(map_data):
         datafile = map_data[0][1]
         destpath = os.path.dirname(datafile)
 
