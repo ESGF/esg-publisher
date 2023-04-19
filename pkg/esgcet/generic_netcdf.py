@@ -7,7 +7,6 @@ import tempfile
 from esgcet.generic_pub import BasePublisher
 import traceback
 import esgcet.logger as logger
-import xarray
 
 log = logger.Logger()
 
@@ -38,11 +37,8 @@ class GenericPublisher(BasePublisher):
         """
         Xarray Load
         """
-        datafile = map_json_data[0][1]
-        destpath = os.path.dirname(datafile)
+        self.xarray_set = self.format_handler.xarray_load(map_json_data)
 
-        filespec = f"{destpath}/*.nc"
-        self.xarray_set = xarray.open_mfdataset(filespec)
 
     def autocurator(self, map_json_data):
         """

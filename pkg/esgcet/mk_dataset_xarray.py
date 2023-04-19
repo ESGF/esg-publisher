@@ -2,6 +2,13 @@ import xarray, netCDF4
 from esgcet.handler_base import ESGPubHandlerBase
 class ESGPubXArrayHandler(ESGPubHandlerBase):
 
+    def xarray_load(self, map_data):
+        datafile = map_data[0][1]
+        destpath = os.path.dirname(datafile)
+
+        filespec = f"{destpath}/*.nc"
+        return xarray.open_mfdataset(filespec)
+
     def get_attrs_dict(self, scanobj):
         return scanobj.attrs
 

@@ -10,6 +10,8 @@ import esgcet.logger as logger
 log = logger.Logger()
 publog = log.return_logger('esgmkpubrec')
 
+from esgcet.mk_dataset_autoc import ESGPubAutocHandler
+from esgcet.mk_dataset_xarray import ESGPubXArrayHandler
 
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
@@ -21,7 +23,7 @@ def get_args():
     parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
     parser.add_argument("--json", dest="json", default=None,
                         help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
-    parser.add_argument("--scan-file", dest="scan_file", required=True, help="JSON output file from autocurator.")
+    parser.add_argument("--scan-file", dest="scan_file", help="JSON output file from autocurator.  If not set will use XArray to load data from files")
     parser.add_argument("--map-data", dest="map_data", required=True,
                         help="Mapfile json data converted using esgmapconv.")
     parser.add_argument("--out-file", dest="out_file", default=None,
@@ -84,14 +86,15 @@ def run():
     try:
         map_json_data = json.load(open(a.map_data, 'r'))
     except:
-        publog.exception("Argparse error. Exiting.")
+        publog.exception("Missing required  Exiting.")
         exit(1)
 
     try:
-        scanfn = a.scan_file
+        scanarg = a.scan_file
+        format_handler = ESGPubAutocHandler
     except:
-        publog.exception("Argparse error. Exiting.")
-        exit(1)
+        format_handler = ESGPubXArrayHandler
+        scanarg = format_handler.xarray_load(map_json_data)
 
     if a.data_node is None:
         try:
@@ -195,11 +198,12 @@ def run():
         from esgcet.mk_dataset import ESGPubMakeDataset
         mkd = ESGPubMakeDataset(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
 
+
     try:
         if non_nc:
             out_json_data = mkd.get_records(map_json_data, json_file)
         else:
-            out_json_data = mkd.get_records(map_json_data, scanfn, json_file, user_project=proj_config)
+            out_json_data = mkd.get_records(map_json_data, scanarg, json_file, user_project=proj_config)
 
     except Exception as ex:
         publog.exception("Failed to make dataset")

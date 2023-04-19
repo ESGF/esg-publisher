@@ -83,13 +83,13 @@ class cmip6(GenericPublisher):
         # step three: autocurator
 #        self.publog.info("Running autocurator...")
 #        self.autocurator(map_json_data)
-        self.publog.info("Xarray extraction")
-        self.xarray_load(map_json_data)
+        # step two: autocurator
+        self.publog.info(f"Running Extraction... {str(self.extract_method)}")
+        self.extract_method(map_json_data)
 
         # step four: make dataset
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
-
 
         # step five: assign PID
         self.publog.info("Assigning PID...")
