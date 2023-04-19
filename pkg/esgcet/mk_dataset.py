@@ -393,16 +393,15 @@ class ESGPubMakeDataset:
         self.proc_xattr(xattrfn)
 
         self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
-        print()
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
-        self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
-        print()
+        #self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=1)) # Superverbose
+       
         scandict = self.handler.get_scanfile_dict(scanobj, mapdict)
-        self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
-        print()
+        #self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=1))  # Superverbose
+
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access
