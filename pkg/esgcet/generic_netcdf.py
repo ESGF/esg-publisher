@@ -23,8 +23,10 @@ class GenericPublisher(BasePublisher):
         if argdict["autoc_command"]:
             self.autoc_command = argdict["autoc_command"]
             self.format_handler = ESGPubAutocHandler
+            self.extract_method = self.autocurator
         else:
             self.autoc_command = None
+            self.extract_method = self.xarray_load
             self.format_handler = ESGPubXArrayHandler
 
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
@@ -33,6 +35,9 @@ class GenericPublisher(BasePublisher):
         self.scan_file.close()
 
     def xarray_load(self, map_json_data):
+        """
+        Xarray Load
+        """
         datafile = map_json_data[0][1]
         destpath = os.path.dirname(datafile)
 
@@ -40,6 +45,9 @@ class GenericPublisher(BasePublisher):
         self.xarray_set = xarray.open_mfdataset(filespec)
 
     def autocurator(self, map_json_data):
+        """
+        Autocurator
+        """
         datafile = map_json_data[0][1]
 
         destpath = os.path.dirname(datafile)
@@ -47,6 +55,7 @@ class GenericPublisher(BasePublisher):
         idx = outname.rfind('.')
 
         autstr = self.autoc_command + ' --out_pretty --out_json {} --files "{}/*.nc"'
+        self.publog.debug(f"RUNNING {autstr}")
         stat = os.system(autstr.format(self.scanfn, destpath))
         if os.WEXITSTATUS(stat) != 0:
             self.publog.error("Autocurator exited with exit code: " + str(os.WEXITSTATUS(stat)))
@@ -77,14 +86,9 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
-
         # step two: autocurator
-        if self.autoc_command:
-            self.publog.info("Running autocurator...")
-            self.autocurator(map_json_data)
-        else:
-            self.publog.info("Xarray extraction")
-            self.xarray_load(map_json_data)
+        self.publog.info(f"Running Extraction... {str(self.extract_method)}")
+        self.extract_method(map_json_data)
 
         # step three: make dataset
         self.publog.info("Making dataset...")
