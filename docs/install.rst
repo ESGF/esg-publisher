@@ -42,7 +42,7 @@ Now you will be able to call all commands in this package from any directory. A 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
 
-Config File (esg.ini)
+Config File (esg.yaml)
 ---------------------
 
 The config file will contain the following settings:
@@ -97,6 +97,40 @@ Additionally, a *required* setting if omitted can be satisfied via inclusion as 
 If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
 See that page for more info.
 
+Example Config
+^^^^^^^^^^^^^^
+
+..  code-block:: yaml
+
+   autoc_path: autocurator
+   cmip6_clone: primavera
+   cmor_path: /path/to/cmip6-cmor-tables/Tables
+   data_node: esgf-fake-test.llnl.gov
+   data_roots:
+      /Users/ames4/datatree: data
+   data_transfer_node: aimsdtn2.llnl.gov
+   force_prepare: 'false'
+   globus_uuid: 415a6320-e49c-11e5-9798-22000b9da45e
+   index_node: esgf-fedtest.llnl.gov
+   pid_creds:
+      aims4.llnl.gov:
+         password: password
+         port: 7070
+         priority: 1
+         ssl_enabled: true
+         user: esgf-publisher
+         vhost: esgf-pid
+   project: none
+   set_replica: 'true'
+   silent: 'false'
+   skip_prepare: 'true'
+   test: 'true'
+   user_project_config:
+      primavera:
+         CONST_ATTR:
+            project: primavera
+         pid_prefix: '21.14100'
+   verbose: 'false'
 
 Project Configuration
 ---------------------
