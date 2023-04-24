@@ -1,12 +1,15 @@
 from esgcet.handler_base import ESGPubHandlerBase
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 
 class ESGPubAutocHandler(ESGPubHandlerBase):
 
     def get_scanfile_dict(self, scandata, mapdata):
+#        self.publog.debug(json.dumps(scandata, indent=1))
+        self.publog.debug(type(scandata['file']))
         ret = {}
         for key in scandata['file']:
-            rec = scandata[key]
+            rec = scandata['file'][key]
             ret[rec['name']] = rec
         return ret
 
