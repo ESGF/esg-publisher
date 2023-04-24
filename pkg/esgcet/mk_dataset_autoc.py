@@ -1,4 +1,6 @@
 from esgcet.handler_base import ESGPubHandlerBase
+from datetime import datetime
+
 class ESGPubAutocHandler(ESGPubHandlerBase):
 
     def get_scanfile_dict(self, scandata, mapdata):
