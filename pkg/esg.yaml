@@ -1,18 +1,30 @@
----
-data_node:
-index_node:
-cmor_path:
-autoc_path: "autocurator"
+autoc_path: autocurator
+cert: '"na"'
+cmip6_clone: primavera
+cmor_path: /path/to/cmip6-cmor-tables/Tables
+data_node: esgf-fake-test.llnl.gov
 data_roots:
-cert: "./cert.pem"
-test: "false"
-project: "none"
-mountpoint_map: "none"
-non_netcdf: "false"
-set_replica: "false"
-globus_uuid: "none"
-data_transfer_node: "none"
+  /Users/ames4/datatree: data
+data_transfer_node: aimsdtn2.llnl.gov
+force_prepare: 'false'
+globus_uuid: 415a6320-e49c-11e5-9798-22000b9da45e
+index_node: esgf-fedtest.llnl.gov
 pid_creds:
-user_project_config: "none"
-silent: "false"
-verbose: "false"
+  aims4.llnl.gov:
+    password: password
+    port: 7070
+    priority: 1
+    ssl_enabled: true
+    user: esgf-publisher
+    vhost: esgf-pid
+project: none
+set_replica: 'true'
+silent: 'false'
+skip_prepare: 'true'
+test: 'true'
+user_project_config:
+  primavera:
+    CONST_ATTR:
+      project: primavera
+    pid_prefix: '21.14100'
+verbose: 'false'
