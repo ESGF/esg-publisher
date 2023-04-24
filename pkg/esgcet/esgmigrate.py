@@ -172,7 +172,7 @@ class ESGPubMigrate(object):
         new_creds = {}
         for it in pid_creds:
             url = it['url']
-            it.remove('url')
+            del it['url']
             new_creds[url] = it
         new_config['pid_creds'] = new_creds
 
