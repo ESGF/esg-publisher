@@ -54,7 +54,7 @@ The config file will contain the following settings:
  * cmor_path
     * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data. Example: /usr/local/cmip6-cmor-tables/Tables
  * autoc_path
-    * Optional. This is the path for the autocurator executable. The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.
+    * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots
     * Required. Must be in a json string loadable by python. Maps file roots to names that appears in urls.
  * mountpoint_map
@@ -97,8 +97,22 @@ Additionally, a *required* setting if omitted can be satisfied via inclusion as 
 If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
 See that page for more info.
 
+Project Configuration
+---------------------
+
+You may define a custom project in several ways.  First, using the
+``user_project_config`` setting, specify an alternate *DRS* and constant attribute values (``CONST_ATTR``) for your project.
+``DRS`` is followed an array with the components.
+``version`` is *always* the ultimate component of the dataset.  
+
+If your project desires to use the features of CMIP6 included extracted Global Attributes use the ``cmip6_clone``
+config file property and assign to your custom project name within the ``user_project_config``.  The project name must be overridden using ``CONST_ATTR`` ``project setting`` (see example below).  If you CMIP6 project wishes to register PIDs, you must assign a ``pid_prefix`` within 
+config settings.
+
 Example Config
 ^^^^^^^^^^^^^^
+
+The following contains example ``.yaml`` code and configures the *primavera* project as a user-defined `cloned` project:
 
 ..  code-block:: yaml
 
@@ -125,6 +139,7 @@ Example Config
    silent: 'false'
    skip_prepare: 'true'
    test: 'true'
+   cmip_clone: primaver
    user_project_config:
       primavera:
          CONST_ATTR:
@@ -132,24 +147,6 @@ Example Config
          pid_prefix: '21.14100'
    verbose: 'false'
 
-Project Configuration
----------------------
-
-You may define a custom project in several ways.  First, using the
-``user_project_config`` setting, specify an alternate *DRS* and constant attribute values (``CONST_ATTR``) for your project.
-``DRS`` is followed an array with the components.
-``version`` is *always* the ultimate component of the dataset.  
-
-If your project desires to use the features of CMIP6 included extracted Global Attributes use the ``cmip6_clone``
-config file property and assign to your custom project name within the ``user_project_config``.  The project name must be overridden using ``CONST_ATTR`` ``project setting`` (see example below).  If you CMIP6 project wishes to register PIDs, you must assign a ``pid_prefix`` within 
-config settings.
-
-Example CMIP6 cloned project 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To configure a project let us use *primavera* as an example.   Use the following: ::
-
-   cmip6_clone = primavera
-   user_project_config = { "primavera" : { "CONST_ATTR" : { "project" : "primavera"}, "pid_prefix" : "21.14100" } }
 
 
 Run Time Args
