@@ -70,7 +70,7 @@ def run():
             silent = False
     else:
         silent = True
-
+        
     if not a.verbose:
         try:
             v = config['verbose']
@@ -89,10 +89,11 @@ def run():
         publog.exception("Missing required  Exiting.")
         exit(1)
 
-    try:
-        scanarg = a.scan_file
+    scanarg = a.scan_file
+    
+    if scanarg:
         format_handler = ESGPubAutocHandler
-    except:
+    else:
         format_handler = ESGPubXArrayHandler
         scanarg = format_handler.xarray_load(map_json_data)
 
@@ -182,22 +183,25 @@ def run():
     except:
         proj_config = None
 
+
+    construct = None
+
     if project == "create-ip":
         from esgcet.mkd_create_ip import ESGPubMKDCreateIP
-        mkd = ESGPubMKDCreateIP(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, False)
+        construct = ESGPubMKDCreateIP
     elif project == "cmip5":
         from esgcet.mkd_cmip5 import ESGPubMKDCmip5
-        mkd = ESGPubMKDCmip5(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, False)
+        construct = ESGPubMKDCmip5
     elif project == "input4mips":
         from esgcet.mkd_input4mips import ESGPubMKDinput4MIPs
-        mkd = ESGPubMKDinput4MIPs(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
+        construct = ESGPubMKDinput4MIPs
     elif non_nc:
         from esgcet.mkd_non_nc import ESGPubMKDNonNC
-        mkd = ESGPubMKDNonNC(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
+        construct = ESGPubMKDNonNC
     else:
         from esgcet.mk_dataset import ESGPubMakeDataset
-        mkd = ESGPubMakeDataset(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose)
-
+        construct = ESGPubMakeDataset
+    mkd = construct(data_node, index_node, replica, globus, data_roots, dtn, format_handler, silent, verbose)
 
     try:
         if non_nc:
