@@ -22,7 +22,8 @@ Pip Install
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
     conda activate esgf-pub
-    pip install esgcet==5.1.0b13  # Must specify version for Beta release
+    pip install git+https://github.com/ESGF/esg-publisher.git@xarray#egg=esgcet  # Until the release is published to pypi.org
+    esgpublish --version #  Ensure you have upgraded to v5.2.0rc2  # Must specify version for Beta release
 
 
 Installing esgcet via git
@@ -31,7 +32,7 @@ Installing esgcet via git
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
-    git clone http://github.com/ESGF/esg-publisher.git -b refactor
+    git clone http://github.com/ESGF/esg-publisher.git -b xarray
     cd esg-publisher
     cd pkg
     python3 setup.py install
