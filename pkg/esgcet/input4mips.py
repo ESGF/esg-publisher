@@ -31,9 +31,9 @@ class input4mips(cmip6):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
-        # step three: autocurator
-        self.publog.info("Running autocurator...")
-        self.autocurator(map_json_data)
+        # step three: extract data
+        self.publog.info(f"Running Extraction... {str(self.extract_method)}")
+        self.extract_method(map_json_data)
 
         # step four: make dataset
         self.publog.info("Making dataset...")
