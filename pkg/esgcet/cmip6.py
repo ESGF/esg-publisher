@@ -1,14 +1,11 @@
 from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.activity_check import FieldCheck
 import tempfile
-import json
-
-from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-import sys, os
+import os
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class cmip6(GenericPublisher):

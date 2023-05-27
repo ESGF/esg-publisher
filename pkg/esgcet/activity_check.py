@@ -1,14 +1,22 @@
-import sys, json, os
+import json
 import esgcet.logger as logger
-
 from esgcet.settings import SOURCE_ID_LIMITS
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class FieldCheck(object):
-
+    """
+    Container for CV attribute agreement checks.
+    For now this is specific to CMIP6.
+    """
     def __init__(self, cmor_path, silent=False):
+        """
+        Constuctor.
+        cmor_path (string)  Required path to CV files from a CMOR table repo
+        silent (bool)  Run with out INFO messages
+        """
+        # TODO make this configurable per project
         cv_path = "{}/CMIP6_CV.json".format(cmor_path)
         jobj = json.load(open(cv_path))["CV"]
         self.sid_dict = jobj["source_id"]
@@ -17,7 +25,6 @@ class FieldCheck(object):
         self.publog = log.return_logger('Activity Check', silent=silent)
         self.project_key = "cmip6"
         self.project_str = "CMIP6"
-
 
     def check_activity(self, source_id, activity_id):
 
@@ -47,7 +54,7 @@ class FieldCheck(object):
 
         if self.project_key in SOURCE_ID_LIMITS and len(src_id) > SOURCE_ID_LIMITS[self.project_key]:
             self.publog.error(f"Source_id {src_id} exceeds the {SOURCE_ID_LIMITS[self.project_key]} character limit for project {self.project_str}. Publication halted.")
-            raise UserWarning          
+            raise UserWarning
 
         if not self.check_activity(src_id, act_id):
             self.publog.error("Source_id {} is not registered for participation in CMIP6 activity {}. Publication halted".format(src_id, act_id))

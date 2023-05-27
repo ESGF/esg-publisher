@@ -1,27 +1,25 @@
 import argparse
 from pathlib import Path
-import os, sys, json
+import os
 import esgcet.esgmigrate as em
-from esgcet.settings import *
 import esgcet.logger as logger
 import yaml
 
-import esgcet
-
-import esgcet
-
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('Settings')
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
 
 class PublisherArgs:
-
+    """  Reconcile command line argumenets and config file settings.
+    """
     def __init__(self):
         pass
 
     def get_args(self):
+        """ Wrap argument parser
+        """
         parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
 
         # ANY FILE NAME INPUT: check first to make sure it exists
@@ -53,6 +51,10 @@ class PublisherArgs:
         return pub
 
     def load_config(self, config_path):
+        """
+        Load the configuration file from specified path
+        config_path : string  config file path cannot be empty
+        """
         config_file = None
         try:
             config_file = open(config_path, 'r')  # or "a+", whatever you need
@@ -64,8 +66,11 @@ class PublisherArgs:
             conf = yaml.load(fd, Loader=yaml.SafeLoader)
         return conf
 
-    def get_dict(self, fullmap, fn_project):
-
+    def get_dict(self,  fn_project):
+        """
+        Return a dict containing the publisher arguments to use:
+        fn_project (string)  Specified project if pre-parsed.
+        """
         pub = self.get_args()
         json_file = pub.json
 
@@ -251,7 +256,7 @@ class PublisherArgs:
         if dtn == "none" and not silent:
             publog.info("No data transfer node defined.")
 
-        argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
+        argdict = { "silent": silent, "verbose": verbose,
                    "cert": cert,
                    "autoc_command": autocurator, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
