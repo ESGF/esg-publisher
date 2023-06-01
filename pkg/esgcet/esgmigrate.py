@@ -9,7 +9,7 @@ import json
 import esgcet.logger as logger
 import yaml
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 DEFAULT_ESGINI = '/esg/config/esgcet/'
 CONFIG_FN_DEST = "~/.esg/esg.yaml"

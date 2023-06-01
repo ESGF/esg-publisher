@@ -1,7 +1,7 @@
 import requests
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 class publisherClient(object):
     """  REST API wrapper for the esg-seach/ws APIs

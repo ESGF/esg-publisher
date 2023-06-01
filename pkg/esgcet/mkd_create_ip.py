@@ -9,7 +9,7 @@ from pathlib import Path
 from esgcet.mk_dataset import ESGPubMakeDataset
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class ESGPubMKDCreateIP(ESGPubMakeDataset):

@@ -8,7 +8,7 @@ from esgcet.generic_pub import BasePublisher
 import traceback
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 class GenericPublisher(BasePublisher):
 

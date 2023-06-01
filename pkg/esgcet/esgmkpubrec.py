@@ -7,7 +7,7 @@ import json
 import os
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('esgmkpubrec')
 
 from esgcet.mk_dataset_autoc import ESGPubAutocHandler

@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 ''' Handles setting latest=false for previously published versions, includes finding those in the index
 '''

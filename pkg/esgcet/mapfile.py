@@ -3,7 +3,7 @@ from datetime import datetime
 import traceback
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 class ESGPubMapConv:
 

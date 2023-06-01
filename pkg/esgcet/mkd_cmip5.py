@@ -10,7 +10,7 @@ from esgcet.mk_dataset import ESGPubMakeDataset
 from esgcet.mkd_create_ip import ESGPubMKDCreateIP
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class ESGPubMKDCmip5(ESGPubMKDCreateIP):

@@ -7,7 +7,7 @@ from pathlib import Path
 import esgcet.args as pub_args
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('esgupdate')
 
 

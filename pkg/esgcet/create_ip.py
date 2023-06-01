@@ -1,6 +1,4 @@
-import sys, os
-import json
-from esgcet.generic_pub import BasePublisher
+import os
 from esgcet.generic_netcdf import GenericPublisher
 from esgcet.mkd_create_ip import ESGPubMKDCreateIP
 from esgcet.update import ESGPubUpdate
@@ -10,7 +8,8 @@ from esgcet.settings import VARIABLE_LIMIT
 from copy import deepcopy
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
+
 
 class CreateIP(GenericPublisher):
 
@@ -31,10 +30,7 @@ class CreateIP(GenericPublisher):
 
     def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
-
         destpath = os.path.dirname(datafile)
-        outname = os.path.basename(datafile)
-        idx = outname.rfind('.')  # was this needed for something?
 
         autstr = self.autoc_command + self.autoc_args
         files = os.listdir(destpath)
@@ -63,14 +59,13 @@ class CreateIP(GenericPublisher):
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(deepcopy(out_json_data)) # herein lies the issue, copy hasn't fixed it
             except Exception as ex:
-                self.publog.exception("Failed to make dataset")
+                self.publog.exception(f"Failed to make dataset: {ex}")
                 self.cleanup()
                 exit(1)
             # only use first scan file if more than 75 variables
             if len(self.variables) > self.variable_limit:
                 limit = True
                 break
-            
 
         self.master_dataset = mkd.aggregate_datasets(self.datasets, limit)
         return 0
@@ -80,7 +75,7 @@ class CreateIP(GenericPublisher):
         try:
             up.run(self.master_dataset)
         except Exception as ex:
-            self.publog.exception("Failed to update record")
+            self.publog.exception(f"Failed to update record: {ex}")
             self.cleanup()
             exit(1)
 
@@ -89,6 +84,6 @@ class CreateIP(GenericPublisher):
         try:
             ip.do_publish(self.master_dataset)
         except Exception as ex:
-            self.publog.exception("Failed to publish to index node")
+            self.publog.exception(f"Failed to publish to index node: {ex}")
             self.cleanup()
             exit(1)

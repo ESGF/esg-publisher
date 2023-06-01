@@ -7,7 +7,7 @@ from esgcet.search_check import ESGSearchCheck
 
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 def check_for_pid_proj(dset_arr):
 

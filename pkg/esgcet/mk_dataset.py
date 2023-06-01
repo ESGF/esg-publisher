@@ -8,7 +8,7 @@ from esgcet.settings import *
 from pathlib import Path
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 class ESGPubMakeDataset:
     """

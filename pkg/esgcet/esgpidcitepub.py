@@ -7,7 +7,7 @@ import os
 import esgcet.args as pub_args
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('esgpidcitepub')
 
 

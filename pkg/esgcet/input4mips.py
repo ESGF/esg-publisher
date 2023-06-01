@@ -3,7 +3,7 @@ from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.cmip6 import cmip6
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 class input4mips(cmip6):
 

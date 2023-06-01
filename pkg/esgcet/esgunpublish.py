@@ -9,7 +9,7 @@ import esgcet.logger as logger
 
 from esgcet.mapfile import ESGPubMapConv
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('esgunpublish')
 
 import esgcet
