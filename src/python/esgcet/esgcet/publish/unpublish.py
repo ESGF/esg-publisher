@@ -300,9 +300,12 @@ def deleteDatasetList(datasetNames, Session, gatewayOperation=UNPUBLISH, thredds
             isDataset, dset, versionObjs, isLatest = nameDict[datasetName]
             if dset is None:
                 continue
+            # send unpublication info to handle server
+            if pid_connector and version > -1:
+                pid_connector.unpublish_one_version(drs_id=datasetName, version_number=version)
             for versionObj in versionObjs:
                 # send unpublication info to handle server
-                if pid_connector:
+                if pid_connector and version <= -1:
                     pid_connector.unpublish_one_version(drs_id=datasetName, version_number=versionObj.version)
                 catalog = session.query(Catalog).filter_by(dataset_name=dset.name, version=versionObj.version).first()
                 if catalog is not None:

@@ -159,7 +159,8 @@ def publishDataset(datasetName, parentId, service, threddsRootURL, session, sche
     return dset, statusId, state, event.event, status
 
 def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=None, publish=True, thredds=True, las=False, progressCallback=None,
-                       service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, readFromCatalog=False, restInterface=False,
+                       service=None, perVariable=None, threddsCatalogDictionary=None, reinitThredds=None, threddsMasterCatalog=None, threddsReload=None,
+                       readFromCatalog=False, restInterface=False,
                        schema=None, pid_connector=None, project_config_section=None):
     """
     Publish a list of datasets:
@@ -209,9 +210,19 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
       If not None, just generate catalogs in strings, not the THREDDS directories, and set
       threddsCatalogDictionary[datasetId] = string_catalog
 
-    reinitThredds
-      Boolean flag. If True, create the TDS master catalog and reinitialize the TDS server.
+    threddsMasterCatalog
+      Boolean flag. If True, create the TDS master catalog.
       If None, defaults to value of thredds option.
+
+    threddsReload
+      Boolean flag. If True, reinitialize the TDS server.
+      If None, defaults to value of thredds option.
+
+    reinitThredds
+      Compatibility flag.  If not None, this overrides
+      the value of both threddsMasterCatalog and threddsReload.
+      (This allows calls from code that does not separate out 
+      root catalog creation and server reload.)
 
     readFromCatalog
       Boolean flag. If True, read the TDS catalog definitions from threddsCatalogDictionary. 
@@ -248,10 +259,16 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
     else:
         handlers = handlerDictionary
 
-    # reinitThredds defaults to the value of thredds option
-    if reinitThredds is None:
-        reinitThredds = thredds
+    # threddsMasterCatalog and threddsReload default to the value of thredds option
+    if threddsMasterCatalog is None:
+        threddsMasterCatalog = thredds
+    if threddsReload is None:
+        threddsReload = thredds
 
+    if reinitThredds != None:
+        threddsMasterCatalog = reinitThredds
+        threddsReload = reinitThredds
+        
     if thredds:
         for datasetName,versionno in datasetNames:
             dset = session.query(Dataset).filter_by(name=datasetName).first()
@@ -302,8 +319,10 @@ def publishDatasetList(datasetNames, Session, parentId=None, handlerDictionary=N
                 threddsCatalogDictionary[(datasetName,versionno)] = threddsOutput.getvalue()
                 threddsOutput.close()
 
-    if reinitThredds:
+    if threddsMasterCatalog:
         updateThreddsMasterCatalog(Session)
+
+    if threddsReload:
         result = reinitializeThredds()
 
     if las:    
