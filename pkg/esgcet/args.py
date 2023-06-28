@@ -1,27 +1,25 @@
 import argparse
 from pathlib import Path
-import os, sys, json
+import os
 import esgcet.esgmigrate as em
-from esgcet.settings import *
 import esgcet.logger as logger
 import yaml
 
-import esgcet
-
-import esgcet
-
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('Settings')
 
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
 
 class PublisherArgs:
-
+    """  Reconcile command line argumenets and config file settings.
+    """
     def __init__(self):
         pass
 
     def get_args(self):
+        """ Wrap argument parser
+        """
         parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
 
         # ANY FILE NAME INPUT: check first to make sure it exists
@@ -46,12 +44,17 @@ class PublisherArgs:
         parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
-        
+        parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
+
         pub = parser.parse_args()
 
         return pub
 
     def load_config(self, config_path):
+        """
+        Load the configuration file from specified path
+        config_path : string  config file path cannot be empty
+        """
         config_file = None
         try:
             config_file = open(config_path, 'r')  # or "a+", whatever you need
@@ -63,8 +66,11 @@ class PublisherArgs:
             conf = yaml.load(fd, Loader=yaml.SafeLoader)
         return conf
 
-    def get_dict(self, fullmap, fn_project):
-
+    def get_dict(self,  fn_project):
+        """
+        Return a dict containing the publisher arguments to use:
+        fn_project (string)  Specified project if pre-parsed.
+        """
         pub = self.get_args()
         json_file = pub.json
 
@@ -124,16 +130,12 @@ class PublisherArgs:
         else:
             cert = pub.cert
 
-        conda_auto = False
-        if pub.autocurator_path is None:
-            try:
-                autocurator = config['autoc_path']
-                if autocurator == "autocurator" or autocurator == "none":
-                    autocurator = "autocurator"
-                    conda_auto = True
-            except:
-                autocurator = "autocurator"
-                conda_auto = True
+        if pub.xarray:
+            autocurator = None
+        elif pub.autocurator_path is None:
+            autocurator = config.get('autoc_path', None)
+            if autocurator == "none":
+                autocurator = None
         else:
             autocurator = pub.autocurator_path
 
@@ -214,11 +216,6 @@ class PublisherArgs:
         if pub.test:
             test = True
 
-        if not conda_auto:
-            autoc_command = autocurator + "/bin/autocurator"  # concatenate autocurator command
-        else:
-            autoc_command = autocurator
-        
         try:
             proj_config = config['user_project_config']
         except:
@@ -259,9 +256,9 @@ class PublisherArgs:
         if dtn == "none" and not silent:
             publog.info("No data transfer node defined.")
 
-        argdict = {"fullmap": fullmap, "silent": silent, "verbose": verbose,
+        argdict = { "silent": silent, "verbose": verbose,
                    "cert": cert,
-                   "autoc_command": autoc_command, "index_node": index_node, "data_node": data_node,
+                   "autoc_command": autocurator, "index_node": index_node, "data_node": data_node,
                    "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
                    "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
                    "auth": auth, "skip_prepare": skip_prepare, "force_prepare": force_prepare,

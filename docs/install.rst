@@ -22,7 +22,8 @@ Pip Install
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
     conda activate esgf-pub
-    pip install esgcet==5.1.0b13  # Must specify version for Beta release
+    pip install git+https://github.com/ESGF/esg-publisher.git@xarray#egg=esgcet  # Until the release is published to pypi.org
+    esgpublish --version #  Ensure you have upgraded to v5.2.0rc2  # Must specify version for Beta release
 
 
 Installing esgcet via git
@@ -31,7 +32,7 @@ Installing esgcet via git
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
-    git clone http://github.com/ESGF/esg-publisher.git -b refactor
+    git clone http://github.com/ESGF/esg-publisher.git -b xarray
     cd esg-publisher
     cd pkg
     python3 setup.py install
@@ -42,7 +43,7 @@ Now you will be able to call all commands in this package from any directory. A 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
 
-Config File (esg.ini)
+Config File (esg.yaml)
 ---------------------
 
 The config file will contain the following settings:
@@ -54,7 +55,7 @@ The config file will contain the following settings:
  * cmor_path
     * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data. Example: /usr/local/cmip6-cmor-tables/Tables
  * autoc_path
-    * Optional. This is the path for the autocurator executable. The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.
+    * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots
     * Required. Must be in a json string loadable by python. Maps file roots to names that appears in urls.
  * mountpoint_map
@@ -97,7 +98,6 @@ Additionally, a *required* setting if omitted can be satisfied via inclusion as 
 If you have an old config file from the previous iteration of the publisher, you can use ``esgmigrate`` to migrate over those settings to a new config file which can be read by the current publisher.
 See that page for more info.
 
-
 Project Configuration
 ---------------------
 
@@ -110,12 +110,44 @@ If your project desires to use the features of CMIP6 included extracted Global A
 config file property and assign to your custom project name within the ``user_project_config``.  The project name must be overridden using ``CONST_ATTR`` ``project setting`` (see example below).  If you CMIP6 project wishes to register PIDs, you must assign a ``pid_prefix`` within 
 config settings.
 
-Example CMIP6 cloned project 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To configure a project let us use *primavera* as an example.   Use the following: ::
+Example Config
+^^^^^^^^^^^^^^
 
-   cmip6_clone = primavera
-   user_project_config = { "primavera" : { "CONST_ATTR" : { "project" : "primavera"}, "pid_prefix" : "21.14100" } }
+The following contains example ``.yaml`` code and configures the *primavera* project as a user-defined `cloned` project:
+
+..  code-block:: yaml
+
+   autoc_path: autocurator
+   cmip6_clone: primavera
+   cmor_path: /path/to/cmip6-cmor-tables/Tables
+   data_node: esgf-fake-test.llnl.gov
+   data_roots:
+      /Users/ames4/datatree: data
+   data_transfer_node: aimsdtn2.llnl.gov
+   force_prepare: 'false'
+   globus_uuid: 415a6320-e49c-11e5-9798-22000b9da45e
+   index_node: esgf-fedtest.llnl.gov
+   pid_creds:
+      aims4.llnl.gov:
+         password: password
+         port: 7070
+         priority: 1
+         ssl_enabled: true
+         user: esgf-publisher
+         vhost: esgf-pid
+   project: none
+   set_replica: 'true'
+   silent: 'false'
+   skip_prepare: 'true'
+   test: 'true'
+   cmip_clone: primaver
+   user_project_config:
+      primavera:
+         CONST_ATTR:
+            project: primavera
+         pid_prefix: '21.14100'
+   verbose: 'false'
+
 
 
 Run Time Args

@@ -7,7 +7,7 @@ from esgcet.settings import *
 from pathlib import Path
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class ESGPubMKDNonNC(ESGPubMakeDataset):
@@ -63,7 +63,6 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
 
     def get_records(self, mapdata, xattrfn=None, user_project=None):
         self.user_project = user_project
-        self.load_xattr(xattrfn)
 
         if isinstance(mapdata, str):
             mapobj = json.load(open(mapdata))
@@ -72,24 +71,12 @@ class ESGPubMKDNonNC(ESGPubMakeDataset):
 
         self.get_dataset(mapobj[0][0])
 
-
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-        if xattrfn:
-            xattrobj = json.load(open(xattrfn))
-        else:
-            xattrobj = {}
-
-        if len(xattrobj) > 0:
-            xattrobj = self.xattr_handler()
-
-        for key in xattrobj:
-            self.dataset[key] = xattrobj[key]
-
+        self.proc_xattr(xattrfn)
         self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
         print()
-
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()

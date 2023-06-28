@@ -1,4 +1,4 @@
-The esgcet package for ESGF Publication - Beta release 13
+The esgcet package for ESGF Publication - Release Candidate v5.2.0rc2
 =========================================================
 
 Esgcet is a package of publisher commands for publishing to the `ESGF
@@ -12,8 +12,8 @@ if you have conda you can install the publisher wih the following into a fresh e
 ::
      conda create -n esgf-pub -c conda-forge -c esgf-forge esgcet
      conda activate esgf-pub
-     pip install esgcet==v5.1.0b13 # must specify version
-     esgpublish --version #  Ensure you have upgraded to v5.1.0b13
+     pip install git+https://github.com/ESGF/esg-publisher.git@xarray#egg=esgcet  # Until the release is published to pypi.org
+     esgpublish --version #  Ensure you have upgraded to v5.2.0rc2
      esgpublish # will print the usage information.
 
 You may also look at the inital ``~/.esg/esg.yaml`` and fill in the missing information based on the provided examples.

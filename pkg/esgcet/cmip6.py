@@ -1,14 +1,11 @@
 from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.activity_check import FieldCheck
 import tempfile
-import json
-from cmip6_cv import PrePARE
-from esgcet.generic_pub import BasePublisher
 from esgcet.generic_netcdf import GenericPublisher
-import sys, os
+import os
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class cmip6(GenericPublisher):
@@ -32,6 +29,7 @@ class cmip6(GenericPublisher):
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
 
     def prepare_internal(self, json_map, cmor_tables):
+        from cmip6_cv import PrePARE
         try:
             assert(len(cmor_tables) > 0, f"{cmor_tables} are specified from config")
             assert(os.path.isdir(cmor_tables), f"{cmor_tables} exists and is a directory")
@@ -80,13 +78,15 @@ class cmip6(GenericPublisher):
             self.prepare_internal(map_json_data, self.cmor_tables)
 
         # step three: autocurator
-        self.publog.info("Running autocurator...")
-        self.autocurator(map_json_data)
+#        self.publog.info("Running autocurator...")
+#        self.autocurator(map_json_data)
+        # step two: autocurator
+        self.publog.info(f"Running Extraction... {str(self.extract_method)}")
+        self.extract_method(map_json_data)
 
         # step four: make dataset
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
-
 
         # step five: assign PID
         self.publog.info("Assigning PID...")

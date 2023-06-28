@@ -1,12 +1,11 @@
-import sys, os
+import os
 from esgcet.create_ip import CreateIP
 from esgcet.mkd_cmip5 import ESGPubMKDCmip5
 from esgcet.settings import VARIABLE_LIMIT
-import logging
 import tempfile
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class cmip5(CreateIP):
@@ -19,10 +18,7 @@ class cmip5(CreateIP):
 
     def autocurator(self, map_json_data):
         datafile = map_json_data[0][1]
-
         destpath = os.path.dirname(datafile)
-        outname = os.path.basename(datafile)
-        idx = outname.rfind('.')  # was this needed for something?
 
         autstr = self.autoc_command + self.autoc_args
         files = os.listdir(destpath)
@@ -50,7 +46,7 @@ class cmip5(CreateIP):
             try:
                 out_json_data = mkd.get_records(map_json_data, scan.name, self.json_file)
                 self.datasets.append(out_json_data)
-            except Exception as ex:
+            except:
                 self.publog.exception("Occured while making dataset.")
                 self.cleanup()
                 exit(1)

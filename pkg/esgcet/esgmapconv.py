@@ -7,7 +7,7 @@ from pathlib import Path
 import esgcet.logger as logger
 import esgcet.args as pub_args
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('esgmapconv')
 
 

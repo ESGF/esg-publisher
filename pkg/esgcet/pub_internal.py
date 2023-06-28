@@ -1,15 +1,10 @@
 from esgcet.args import PublisherArgs
-import esgcet.esgmigrate as migrate
 import os
-import json
 import sys
-from esgcet.settings import *
-import configparser as cfg
-from pathlib import Path
 import esgcet.logger as logger
 
-log = logger.Logger()
-publog = log.return_logger('Publisher')
+log = logger.ESGPubLogger()
+publog = log.return_logger('Publisher-Main')
 
 
 def check_files(files):
@@ -28,20 +23,21 @@ def run(fullmap, pub_args):
     split_map = fullmap.split("/")
     fname = split_map[-1]
     fname_split = fname.split(".")
-    p = fname_split[0]
+    project_name = fname_split[0]
 
     files = []
     files.append(fullmap)
 
     check_files(files)
 
-    argdict = pub_args.get_dict(fullmap, p)
+    argdict = pub_args.get_dict(project_name)
+    argdict["fullmap"] = fullmap
 
     if "proj" in argdict:
-        p = argdict["proj"]
+        project_name = argdict["proj"]
     else:
-        argdict["proj"] = p
-    project = p.lower()
+        argdict["proj"] = project_name
+    project = project_name.lower()
     user_defined = False
     if argdict["user_project_config"]:
         user_defined = True
@@ -82,7 +78,6 @@ def run(fullmap, pub_args):
     return proj.workflow()
 
 
-
 def main():
     pub_args = PublisherArgs()
     pub = pub_args.get_args()
@@ -119,6 +114,7 @@ def main():
 
     if not rc:
         exit(1)
+
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

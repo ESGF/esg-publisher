@@ -36,6 +36,9 @@ if make_config:
             "requests",
              "esgfpid",
             "ESGConfigParser==1.0.0a1",
+            "xarray",
+            "netcdf4",
+            "dask",
             "pyyaml"
         ],
         packages = find_packages(exclude=['ez_setup']),

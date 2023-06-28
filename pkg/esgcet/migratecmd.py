@@ -3,7 +3,7 @@ import argparse, sys, os
 from pathlib import Path
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 publog = log.return_logger('esgmigrate')
 
 

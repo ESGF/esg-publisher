@@ -8,12 +8,18 @@ from esgcet.settings import *
 from pathlib import Path
 import esgcet.logger as logger
 
-log = logger.Logger()
-
+log = logger.ESGPubLogger()
 
 class ESGPubMakeDataset:
-
+    """
+    Base class (abstract) to assemble the ESGF index records (dataset and file records).
+    """
     def init_project(self, proj):
+        """
+        Intialize the specific project metadata based on a stock or custom configuration
+
+        proj: Name of the project to be process
+        """
         project = proj
 
         if project in DRS:
@@ -39,7 +45,22 @@ class ESGPubMakeDataset:
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+        """
+        Constructor
+
+        data_node (string):  ESGF Data Node to host the data 
+        index_node (string):  ESGF Index Node to 
+        replica (bool):  Is data a replca
+        globus (string):  Globus endpoint UUID
+        data_roots (dict): mapping of logical to file system roots for data
+        dtn (string):  legacy server name for gridftp urls
+        handler_class (class):  class type of the handler to construct the (format) handler object
+        silent (bool):  Run in silent mode (suppress all output but errors)
+        verbose (bool):  Print verbose (debug), 
+        limit_exceeded (bool):
+        user_project (dict):  User-defined project config info
+        """
         self.silent = silent
         self.verbose = verbose
         self.data_roots = data_roots
@@ -56,25 +77,37 @@ class ESGPubMakeDataset:
         self.user_project = user_project
         self.DRS = None
         self.CONST_ATTR = None
+        #  The default for variables, specific projects may use "variable" instead
         self.variable_name = "variable_id"
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
         self.xattr = None
         self.tracking_id_set = set()
+        self.handler = handler_class(self.publog)
 
     def set_project(self, project_in):
+        """
+        Configure the project
+        """
         self.project = project_in
 
-    def unpack_values(self, invals):
-        for x in invals:
-            if x['values']:
-                yield x['values']
-
     def prune_list(self, ll):
+        """
+        Shorten the list only actual items (no Nones)
+
+        ll (list):  input list
+
+        return list
+        """
         for x in ll:
             if not x is None:
                 yield (x)
 
     def load_xattr(self, xattrfn):
+        """
+        Load a set of "extended attributes" ie. additional key-value pairs for the dataset record from a file
+        Default method, specific projects may format attributes diffeerntly
+        xattrfn (string):  Full path to a .json file containing the pairs
+        """
         if self.xattr:
             return
         if (xattrfn):
@@ -83,6 +116,9 @@ class ESGPubMakeDataset:
             self.xattr = {}
 
     def proc_xattr(self, xattrfn):
+        """
+        Load and process the extended attributes
+        """
         self.load_xattr(xattrfn)
         if len(self.xattr) > 0:
             tmp_xattr = self.xattr_handler()
@@ -90,18 +126,18 @@ class ESGPubMakeDataset:
                 self.dataset[key] = tmp_xattr[key]
 
     def xattr_handler(self):
+        """
+        Base method for handling the extended attributes
+        """
         return self.xattr
 
     def get_dataset(self, mapdata, scanobj):
 
         master_id, version = mapdata.split('#')
-
         parts = master_id.split('.')
-
         projkey = parts[0]
         self.first_val = projkey
-        scandata = scanobj['dataset']
-
+        scandata = self.handler.get_attrs_dict(scanobj)
 
         if self.project:
             projkey = self.project
@@ -248,7 +284,7 @@ class ESGPubMakeDataset:
                 exit(1)
 
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
-        ret["publish_path"] = f"{self.data_roots[proj_root]}/{rel_path}"
+        ret["publish_path"] = f"{self.data_roots[proj_root]}/{rel_path}" 
         if "number_of_files" in ret:
             ret.pop("number_of_files")
         else:
@@ -259,139 +295,58 @@ class ESGPubMakeDataset:
 
         return ret
 
-    def get_scanfile_dict(self, scandata):
-        ret = {}
-        for key in scandata:
-            rec = scandata[key]
-            ret[rec['name']] = rec
-        return ret
+    def set_variables(self, record, scanobj):
+        variables = self.handler.get_variables(scanobj)
+        # use the correct facet id string to get the variable if pre-specified in the record
+        vid = record[self.variable_name]
+        if vid in variables:
+            var_rec = variables[vid]
+            if "long_name" in var_rec:
+                record["variable_long_name"] = var_rec["long_name"]
+            elif "info" in var_rec:
+                record["variable_long_name"] = var_rec["info"]
+            if "standard_name" in var_rec:
+                record["cf_standard_name"] = var_rec["standard_name"]
+            if "units" in var_rec:
+                record["variable_units"] = var_rec["units"]
+            record[self.variable_name] = vid
+            if self.variable_name == "variable_id":
+                record["variable"] = vid
+        else:
+            var_list = self.handler.get_variable_list(variables)
+            if len(var_list) < VARIABLE_LIMIT:
+                init_lst = [self.variable_name, "variable_long_name"]
+                if "variable_id" in init_lst:
+                    init_lst.append("variable")
+                for kid in init_lst:
+                    record[kid] = []
+                units_list = []
+                cf_list = []
+                for vk in var_list:
+                    if not vk in VARIABLE_EXCLUDES:
+                        var_rec = variables[vk]
+                        if "long_name" in var_rec:
+                            record["variable_long_name"].append(var_rec["long_name"])
+                        elif "info" in var_rec:
+                            record["variable_long_name"].append(var_rec["info"])
+                        if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
+                            cf_list.append(var_rec["standard_name"])          
+                        if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
+                            units_list.append(var_rec["units"])
+                        record["variable"].append(vk)
+
+                if self.variable_name == "variable_id":
+                    record[self.variable_name] = "Multiple"
+                record["variable_units"] = list(set(units_list))
+                record["cf_standard_name"] = list(set(cf_list))
+        
+            if self.variable_name == "variable_id":
+                record["variable"] = "Multiple"
 
     def update_metadata(self, record, scanobj):
-        if "variables" in scanobj:
-            if self.variable_name in record:
 
-                vid = record[self.variable_name]
-                try:
-                    if vid in scanobj["variables"]:
-                        var_rec = scanobj["variables"][vid]
-                        if "long_name" in var_rec.keys():
-                            record["variable_long_name"] = var_rec["long_name"]
-                        elif "info" in var_rec:
-                            record["variable_long_name"] = var_rec["info"]
-                        if "standard_name" in var_rec:
-                            record["cf_standard_name"] = var_rec["standard_name"]
-                        record["variable_units"] = var_rec["units"]
-                        record[self.variable_name] = vid
-                        if self.variable_name == "variable_id":
-                            record["variable"] = vid
-                    else:
-                        var_list = list(scanobj["variables"].keys())
-                        if len(var_list) < VARIABLE_LIMIT:
-                            init_lst = [self.variable_name, "variable_long_name"]
-                            if "variable_id" in init_lst:
-                                init_lst.append("variable")
-                            for kid in init_lst:
-                                record[kid] = []
-                            units_list = []
-                            cf_list = []
-                            for vk in var_list:
-                                if not vk in VARIABLE_EXCLUDES:
-                                    var_rec = scanobj["variables"][vk]
-                                    if "long_name" in var_rec.keys():
-                                        record["variable_long_name"].append(var_rec["long_name"])
-                                    elif "info" in var_rec:
-                                        record["variable_long_name"].append(var_rec["info"])
-                                    if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
-                                        cf_list.append(var_rec["standard_name"])          
-                                    if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
-                                        units_list.append(var_rec["units"])
-                                    record["variable"].append(vk)
-
-                            if self.variable_name == "variable_id":
-                                record[self.variable_name] = "Multiple"
-                            record["variable_units"] = list(set(units_list))
-                            record["cf_standard_name"] = list(set(cf_list))
-                    
-                        if self.variable_name == "variable_id":
-                            record["variable"] = "Multiple"
-
-                except Exception as ex:
-                    self.publog.exception("Variable could not be extracted, exception encountered")
-                    record[self.variable_name] = "none"
-            else:
-                self.publog.warning("TODO check project settings for variable extraction")
-                record[self.variable_name] = "Multiple"
-                if self.variable_name == "variable_id":
-                    record["variable"] = "Multiple"
-        else:
-            self.publog.warning("No variables were extracted (is this CF compliant?)")
-
-        geo_units = []
-        if "axes" in scanobj:
-            axes = scanobj["axes"]
-            if "lat" in axes:
-                lat = axes["lat"]
-                geo_units.append(lat["units"])
-                if 'values' not in lat.keys():
-                    record["north_degrees"] = lat['subaxes']['0']["values"][-1]
-                    record["south_degrees"] = lat['subaxes']['0']["values"][0]
-                else:
-                    record["north_degrees"] = lat["values"][-1]
-                    record["south_degrees"] = lat["values"][0]
-            if "lon" in axes:
-                lon = axes["lon"]
-                geo_units.append(lon["units"])
-                if 'values' not in lon.keys():
-                    record["east_degrees"] = lon['subaxes']['0']["values"][-1]
-                    record["west_degrees"] = lon['subaxes']['0']["values"][0]
-                else:
-                    record["east_degrees"] = lon["values"][-1]
-                    record["west_degrees"] = lon["values"][0]
-            if "time" in axes:
-                time_obj = axes["time"]
-                time_units = time_obj["units"]
-                tu_parts = []
-                if type(time_units) is str:
-                    tu_parts = time_units.split()
-                if len(tu_parts) > 2 and tu_parts[0] == "days" and tu_parts[1] == "since":
-                    proc_time = True
-                    tu_date = tu_parts[2]  # can we ignore time component?
-                    if "subaxes" in time_obj:
-                        subaxes = time_obj["subaxes"]
-                        sub_values = sorted([x for x in self.unpack_values(subaxes.values())])
-
-                        tu_start_inc = int(sub_values[0][0])
-                        tu_end_inc = int(sub_values[-1][-1])
-                    elif "values" in time_obj:
-                        tu_start_inc = time_obj["values"][0]
-                        tu_end_inc = time_obj["values"][-1]
-                    else:
-                        self.publog.warning("Time values not located...")
-                        proc_time = False
-                    if proc_time:
-                        try:
-                            days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
-                        except:
-                            tu_date = '0' + tu_date
-                            while len(tu_date.split('-')[0]) < 4:
-                                tu_date = '0' + tu_date
-                            days_since_dt = datetime.strptime(tu_date.split("T")[0], "%Y-%m-%d")
-                        dt_start = days_since_dt + timedelta(days=tu_start_inc)
-                        dt_end = days_since_dt + timedelta(days=tu_end_inc)
-                        if dt_start.microsecond >= 500000:
-                            dt_start = dt_start + timedelta(seconds=1)
-                        dt_start = dt_start.replace(microsecond=0)
-                        record["datetime_start"] = "{}Z".format(dt_start.isoformat())
-                        record["datetime_end"] = "{}Z".format(dt_end.isoformat())
-
-            if "plev" in axes:
-                plev = axes["plev"]
-                if "units" in plev and "values" in plev:
-                    record["height_units"] = plev["units"]
-                    record["height_top"] = plev["values"][0]
-                    record["height_bottom"] = plev["values"][-1]
-        else:
-            self.publog.warning("No axes extracted from data files")
+        self.set_variables(record, scanobj)
+        self.handler.set_bounds(record, scanobj)
 
     def iterate_files(self, mapdata, scandata):
         ret = []
@@ -420,7 +375,7 @@ class ESGPubMakeDataset:
 
         return ret, sz, access
 
-    def get_records(self, mapdata, scanfilename, xattrfn=None, user_project=None):
+    def get_records(self, mapdata, scanobj, xattrfn=None, user_project=None):
 
         self.user_project = user_project
         self.load_xattr(xattrfn)
@@ -429,7 +384,6 @@ class ESGPubMakeDataset:
             mapobj = json.load(open(mapdata))
         else:
             mapobj = mapdata
-        scanobj = json.load(open(scanfilename))
 
         self.get_dataset(mapobj[0][0], scanobj)
         self.update_metadata(self.dataset, scanobj)
@@ -439,16 +393,15 @@ class ESGPubMakeDataset:
         self.proc_xattr(xattrfn)
 
         self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
-        print()
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()
 
-        self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=4))
-        print()
-        scandict = self.get_scanfile_dict(scanobj['file'])
-        self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=4))
-        print()
+        #self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=1)) # Superverbose
+       
+        scandict = self.handler.get_scanfile_dict(scanobj, mapdict)
+        #self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=1))  # Superverbose
+
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access

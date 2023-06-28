@@ -4,7 +4,7 @@ import traceback
 import esgcet.logger as logger
 
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 silent = False
 verbose = False

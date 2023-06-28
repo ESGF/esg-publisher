@@ -10,7 +10,7 @@ from esgcet.mk_dataset import ESGPubMakeDataset
 from esgcet.mkd_create_ip import ESGPubMKDCreateIP
 import esgcet.logger as logger
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class ESGPubMKDCmip5(ESGPubMKDCreateIP):
@@ -20,24 +20,10 @@ class ESGPubMKDCmip5(ESGPubMKDCreateIP):
         self.DRS = DRS["cmip5"]
         self.project = "cmip5"
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
-        self.silent = silent
-        self.verbose = verbose
-        self.data_roots = data_roots
-        self.globus = globus
-        self.data_node = data_node
-        self.index_node = index_node
-        self.replica = replica
-        self.dtn = dtn
+    def __init__(self, *args, **kwargs):
+        super(ESGPubMKDCmip5, self).__init__(args, kwargs)
 
-        self.mapconv = ESGPubMapConv("")
-        self.dataset = {}
-        self.project = None
-        self.user_project = user_project
-        self.DRS = None
-        self.CONST_ATTR = None
         self.variable_name = "variable"
-        self.limit_exceeded = limit_exceeded
         self.publog = log.return_logger('Make Dataset CMIP5', self.silent, self.verbose)
 
     def get_dataset(self, mapdata, scanobj):

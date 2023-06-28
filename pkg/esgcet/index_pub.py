@@ -1,20 +1,23 @@
 from esgcet.pub_client import publisherClient
 import esgcet.logger as logger
-
 import os
 
-log = logger.Logger()
+log = logger.ESGPubLogger()
 
 
 class ESGPubIndex:
-
+    """
+    Wrapper class for push-publishing of records to the index node.
+    """
     def __init__(self, hostname, cert_fn, verbose=False, silent=False, verify=False, auth=True, arch_cfg=None):
+        """
+        Constructor, creates a "client" object
+        """
         self.silent = silent
         self.verbose = verbose
         self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
         self.publog = log.return_logger('Index Publication', silent, verbose)
         self.arch_cfg = arch_cfg
-
 
     def gen_xml(self, d):
         out = []
@@ -34,9 +37,10 @@ class ESGPubIndex:
         out.append("</doc>\n")
         return ''.join(out)
 
-
     def do_publish(self, dataset):
-
+        """ handle dataset publishing
+        dataset (list) of dictionary records
+        """
         rc = True
         for rec in dataset:
 
