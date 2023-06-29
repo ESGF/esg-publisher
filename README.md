@@ -4,6 +4,8 @@
 
 See: https://esg-publisher.readthedocs.io/en/latest
 
+This is a *deprecated-legacy* branch of the ESGF Publisher software that is compatible with Python 2.7.  Everyone should upgrade.  This branch will be archived in the near future.
+
 ### Release notes:
 
 #### v5.1.0-b11-13
