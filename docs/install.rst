@@ -22,7 +22,7 @@ Pip Install
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
     conda activate esgf-pub
-    pip install git+https://github.com/ESGF/esg-publisher.git@xarray#egg=esgcet  # Until the release is published to pypi.org
+    pip install esgcet 
     esgpublish --version #  Ensure you have upgraded to v5.2.0rc2  # Must specify version for Beta release
 
 
@@ -32,13 +32,14 @@ Installing esgcet via git
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
-    git clone http://github.com/ESGF/esg-publisher.git -b xarray
+    git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
-    cd pkg
-    python3 setup.py install
+    git checkout refactor-esgf
+    cd src/python
+    pip install -e .  # You can modify the source in place
+    esgpublish --version  # check v5.2.0 has 
 
-
-Now you will be able to call all commands in this package from any directory. A default config file, ``esg.ini`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
+Now you will be able to call all commands in this package from any directory. A default config file, ``esg.yaml`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
