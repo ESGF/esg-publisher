@@ -1,6 +1,10 @@
 Autocurator
 ===========
 
+``Autocurator`` is an optional tool for scanning data. In some test cases it has shown to be faster than the Python-centric approach of using ``Xarray``.
+In the default workflow ``esgpublish`` uses a subprocess to call the executable over each input file then open its output in ``.json`` format. 
+Additional it can be called in custom workflows using the individual CLI publishing modules.
+
 Install
 -------
 

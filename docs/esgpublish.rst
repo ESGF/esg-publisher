@@ -15,12 +15,18 @@ The mapfile (``--map``) is the only truly *required* argumement, as other are ty
 You can also use ``--help`` to see::
 
         $ esgpublish --help
-        usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--esgmigrate]
-                          [--json JSON] [--data-node DATA_NODE]
-                          [--index-node INDEX_NODE] [--certificate CERT]
-                          [--project PROJ] [--cmor-tables CMOR_PATH]
-                          [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
-                          [--ini CFG] [--silent] [--verbose] [--no-auth] [--verify]
+            usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--esgmigrate]
+                           [--json JSON] [--data-node DATA_NODE]
+                           [--index-node INDEX_NODE] [--certificate CERT]
+                           [--project PROJ] [--cmor-tables CMOR_PATH]
+                           [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
+                           [--config CFG] [--silent] [--verbose] [--no-auth] [--verify]
+                           [--version] [--xarray]
+
+            Publish data sets to ESGF databases.
+
+            options:
+
 
         Publish data sets to ESGF databases.
 
@@ -47,7 +53,7 @@ You can also use ``--help`` to see::
           --verbose             Enable verbose mode.
           --no-auth             Run publisher without certificate, only works on certain index nodes.
           --verify              Toggle verification for publishing, default is off.
-
+          --xarray              Use Xarray to extract metadata even if Autocurator is configured.
 
 This command can handle a singular mapfile passed to it, a file containing a list of mapfiles (with full paths), a directory of mapfiles, or a directory of lists of mapfiles.
 You do not need to specify how you are passing mapfiles, but all of them must be for the same project in order for them to be published with the correct metadata.
@@ -57,6 +63,9 @@ NOTE: If, in your config file, you have specified a directory for ``autocurator`
     export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 
 If you do not run this and are not using the conda installed ``autocurator``, the program will not work.
+
+.. note::
+    Using the ``--xarray`` argument will override ``autocurator`` whether specified in the config file or the ``--autocurator`` argument.
 
 .. warning::
     Please do not attempt to run `esg-publisher` commands with a legacy esg.ini file using the ``-i`` argumement.   You will need to migrate the config using :ref:`migrate`.
