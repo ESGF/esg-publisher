@@ -23,7 +23,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.2.0rc2  # Must specify version for Beta release
+    esgpublish --version #  Ensure you have upgraded to v5.2.0
 
 
 Installing esgcet via git
@@ -34,7 +34,7 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
 
     git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
-    git checkout refactor-esgf
+    git checkout refactor-esgf # NOTE this is a temporary fix.
     cd src/python
     pip install -e .  # You can modify the source in place
     esgpublish --version  # check v5.2.0 has 
