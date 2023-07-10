@@ -34,10 +34,10 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
 
     git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
-    git checkout refactor-esgf # NOTE this is a temporary fix.
+    git checkout refactor-esgf # NOTE this is a temporary fix prior to a merge into the master branch
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # check v5.2.0 has 
+    esgpublish --version  # check v5.2.0 has been installed
 
 Now you will be able to call all commands in this package from any directory. A default config file, ``esg.yaml`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
 
