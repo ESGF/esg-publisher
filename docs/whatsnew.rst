@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v5.2.0
+------
+
+* Migrated configuration from `.ini` format to `.yaml`.  Use `esgmigrate` to convert existing `.ini` files.
+* Added XArray for NetCDF file reading.  Disable autocurator in settings to use or add `--xarray`
+* Additionally refactoring done to support the above features.
+
 b5.1.0-b13
 ----------
 
