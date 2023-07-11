@@ -1,12 +1,17 @@
 # ESGF Publisher
 
-`v5.1.0b13` is the latest Pre-release version of the ESGF Publisher.  We recommend everyone to upgrade and test this version for CMIP6 data.
+This is a *deprecated-legacy* branch of the ESGF Publisher software that is compatible with Python 2.7.  Everyone should upgrade.  This branch will be archived in the near future.
+
+`v5.2.0` is the latest release of the ESGF Publisher.  We recommend everyone to upgrade to this version.
 
 See: https://esg-publisher.readthedocs.io/en/latest
 
-This is a *deprecated-legacy* branch of the ESGF Publisher software that is compatible with Python 2.7.  Everyone should upgrade.  This branch will be archived in the near future.
-
 ### Release notes:
+
+#### v5.2.0 - Major release
+* Migrated configuration from `.ini` format to `.yaml`.  Use `esgmigrate` to convert existing `.ini` files.
+*  Added XArray for NetCDF file reading.  Disable autocurator in settings to use or add `--xarray`
+* Additionally refactoring done to support the above features.
 
 #### v5.1.0-b11-13
 
@@ -62,7 +67,7 @@ This is a *deprecated-legacy* branch of the ESGF Publisher software that is comp
 
 * Cleans up output (verbose, silent) modes for some of the functionality
 
-#### v5.0.0a11 
+#### v5.0.0a11
 
 * Corrects error with activity check
 
@@ -74,7 +79,7 @@ This is a *deprecated-legacy* branch of the ESGF Publisher software that is comp
 ## Legacy version v3.*, v4.* (python3 pre-release)
 
 
-https://esgf.github.io/esg-publisher 
+https://esgf.github.io/esg-publisher
 
 Requirements:  most requirements are listed in requirements.txt.  Other requirements must be deployed via conda, include cdms2, cdtime and cmor (for CMIP6, other projects coming soon).  
 
@@ -116,7 +121,7 @@ Note - logging controlled now by the [DEFAULT] section of esg.ini. If you have u
 
 16 August 2017 - version 3.2.6
 
-* Support for CMIP6 
+* Support for CMIP6
 - integration of PrePARE
 - PID creation via RabbitMQ
 - cdf2cim included
@@ -153,8 +158,6 @@ Previous versions:
 
  * Warning message for esgscan_directory failues
  * --nodbwrite flag to enable "dry run" for fileO validation without writing to postgreSQL database
- * Additional utility scripts: 
+ * Additional utility scripts:
       meta_synchro.py - metadata syncronization checks for PGSQL, Thredds and SOLR
      gen_versions.py, add_checksums_to_map.sh  - used for replica publication (at LLNL/PCMDI)
-    
-
