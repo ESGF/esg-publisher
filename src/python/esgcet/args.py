@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import esgcet.esgmigrate as em
 import esgcet.logger as logger
+import esgcet
 import yaml
 
 log = logger.ESGPubLogger()
