@@ -1,7 +1,7 @@
 import re
 import urlparse
 
-from ConfigParser import ConfigParser
+from configparser import configparser
 
 """
 Class to read the relevant parts of esg.ini
@@ -14,7 +14,7 @@ class Config(object):
     
     def __init__(self, path = default_config_path):
         self.path = path
-        self.cp = ConfigParser()
+        self.cp = configparser()
         assert self.cp.read(path)
 
     _re_keyval = re.compile('(.*)\s+\|\s+(.*?)\s*$')

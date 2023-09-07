@@ -6,7 +6,7 @@ import getopt
 import textwrap
 import re
 import getpass
-from ConfigParser import RawConfigParser, SafeConfigParser, DEFAULTSECT, NoOptionError
+from configparser import RawConfigParser, ConfigParser, DEFAULTSECT, NoOptionError
 import subprocess
 import urlparse
 import socket
@@ -287,10 +287,10 @@ def setupHandler(packageDir, packageName, option, handlerList, handlerEntryPoint
 
 # Note: this is duplicated from esgcet.config, but we don't know that it can be
 # imported yet.
-class SaneConfigParser(SafeConfigParser):
+class SaneConfigParser(ConfigParser):
 
     def __init__(self, name, defaults=None):
-        SafeConfigParser.__init__(self, defaults=defaults)
+        ConfigParser.__init__(self, defaults=defaults)
         self.name = name
 
     def get(self, section, option, raw=False, vars=None, **options):
@@ -307,7 +307,7 @@ class SaneConfigParser(SafeConfigParser):
         vars['pythonbin'] = pythonbin
 
         try:
-            value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
+            value = ConfigParser.get(self, section, option, raw=raw, vars=vars)
         except NoOptionError:
             if options.has_key('default'):
                 value = options['default']
@@ -317,14 +317,14 @@ class SaneConfigParser(SafeConfigParser):
 
     def getboolean(self, section, option, default=None):
         try:
-            value = SafeConfigParser.getboolean(self, section, option)
+            value = ConfigParser.getboolean(self, section, option)
         except AttributeError:
             value = default
         return value
 
     def getint(self, section, option, default=None):
         try:
-            value = SafeConfigParser.getint(self, section, option)
+            value = ConfigParser.getint(self, section, option)
         except AttributeError:
             value = default
         return value
@@ -524,7 +524,7 @@ def main(argv):
             if not os.path.exists(configname):
                 configdir = setupconfig()
 
-            config = SafeConfigParser()
+            config = ConfigParser()
             config.read(configname)
 
             # Create owner of esgcet database

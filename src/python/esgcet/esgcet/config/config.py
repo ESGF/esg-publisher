@@ -6,7 +6,7 @@ import string
 import logging
 import re
 import urlparse
-from ConfigParser import SafeConfigParser, NoOptionError, DEFAULTSECT
+from configparser import ConfigParser, NoOptionError, DEFAULTSECT
 from xml.etree.ElementTree import parse
 from esgcet.exceptions import *
 from registry import register, registerHandlerName, setRegisterSearchOrder, getRegistry, ESGCET_PROJECT_HANDLER_GROUP, ESGCET_FORMAT_HANDLER_GROUP, ESGCET_METADATA_HANDLER_GROUP, ESGCET_THREDDS_CATALOG_HOOK_GROUP
@@ -30,10 +30,10 @@ HANDLER_OPTION = "handler"
 
 config = None
 
-class SaneConfigParser(SafeConfigParser):
+class SaneConfigParser(ConfigParser):
 
     def __init__(self, name, defaults=None):
-        SafeConfigParser.__init__(self, defaults=defaults)
+        ConfigParser.__init__(self, defaults=defaults)
         self.name = name
 
     def get(self, section, option, raw=False, vars=None, **options):
@@ -53,7 +53,7 @@ class SaneConfigParser(SafeConfigParser):
             if option == 'dburl':
                 value = self.getdburl(section, raw=raw, vars=vars)
             else:
-                value = SafeConfigParser.get(self, section, option, raw=raw, vars=vars)
+                value = ConfigParser.get(self, section, option, raw=raw, vars=vars)
         except NoOptionError:
             if options.has_key('default'):
                 value = options['default']
@@ -63,7 +63,7 @@ class SaneConfigParser(SafeConfigParser):
 
     def getboolean(self, section, option, default=None):
         try:
-            value = SafeConfigParser.getboolean(self, section, option)
+            value = ConfigParser.getboolean(self, section, option)
         except AttributeError:
             value = default
         except ESGPublishError:
@@ -72,7 +72,7 @@ class SaneConfigParser(SafeConfigParser):
 
     def getint(self, section, option, default=None):
         try:
-            value = SafeConfigParser.getint(self, section, option)
+            value = ConfigParser.getint(self, section, option)
         except AttributeError:
             value = default
         except ESGPublishError:
@@ -81,7 +81,7 @@ class SaneConfigParser(SafeConfigParser):
 
     def getfloat(self, section, option, default=None):
         try:
-            value = SafeConfigParser.getfloat(self, section, option)
+            value = ConfigParser.getfloat(self, section, option)
         except AttributeError:
             value = default
         except ESGPublishError:
@@ -89,7 +89,7 @@ class SaneConfigParser(SafeConfigParser):
         return value
 
     def getdburl(self, section, raw=False, vars=None):
-        value = SafeConfigParser.get(self, section, 'dburl', raw=raw, vars=vars)
+        value = ConfigParser.get(self, section, 'dburl', raw=raw, vars=vars)
         fields = list(urlparse.urlparse(value))
         if fields[0] in ['postgres', 'postgresql']:
             if sqlalchemy_version >= '0.6':
@@ -266,7 +266,7 @@ def loadConfig(init_dir, project=None, load_projects=True):
     """
     Load the 'ini' style configuration file.
 
-    Returns a ConfigParser.SafeConfigParser object with the configuration file(s) preloaded.
+    Returns a ConfigParser.ConfigParser object with the configuration file(s) preloaded.
     If the configuration has already been read, the existing parser is returned.
 
     Default is to load esg.ini and all esg.<project>.ini files from init_dir.

@@ -20,7 +20,7 @@ class Config(object):
         """
         Parse config file into dictionary, after pre-setting the "topdir" entry
         """
-        conf = ConfigParser.SafeConfigParser()        
+        conf = ConfigParser.ConfigParser()        
         conf.set("DEFAULT", "topdir", self.top_dir)
         conf.read(os.path.join(self.top_dir, filename))
         return dict(conf.items("DEFAULT"))
