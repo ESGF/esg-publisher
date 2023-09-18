@@ -1,10 +1,13 @@
 # ESGF Publisher
 
-`v5.2.0` is the latest release of the ESGF Publisher.  We recommend everyone to upgrade to this version.
+`v5.2.1` is the latest release of the ESGF Publisher.  We recommend everyone to upgrade to this version.
 
-See: https://esg-publisher.readthedocs.io/en/latest
+See: https://esg-publisher.readthedocs.io/
 
 ### Release notes:
+
+#### v5.2.1
+* **BUGFIX**:  Missing `import` caused ``esgpublish`` calls to fail in most cases.
 
 #### v5.2.0 - Major release
 * Migrated configuration from `.ini` format to `.yaml`.  Use `esgmigrate` to convert existing `.ini` files.

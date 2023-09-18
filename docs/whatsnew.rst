@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v5.2.1
+------
+* **BUGFIX**:  Missing `import` caused ``esgpublish`` calls to fail in most cases.
+
 v5.2.0
 ------
 
