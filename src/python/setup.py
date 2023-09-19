@@ -16,13 +16,14 @@ HOME = str(Path.home())
 FULLPATH = HOME + '/.esg'
 DEFAULT_ESGINI = '/esg/config/esgcet'
 
-if not os.path.exists(FULLPATH):
-    os.makedirs(FULLPATH)
+# if not os.path.exists(FULLPATH):
+#     os.makedirs(FULLPATH)
 
-if os.path.exists(FULLPATH + "/esg.yaml"):
-    make_config = False
-else:
-    make_config = True
+# if os.path.exists(FULLPATH + "/esg.yaml"):
+#     make_config = False
+# else:
+
+make_config = True
 
 if make_config:
     setup(
@@ -53,9 +54,7 @@ if make_config:
                                           'esgupdate=esgcet.esgupdate:main',
                                           'esgmapconv=esgcet.esgmapconv:main',
                                           'esgmigrate=esgcet.migratecmd:main',
-                                          'esgunpublish=esgcet.esgunpublish:main']},
-        data_files=[(FULLPATH, ['esg.yaml'])]
-
+                                          'esgunpublish=esgcet.esgunpublish:main']}
     )
 else:
     setup(

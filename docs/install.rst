@@ -23,7 +23,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.2.0
+    esgpublish --version #  Ensure you have upgraded to v5.2.1
 
 
 Installing esgcet via git
@@ -37,15 +37,26 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     git checkout refactor-esgf # NOTE this is a temporary fix prior to a merge into the master branch
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # check v5.2.0 has been installed
+    esgpublish --version  # Confirm that v5.2.1 has been installed
 
-Now you will be able to call all commands in this package from any directory. A default config file, ``esg.yaml`` will populate in ``$HOME/.esg`` where ``$HOME`` is your home directory.
+Now you will be able to call all commands in this package from any directory.  
+
+
 
 NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
 
 Config File (esg.yaml)
----------------------
+----------------------
+
+Starting with ``v5.2.0`` the ESGF Publisher uses a .yaml file for configuration.  Download a copy of the default config file ``esg.yaml`` to the default directory,
+ or see below regarding migrating a previous config  ::
+
+   wget https://raw.githubusercontent.com/ESGF/esg-publisher/refactor/src/python/esg.yaml
+   mkdir $HOME/.esg
+   cp esg.yaml $HOME/.esg
+
+
 
 The config file will contain the following settings:
 
