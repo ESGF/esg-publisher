@@ -1,2 +1,2 @@
-sphinx_rtd_theme
+sphinx-rtd-theme
 docutils==0.16
