@@ -52,7 +52,8 @@ class ESGPubMapConv:
                 parts = x.split('=')
                 if parts[0] == 'mod_time':
                     rec["timestamp"] = datetime.utcfromtimestamp(float(parts[1])).isoformat()[0:19] + "Z"
-                    assert(rec["timestamp"].find('.') == -1)
+                    if rec["timestamp"].find('.') != -1:
+                        raise RuntimeError()
                 else:
                     rec[parts[0]] = parts[1]
             ret.append(rec)
