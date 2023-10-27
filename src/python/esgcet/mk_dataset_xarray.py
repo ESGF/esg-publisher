@@ -62,10 +62,13 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             record["datetime_end"] = self._get_time_str(ti[-1].values)
         # plev
         if "plev" in scanobj.coords:
-            plev = scanobj.coords["plev"]
-            record["height_top"] = plev[0].values.item() 
-            record["height_bottom"] = plev[-1].values.item() 
-            geo_units.append(plev.units)
+            try:
+                plev = scanobj.coords["plev"]
+                record["height_top"] = plev[0].values.item() 
+                record["height_bottom"] = plev[-1].values.item() 
+                geo_units.append(plev.units)
+            except:
+                self.publog.warn("plev found but not an expected type")
         if len(geo_units) > 0:
             record["geo_units"] = geo_units
             
