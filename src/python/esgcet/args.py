@@ -67,12 +67,12 @@ class PublisherArgs:
             conf = yaml.load(fd, Loader=yaml.SafeLoader)
         return conf
 
-    def get_dict(self,  fn_project):
+    def get_dict(self,  fn_project, fake_args=None):
         """
         Return a dict containing the publisher arguments to use:
         fn_project (string)  Specified project if pre-parsed.
         """
-        pub = self.get_args()
+
         json_file = pub.json
 
         if pub.migrate:
@@ -235,14 +235,16 @@ class PublisherArgs:
         else:
             auth = True
 
-        try:
+        # try:
+
+        non_nc = config.get('non_netcdf')
+        
+        if not type(non_nc) is bool: 
             non_netcdf = config['non_netcdf'].lower()
             if 'yes' in non_netcdf or 'true' in non_netcdf:
                 non_nc = True
             else:
                 non_nc = False
-        except:
-            non_nc = False
 
         try:
             mountpoints = config['mountpoint_map']

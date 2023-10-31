@@ -44,8 +44,9 @@ class ESGPubMakeDataset:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
-
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+        self.dataset['project'] = project
+        
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, silent=False, verbose=False, limit_exceeded=False, user_project=None):
         """
         Constructor
 
@@ -82,7 +83,8 @@ class ESGPubMakeDataset:
         self.publog = log.return_logger('Make Dataset', self.silent, self.verbose)
         self.xattr = None
         self.tracking_id_set = set()
-        self.handler = handler_class(self.publog)
+        if handler_class:
+            self.handler = handler_class(self.publog)
 
     def set_project(self, project_in):
         """
