@@ -147,7 +147,8 @@ class ESGPubMakeDataset:
 
         facets = self.DRS  # depends on Init_project to initialize
 
-        assert(facets)
+        if not facets:
+            raise RuntimeError()
         if projkey == "cordex":
             self.variable_name = "variable"
 

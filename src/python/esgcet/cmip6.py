@@ -31,8 +31,10 @@ class cmip6(GenericPublisher):
     def prepare_internal(self, json_map, cmor_tables):
         from cmip6_cv import PrePARE
         try:
-            assert(len(cmor_tables) > 0, f"{cmor_tables} are specified from config")
-            assert(os.path.isdir(cmor_tables), f"{cmor_tables} exists and is a directory")
+            if len(cmor_tables) <= 0:
+                raise RuntimeError(f"{cmor_tables} are not specified from config")
+            if not os.path.isdir(cmor_tables):
+                raise RuntimeError(f"{cmor_tables} is not a directory")
             self.publog.info("Iterating through filenames for PrePARE (internal version)...")
             validator = PrePARE.PrePARE
             for info in json_map:
