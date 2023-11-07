@@ -72,7 +72,7 @@ class PublisherArgs:
         Return a dict containing the publisher arguments to use:
         fn_project (string)  Specified project if pre-parsed.
         """
-
+        pub = self.get_args()
         json_file = pub.json
 
         if pub.migrate:
@@ -97,6 +97,7 @@ class PublisherArgs:
             except:
                 project = fn_project
 
+        verbose = False
         if not pub.silent:
             try:
                 s = config['silent']
