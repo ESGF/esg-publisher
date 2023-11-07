@@ -19,7 +19,6 @@ def check_files(files):
 
 def run(fullmap, pub_args):
 
-    publog.info("TEST")
         # SETUP
     split_map = fullmap.split("/")
     fname = split_map[-1]
@@ -34,7 +33,8 @@ def run(fullmap, pub_args):
     argdict = pub_args.get_dict(project_name)
     argdict["fullmap"] = fullmap
 
-    publog.info(argdict)
+    if argdict.verbose:
+        publog.info(argdict)
     if "proj" in argdict:
         project_name = argdict["proj"]
     else:

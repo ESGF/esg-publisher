@@ -18,7 +18,6 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         ret = {}
         for rec in mapdata:
             fn = rec['file']
-            print(f"TEST: {fn}")
             ds = netCDF4.Dataset(fn)
             ret[fn] = {"tracking_id": ds.tracking_id}
         return ret
