@@ -1,6 +1,8 @@
 import xarray, netCDF4
 from esgcet.handler_base import ESGPubHandlerBase
 import os.path
+import numpy as np
+
 class ESGPubXArrayHandler(ESGPubHandlerBase):
 
     @staticmethod
@@ -38,23 +40,44 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             return x[:idx] + 'Z'
         else:
             return timeval.item().isoformat() + "Z"
-
+        
+    def _get_min_max_bounds(self, latlon):
+        bigarr = latlon[0] + latlon[-1]
+        return float(np.min(bigarr)), float(np.max(bigarr))
+    
     def set_bounds(self, record, scanobj):
 
         geo_units = []
         # latitude
         if "latitude" in scanobj.coords:
             lat = scanobj.coords["latitude"]
-            record["north_degrees"] = lat[-1].values.item()
-            record["south_degrees"] = lat[0].values.item()
-            geo_units.append(lat.units)
+            if len(lat) > 0:
+                if isinstance(lat[0].values, (list, np.ndarray)):
+                    min, max = self._get_min_max_bounds(lat)
+                    record["north_degrees"] = min
+                    record["south_degrees"] = max
+
+                else:    
+                    record["north_degrees"] = lat[-1].values.item()
+                    record["south_degrees"] = lat[0].values.item()
+                geo_units.append(lat.units)
+            else:
+                self.publog.warn("Latitude found but len 0")
         # longitude
         if "longitude" in scanobj.coords:
             lon = scanobj.coords["longitude"]
-            record["east_degrees"] = lon[-1].values.item()
-            record["west_degrees"] = lon[0].values.item()
-            geo_units.append(lon.units)
-        # time
+            if len(lon) > 0:
+                if isinstance(lon[0].values, (list, np.ndarray)):
+                    min, max = self._get_min_max_bounds(lon)   
+                    record["east_degrees"] = min
+                    record["west_degrees"] = max
+                else:
+                    record["east_degrees"] = lon[-1].values.item()
+                    record["west_degrees"] = lon[0].values.item()
+                geo_units.append(lon.units)
+            else:
+                self.publog.warn("Latitude found but len 0")
+                # time
         if "time" in scanobj.coords:
             ti = scanobj.coords["time"]
             record["datetime_start"] = self._get_time_str(ti[0].values)

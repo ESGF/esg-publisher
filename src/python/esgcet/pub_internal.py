@@ -33,7 +33,7 @@ def run(fullmap, pub_args):
     argdict = pub_args.get_dict(project_name)
     argdict["fullmap"] = fullmap
 
-    if argdict.verbose:
+    if argdict["verbose"]:
         publog.info(argdict)
     if "proj" in argdict:
         project_name = argdict["proj"]
