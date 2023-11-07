@@ -8,6 +8,7 @@ from pathlib import Path
 import json
 import esgcet.logger as logger
 import yaml
+import traceback
 
 log = logger.ESGPubLogger()
 
@@ -41,7 +42,17 @@ class ESGPubMigrate(object):
         cf_dict = {}
         for key in cf_user:
             if key in MIGRATE_KEYS:
-                cf_dict[key] = json.loads(cf_user[key])
+                cf_val =  cf_user[key]
+                if type(cf_val) is str and len(cf_val) > 1:
+                    try:
+                        print(cf_val)
+                        cf_json = json.loads(cf_user[key])
+                        cf_dict[key] = cf_json
+                    except BaseException as ex:
+                        self.publog.warn(f"Expected JSON string for {key} could not be parsed")
+                        traceback.print_exc()
+                else:
+                    self.publog.warn(f"{key} expected in JSON format, has {cf_val}")
             else:
                 cf_dict[key] = cf_user[key]
         del cf_dict['note']
@@ -66,7 +77,7 @@ class ESGPubMigrate(object):
 
     def migrate(self, project=None):
 
-        if not os.path.exists(self.ini_path + "esg.ini"):
+        if not os.path.exists(os.path.join(self.ini_path, "esg.ini")):
             self.publog.error("Old config " + self.ini_path + "esg.ini not found or unreadable.")
             exit(1)
 
