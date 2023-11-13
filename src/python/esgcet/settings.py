@@ -21,7 +21,7 @@ DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
     'create-ip-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'],
     'create-ip-var': ['project', 'product', 'institute', 'model', 'source_id', 'time_frequency', 'realm', 'variable'],
         'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble'],
-       'obs4MIPs' : ["activity_id", "institution_id", "source_id", "frequency", "variable_id", "grid_label"] }
+       'obs4mips' : ["activity_id", "institution_id", "source_id", "frequency", "variable_id", "grid_label"] }
 
 SPLIT_FACET = { 'e3sm' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
 
@@ -54,7 +54,7 @@ GA = { 'cmip6' : ['frequency',
 'realm_drs',
 'Conventions',
 'creation_date'],
-"obs4MIPs" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", "institution", "source",  "source_type", "contact", "region", "data_specs_version",  "further_info_url", "source_version_number"]
+"obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", "institution", "source",  "source_type", "contact", "region", "data_specs_version",  "further_info_url", "source_version_number"]
 }
 
 GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}

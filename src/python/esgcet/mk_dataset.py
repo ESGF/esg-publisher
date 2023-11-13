@@ -180,7 +180,7 @@ class ESGPubMakeDataset:
                 if facetkey in scandata:
                     facetval = scandata[facetkey]
                     # is this a delimited attribute ?
-                    if facetkey in GA_DELIMITED[projkey]:
+                    if projkey in GA_DELIMITED and facetkey in GA_DELIMITED[projkey]:
                         delimiter = GA_DELIMITED[projkey][facetkey]
                         self.dataset[facetkey] = facetval.split(delimiter)
                     else:
