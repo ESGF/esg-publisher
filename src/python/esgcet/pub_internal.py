@@ -6,6 +6,7 @@ import esgcet.logger as logger
 log = logger.ESGPubLogger()
 publog = log.return_logger('Publisher-Main')
 
+from pathlib import Path
 
 def check_files(files):
     for file in files:
@@ -91,11 +92,13 @@ def main():
     rc = True
     for m in maps:
         if os.path.isdir(m):
+            mappath = Path(m)
             files = os.listdir(m)
             for f in files:
-                if os.path.isdir(m + f):
-                    continue
-                rc = rc and run(m + f, pub_args)
+                fullmappath = mappath / f
+                if os.path.isdir(fullmappath):
+                    continue # Do not recurse subdirectories
+                rc = rc and run(str(fullmappath), pub_args)
         else:
             myfile = open(m)
             ismap = False
