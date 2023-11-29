@@ -56,22 +56,21 @@ Starting with ``v5.2.0`` the ESGF Publisher uses a .yaml file for configuration.
    mkdir $HOME/.esg
    cp esg.yaml $HOME/.esg
 
-
-
-The config file will contain the following settings:
+The config file will contain the following settings, most required settings are also available as command line arguments:
 
  * data_node
-    * Required. This is the ESGF node at which the data is stored that you are publishing. It will be concatenated with the dataset_id to form the full id for your dataset.
+    * Required. This is the ESGF node (Fully-Qualified Domain Name) at which the data is stored that you are publishing. It will be concatenated with the dataset_id (instance_id) to form the full id for your dataset.
  * index_node
-    * Required. This is the ESGF node where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
+    * Required. This is the ESGF node (Fully-Qualified Domain Name) where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
  * cmor_path
-    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data. Example: /usr/local/cmip6-cmor-tables/Tables
+    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data. Example: /usr/local/cmip6-cmor-tables/Tables  This is either the cmor tables repo cloned from github or prepared using the ``esgfetctables`` tool part of ``esgf-prepare``
  * autoc_path
     * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots
-    * Required. Must be in a json string loadable by python. Maps file roots to names that appears in urls.
+    * Required. These are paths where you place your project data for publication, typically within mounted large storage systems.  Each entry maps the path to a logical subdirectory within a data url on the datanode.  Please note that these names also appear in data node setup within ``esgf-docker`` configuations. (Ansible playbooks or Helm charts).
  * mountpoint_map
-    * Optional. Must be in yaml dictionary format. Changes specified sym link file roots in mapfile to actual file roots like so: /symlink/dir: "/actual/path"
+    * Optional. Must be in yaml dictionary format.  Specifies an additonal mapping for the data root mounts that appear in the input mapfiles to the mounted data root on the host running the publisher, in the event mapfile generation occurred on a different host where the data resided at a diff
+    Changes specified "aliased" roots in mapfile to actual file roots like so: /source/path/in/mapfiles: "/actual/path/to/data"
  * cert
     * Required, unless running in ``--no-auth`` mode. This is the full path to the certificate file used for publishing. Default assumes a file "cert.pem" in your current directory. Replace to override.
  * test
@@ -129,12 +128,11 @@ The following contains example ``.yaml`` code and configures the *primavera* pro
 
 ..  code-block:: yaml
 
-   autoc_path: autocurator
    cmip6_clone: primavera
    cmor_path: /path/to/cmip6-cmor-tables/Tables
    data_node: esgf-fake-test.llnl.gov
    data_roots:
-      /Users/ames4/datatree: data
+      /mounted/path/to/data: data_in_url
    data_transfer_node: aimsdtn2.llnl.gov
    force_prepare: 'false'
    globus_uuid: 415a6320-e49c-11e5-9798-22000b9da45e
@@ -152,7 +150,6 @@ The following contains example ``.yaml`` code and configures the *primavera* pro
    silent: 'false'
    skip_prepare: 'true'
    test: 'true'
-   cmip_clone: primaver
    user_project_config:
       primavera:
          CONST_ATTR:
