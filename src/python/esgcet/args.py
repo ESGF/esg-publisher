@@ -238,7 +238,7 @@ class PublisherArgs:
 
         # try:
 
-        non_nc = config.get('non_netcdf')
+        non_nc = config.get('non_netcdf', False)
         
         if not type(non_nc) is bool: 
             non_netcdf = config['non_netcdf'].lower()
