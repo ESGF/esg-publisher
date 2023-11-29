@@ -21,7 +21,11 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         for rec in mapdata:
             fn = rec['file']
             ds = netCDF4.Dataset(fn)
-            ret[fn] = {"tracking_id": ds.tracking_id}
+            try:
+                ret[fn] = {"tracking_id": ds.tracking_id}
+            except:
+                self.publog.warn("Tracking ID not found")
+                ret[fn] = {}
         return ret
     
     def get_variables(self, scanobj):
