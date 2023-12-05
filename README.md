@@ -7,8 +7,9 @@ See: https://esg-publisher.readthedocs.io/
 ### Release notes:
 
 #### v5.2.2
-* **BUGFIX**:  Fix path argument issues
+* **BUGFIX**: Fix path argument issues
 * **BUGFIX**: Several issues with reading time bounds and required tracking_id with xarray
+* Bug fixes for user-defined project and non-netCDF data support.
 * Added example Jupyter Notebooks (see /notebooks)
 
 
