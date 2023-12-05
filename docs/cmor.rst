@@ -1,7 +1,7 @@
-CMOR
-====
+PrePARE
+=======
 
-Before running the publisher for CMIP6, you will need to obtain a directory of CMOR tables, used by PrePARE to check the metadata of your files.
+Before running the publisher for CMIP6, you will need to obtain a directory of CMOR Tables, used by PrePARE to check the metadata of your files.
 You can get this directory either using ``esgprep`` or by cloning the git repository.  CMOR/PrePARE is available for Linux and MacOS Intel.  Mac Apple M1 systems are not currently supported.
 
 NOTE: ``esgprep`` uses python 2.6 or greater, but less than python 3.0. Configure your virtual environment as needed.

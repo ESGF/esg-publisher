@@ -33,8 +33,10 @@ If you have conda on a Linux system you can install the publisher wih the follow
    esgupdate
    esgindexpub
    esgunpublish
+   notebooks
    troubleshooting
    contributing
+
 
 
 

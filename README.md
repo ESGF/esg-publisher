@@ -1,10 +1,16 @@
 # ESGF Publisher
 
-`v5.2.1` is the latest release of the ESGF Publisher.  We recommend everyone to upgrade to this version.
+`v5.2.2` is the latest release of the ESGF Publisher.  We recommend everyone to upgrade to this version.
 
 See: https://esg-publisher.readthedocs.io/
 
 ### Release notes:
+
+#### v5.2.2
+* **BUGFIX**:  Fix path argument issues
+* **BUGFIX**: Several issues with reading time bounds and required tracking_id with xarray
+* Added example Jupyter Notebooks (see /notebooks)
+
 
 #### v5.2.1
 * **BUGFIX**:  Missing `import` caused ``esgpublish`` calls to fail in most cases.
