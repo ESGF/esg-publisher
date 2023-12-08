@@ -27,6 +27,7 @@ class cmip6(GenericPublisher):
         else:
             self.skip_prepare = argdict["skip_prepare"]
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
+        self._disable_citation = argdict["disable_citation"]
 
     def prepare_internal(self, json_map, cmor_tables):
         from cmip6_cv import PrePARE
@@ -50,7 +51,7 @@ class cmip6(GenericPublisher):
       
         pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test,
                             silent=self.silent, verbose=self.verbose,
-                            project_family='CMIP6')
+                            project_family='CMIP6', disable_cite=self._disable_citation)
         if self.cmor_tables:
             check = FieldCheck(self.cmor_tables, silent=self.silent)
             try:

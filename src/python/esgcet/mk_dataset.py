@@ -46,7 +46,7 @@ class ESGPubMakeDataset:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
         
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
         """
         Constructor
 
@@ -85,6 +85,7 @@ class ESGPubMakeDataset:
         self.tracking_id_set = set()
         if handler_class:
             self.handler = handler_class(self.publog)
+        self._disable_further_info = disable_further_info
 
     def set_project(self, project_in):
         """
@@ -168,8 +169,12 @@ class ESGPubMakeDataset:
         self.const_attr()
         if not 'project' in self.dataset:
             self.dataset['project'] = priorkey
-
-
+        if self._disable_further_info:
+            try:
+                self.dataset.pop("further_info_url")
+            except:
+                pass
+            
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
         projkey = proj.lower()

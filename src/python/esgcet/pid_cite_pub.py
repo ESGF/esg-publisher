@@ -15,7 +15,7 @@ class ESGPubPidCite(object):
     """ for PID services wraps calls to obtain a PID, add to records and generate citiation metadata """
 
     def __init__(self, ds_recs, pid_creds, data_node, test=False, silent=False, verbose=False, pid_prefix=PID_PREFIX,
-                 project_family=None):
+                 project_family=None, disable_cite=False):
         """ Constructor
             ds_rec - a dataset record (dictionary/json)
             pid_creds - credentials typically loaded from config file, contains PID server, password, etc.
@@ -32,6 +32,7 @@ class ESGPubPidCite(object):
         self.project_family = project_family
         self.data_node = data_node
         self.publog = log.return_logger('PID Citation', silent, verbose)
+        self._disable_cite = disable_cite
 
     def establish_pid_connection(self):
         """Establish a connection to the PID service
@@ -178,14 +179,22 @@ class ESGPubPidCite(object):
             keystr = 'test'
         else:
             keystr = 'prod'
+
+        
+        dset_rec['pid'] = self.dataset_pid
+        if not (dset_rec['type'] == 'File'):
+            dset_rec['xlink'].append(PID_URL.format(self.dataset_pid))
+
+        if self._disable_cite:
+            self.publog.debug("Citation disabled")
+            return
+
         citation_url = CITATION_URLS[project][keystr].format(dset_rec['master_id'], dset_rec['version'])
 
         dset_rec['citation_url'] = citation_url
         if not (dset_rec['type'] == 'File'):
             dset_rec['xlink'] = ['{}|Citation|citation'.format(citation_url)]
-        dset_rec['pid'] = self.dataset_pid
-        if not (dset_rec['type'] == 'File'):
-            dset_rec['xlink'].append(PID_URL.format(self.dataset_pid))
+
         self.ds_records[index] = dset_rec
 
     def do_pidcite(self):

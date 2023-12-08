@@ -177,6 +177,8 @@ class PublisherArgs:
         except:
             dtn = "none"
 
+        disable_citation = config.get("disable_citation", False)
+        disable_further_info = config.get("disable_further_info", False)
         skip_prepare = False
         try:
             skip_prep_str = config['skip_prepare'].lower()
@@ -260,13 +262,27 @@ class PublisherArgs:
         if dtn == "none" and not silent:
             publog.info("No data transfer node defined.")
 
-        argdict = { "silent": silent, "verbose": verbose,
+        argdict = { "silent": silent, 
+                   "verbose": verbose,
                    "cert": cert,
-                   "autoc_command": autocurator, "index_node": index_node, "data_node": data_node,
-                   "data_roots": data_roots, "globus": globus, "dtn": dtn, "replica": replica,
-                   "json_file": json_file, "test": test, "user_project_config": proj_config, "verify": verify,
-                   "auth": auth, "skip_prepare": skip_prepare, "force_prepare": force_prepare,
-                   "non_nc": non_nc, "mountpoints": mountpoints}
+                   "autoc_command": autocurator, 
+                   "index_node": index_node, 
+                   "data_node": data_node,
+                   "data_roots": data_roots, 
+                   "globus": globus, 
+                   "dtn": dtn, 
+                   "replica": replica,
+                   "json_file": json_file, 
+                   "test": test, 
+                   "user_project_config": proj_config, 
+                   "verify": verify,
+                   "auth": auth, 
+                   "skip_prepare": skip_prepare, 
+                   "force_prepare": force_prepare,
+                   "non_nc": non_nc, 
+                   "mountpoints": mountpoints,
+                   "disable_citation": disable_citation,
+                   "disable_further_info": disable_further_info}
 
         if project and "none" not in project:
             argdict["proj"] = project

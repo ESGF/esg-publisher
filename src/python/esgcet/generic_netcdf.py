@@ -29,6 +29,7 @@ class GenericPublisher(BasePublisher):
             self.format_handler = ESGPubXArrayHandler
 
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
+        self._disable_further_info = argdict["disable_further_info"]
 
     def cleanup(self):
         self.scan_file.close()
