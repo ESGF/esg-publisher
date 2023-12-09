@@ -183,17 +183,15 @@ class ESGPubPidCite(object):
         
         dset_rec['pid'] = self.dataset_pid
         if not (dset_rec['type'] == 'File'):
-            dset_rec['xlink'].append(PID_URL.format(self.dataset_pid))
+            dset_rec['xlink'] = [PID_URL.format(self.dataset_pid)]
 
-        if self._disable_cite:
-            self.publog.debug("Citation disabled")
-            return
+        if not self._disable_cite:
 
-        citation_url = CITATION_URLS[project][keystr].format(dset_rec['master_id'], dset_rec['version'])
+            citation_url = CITATION_URLS[project][keystr].format(dset_rec['master_id'], dset_rec['version'])
 
-        dset_rec['citation_url'] = citation_url
-        if not (dset_rec['type'] == 'File'):
-            dset_rec['xlink'] = ['{}|Citation|citation'.format(citation_url)]
+            dset_rec['citation_url'] = citation_url
+            if not (dset_rec['type'] == 'File'):
+                dset_rec['xlink'].append('{}|Citation|citation'.format(citation_url))
 
         self.ds_records[index] = dset_rec
 
