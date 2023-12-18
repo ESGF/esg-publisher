@@ -79,7 +79,6 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # Note these are netCDF specific and will need to change if other formats are considered
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
 "https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
-                 "gsiftp://{}:2811/{}/{}|application/gridftp|GridFTP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 

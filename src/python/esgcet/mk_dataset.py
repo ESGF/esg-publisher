@@ -169,11 +169,9 @@ class ESGPubMakeDataset:
         self.const_attr()
         if not 'project' in self.dataset:
             self.dataset['project'] = priorkey
-        if self._disable_further_info:
-            try:
-                self.dataset.pop("further_info_url")
-            except:
-                pass
+        if self._disable_further_info and "further_info_url" in dataset:
+            self.publog.debug("Deleting further url field")
+            del dataset["further_info_url"]
             
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
