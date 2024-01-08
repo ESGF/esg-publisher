@@ -1,6 +1,8 @@
 Release Notes
 =============
+
 v5.2.2
+------
 
 * **BUGFIX**: Fix path argument issues
 * **BUGFIX**: Several issues with reading time bounds and required tracking_id with xarray

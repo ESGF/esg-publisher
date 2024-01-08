@@ -1,4 +1,4 @@
-The esgcet package for ESGF Publication - Version 5.2.1
+The esgcet package for ESGF Publication - Version 5.2.2
 =======================================================
 
 Esgcet is a package of publisher commands for publishing to the `ESGF
