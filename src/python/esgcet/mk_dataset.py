@@ -46,7 +46,9 @@ class ESGPubMakeDataset:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
         
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, 
+                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False,
+                 http_url=None):
         """
         Constructor
 
@@ -86,6 +88,7 @@ class ESGPubMakeDataset:
         if handler_class:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
+        self._http_url=http_url
 
     def set_project(self, project_in):
         """
@@ -149,8 +152,8 @@ class ESGPubMakeDataset:
         facets = self.DRS  # depends on Init_project to initialize
 
         if not facets:
-            raise RuntimeError()
-        if projkey == "cordex":
+            raise RuntimeError(f"Error DRS not configured for project {projkey}")
+        if "variable" in facets:
             self.variable_name = "variable"
 
         for i, f in enumerate(facets):

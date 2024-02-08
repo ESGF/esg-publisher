@@ -81,6 +81,9 @@ URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPSer
 "https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
+DATASET_GLOBUS_URL_TEMPLATE = "https://app.globus.org/file_manager?origin_id={}&origin_path=/{}/{}"
+
+
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 
 
 PID_CREDS = [ {'url': 'aims4.llnl.gov',
@@ -111,7 +114,6 @@ PROJECT = "input4MIPs"  # project setting.  This would be used to consider some 
 SET_REPLICA = False
 
 GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
-DATA_TRANSFER_NODE = "aimsdtn4.llnl.gov"
 
 VARIABLE_LIMIT = 75
 

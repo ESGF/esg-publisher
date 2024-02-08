@@ -34,7 +34,7 @@ class PublisherArgs:
         parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
         parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
         parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
-        parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem", help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
+        parser.add_argument("--certificate", "-c", dest="cert", default=None, help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
         parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
         parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.")
         parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.")
@@ -124,13 +124,17 @@ class PublisherArgs:
             verbose = True
             silent = False
 
-        if pub.cert == "./cert.pem":
-            try:
-                cert = config['cert']
-            except:
-                cert = pub.cert
-        else:
-            cert = pub.cert
+        auth = False
+        if cert:
+            auth = True
+        elif 'cert' in config:
+            cert = config['cert']
+            auth = True
+        try:
+            if pub.no_auth:
+                auth = False
+        except:
+            pass
 
         if pub.xarray:
             autocurator = None
@@ -233,13 +237,6 @@ class PublisherArgs:
         else:
             verify = False
 
-        if pub.no_auth:
-            auth = False
-        else:
-            auth = True
-
-        # try:
-
         non_nc = config.get('non_netcdf', False)
         
         if not type(non_nc) is bool: 
@@ -260,7 +257,7 @@ class PublisherArgs:
             publog.info("No Globus UUID defined.")
 
         if dtn == "none" and not silent:
-            publog.info("No data transfer node defined.")
+            publog.info("No data transfer node defined.")            
 
         argdict = { "silent": silent, 
                    "verbose": verbose,
@@ -330,6 +327,9 @@ class PublisherArgs:
                 exit(1)
         else:
             argdict["enable_archive"] = False
+
+        if "https_url" in config:
+            argdict["https_url"] = config["https_url"]
         return argdict
 
 
