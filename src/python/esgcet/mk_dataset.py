@@ -46,9 +46,8 @@ class ESGPubMakeDataset:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
         
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, 
-                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False,
-                 http_url=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, https, handler_class=None, 
+                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
         """
         Constructor
 
@@ -71,7 +70,7 @@ class ESGPubMakeDataset:
         self.data_node = data_node
         self.index_node = index_node
         self.replica = replica
-        self.dtn = dtn
+        self._https_custom = https
         self.limit_exceeded = limit_exceeded
 
         self.mapconv = ESGPubMapConv("")
@@ -88,7 +87,6 @@ class ESGPubMakeDataset:
         if handler_class:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
-        self._http_url=http_url
 
     def set_project(self, project_in):
         """
@@ -172,9 +170,9 @@ class ESGPubMakeDataset:
         self.const_attr()
         if not 'project' in self.dataset:
             self.dataset['project'] = priorkey
-        if self._disable_further_info and "further_info_url" in dataset:
+        if self._disable_further_info and "further_info_url" in self.dataset:
             self.publog.debug("Deleting further url field")
-            del dataset["further_info_url"]
+            del self.dataset["further_info_url"]
             
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
@@ -235,13 +233,9 @@ class ESGPubMakeDataset:
                 return template.format(self.globus, root, rel)
             else:
                 return None
-        elif "gsiftp" in template:
-            if self.dtn != 'none':
-                if ':' in self.dtn:
-                    template = template.replace(':2811','')
-                return template.format(self.dtn, root, rel)
-            else:
-                return None
+        elif "HTTP" in template and self._https_custom:
+            # Custom http template should have the hostname embedded
+            return self._https_custom.format(root, rel)
         else:
             return template.format(self.data_node, root, rel)
 
