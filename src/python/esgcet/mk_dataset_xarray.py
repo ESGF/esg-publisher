@@ -2,6 +2,7 @@ import xarray, netCDF4
 from esgcet.handler_base import ESGPubHandlerBase
 import os.path
 import numpy as np
+import cftime
 
 class ESGPubXArrayHandler(ESGPubHandlerBase):
 
@@ -42,6 +43,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             x = str(timeval)
             idx = x.index('.')
             return x[:idx] + 'Z'
+        elif isinstance(timeval.item(), cftime.DatetimeNoLeap):
+           return str(timeval).replace(" ", "T") + "Z"
         else:
             return timeval.item().isoformat() + "Z"
         
