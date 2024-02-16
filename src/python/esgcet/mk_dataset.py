@@ -173,7 +173,8 @@ class ESGPubMakeDataset:
         if self._disable_further_info and "further_info_url" in self.dataset:
             self.publog.debug("Deleting further url field")
             del self.dataset["further_info_url"]
-            
+        
+
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
         projkey = proj.lower()
@@ -222,10 +223,12 @@ class ESGPubMakeDataset:
         self.dataset['type'] = 'Dataset'
         self.dataset['version'] = version
 
+
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
 
         self.dataset['dataset_id_template_'] = '.'.join(fmat_list)
         self.dataset['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
+
 
     def format_template(self, template, root, rel):
         if "Globus" in template:
@@ -351,6 +354,10 @@ class ESGPubMakeDataset:
         self.set_variables(record, scanobj)
         self.handler.set_bounds(record, scanobj)
 
+    def parse_path(self, record):
+
+        for it in record['url']:
+            if "Globus"
     def iterate_files(self, mapdata, scandata):
         ret = []
         sz = 0
@@ -408,6 +415,8 @@ class ESGPubMakeDataset:
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access
+        dataset_path = self.parse_path(ret)
+        self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, dataset_path)
         ret.append(self.dataset)
         return ret
 
