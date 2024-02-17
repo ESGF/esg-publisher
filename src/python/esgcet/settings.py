@@ -116,3 +116,6 @@ DATA_TRANSFER_NODE = "aimsdtn4.llnl.gov"
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
+
+CACHE_DIR_DEPTH = 6
+
