@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import os
 import json
 from datetime import datetime
 
@@ -79,11 +79,19 @@ class GlobusSearch:
         return gingest
 
     def run(self):
+        
         mid = d2[-1]['master_id']
+        version= d2[-1]['version']
         d2 = self.convert2esgf2()
+        tmp_subpath =  '/'.join(parts[0:CACHE_DIR_DEPTH])
+
         if self._cache_dir:
             parts = mid.split('.')
-            tmp_filename =  '/'.join(parts[0:CACHE_DIR_DEPTH])
+            tmp_abspath = f'{self.cache_dir}/{tmp_subpath}'
+        else:
+            tmp_abspath = f'/tmp/.esg-publisher/{tmp_subpath}'
+        tmp_filename = f'{tmp_abspath}/{mid}.v{version}.json'
+        os.mkdirs(tmp_abspath)
         with open(tmp_filename, "w") as f2:
             print(json.dumps(d2), file=f2)
         return tmp_filename
