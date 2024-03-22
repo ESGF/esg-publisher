@@ -1,0 +1,29 @@
+@startuml esg_client_pub_classes
+abstract publisherClient{
+    publish()
+    update()
+    retract()
+    delete()
+}
+
+note left of publisherClient : pub_client.py
+
+class publisherClientSolr{
+    certFile
+    keyFile
+    retractUrl
+    updateUrl
+    deleteUrl
+    verbose
+    silent
+    verify
+    use_cert
+    publog
+    post_data()
+}
+
+publisherClient <|-- publisherClientSolr
+
+publisherClient <|-- publisherClientSTAC
+publisherClient <|-- publisherClientGlobus
+@enduml

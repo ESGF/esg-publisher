@@ -1,0 +1,89 @@
+@startuml esg_publish_classes
+
+class BasePublisher {
+    argdict
+    fullmap
+    silent
+    verbose
+    cert
+    index_node
+    data_node
+    data_roots
+    globus
+    dtn
+    replica
+    proj
+    json_file
+    auth
+    proj_config
+    verify
+    mountpoints
+    project
+    publog
+    mapfile()
+    mk_dataset()
+    update()
+    index_pub()
+    workflow()
+}
+note left of BasePublisher : generic_pub.py
+
+class GenericPublisher {
+    autoc_command
+    format_handler
+    extract_method
+    cleanup()
+    xarray_load()
+    autocurator()
+    mk_dataset()
+}
+note left of GenericPublisher : generic_netcdf.py
+BasePublisher <|-- GenericPublisher
+
+class CreateIP {
+    scans
+    datasets
+    variables
+    master_dataset
+    variable_limit
+    autoc_args
+    update()
+    index_pub()
+}
+note left of CreateIP : create_ip.py
+GenericPublisher <|-- CreateIP
+
+class cmip5 {
+    variable_limit   
+}
+note left of cmip5 : cmip5.py
+CreateIP <|-- cmip5
+
+class cmip6{
+    scan_file
+    scafn
+    files
+    pid_creds
+    cmor_tables
+    test
+    replica
+    skip_prepare
+    prepare_internal()
+    pid()
+}
+note left of cmip6 : cmip6.py
+GenericPublisher <|-- cmip6
+
+class input4mips{
+    MKD_Construct
+}
+note left of input4mips : input4mips.py
+cmip6 <|-- input4mips
+
+class e3sm{
+    
+}
+note left of e3sm : e3sm.py
+GenericPublisher <|-- e3sm
+
+@enduml

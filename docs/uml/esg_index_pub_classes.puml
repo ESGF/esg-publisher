@@ -1,0 +1,31 @@
+@startuml esg_index_pub_classes
+
+abstract ESGPubIndex {
+    do_publish()
+}
+note left of ESGPubIndex : index_pub.py
+
+class ESGPubIndexSolr {
+    silent
+    verbose
+    pubCli
+    publog
+    arch_cfg
+    gen_xml()
+    pub_xml()
+    archive_rec()
+}
+
+ESGPubIndex <|-- ESGPubIndexSolr
+
+class ESGPubIndexGlobus{
+}
+
+ESGPubIndex <|-- ESGPubIndexGlobus
+
+class ESGPubIndexSTAC{
+}
+
+ESGPubIndex <|-- ESGPubIndexSTAC
+
+@enduml

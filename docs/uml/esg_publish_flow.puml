@@ -1,0 +1,30 @@
+@startuml esg_publish_flow
+start
+
+while (mapfile)
+    #AAAAAA:process map file;
+    #CCCCCC:process pub args;
+    #EEEEEE:pub_internal.run;
+
+    switch (project)
+    case (cmip6)
+    #LightBlue:proj = cmip6;
+    case  (create-ip)
+    #LightSteelBlue:proj = CreateIP;
+    case (cmip5)
+    #LightBlue:proj = cmip5;
+    case (input4mips)
+    #LightSteelBlue:proj = input4mips;
+    case (e3sm)
+    #LightBlue:proj = e3sm;
+    case (non_netcdf)
+    #LightSteelBlue:proj = BasePublisher;
+    case (generic)
+    #LightBlue:proj = GenericPublisher;
+    endswitch
+
+    #LightCoral:proj.workflow();
+endwhile
+stop
+
+@enduml
