@@ -36,7 +36,6 @@ class GlobusSearch:
         self._doc_arr = doc_arr
         self._cache_dir = cachedir
 
-
     def _get_gmeta_entry(self, doc, now):
         for key, value in doc.items():
             if isinstance(value, list):
