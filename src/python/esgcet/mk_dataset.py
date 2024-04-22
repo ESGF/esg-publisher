@@ -56,7 +56,7 @@ class ESGPubMakeDataset:
         replica (bool):  Is data a replca
         globus (string):  Globus endpoint UUID
         data_roots (dict): mapping of logical to file system roots for data
-        dtn (string):  legacy server name for gridftp urls
+        https (string):  template for https urls if override, must be empty or None to use default from settings.py
         handler_class (class):  class type of the handler to construct the (format) handler object
         silent (bool):  Run in silent mode (suppress all output but errors)
         verbose (bool):  Print verbose (debug), 
@@ -87,6 +87,7 @@ class ESGPubMakeDataset:
         if handler_class:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
+        self.base_path = None #  This is used to create a directory for a dataset-level Globus url
 
     def set_project(self, project_in):
         """
@@ -246,6 +247,10 @@ class ESGPubMakeDataset:
         res = self.prune_list([self.format_template(template, proj_root, rel_path) for template in URL_Templates])
         return list(res)
 
+    def parse_path(self):
+        sp = self.base_path.split('/')
+        return '/'.join(sp[:-1])
+
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
         dataset_id = self.dataset["id"]
@@ -272,7 +277,6 @@ class ESGPubMakeDataset:
                 ret[kn] = mapdata[kn]
 
         rel_path, proj_root = self.normalize_path(fullfn, self.data_roots)
-
         if not proj_root in self.data_roots:
 
             # Need to handle the case where the root might contain the
@@ -284,7 +288,11 @@ class ESGPubMakeDataset:
                     proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
+                    if not self.base_path:
+                        self.base_path = rel_path
+
                     break
+
             if not root_found:
                 self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
                 exit(1)
@@ -354,10 +362,6 @@ class ESGPubMakeDataset:
         self.set_variables(record, scanobj)
         self.handler.set_bounds(record, scanobj)
 
-    def parse_path(self, record):
-
-        for it in record['url']:
-            if "Globus"
     def iterate_files(self, mapdata, scandata):
         ret = []
         sz = 0
@@ -415,8 +419,8 @@ class ESGPubMakeDataset:
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access
-        dataset_path = self.parse_path(ret)
-        self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, dataset_path)
+
+        self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, self.parse_path())
         ret.append(self.dataset)
         return ret
 
