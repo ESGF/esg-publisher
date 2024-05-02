@@ -67,7 +67,7 @@ class PublisherArgs:
             conf = yaml.load(fd, Loader=yaml.SafeLoader)
         return conf
 
-    def get_dict(self,  fn_project, fake_args=None):
+    def get_dict(self,  fn_project):
         """
         Return a dict containing the publisher arguments to use:
         fn_project (string)  Specified project if pre-parsed.
@@ -125,7 +125,8 @@ class PublisherArgs:
             silent = False
 
         auth = False
-        if cert:
+
+        if pub.cert:
             auth = True
         elif 'cert' in config:
             cert = config['cert']
