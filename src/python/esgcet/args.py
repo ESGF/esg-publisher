@@ -125,9 +125,10 @@ class PublisherArgs:
             silent = False
 
         auth = False
-
+        cert = ""
         if pub.cert:
             auth = True
+            cert = pub.cert
         elif 'cert' in config:
             cert = config['cert']
             auth = True
@@ -231,7 +232,6 @@ class PublisherArgs:
             publog.warning("User project config missing or could not be parsed.")
             proj_config = {}
 
-        os.system("cert_path=" + cert)
 
         if pub.verify:
             verify = True
@@ -262,7 +262,6 @@ class PublisherArgs:
 
         argdict = { "silent": silent, 
                    "verbose": verbose,
-                   "cert": cert,
                    "autoc_command": autocurator, 
                    "index_node": index_node, 
                    "data_node": data_node,
@@ -282,9 +281,12 @@ class PublisherArgs:
                    "disable_citation": disable_citation,
                    "disable_further_info": disable_further_info}
 
+        if auth and cert:
+            argdict["cert"] = cert
+            
         if project and "none" not in project:
             argdict["proj"] = project
-
+            
         project = project.lower()
         if project == "cmip6":
             if pub.cmor_path is None:

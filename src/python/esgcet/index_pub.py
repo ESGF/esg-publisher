@@ -9,7 +9,7 @@ class ESGPubIndex:
     """
     Wrapper class for push-publishing of records to the index node.
     """
-    def __init__(self, hostname, cert_fn, verbose=False, silent=False, verify=False, auth=True, arch_cfg=None):
+    def __init__(self, hostname, cert_fn="", verbose=False, silent=False, verify=False, auth=True, arch_cfg=None):
         """
         Constructor, creates a "client" object
         """
