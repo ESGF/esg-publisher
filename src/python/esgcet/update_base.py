@@ -47,4 +47,3 @@ class ESGUpdateBase:
             version = input_rec[dset_idx]['version']
             self.publog.info('First dataset version for {}: v{}.)'.format(mst, version))
 
-    def run(self)
