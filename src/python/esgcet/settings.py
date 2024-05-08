@@ -81,7 +81,7 @@ URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPSer
 "https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
-DATASET_GLOBUS_URL_TEMPLATE = "https://app.globus.org/file_manager?origin_id={}&origin_path=/{}/{}"
+DATASET_GLOBUS_URL_TEMPLATE = "https://app.globus.org/file_manager?origin_id={}&amp;origin_path=/{}"
 
 
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher 

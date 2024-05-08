@@ -25,7 +25,7 @@ class PublisherArgs:
 
         # ANY FILE NAME INPUT: check first to make sure it exists
         home = Path.home()
-        def_config = home / "/.esg/esg.yaml"
+        def_config = home / ".esg/esg.yaml"
         parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
         # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
         parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")

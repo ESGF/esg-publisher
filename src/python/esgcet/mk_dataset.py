@@ -248,8 +248,10 @@ class ESGPubMakeDataset:
         return list(res)
 
     def parse_path(self):
+        assert self.base_path
         sp = self.base_path.split('/')
-        return '/'.join(sp[:-1])
+        res = '/'.join(sp[:-1])
+        return res
 
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
@@ -288,15 +290,21 @@ class ESGPubMakeDataset:
                     proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
+                    print(f"base path = '{self.base_bath}'")
                     if not self.base_path:
-                        self.base_path = rel_path
+                        mapped_root = self.data_roots[root]
+                        self.base_path = f"{mapped_root}/{rel_path}"
 
                     break
 
             if not root_found:
                 self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
                 exit(1)
-
+        else:
+            if not self.base_path:
+                mapped_root = self.data_roots[proj_root]
+                self.base_path = f"{mapped_root}/{rel_path}"
+                        
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         ret["publish_path"] = f"{self.data_roots[proj_root]}/{rel_path}" 
         if "number_of_files" in ret:
