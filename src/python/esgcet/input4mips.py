@@ -14,8 +14,7 @@ class input4mips(cmip6):
 
     def pid(self, out_json_data):
 
-        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose)
-
+        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test, silent=self.silent, verbose=self.verbose, disable_cite=self._disable_citation)
         try:
             new_json_data = pid.do_pidcite()
         except Exception as ex:
