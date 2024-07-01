@@ -9,3 +9,8 @@ If you encounter issues running any of the esgcet commands, try looking for comm
    feel free to open a github issue and request that support for your project is added.
  - For example commands and test scripts, see our `test suite repository <https://github.com/lisi-w/test-suite/tree/main>`_.
  - For unexpected behavior, output, or errors, please open a `Github Issue <https://github.com/ESGF/esg-publisher/issues>`_.
+
+ Known issues
+ ------------
+
+ * There is a problem identified with esgunpublish and connecting to the PID server.  Please report if you need support and a team member will assist.
