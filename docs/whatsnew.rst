@@ -1,6 +1,16 @@
 Release Notes
 =============
 
+v5.2.3
+------
+
+* Update argument processing to make ``--cert`` an optional argument to align with changes in ESGF architecture
+* Bugfixes to support optional citation and further info URLs
+* Support of customized ``https_url`` in the configuration for non- ``thredds/fileServer`` endpoints.
+* Introduction of ``globus_url`` inclusion for direct link to the Globus file manager.
+* **BUGFIX** for a default ``esg.yaml`` under the ``.esg`` hidden directory
+
+
 v5.2.2
 ------
 

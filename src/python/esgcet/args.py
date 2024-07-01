@@ -25,7 +25,7 @@ class PublisherArgs:
 
         # ANY FILE NAME INPUT: check first to make sure it exists
         home = Path.home()
-        def_config = home / "/.esg/esg.yaml"
+        def_config = home / ".esg/esg.yaml"
         parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
         # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
         parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
@@ -34,7 +34,7 @@ class PublisherArgs:
         parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
         parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
         parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
-        parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem", help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
+        parser.add_argument("--certificate", "-c", dest="cert", default=None, help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
         parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
         parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.")
         parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.")
@@ -67,7 +67,7 @@ class PublisherArgs:
             conf = yaml.load(fd, Loader=yaml.SafeLoader)
         return conf
 
-    def get_dict(self,  fn_project, fake_args=None):
+    def get_dict(self,  fn_project):
         """
         Return a dict containing the publisher arguments to use:
         fn_project (string)  Specified project if pre-parsed.
@@ -124,13 +124,19 @@ class PublisherArgs:
             verbose = True
             silent = False
 
-        if pub.cert == "./cert.pem":
-            try:
-                cert = config['cert']
-            except:
-                cert = pub.cert
-        else:
+        auth = False
+        cert = ""
+        if pub.cert:
+            auth = True
             cert = pub.cert
+        elif 'cert' in config:
+            cert = config['cert']
+            auth = True
+        try:
+            if pub.no_auth:
+                auth = False
+        except:
+            pass
 
         if pub.xarray:
             autocurator = None
@@ -226,19 +232,11 @@ class PublisherArgs:
             publog.warning("User project config missing or could not be parsed.")
             proj_config = {}
 
-        os.system("cert_path=" + cert)
 
         if pub.verify:
             verify = True
         else:
             verify = False
-
-        if pub.no_auth:
-            auth = False
-        else:
-            auth = True
-
-        # try:
 
         non_nc = config.get('non_netcdf', False)
         
@@ -260,11 +258,10 @@ class PublisherArgs:
             publog.info("No Globus UUID defined.")
 
         if dtn == "none" and not silent:
-            publog.info("No data transfer node defined.")
+            publog.info("No data transfer node defined.")            
 
         argdict = { "silent": silent, 
                    "verbose": verbose,
-                   "cert": cert,
                    "autoc_command": autocurator, 
                    "index_node": index_node, 
                    "data_node": data_node,
@@ -284,9 +281,12 @@ class PublisherArgs:
                    "disable_citation": disable_citation,
                    "disable_further_info": disable_further_info}
 
+        if auth and cert:
+            argdict["cert"] = cert
+            
         if project and "none" not in project:
             argdict["proj"] = project
-
+            
         project = project.lower()
         if project == "cmip6":
             if pub.cmor_path is None:
@@ -330,6 +330,9 @@ class PublisherArgs:
                 exit(1)
         else:
             argdict["enable_archive"] = False
+
+        if "https_url" in config:
+            argdict["https_url"] = config["https_url"]
         return argdict
 
 

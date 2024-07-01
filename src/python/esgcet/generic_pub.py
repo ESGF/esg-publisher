@@ -15,7 +15,7 @@ class BasePublisher(object):
         self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
-        self.cert = argdict["cert"]
+        self.cert = argdict.get("cert","")
         self.index_node = argdict["index_node"]
         self.data_node = argdict["data_node"]
         self.data_roots = argdict["data_roots"]

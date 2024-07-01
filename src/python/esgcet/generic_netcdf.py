@@ -60,8 +60,12 @@ class GenericPublisher(BasePublisher):
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
-                                self.format_handler, self.silent, self.verbose)
+        https_url = None
+        if "https_url" in self.argdict:
+            https_url = self.argdict["https_url"]
+    
+        mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, 
+                                 https_url, self.format_handler, self.silent, self.verbose)
         mkd.set_project(self.project)
 
         if self.autoc_command:

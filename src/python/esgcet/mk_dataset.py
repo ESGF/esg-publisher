@@ -46,7 +46,8 @@ class ESGPubMakeDataset:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
         
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, handler_class=None, silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
+    def __init__(self, data_node, index_node, replica, globus, data_roots, https, handler_class=None, 
+                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
         """
         Constructor
 
@@ -55,7 +56,7 @@ class ESGPubMakeDataset:
         replica (bool):  Is data a replca
         globus (string):  Globus endpoint UUID
         data_roots (dict): mapping of logical to file system roots for data
-        dtn (string):  legacy server name for gridftp urls
+        https (string):  template for https urls if override, must be empty or None to use default from settings.py
         handler_class (class):  class type of the handler to construct the (format) handler object
         silent (bool):  Run in silent mode (suppress all output but errors)
         verbose (bool):  Print verbose (debug), 
@@ -69,7 +70,7 @@ class ESGPubMakeDataset:
         self.data_node = data_node
         self.index_node = index_node
         self.replica = replica
-        self.dtn = dtn
+        self._https_custom = https
         self.limit_exceeded = limit_exceeded
 
         self.mapconv = ESGPubMapConv("")
@@ -86,6 +87,7 @@ class ESGPubMakeDataset:
         if handler_class:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
+        self.base_path = None #  This is used to create a directory for a dataset-level Globus url
 
     def set_project(self, project_in):
         """
@@ -149,8 +151,8 @@ class ESGPubMakeDataset:
         facets = self.DRS  # depends on Init_project to initialize
 
         if not facets:
-            raise RuntimeError()
-        if projkey == "cordex":
+            raise RuntimeError(f"Error DRS not configured for project {projkey}")
+        if "variable" in facets:
             self.variable_name = "variable"
 
         for i, f in enumerate(facets):
@@ -169,10 +171,11 @@ class ESGPubMakeDataset:
         self.const_attr()
         if not 'project' in self.dataset:
             self.dataset['project'] = priorkey
-        if self._disable_further_info and "further_info_url" in dataset:
+        if self._disable_further_info and "further_info_url" in self.dataset:
             self.publog.debug("Deleting further url field")
-            del dataset["further_info_url"]
-            
+            del self.dataset["further_info_url"]
+        
+
     def global_attributes(self, proj, scandata):
         # handle Global attributes if defined for the project
         projkey = proj.lower()
@@ -221,10 +224,12 @@ class ESGPubMakeDataset:
         self.dataset['type'] = 'Dataset'
         self.dataset['version'] = version
 
+
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
 
         self.dataset['dataset_id_template_'] = '.'.join(fmat_list)
         self.dataset['directory_format_template_'] = '%(root)s/{}/%(version)s'.format('/'.join(fmat_list))
+
 
     def format_template(self, template, root, rel):
         if "Globus" in template:
@@ -232,19 +237,21 @@ class ESGPubMakeDataset:
                 return template.format(self.globus, root, rel)
             else:
                 return None
-        elif "gsiftp" in template:
-            if self.dtn != 'none':
-                if ':' in self.dtn:
-                    template = template.replace(':2811','')
-                return template.format(self.dtn, root, rel)
-            else:
-                return None
+        elif "HTTP" in template and self._https_custom:
+            # Custom http template should have the hostname embedded
+            return self._https_custom.format(root, rel)
         else:
             return template.format(self.data_node, root, rel)
 
     def gen_urls(self, proj_root, rel_path):
         res = self.prune_list([self.format_template(template, proj_root, rel_path) for template in URL_Templates])
         return list(res)
+
+    def parse_path(self):
+        assert self.base_path
+        sp = self.base_path.split('/')
+        res = '/'.join(sp[:-1])
+        return res
 
     def get_file(self, mapdata, fn_trid):
         ret = self.dataset.copy()
@@ -272,7 +279,6 @@ class ESGPubMakeDataset:
                 ret[kn] = mapdata[kn]
 
         rel_path, proj_root = self.normalize_path(fullfn, self.data_roots)
-
         if not proj_root in self.data_roots:
 
             # Need to handle the case where the root might contain the
@@ -284,11 +290,21 @@ class ESGPubMakeDataset:
                     proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
+                    print(f"base path = '{self.base_bath}'")
+                    if not self.base_path:
+                        mapped_root = self.data_roots[root]
+                        self.base_path = f"{mapped_root}/{rel_path}"
+
                     break
+
             if not root_found:
                 self.publog.error('The file system root {} not found.  Please check your configuration.'.format(proj_root))
                 exit(1)
-
+        else:
+            if not self.base_path:
+                mapped_root = self.data_roots[proj_root]
+                self.base_path = f"{mapped_root}/{rel_path}"
+                        
         ret["url"] = self.gen_urls(self.data_roots[proj_root], rel_path)
         ret["publish_path"] = f"{self.data_roots[proj_root]}/{rel_path}" 
         if "number_of_files" in ret:
@@ -411,6 +427,8 @@ class ESGPubMakeDataset:
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access
+
+        self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, self.parse_path())
         ret.append(self.dataset)
         return ret
 
