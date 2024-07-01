@@ -77,20 +77,43 @@ class GlobusSearch:
 
         return gingest
 
-    def run(self):
-        
+    def extern_globus_publish(self, update=False):
+        pass
+
+    def load_and_update_record(self, fn):
+        res = json.load(open(fn))
+
+        res["ingest_data"]["gmeta"]["latest"] = False
+        res["ingest_data"]["gmeta"]["mod_timestamp"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        return res
+
+    def check_cache(self):
+
+        tmp_filename, _ = self._get_cache_filename()
+        if os.path.exists(tmp_filename):
+            return json.load(open(tmp_filename))
+
+
+    def _get_cache_filename(self):
+
+        d2 = self._doc_arr 
         mid = d2[-1]['master_id']
         version= d2[-1]['version']
-        d2 = self.convert2esgf2()
+        parts = mid.split('.')    
         tmp_subpath =  '/'.join(parts[0:CACHE_DIR_DEPTH])
 
         if self._cache_dir:
-            parts = mid.split('.')
             tmp_abspath = f'{self.cache_dir}/{tmp_subpath}'
         else:
             tmp_abspath = f'/tmp/.esg-publisher/{tmp_subpath}'
         tmp_filename = f'{tmp_abspath}/{mid}.v{version}.json'
+        return tmp_filename, tmp_abspath
+    
+    def run(self):
+        
+        doc_res = self.convert2esgf2()
+        tmp_filename, tmp_abspath = self._get_cache_filename()
         os.mkdirs(tmp_abspath)
         with open(tmp_filename, "w") as f2:
-            print(json.dumps(d2), file=f2)
+            print(json.dumps(doc_res), file=f2)
         return tmp_filename

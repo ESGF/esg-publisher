@@ -15,10 +15,10 @@ class ESGUpdateBase:
         pass
 
     @abstractmethod
-    def query_update(self):
+    def query_update(self, data_node : str, master_id : str):
         pass
 
-    def run(self, input_rec):
+    def run(self, input_rec : dict):
         """ Check a record in the index and peform the updates
 
             input_rec - a json record to be published containing a "master_id" and "data_node" fields with 
