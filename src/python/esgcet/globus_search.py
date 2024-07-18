@@ -77,14 +77,15 @@ class GlobusSearch:
 
         return gingest
 
-    def extern_globus_publish(self, update=False):
-        pass
+    def extern_globus_publish(self, filename, indexid, update=False):
+        os.system(f"globus search ingest {indexid} {filename}")
 
     def load_and_update_record(self, fn):
         res = json.load(open(fn))
 
-        res["ingest_data"]["gmeta"]["latest"] = False
-        res["ingest_data"]["gmeta"]["mod_timestamp"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        for rec in res["ingest_data"]["gmeta"]:
+            rec["latest"] = False
+            rec["mod_timestamp"] = datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         return res
 
     def check_cache(self):

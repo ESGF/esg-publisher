@@ -18,5 +18,12 @@ class ESGUpdateGlobus:
         query = ESGGlobusQuery(self._index_UUID, data_node)
 
         res = query.dataset_query(master_id)
+        if (res):
+            self._old_dataset = res
+            subject = res[0]  # todo get subject
+            return subject
+        else:
+            return False
+        
         
         

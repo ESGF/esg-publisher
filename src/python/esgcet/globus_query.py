@@ -78,11 +78,15 @@ class ESGGlobusQuery():
         else:
             print("No record found")
             return {}
-        
-# UUID = "5cc79324-1b74-4a77-abc3-838aba2fc734"
-# DATA_NODE = "esgf-fake-test.llnl.gov"
 
-# x = ESGGlobusQuery(UUID, DATA_NODE)
+def test():        
+    UUID = "5cc79324-1b74-4a77-abc3-838aba2fc734"
+    DATA_NODE = "esgf-fake-test.llnl.gov"
 
-# res = x.dataset_query(sys.argv[1])
-# print(len(res))
+    x = ESGGlobusQuery(UUID, DATA_NODE)
+
+    res = x.dataset_query(sys.argv[1])
+    with open("test.json", "w") as outf:
+        json.dump(res, outf)
+
+test()
