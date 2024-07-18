@@ -25,7 +25,7 @@ class PublisherArgs:
 
         # ANY FILE NAME INPUT: check first to make sure it exists
         home = Path.home()
-        def_config = home / "/.esg/esg.yaml"
+        def_config = home / ".esg/esg.yaml"
         parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
         # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
         parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
@@ -67,7 +67,7 @@ class PublisherArgs:
             conf = yaml.load(fd, Loader=yaml.SafeLoader)
         return conf
 
-    def get_dict(self,  fn_project, fake_args=None):
+    def get_dict(self,  fn_project):
         """
         Return a dict containing the publisher arguments to use:
         fn_project (string)  Specified project if pre-parsed.
@@ -125,8 +125,10 @@ class PublisherArgs:
             silent = False
 
         auth = False
-        if cert:
+        cert = ""
+        if pub.cert:
             auth = True
+            cert = pub.cert
         elif 'cert' in config:
             cert = config['cert']
             auth = True
@@ -230,7 +232,6 @@ class PublisherArgs:
             publog.warning("User project config missing or could not be parsed.")
             proj_config = {}
 
-        os.system("cert_path=" + cert)
 
         if pub.verify:
             verify = True
@@ -262,7 +263,6 @@ class PublisherArgs:
             
         argdict = { "silent": silent, 
                    "verbose": verbose,
-                   "cert": cert,
                    "autoc_command": autocurator, 
                    "index_node": index_node, 
                    "data_node": data_node,
@@ -282,9 +282,12 @@ class PublisherArgs:
                    "disable_citation": disable_citation,
                    "disable_further_info": disable_further_info}
 
+        if auth and cert:
+            argdict["cert"] = cert
+            
         if project and "none" not in project:
             argdict["proj"] = project
-
+            
         project = project.lower()
         if project == "cmip6":
             if pub.cmor_path is None:
@@ -331,8 +334,11 @@ class PublisherArgs:
 
         if "https_url" in config:
             argdict["https_url"] = config["https_url"]
+<<<<<<< HEAD
         if 'record_cache' in config:
             argdict['record_cache'] = config['record_cache']
+=======
+>>>>>>> main
         return argdict
 
 

@@ -58,6 +58,12 @@ class ESGPubPidCite(object):
         # if publish:
         http_service_path = HTTP_SERVICE
 
+        self.publog.debug(f" self.pid_connector = esgfpid.Connector(handle_prefix={self.pid_prefix}, \
+                                          messaging_service_exchange_name={pid_messaging_service_exchange_name}, \
+                                          messaging_service_credentials={pid_messaging_service_credentials}, \
+                                          data_node={pid_data_node}, \
+                                          thredds_service_path={http_service_path}, \
+                                          test_publication={self.test_publication}")
         self.pid_connector = esgfpid.Connector(handle_prefix=self.pid_prefix,
                                           messaging_service_exchange_name=pid_messaging_service_exchange_name,
                                           messaging_service_credentials=pid_messaging_service_credentials,

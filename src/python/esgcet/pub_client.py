@@ -8,7 +8,7 @@ class publisherClient(object):
         User must supply API parameters in xml form for publish and updates, dataset_ids for retract/delete
     """
     
-    def __init__(self, cert_fn, hostname, verify=False, verbose=False, silent=False, auth=True):
+    def __init__(self, cert_fn, hostname, verify=False, verbose=False, silent=False, auth=False):
         """ cert_fn - Path to certificate file
             hostame - target index node for API
             verbose, silent (bool) - add additional output, suppress INFO messages
