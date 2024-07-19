@@ -334,11 +334,8 @@ class PublisherArgs:
 
         if "https_url" in config:
             argdict["https_url"] = config["https_url"]
-<<<<<<< HEAD
         if 'record_cache' in config:
             argdict['record_cache'] = config['record_cache']
-=======
->>>>>>> main
         return argdict
 
 

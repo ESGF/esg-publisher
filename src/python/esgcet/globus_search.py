@@ -4,7 +4,7 @@ import os
 import json
 from datetime import datetime
 
-from settings import *
+from esgcet.settings import *
 
 #  migrate to settings.py
 NON_LIST = [
@@ -64,7 +64,7 @@ class GlobusSearch:
 
         # Transform an ESGF1 dataset entries to an ESGF2 Globus index entry
         for doc in pid_esgf1:
-            gmeta_entry = self.get_gmeta_entry(doc, now)
+            gmeta_entry = self._get_gmeta_entry(doc, now)
             gmeta.append(gmeta_entry)
 
         # Create a GMetaList with a GMetaEntry for the dataset and GMetaEntries for files

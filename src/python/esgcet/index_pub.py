@@ -3,7 +3,7 @@ import esgcet.logger as logger
 import os
 
 
-from globus_search import GlobusSearch
+from esgcet.globus_search import GlobusSearch
 
 log = logger.ESGPubLogger()
 
@@ -12,7 +12,7 @@ class ESGPubIndex:
     """
     Wrapper class for push-publishing of records to the index node.
     """
-    def __init__(self, UUID,  verbose=False, silent=False, verify=True, arch_cfg=None, file_cache=None):
+    def __init__(self, UUID,  verbose=False, silent=False, verify=True, auth=None, arch_cfg=None, file_cache=None):
         """
         Constructor, creates a "client" object
         """
