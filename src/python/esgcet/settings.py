@@ -45,14 +45,11 @@ GA = { 'cmip6' : ['frequency',
 'further_info_url',
 'title',
 'product',
-'table',
 'nominal_resolution',
-'institution',
-'target_mip_list',
 'deprecated',
 'dataset_status',
-'realm_drs',
 'Conventions',
+'target_mip_list',                       
 'creation_date'],
 "obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", "institution", "source",  "source_type", "contact", "region", "data_specs_version",  "further_info_url", "source_version_number"]
 }
@@ -61,7 +58,8 @@ GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' :
 #                 'input4mips' : {'target_mip_list' : ','}}
 
 CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered', 'project' : 'CMIP6' },
-              'obs4mips' : {'project' :'obs4MIPs'}}
+              'obs4mips' : {'project' :'obs4MIPs'}, 'input4mips' : { 'project' :'input4MIPs' }
+              }
 
 GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 
@@ -113,7 +111,6 @@ TEST_PUB = True
 PROJECT = "input4MIPs"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = False
 
-GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
 
 VARIABLE_LIMIT = 75
 
