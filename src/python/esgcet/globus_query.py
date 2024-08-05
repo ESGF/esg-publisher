@@ -21,6 +21,8 @@ SEARCH_TEMPLATE = {
         ],
     }
 
+
+
 class ESGGlobusQuery():
 
     def __init__(self, UUID_in, data_node_in):
@@ -45,16 +47,29 @@ class ESGGlobusQuery():
 #        print(f"DEBUG {res}")
         return json.load(proc.stdout)
 
-    
+    def query_file_records(self, dataset_id):
+        q = copy.deepcopy(SEARCH_TEMPLATE)
+        q["filters"].append(self._add_filter("type", "File"))
+        q["filters"].append(self._add_filter("dataset_id", dataset_id))
 
-    def dataset_query(self, master_id):
+        res = self._run_query(q)
+        y = []
+        for x in res:
+            y.append(self._post_proc_query(x))
+
+
+    def dataset_query_master(self, master_id):
 
         q = copy.deepcopy(SEARCH_TEMPLATE)
         q["filters"].append(self._data_node_filter)
         q["filters"].append(self._add_filter("type", "Dataset"))
         q["filters"].append(self._add_filter("master_id", master_id))
 
+        res = self._run_query(q)
+        print (f"DEBUG : {res}")
+        return self._post_proc_query(res)
 
+    def _run_query(self, q, single=False):
         temp = tempfile.NamedTemporaryFile(mode="w", delete=False)
         json.dump(q, temp, indent=1)
         print(f"DEBUG: to {temp.name}")
@@ -63,12 +78,20 @@ class ESGGlobusQuery():
         subproc = Popen(["globus", "search", "query", self._UUID, "--query-document",temp.name], stdout=PIPE)
 
         subproc.wait()
-        subj = ""
-        record = None
+        if single:
+            subj = ""
+        else:
+            subj = []
+
         for x in subproc.stdout:
             assert not subj  # There should be only one latest, TODO convert to raise an Exception
-            subj = x.decode()
-        
+            if single:
+                subj = x.decode().rstrip()
+            else:
+                subj.append(x.decode().rstsrip())
+        return subj
+
+    def _post_proc_query(self, subj): 
         if subj:
             res = self.globus_get_record(subj)
             if res and "content" in res:
@@ -88,5 +111,10 @@ def test():
     res = x.dataset_query(sys.argv[1])
     with open("test.json", "w") as outf:
         json.dump(res, outf)
+    
+
+    res2 = x.file_query(res["id"])
+
+    
 
 test()
