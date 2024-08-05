@@ -114,7 +114,8 @@ class GlobusSearch:
         
         doc_res = self.convert2esgf2()
         tmp_filename, tmp_abspath = self._get_cache_filename()
-        os.mkdirs(tmp_abspath)
+        print(f"makedirs {tmp_abspath}")
+        os.makedirs(tmp_abspath)
         with open(tmp_filename, "w") as f2:
             print(json.dumps(doc_res), file=f2)
         return tmp_filename
