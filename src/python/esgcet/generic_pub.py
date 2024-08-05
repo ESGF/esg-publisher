@@ -1,6 +1,8 @@
 from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import ESGPubMKDNonNC
-from esgcet.update import ESGPubUpdate
+from esgcet.update_solr import ESGUpdateSolr
+from esgcet.update_globus import ESGUpdateGlobus
+
 from esgcet.index_pub import ESGPubIndex
 import sys
 import esgcet.logger as logger
@@ -60,7 +62,10 @@ class BasePublisher(object):
         return out_json_data
 
     def update(self, json_data):
-        up = ESGPubUpdate(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth)
+        if self.argdict.get("globus_index", False):
+            up = ESGUpdateGlobus(self.argdict.get("idx_UUID"), json_data[0]["data_node"], silent=self.silent, verbose=self.verbose)
+        else:
+            up = ESGUpdateSolr(self.index_node, silent=self.silent, verbose=self.verbose, verify=self.verify)
         try:
             up.run(json_data)
         except Exception as ex:
@@ -77,7 +82,7 @@ class BasePublisher(object):
         ip = ESGPubIndex(self.index_node, self.cert, silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg)
         rc = True
         try:
-            rc = ip.do_publish(dataset_records)
+            rc = ip.do_globus(dataset_records)
         except Exception as ex:
             self.publog.exception("Failed to publish to index node")
             self.cleanup()

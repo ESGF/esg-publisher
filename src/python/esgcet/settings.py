@@ -118,3 +118,6 @@ GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
+
+CACHE_DIR_DEPTH = 6
+

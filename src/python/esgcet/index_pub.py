@@ -2,6 +2,9 @@ from esgcet.pub_client import publisherClient
 import esgcet.logger as logger
 import os
 
+
+from esgcet.globus_search import GlobusSearch
+
 log = logger.ESGPubLogger()
 
 
@@ -9,15 +12,23 @@ class ESGPubIndex:
     """
     Wrapper class for push-publishing of records to the index node.
     """
-    def __init__(self, hostname, cert_fn="", verbose=False, silent=False, verify=False, auth=True, arch_cfg=None):
+    def __init__(self, UUID,  verbose=False, silent=False, verify=True, arch_cfg=None, file_cache=None):
         """
         Constructor, creates a "client" object
         """
         self.silent = silent
         self.verbose = verbose
-        self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
+#        self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
         self.publog = log.return_logger('Index Publication', silent, verbose)
         self.arch_cfg = arch_cfg
+        self._index_UUID = UUID
+        self._cache_dir = file_cache
+
+    def do_globus(self, d):
+        gs = GlobusSearch(d, self._cache_dir)
+        res = gs.run()
+        gs.extern_globus_publish(self._index_UUID, res)
+#        os.system(f"globus search ingest {self._index_UUID} {res}")
 
     def gen_xml(self, d):
         out = []
