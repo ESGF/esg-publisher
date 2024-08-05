@@ -185,22 +185,10 @@ class PublisherArgs:
 
         disable_citation = config.get("disable_citation", False)
         disable_further_info = config.get("disable_further_info", False)
-        skip_prepare = False
-        try:
-            skip_prep_str = config['skip_prepare'].lower()
-            skip_prepare = (skip_prep_str in ["true", "yes"])
-        except:
-            pass
-        force_prepare = False
-        try:
-            force_prep_str = config['force_prepare'].lower()
-            force_prepare = (force_prep_str in ["true", "yes"])
-        except:
-            pass
-        if skip_prepare and force_prepare:
-            publog.error("PrePARE simultaneously skipped and forced.")
-            exit(1)
 
+        skip_prepare = config.get('skip_prepare', False)
+        force_prepare = not skip_prepare
+        
         if pub.set_replica and pub.no_replica:
             publog.error("Replica publication simultaneously set and disabled.")
             exit(1)
@@ -209,19 +197,8 @@ class PublisherArgs:
         elif pub.no_replica:
             replica = False
         else:
-            try:
-                r = config['set_replica'].lower()
-                if 'yes' in r or 'true' in r:
-                    replica = True
-                elif 'no' in r or 'false' in r:
-                    replica = False
-                else:
-                    publog.error("Config file error: set_replica must be true, false, yes, or no.")
-                    exit(1)
-            except:
-                publog.exception("Set_replica not defined. Use --set-replica or --no-replica or define in esg.ini.")
-                exit(1)
-
+            replica = config.get('set_replica', False)
+            
         test = False
         if pub.test:
             test = True
@@ -239,7 +216,7 @@ class PublisherArgs:
             verify = False
 
         non_nc = config.get('non_netcdf', False)
-        
+      
         if not type(non_nc) is bool: 
             non_netcdf = config['non_netcdf'].lower()
             if 'yes' in non_netcdf or 'true' in non_netcdf:
