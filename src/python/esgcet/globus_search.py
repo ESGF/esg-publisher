@@ -55,7 +55,8 @@ class GlobusSearch:
         }
 
         return gmeta_entry
-
+    def set_doc(self, doc):
+        self._doc_arr = doc
 
     def convert2esgf2(self):
         pid_esgf1 = self._doc_arr
@@ -80,8 +81,8 @@ class GlobusSearch:
     def extern_globus_publish(self, filename, indexid, update=False):
         os.system(f"globus search ingest {indexid} {filename}")
 
-    def load_and_update_record(self, fn):
-        res = json.load(open(fn))
+    # pair with json.load(open(fn))
+    def update_record(self, res):
 
         for rec in res["ingest_data"]["gmeta"]:
             rec["latest"] = False
@@ -110,9 +111,12 @@ class GlobusSearch:
         tmp_filename = f'{tmp_abspath}/{mid}.v{version}.json'
         return tmp_filename, tmp_abspath
     
-    def run(self):
+    def run(self, update=False):
         
         doc_res = self.convert2esgf2()
+        if update:
+            self.update_record(doc_res)
+
         tmp_filename, tmp_abspath = self._get_cache_filename()
         print(f"makedirs {tmp_abspath}")
         os.makedirs(tmp_abspath)

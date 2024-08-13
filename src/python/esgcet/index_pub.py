@@ -27,7 +27,8 @@ class ESGPubIndex:
     def do_globus(self, d):
         gs = GlobusSearch(d, self._cache_dir)
         res = gs.run()
-        os.system(f"globus search ingest {self._index_UUID} {res}")
+        gs.extern_globus_publish(self._index_UUID, res)
+#        os.system(f"globus search ingest {self._index_UUID} {res}")
 
     def gen_xml(self, d):
         out = []
