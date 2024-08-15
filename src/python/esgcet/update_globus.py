@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
+
 from esgcet.globus_query import ESGGlobusQuery
 from esgcet.globus_search import GlobusSearch
+from esgcet.update_base import ESGUpdateBase
 
-class ESGUpdateGlobus:
+class ESGUpdateGlobus(ESGUpdateBase):
 
     def __init__(self, index_UUID : str, data_node : str, silent : bool = False, verbose : bool = False):
         self._index_UUID = index_UUID
