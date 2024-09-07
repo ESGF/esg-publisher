@@ -14,7 +14,8 @@ additional_requirements = [
             "xarray",
             "netcdf4",
             "dask",
-            "pyyaml"
+            "pyyaml",
+            "globus-sdk"
 ]
 
 
@@ -40,5 +41,6 @@ setup(
                                         'esgupdate=esgcet.esgupdate:main',
                                         'esgmapconv=esgcet.esgmapconv:main',
                                         'esgmigrate=esgcet.migratecmd:main',
-                                        'esgunpublish=esgcet.esgunpublish:main']}
+                                        'esgunpublish=esgcet.esgunpublish:main',
+                                        'esgstacpub=esgcet.esgstacpub:main']}
 )

@@ -146,7 +146,7 @@ def run():
         exit(1)
 
     try:
-        globus = json.loads(config['globus_uuid'])
+        globus = config['globus_uuid']
     except:
         # globus undefined
         globus = "none"

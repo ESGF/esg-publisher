@@ -115,6 +115,21 @@ SET_REPLICA = False
 
 GLOBUS_UUID = "415a6320-e49c-11e5-9798-22000b9da45e"
 
+STAC_CLIENT = {
+    "client_id": "ec5f07c0-7ed8-4f2b-94f2-ddb6f8fc91a3",
+    "redirect_uri": "https://auth.globus.org/v2/web/auth-code",
+}
+
+TOKEN_STORAGE_FILE = "~/.esgf2-publisher.json"
+
+STAC_TRANSACTION_API = {
+    "client_id": "6fa3b827-5484-42b9-84db-f00c7a183a6a",
+    "access_control_policy": "https://esgf2.s3.amazonaws.com/access_control_policy.json",
+    "scope_string": "https://auth.globus.org/scopes/6fa3b827-5484-42b9-84db-f00c7a183a6a/ingest",
+    "base_url": "https://n08bs7a0hc.execute-api.us-east-1.amazonaws.com/dev",
+}
+
+
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
