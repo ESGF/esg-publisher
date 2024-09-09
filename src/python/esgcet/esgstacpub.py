@@ -2,6 +2,7 @@ import sys, json, os, re
 from esgcet.stac_client import TransactionClient
 import argparse
 from pathlib import Path
+from esgcet.settings import STAC_API
 import esgcet.logger as logger
 import esgcet.args as pub_args
 
@@ -85,12 +86,14 @@ def convert2stac(json_data):
             break
 
     collection = dataset_doc.get("project")
+    item_id = dataset_doc.get("instance_id")
     west_degrees = dataset_doc.get("west_degrees")
     south_degrees = dataset_doc.get("south_degrees")
     east_degrees = dataset_doc.get("east_degrees")
     north_degrees = dataset_doc.get("north_degrees")
 
     properties = {
+        "datetime": None,
         "start_datetime": dataset_doc.get("datetime_start"),
         "end_datetime": dataset_doc.get("datetime_end"),
     }
@@ -101,8 +104,8 @@ def convert2stac(json_data):
     item = {
         "type": "Feature",
         "stac_version": "1.0.0",
-        "extensions": [],
-        "id": dataset_doc.get("instance_id"),
+        "extensions": ["https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"],
+        "id": item_id,
         "geometry": {
             "type": "Polygon",
             "coordinates": [
@@ -116,9 +119,31 @@ def convert2stac(json_data):
             ]
         },
         "bbox": [
-            [west_degrees, south_degrees, east_degrees, north_degrees]
+            west_degrees, south_degrees, east_degrees, north_degrees
         ],
         "collection": collection,
+        "links": [
+            {
+                "rel": "self",
+                "type": "application/json",
+                "href": f"{STAC_API}/collections/{collection}/items/{item_id}"
+            },
+            {
+                "rel": "parent",
+                "type": "application/json",
+                "href": f"{STAC_API}/collections/{collection}"
+            },
+            {
+                "rel": "collection",
+                "type": "application/json",
+                "href": f"{STAC_API}/collections/{collection}"
+            },
+            {
+                "rel": "root",
+                "type": "application/json",
+                "href": f"{STAC_API}/collections"
+            }
+        ],
         "properties": properties,
     }
 
@@ -236,6 +261,7 @@ def run():
             exit(1)
         try:
             stac_item = convert2stac(new_json_data)
+            #publog.warn(json.dumps(stac_item, indent=4))
             rc = rc and tc.publish(stac_item)
         except Exception as ex:
             publog.exception("Failed to publish to STAC Transaction API")

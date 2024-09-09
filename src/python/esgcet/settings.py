@@ -78,7 +78,7 @@ CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 # Eg replace /thredds/fileServer with the prefix for NginX
 # Note these are netCDF specific and will need to change if other formats are considered
 URL_Templates = ["https://{}/thredds/fileServer/{}/{}|application/netcdf|HTTPServer",
-"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
+#"https://{}/thredds/dodsC/{}/{}|application/opendap-html|OPENDAP",
                  "globus:{}/{}/{}|Globus|Globus"]
 
 DATASET_GLOBUS_URL_TEMPLATE = "https://app.globus.org/file_manager?origin_id={}&amp;origin_path=/{}"
@@ -129,6 +129,7 @@ STAC_TRANSACTION_API = {
     "base_url": "https://n08bs7a0hc.execute-api.us-east-1.amazonaws.com/dev",
 }
 
+STAC_API = "https://api.esgf.globus.org"
 
 VARIABLE_LIMIT = 75
 

@@ -89,10 +89,12 @@ def run():
         publog.exception("Missing required  Exiting.")
         exit(1)
 
-    scanarg = a.scan_file
+    #scanarg = a.scan_file
     
-    if scanarg:
+    #if scanarg:
+    if a.scan_file:
         format_handler = ESGPubAutocHandler
+        scanarg = json.load(open(a.scan_file, 'r'))
     else:
         format_handler = ESGPubXArrayHandler
         scanarg = format_handler.xarray_load(map_json_data)
