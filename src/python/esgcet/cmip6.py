@@ -62,7 +62,7 @@ class cmip6(GenericPublisher):
                 exit(1)
             
         try:
-            new_json_data = pid.do_pidcite()
+            new_json_data = pid.do_pidcite(False)
         except Exception as ex:
             self.publog.exception("Assigning pid failed")
             self.cleanup()
@@ -89,15 +89,15 @@ class cmip6(GenericPublisher):
 
         # step four: make dataset
         self.publog.info("Making dataset...")
-        out_json_data = self.mk_dataset(map_json_data)
+        new_json_data = self.mk_dataset(map_json_data)
 
         # step five: assign PID
-        self.publog.info("Assigning PID...")
-        new_json_data = self.pid(out_json_data)
-
-        # step six: update record if exists
-        #self.publog.info("Updating...")
-        #self.update(new_json_data)
+ #       self.publog.info("Assigning PID...")
+ #       new_json_data = self.pid(out_json_data)
+        
+        #step six: update record if exists
+        self.publog.info("Updating...")
+        self.update(new_json_data)
 
         # step seven: publish to database
         self.publog.info("Running index pub...")

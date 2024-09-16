@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
+import esgcet.logger as logger
+
+log = logger.ESGPubLogger()
+
 
 class ESGUpdateBase:
 
 
-    def __init__(self):
-        pass
+    def __init__(self, silent=False, verbose=False):
+        self.publog = log.return_logger('Update Record', silent, verbose)
 
     @abstractmethod
     def update_file(self, dsetid : str):
@@ -39,8 +43,8 @@ class ESGUpdateBase:
         dsetid = self.query_update(dnode, mst)
 
         if dsetid:
-            self.update_core(dsetid,"datasets")
-            self.update_core(dsetid, "files")
+            self.update_dataset(dsetid)
+            self.update_file(dsetid)
             self.publog.info('Found previous version, updating the record: {}'.format(dsetid))
 
         else:

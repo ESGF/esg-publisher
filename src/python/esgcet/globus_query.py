@@ -36,7 +36,8 @@ class ESGGlobusQuery():
         return tmpfilter
     
     def globus_get_record(self, subj):
-        proc = Popen(["globus", "search", "subject", "show", self._UUID, subj.rstrip()], stdout=PIPE)
+        print(f"DEBUG {subj}")
+        proc = Popen(["globus", "search", "subject", "show", self._UUID, subj[0].rstrip()], stdout=PIPE)
 #        cmdstr = f"globus search subject show {self._UUID} '{subj.strip()}'"
 #        proc = Popen(cmdstr            , shell=True, stdout=PIPE)
  #       print(f"DEBUG {cmdstr}")
@@ -88,7 +89,7 @@ class ESGGlobusQuery():
             if single:
                 subj = x.decode().rstrip()
             else:
-                subj.append(x.decode().rstsrip())
+                subj.append(x.decode().rstrip())
         return subj
 
     def _post_proc_query(self, subj): 
@@ -117,4 +118,4 @@ def test():
 
     
 
-test()
+#test()

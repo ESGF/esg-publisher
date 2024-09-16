@@ -30,13 +30,13 @@ NON_LIST = [
     "timestamp",
 ]
 
-class GlobusSearch:
+class GlobusSearchIngest:
 
     def __init__(self, doc_arr, cachedir=None) -> None:
         self._doc_arr = doc_arr
         self._cache_dir = cachedir
 
-    def _get_gmeta_entry(self, doc, now):
+    def _get_gmeta_entry(self, doc, now=None):
         for key, value in doc.items():
             if isinstance(value, list):
                 continue
@@ -45,7 +45,8 @@ class GlobusSearch:
             doc[key] = [value]
 
         doc["retracted"] = False
-        doc["_timestamp"] = now
+        if now:
+            doc["_timestamp"] = now
 
         gmeta_entry = {
             "id": "dataset" if doc.get("type") == "Dataset" else "file",
@@ -61,7 +62,10 @@ class GlobusSearch:
     def convert2esgf2(self):
         pid_esgf1 = self._doc_arr
         gmeta = []
-        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        # Don't replace an existing _timestamp should be immutable, add a mod_timestamp instead to capture the update
+        now = None
+        if not pid_esgf1[0].get("_timestamp", False):
+            now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
         # Transform an ESGF1 dataset entries to an ESGF2 Globus index entry
         for doc in pid_esgf1:
@@ -78,15 +82,18 @@ class GlobusSearch:
 
         return gingest
 
-    def extern_globus_publish(self, filename, indexid, update=False):
+    def extern_globus_publish(self, filename, indexid):
         os.system(f"globus search ingest {indexid} {filename}")
 
     # pair with json.load(open(fn))
     def update_record(self, res):
 
-        for rec in res["ingest_data"]["gmeta"]:
+        for suprec in res["ingest_data"]["gmeta"]:
+            rec = suprec["content"]
             rec["latest"] = False
-            rec["mod_timestamp"] = datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            rec["mod_timestamp"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        print(f"DEBUG {res}")
         return res
 
     def check_cache(self):
@@ -119,7 +126,7 @@ class GlobusSearch:
 
         tmp_filename, tmp_abspath = self._get_cache_filename()
         print(f"makedirs {tmp_abspath}")
-        os.makedirs(tmp_abspath)
+        os.makedirs(tmp_abspath, exist_ok = True)
         with open(tmp_filename, "w") as f2:
             print(json.dumps(doc_res), file=f2)
         return tmp_filename
