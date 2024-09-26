@@ -86,4 +86,11 @@ class TransactionClient:
             "User-Agent": f"esgf_publisher/{__version__}",
         }
         resp = self.transaction_client.post(f"/collections/{collection}/items", headers=headers, data=entry)
-        self.publog.info(resp)
+        if resp.http_status == 201:
+            self.publog.info(resp.http_status)
+            self.publog.info("Published")
+        elif resp.http_status == 202:
+            self.publog.info(resp.http_status)
+            self.publog.info("Queued for publication")
+        else:
+            self.publog.error(f"Failed to publish: Error {resp.http_status}")

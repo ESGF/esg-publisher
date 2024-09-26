@@ -126,10 +126,10 @@ STAC_TRANSACTION_API = {
     "client_id": "6fa3b827-5484-42b9-84db-f00c7a183a6a",
     "access_control_policy": "https://esgf2.s3.amazonaws.com/access_control_policy.json",
     "scope_string": "https://auth.globus.org/scopes/6fa3b827-5484-42b9-84db-f00c7a183a6a/ingest",
-    "base_url": "https://n08bs7a0hc.execute-api.us-east-1.amazonaws.com/dev",
+    "base_url": "https://stac-transaction-api.esgf-west.org",
 }
 
-STAC_API = "https://api.esgf.globus.org"
+STAC_API = "https://api.stac.esgf-west.org"
 
 VARIABLE_LIMIT = 75
 
