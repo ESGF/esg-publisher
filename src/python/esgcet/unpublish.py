@@ -98,7 +98,7 @@ class ESGUnpublish:
         if do_delete:
             if notretracted:
                 self.globus_delete_files(dset_id, query)
-            self.globus_delete_subj(dset_jd)
+            self.globus_delete_subj(dset_id)
         else:
             self.globus_delete_files(dset_id, query)
             self.globus_retract_dataset(dset_id, query)
