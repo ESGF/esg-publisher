@@ -1,4 +1,4 @@
-import esgcet.unpublish as upub
+from esgcet.unpublish import ESGUnpublish
 import os
 import sys
 import json
@@ -72,6 +72,7 @@ def maps_to_dataset_list(maps):
     return dset_list
 
 def run():
+    upub = ESGUnpublish()
     a = get_args()
 
     cfg_file = a.cfg
@@ -158,7 +159,8 @@ def run():
              "cert": cert, 
              "auth" :auth, 
              "verbose" : verbose,
-             "silent" :silent }
+             "silent" :silent, "index_UUID" : config.get("index_UUID", "") }
+    args["dry_run"] = config.get("dry_run", False)
 
     if len(dset_id) > 0:
         args["dataset_id_lst"] = [dset_id]
