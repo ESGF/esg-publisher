@@ -25,6 +25,7 @@ class ESGPubAutocHandler(ESGPubHandlerBase):
                 yield x['values']
 
     def get_attrs_dict(self, scanobj):
+        self.publog.warn(type(scanobj))
         return scanobj['dataset']
 
     def get_variables(self, scanobj):
