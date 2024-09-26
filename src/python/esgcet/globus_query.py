@@ -48,23 +48,34 @@ class ESGGlobusQuery():
 #        print(f"DEBUG {res}")
         return json.load(proc.stdout)
 
-    def query_file_records(self, dataset_id):
+    def query_file_records(self, dataset_id, post_proc=True, latest=True):
         q = copy.deepcopy(SEARCH_TEMPLATE)
         q["filters"].append(self._add_filter("type", "File"))
         q["filters"].append(self._add_filter("dataset_id", dataset_id))
 
-        res = self._run_query(q)
-        y = []
-        for x in res:
-            y.append(self._post_proc_query(x))
-
+        if latest:
+            q["filters"].append(self._add_filter("latest", "true"))
+        res = self._run_query(q, False)
+        print(f"DEBUG {res}")
+        if post_proc:
+            y = []
+            for x in res:
+                y.append(self._post_proc_query([x]))
+            return y
+        else:
+            return res
 
     def dataset_query_master(self, master_id):
+        self._dataset_query(master_id, "master_id")
+    
+    def _dataset_query(self, _id, field, latest=True):
 
         q = copy.deepcopy(SEARCH_TEMPLATE)
         q["filters"].append(self._data_node_filter)
         q["filters"].append(self._add_filter("type", "Dataset"))
-        q["filters"].append(self._add_filter("master_id", master_id))
+        q["filters"].append(self._add_filter(field, _id))
+        if latest:
+            q["filters"].append(self._add_filter("latest", "true"))
 
         res = self._run_query(q)
         print (f"DEBUG : {res}")
@@ -79,17 +90,19 @@ class ESGGlobusQuery():
         subproc = Popen(["globus", "search", "query", self._UUID, "--query-document",temp.name], stdout=PIPE)
 
         subproc.wait()
+        
         if single:
             subj = ""
+            for x in subproc.stdout:
+                if not subj:
+                    raise RuntimeError(f"non empty {subj}")
+                # There should be only one latest, TODO convert to raise an Exception
+                subj = x.decode().rstrip()
         else:
             subj = []
-
-        for x in subproc.stdout:
-            assert not subj  # There should be only one latest, TODO convert to raise an Exception
-            if single:
-                subj = x.decode().rstrip()
-            else:
+            for x in subproc.stdout:
                 subj.append(x.decode().rstrip())
+  
         return subj
 
     def _post_proc_query(self, subj): 
