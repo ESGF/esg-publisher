@@ -178,10 +178,6 @@ class PublisherArgs:
         except:
             globus = "none"
 
-        try:
-            dtn = config['data_transfer_node']
-        except:
-            dtn = "none"
 
         disable_citation = config.get("disable_citation", False)
         disable_further_info = config.get("disable_further_info", False)
@@ -257,9 +253,6 @@ class PublisherArgs:
         if globus == "none" and not silent:
             publog.info("No Globus UUID defined.")
 
-        if dtn == "none" and not silent:
-            publog.info("No data transfer node defined.")            
-
         argdict = { "silent": silent, 
                    "verbose": verbose,
                    "autoc_command": autocurator, 
@@ -333,6 +326,8 @@ class PublisherArgs:
 
         if "https_url" in config:
             argdict["https_url"] = config["https_url"]
+        if "skip_opendap" in config:
+            argdict["skip_opendap"] = condig["skip_opendap"]
         return argdict
 
 

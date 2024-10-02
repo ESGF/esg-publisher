@@ -47,7 +47,7 @@ class ESGPubMakeDataset:
         self.dataset['project'] = project
         
     def __init__(self, data_node, index_node, replica, globus, data_roots, https, handler_class=None, 
-                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
+                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False, skip_opendap=False):
         """
         Constructor
 
@@ -88,6 +88,8 @@ class ESGPubMakeDataset:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
         self.base_path = None #  This is used to create a directory for a dataset-level Globus url
+        self._skip_opendap = skip_opendap
+7        
 
     def set_project(self, project_in):
         """
@@ -232,6 +234,8 @@ class ESGPubMakeDataset:
 
 
     def format_template(self, template, root, rel):
+        if self.skip_opendap and "dodsC" in template:
+            return None
         if "Globus" in template:
             if self.globus != 'none':
                 return template.format(self.globus, root, rel)
