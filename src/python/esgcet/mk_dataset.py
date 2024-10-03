@@ -356,8 +356,8 @@ class ESGPubMakeDataset:
                         elif "info" in var_rec:
                             record["variable_long_name"].append(var_rec["info"])
                         if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
-                            cf_list.append(var_rec["standard_name"])          
-                        if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
+                            cf_list.append(var_rec["standard_name"]) 
+                        if "units" in var_rec and var_rec["units"] != "1" and len(var_rec["units"]) > 0:
                             units_list.append(var_rec["units"])
                         record["variable"].append(vk)
 
@@ -416,7 +416,6 @@ class ESGPubMakeDataset:
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-        self.proc_xattr(xattrfn)
 
         self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
 
@@ -433,6 +432,8 @@ class ESGPubMakeDataset:
         self.dataset["access"] = access
 
         self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, self.parse_path())
+        self.proc_xattr(xattrfn)
+
         ret.append(self.dataset)
         return ret
 
