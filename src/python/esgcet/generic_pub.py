@@ -20,7 +20,6 @@ class BasePublisher(object):
         self.data_node = argdict["data_node"]
         self.data_roots = argdict["data_roots"]
         self.globus = argdict["globus"]
-        self.dtn = argdict["dtn"]
         self.replica = argdict["replica"]
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
@@ -48,7 +47,7 @@ class BasePublisher(object):
         return map_json_data
 
     def mk_dataset(self, map_json_data):
-        mkd = ESGPubMKDNonNC(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, self.dtn,
+        mkd = ESGPubMKDNonNC(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, 
                                 self.silent, self.verbose)
         mkd.set_project(self.project)
         try:

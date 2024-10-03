@@ -89,7 +89,6 @@ class ESGPubMakeDataset:
         self._disable_further_info = disable_further_info
         self.base_path = None #  This is used to create a directory for a dataset-level Globus url
         self._skip_opendap = skip_opendap
-7        
 
     def set_project(self, project_in):
         """
@@ -234,7 +233,7 @@ class ESGPubMakeDataset:
 
 
     def format_template(self, template, root, rel):
-        if self.skip_opendap and "dodsC" in template:
+        if self._skip_opendap and "dodsC" in template:
             return None
         if "Globus" in template:
             if self.globus != 'none':

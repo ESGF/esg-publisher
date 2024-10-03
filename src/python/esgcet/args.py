@@ -237,7 +237,6 @@ class PublisherArgs:
                    "data_node": data_node,
                    "data_roots": data_roots, 
                    "globus": globus, 
-                   "dtn": dtn, 
                    "replica": replica,
                    "json_file": json_file, 
                    "test": test, 
@@ -304,7 +303,7 @@ class PublisherArgs:
         if "https_url" in config:
             argdict["https_url"] = config["https_url"]
         if "skip_opendap" in config:
-            argdict["skip_opendap"] = condig["skip_opendap"]
+            argdict["skip_opendap"] = config["skip_opendap"]
         return argdict
 
 
