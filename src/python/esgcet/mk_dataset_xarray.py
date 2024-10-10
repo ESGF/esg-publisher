@@ -53,7 +53,14 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
 
         geo_units = []
         # latitude
-        if "latitude" in scanobj.coords:
+        if "lat" in scanobj.coords:
+            lat = scanobj.coords["lat"]
+            if len(lat) > 0:
+                record["north_degrees"] = float(lat[-1])
+                record["south_degrees"] = float(lat[0])
+            else:
+                self.publog.warn("'lat' found but len 0")          
+        elif "latitude" in scanobj.coords:
             lat = scanobj.coords["latitude"]
             if len(lat) > 0:
                 if isinstance(lat[0].values, (list, np.ndarray)):
@@ -67,8 +74,17 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
                 geo_units.append(lat.units)
             else:
                 self.publog.warn("Latitude found but len 0")
+        else:
+            self.publong.warn("Lat/Latitude not found")
         # longitude
-        if "longitude" in scanobj.coords:
+        if "lon" in scanobj.coords:
+            lon = scanobj.coords["lon"]
+            if len(lon) > 0:
+                record["east_degrees"] = float(lon[-1])
+                record["west_degrees"] = float(lon[0])
+            else:
+                self.publog.warn("'lon' found but len 0")          
+        elif "longitude" in scanobj.coords:
             lon = scanobj.coords["longitude"]
             if len(lon) > 0:
                 if isinstance(lon[0].values, (list, np.ndarray)):
@@ -82,6 +98,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             else:
                 self.publog.warn("Latitude found but len 0")
                 # time
+        else:
+            self.publong.warn("Lon/Longitude not found")
         if "time" in scanobj.coords:
             ti = scanobj.coords["time"]
             record["datetime_start"] = self._get_time_str(ti[0].values)
