@@ -63,7 +63,7 @@ class GenericPublisher(BasePublisher):
         
         https_url = self.argdict.get("https_url",None)    
         mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, 
-                                 https_url, self.format_handler, self.silent, self.verbose, skip_opendap=self.argdict["skip_opendap"])
+                                 https_url, self.format_handler, self.silent, self.verbose, skip_opendap=self.argdict.get("skip_opendap",False))
         mkd.set_project(self.project)
 
         if self.autoc_command:
