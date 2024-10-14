@@ -23,7 +23,7 @@ class BasePublisher(object):
         self.replica = argdict["replica"]
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
-        self.auth = argdict["auth"]
+        self.auth = argdict.get("auth",False)
         self.proj_config = argdict["user_project_config"]
         self.verify = argdict["verify"]
         self.mountpoints = argdict["mountpoints"]

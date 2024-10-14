@@ -304,6 +304,7 @@ class PublisherArgs:
             argdict["https_url"] = config["https_url"]
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
+
         return argdict
 
 
