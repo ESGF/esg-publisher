@@ -178,7 +178,12 @@ def run():
     if (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
             pid_creds = config['pid_creds']
-            args["pid_creds"] = pid_creds
+            creds_lst = []
+            for it in pid_creds:
+                rec = pid_creds[it]
+                rec['url'] = it
+                creds_lst.append(rec)
+            args["pid_creds"] = creds_lst
         except:
             publog.exception("PID credentials not defined. Define in config file esg.ini.")
             exit(1)    
