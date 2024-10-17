@@ -75,7 +75,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             else:
                 self.publog.warn("Latitude found but len 0")
         else:
-            self.publong.warn("Lat/Latitude not found")
+            self.publog.warn("Lat/Latitude not found")
         # longitude
         if "lon" in scanobj.coords:
             lon = scanobj.coords["lon"]
