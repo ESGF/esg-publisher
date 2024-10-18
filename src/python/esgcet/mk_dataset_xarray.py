@@ -99,7 +99,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
                 self.publog.warn("Latitude found but len 0")
                 # time
         else:
-            self.publong.warn("Lon/Longitude not found")
+            self.publog.warn("Lon/Longitude not found")
         if "time" in scanobj.coords:
             ti = scanobj.coords["time"]
             record["datetime_start"] = self._get_time_str(ti[0].values)
