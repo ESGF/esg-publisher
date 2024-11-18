@@ -7,8 +7,8 @@ log = logger.ESGPubLogger()
 
 class ESGPubMKDinput4MIPs(ESGPubMakeDataset):
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
-        super().__init__(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, limit_exceeded, user_project)
+    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None, skip_opendap=False):
+        super().__init__(data_node, index_node, replica, globus, data_roots, dtn, silent, verbose, limit_exceeded, user_project, skip_opendap=skip_opendap)
         self.publog = log.return_logger('Make Dataset input4MIPs', silent, verbose)
 
     def xattr_handler(self):
