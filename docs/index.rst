@@ -1,4 +1,4 @@
-The esgcet package for ESGF Publication - Version 5.2.3
+The esgcet package for ESGF Publication - Version 5.2.4
 =======================================================
 
 Esgcet is a package of publisher commands for publishing to the `ESGF
@@ -13,7 +13,7 @@ If you have conda on a Linux system you can install the publisher wih the follow
      conda create -n esgf-pub -c conda-forge pip cmor  # most commun
      conda activate esgf-pub
      pip install esgcet  
-     esgpublish --version #  Ensure you have upgraded to v5.2.3
+     esgpublish --version #  Ensure you have upgraded to v5.2.4
      esgpublish # will print the usage information.
 
 
