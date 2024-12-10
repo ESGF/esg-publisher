@@ -56,8 +56,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if "lat" in scanobj.coords:
             lat = scanobj.coords["lat"]
             if len(lat) > 0:
-                record["north_degrees"] = float(lat[-1])
-                record["south_degrees"] = float(lat[0])
+                record["north_degrees"] = lat.values.max()
+                record["south_degrees"] = lat.values.min()
             else:
                 self.publog.warn("'lat' found but len 0")          
         elif "latitude" in scanobj.coords:
@@ -80,8 +80,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if "lon" in scanobj.coords:
             lon = scanobj.coords["lon"]
             if len(lon) > 0:
-                record["east_degrees"] = float(lon[-1])
-                record["west_degrees"] = float(lon[0])
+                record["east_degrees"] = lon.values.max()
+                record["west_degrees"] = lon.values.min()
             else:
                 self.publog.warn("'lon' found but len 0")          
         elif "longitude" in scanobj.coords:
