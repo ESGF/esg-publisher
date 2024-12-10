@@ -21,7 +21,8 @@ class ESGPubMakeDataset:
         proj: Name of the project to be process
         """
         project = proj
-
+        self.GA = GA
+        
         if project in DRS:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
@@ -42,6 +43,8 @@ class ESGPubMakeDataset:
                 self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
+            if 'GA' in self.user_project[project]:
+                self.GA = { project : self.user_project[project]['GA'] }
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
@@ -180,8 +183,8 @@ class ESGPubMakeDataset:
         # handle Global attributes if defined for the project
         projkey = proj.lower()
 
-        if projkey in GA:
-            for facetkey in GA[projkey]:
+        if projkey in self.GA:
+            for facetkey in self.GA[projkey]:
                 # did we find a GA in the data by the the key name
                 if facetkey in scandata:
                     facetval = scandata[facetkey]
@@ -290,7 +293,6 @@ class ESGPubMakeDataset:
                     proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
-                    print(f"base path = '{self.base_bath}'")
                     if not self.base_path:
                         mapped_root = self.data_roots[root]
                         self.base_path = f"{mapped_root}/{rel_path}"
