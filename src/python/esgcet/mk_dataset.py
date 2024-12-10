@@ -50,7 +50,7 @@ class ESGPubMakeDataset:
         self.dataset['project'] = project
         
     def __init__(self, data_node, index_node, replica, globus, data_roots, https, handler_class=None, 
-                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
+                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False, skip_opendap=False):
         """
         Constructor
 
@@ -91,6 +91,7 @@ class ESGPubMakeDataset:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
         self.base_path = None #  This is used to create a directory for a dataset-level Globus url
+        self._skip_opendap = skip_opendap
 
     def set_project(self, project_in):
         """
@@ -235,6 +236,8 @@ class ESGPubMakeDataset:
 
 
     def format_template(self, template, root, rel):
+        if self._skip_opendap and "dodsC" in template:
+            return None
         if "Globus" in template:
             if self.globus != 'none':
                 return template.format(self.globus, root, rel)
@@ -354,8 +357,8 @@ class ESGPubMakeDataset:
                         elif "info" in var_rec:
                             record["variable_long_name"].append(var_rec["info"])
                         if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
-                            cf_list.append(var_rec["standard_name"])          
-                        if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
+                            cf_list.append(var_rec["standard_name"]) 
+                        if "units" in var_rec and var_rec["units"] != "1" and len(var_rec["units"]) > 0:
                             units_list.append(var_rec["units"])
                         record["variable"].append(vk)
 
@@ -414,7 +417,6 @@ class ESGPubMakeDataset:
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-        self.proc_xattr(xattrfn)
 
         self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
 
@@ -431,6 +433,8 @@ class ESGPubMakeDataset:
         self.dataset["access"] = access
 
         self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, self.parse_path())
+        self.proc_xattr(xattrfn)
+
         ret.append(self.dataset)
         return ret
 
