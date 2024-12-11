@@ -11,7 +11,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         destpath = os.path.dirname(datafile)
 
         filespec = f"{destpath}/*.nc"
-        return xarray.open_mfdataset(filespec, use_cftime=True)
+        res = xarray.open_mfdataset(filespec, use_cftime=True)
+        return res
 
     def get_attrs_dict(self, scanobj):
         return scanobj.attrs
