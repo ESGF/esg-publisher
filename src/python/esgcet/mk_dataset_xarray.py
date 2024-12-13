@@ -43,7 +43,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             idx = x.index('.')
             return x[:idx] + 'Z'
         else:
-            return timeval.item().isoformat() + "Z"
+            return timeval.item().isoformat(timespec="seconds") + "Z"
         
     def _get_min_max_bounds(self, latlon):
         bigarr = latlon[0] + latlon[-1]
