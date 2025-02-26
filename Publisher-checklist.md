@@ -3,9 +3,9 @@
  - [ ] pip install publisher
  - [ ] install config
  - [ ] update config
+ - [ ] .json input file (input4MIPs)
  - [ ] obtain .map files
  - [ ] fix up mapfiles
- - [ ] .json input file (input4MIPs)
  - [ ] esgpublish --config --map --json 
 
 
