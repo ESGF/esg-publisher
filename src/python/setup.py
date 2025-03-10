@@ -42,5 +42,6 @@ setup(
                                         'esgmapconv=esgcet.esgmapconv:main',
                                         'esgmigrate=esgcet.migratecmd:main',
                                         'esgunpublish=esgcet.esgunpublish:main',
-                                        'esgstacpub=esgcet.esgstacpub:main']}
+                                        'esgstacpub=esgcet.esgstacpub:main',
+                                        'esgstacaddrep=esgcet.esgstacaddrep:main']}
 )
