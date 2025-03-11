@@ -1,4 +1,5 @@
 import sys, json, os, re
+from urllib.parse import urlparse, urlunparse
 from esgcet.stac_client import TransactionClient
 import argparse
 from pathlib import Path
@@ -192,6 +193,40 @@ def convert2stac(json_data):
     return item
 
 
+def add_replica(stac_item, rep_datanode, rep_globus, rep_path, rep_hostname):
+    assets = stac_item.get("assets", {})
+    for name, asset in assets.items():
+        if asset.get("alternate:name") == rep_datanode:
+            continue
+
+        if "alternate" not in asset:
+            asset["alternate"] = {}
+
+        if rep_datanode in asset.get("alternate"):
+            continue
+
+        replica_asset = {
+            "description": asset.get("description"),
+            "type": asset.get("type"),
+            "roles": asset.get("roles", []),
+            "alternate:name": rep_datanode
+        }
+
+        if name == "globus":
+            replica_asset["href"] = (
+                f"https://app.globus.org/file-manager?"
+                f"origin_id={rep_globus}&origin_path={rep_path}"
+            )
+
+        elif asset.get("type") == "application/netcdf":
+            filename = asset["href"].split('/')[-1]
+            replica_asset["href"] = f"https://{rep_hostname}{rep_path}/{filename}"
+
+        asset["alternate"][rep_datanode] = replica_asset
+
+    return stac_item
+
+
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF STAC Transaction API.")
 
@@ -200,6 +235,14 @@ def get_args():
     parser.add_argument("--stac-api", dest="stac_api", default=None, help="Specify STAC Transaction API.")
     parser.add_argument("--pub-rec", dest="json_data", default=None,
                         help="JSON file output from esgpidcitepub or esgmkpubrec.")
+    parser.add_argument("--globus-collection-uuid", dest="rep_globus", required=True,
+                        help="UUID of Globus collection to access replicated item")
+    parser.add_argument("--rep-path", dest="rep_path", required=True,
+                        help="Path to replicated item")
+    parser.add_argument("--http-hostname", dest="rep_hostname", required=True,
+                        help="Hostname of the HTTP server")
+    parser.add_argument("--datanode", dest="rep_datanode", required=True,
+                        help="Datanode that iwll be used to identify replicated assets of the item")
     parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
@@ -261,10 +304,10 @@ def run():
             exit(1)
         try:
             stac_item = convert2stac(new_json_data)
-            #publog.warn(json.dumps(stac_item, indent=4))
-            rc = rc and tc.publish(stac_item)
+            stac_item = add_replica(stac_item, a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname)
+            rc = rc and tc.put(stac_item)
         except Exception as ex:
-            publog.exception("Failed to publish to STAC Transaction API")
+            publog.exception("Failed to publish replica to STAC Transaction API")
             exit(1)
     if not rc:
         exit(1)
