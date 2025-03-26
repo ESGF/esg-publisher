@@ -46,7 +46,7 @@ class PublisherArgs:
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
-
+        parser.add_argument("--no-xarray", dest="skipxr", action="store_true", help="Bypass use of Xarray (metadata will be incomplete)")
         pub = parser.parse_args()
 
         return pub
@@ -305,6 +305,7 @@ class PublisherArgs:
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
 
+        argdict["skipxr"] = pub.skipxr
         return argdict
 
 
