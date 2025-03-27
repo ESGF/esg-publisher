@@ -13,7 +13,7 @@ class ESGPubNC4Handler(ESGPubHandlerBase):
 
         if len(flst) == 0:
             raise RuntimeError("Directory empty!")
-        fn = f"destpath/{flst[0]}"
+        fn = f"{destpath}/{flst[0]}"
         ds = netCDF4.Dataset(fn)
 
         return ds
