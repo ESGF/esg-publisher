@@ -2,7 +2,6 @@ import xarray, netCDF4
 from esgcet.handler_base import ESGPubHandlerBase
 import os.path
 import numpy as np
-import numbers
 
 class ESGPubXArrayHandler(ESGPubHandlerBase):
 
@@ -12,7 +11,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         destpath = os.path.dirname(datafile)
 
         filespec = f"{destpath}/*.nc"
-        res = xarray.open_mfdataset(filespec, use_cftime=True, chunks={}, decode_times=False)
+        res = xarray.open_mfdataset(filespec, use_cftime=True)
         return res
 
     def get_attrs_dict(self, scanobj):
@@ -40,7 +39,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         return [x for x in variable]
 
     def _get_time_str(self, timeval):
-        if isinstance(timeval.item(), numbers.Number):
+        if type(timeval.item()) is int:
             x = str(timeval)
             idx = x.index('.')
             return x[:idx] + 'Z'
