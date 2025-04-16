@@ -96,11 +96,10 @@ class ESGUnpublish:
         # pubCli = publisherClient(cert_fn, hostname, auth=auth, verbose=args["verbose"], silent=args["silent"])
         self.data_node = data_node
         if do_delete:
-            if notretracted:
-                self.globus_delete_files(dset_id, query)
+            self.globus_delete_files(dset_id, query)
             self.globus_delete_subj(dset_id)
         else:
-            self.globus_delete_files(dset_id, query)
+            self.globus_retract_files(dset_id, query)
             self.globus_retract_dataset(dset_id, query)
                 
         #     pubCli.delete(dset_id)
@@ -111,7 +110,7 @@ class ESGUnpublish:
     
     def globus_retract_dataset(self, dset_id, query):
     
-        query= ESGGlobusQuery(self.UUID, self.data_node)
+   #     query= ESGGlobusQuery(self.UUID, self.data_node)
         res = query._post_proc_query([dset_id])
         gs = GlobusSearchIngest([res])        
 
@@ -125,6 +124,11 @@ class ESGUnpublish:
         res = query.query_file_records(dset_id, False)
         for x in res:
             self.globus_delete_subj(x)
+            
+    def globus_retract_files(self, dset_id, query):
+        res = query.query_file_records(dset_id, False)
+        for x in res:
+            self.globus_retract_dataset(x, query)    
         
     def globus_delete_subj(self,  subj):
 
