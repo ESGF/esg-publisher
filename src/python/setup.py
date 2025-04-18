@@ -24,13 +24,12 @@ setup(
     description = 'ESGCET publication package',
     author = 'Sasha Ames',
     author_email = 'ames4@llnl.gov',
-    url = 'http://esgf.llnl.gov',
+    url = 'http://esgf.github.io',
     install_requires = [
         "requests",
             "esgfpid",
         "ESGConfigParser==1.0.0a1",
     ] + additional_requirements,
-    packages = find_packages(exclude=['ez_setup']),
     include_package_data = True,
     zip_safe = False,                   # Migration repository must be a directory
     entry_points={'console_scripts': ['esgpidcitepub=esgcet.esgpidcitepub:main',
