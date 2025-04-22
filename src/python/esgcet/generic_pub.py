@@ -85,9 +85,12 @@ class BasePublisher(object):
         ip = ESGPubIndex(self.index_node,  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
         rc = True
         try:
-            rc = ip.do_globus(dataset_records)
+            if self.argdict["globus_index"]:
+                rc = ip.do_globus(dataset_records)
+            else:
+                rc = ip.do_publish(dataset_records)
         except Exception as ex:
-            self.publog.exception("Failed to publish to index node")
+            self.publog.exception("Failed to publish to index.")
             self.cleanup()
             exit(1)
         return rc
