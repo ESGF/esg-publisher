@@ -1,20 +1,7 @@
 Installation
 ============
 
-Conda & Required Packages
--------------------------
-
-We recommend creating a conda env before installing ``esgcet`` ::
-
-    conda create -n esgf-pub -c conda-forge -c esgf-forge pip libnetcdf cmor autocurator esgconfigparser
-    conda activate esgf-pub
-
-
-You will also need to install ``esgfpid`` using pip::
-
-    pip install esgfpid
-
-NOTE: you will need a functioning version of ``autocurator`` in order to run the publisher, in addition to downloading the CMOR tables. See those pages for more info.  The ``autocurator`` package in the ``esgf-forge`` conda channel provides a working albeit not the most recent version of this module.
+We recommend creating a ``conda`` environment or ``venv`` for running the esg publisher.
 
 Pip Install
 -----------
@@ -23,12 +10,13 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.2.3
+    esgpublish --version #  Ensure you have upgraded to v5.2.4
 
+
+All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
 
 Installing esgcet via git
 -------------------------
-
 
 To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
 
@@ -36,13 +24,13 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.2.3 has been installed
+    esgpublish --version  # Confirm that v5.2.4 has been installed
 
 Now you will be able to call all commands in this package from any directory.  
 
 
+NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info (https://pcmdi.github.io/CMIP6).
 
-NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info.
 
 
 Config File (esg.yaml)
@@ -66,12 +54,12 @@ The config file will contain the following settings, most required settings are 
  * autoc_path
     * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots
-    * Required. These are paths where you place your project data for publication, typically within mounted large storage systems.  Each entry maps the path to a logical subdirectory within a data url on the datanode.  Please note that these names also appear in data node setup within ``esgf-docker`` configuations. (Ansible playbooks or Helm charts).
+    * Required. These are paths where you place your project data for publication, typically within mounted large storage systems, on the local server where running the publisher.  Each entry maps the path to a logical subdirectory within a data url on the datanode.  Please note two configurations (1) these may be different from the data node mounts --or-- (2) may also appear in data node setup within ``esgf-docker`` configuations (Ansible playbooks or Helm charts) if the local publishing node uses the same mounts. Contact your node/site administrator for more info.
  * mountpoint_map
-    * Optional. Must be in yaml dictionary format.  Specifies an additonal mapping for the data root mounts that appear in the input mapfiles to the mounted data root on the host running the publisher, in the event mapfile generation occurred on a different host where the data resided at a diff
+    * Optional. Must be in yaml dictionary format.  Specifies an additonal mapping for the data root mounts that appear in the input mapfiles to the mounted data root on the host running the publisher, in the event mapfile generation occurred on a different host where the data resided at a different mountpoint.
     Changes specified "aliased" roots in mapfile to actual file roots like so: /source/path/in/mapfiles: "/actual/path/to/data"
  * cert
-    * Required, unless running in ``--no-auth`` mode. This is the full path to the certificate file used for publishing. Default assumes a file "cert.pem" in your current directory. Replace to override.
+    * Optional. This is the full path to the certificate file used for publishing if publishing to a legacy ``esg-search`` site requiring authorization.
  * test
     * Optional. This can be set to True or False, and it will run the esgfpid service in test mode. Default assumes False. Override if you are not doing production publishing.
  * project
@@ -79,7 +67,7 @@ The config file will contain the following settings, most required settings are 
  * non_netcdf
     * Optional. Enable or disable publication settings for non NetCDF data, default assumes False.
  * set_replica
-    * Optional. Enable or disable replica publication settings. Default assumes False, or replica publication off.
+    * Optional. Enable or disable replica publication settings, for sites that publish replica data. Default assumes False, or replica publication off (original data publication).
  * globus_uuid
     * Optional. Specify the UUID for your site Globus endpoint as configured in the Globus webapp.  Default leaves out Globus URL from dataset metadata.
  * data_transfer_node

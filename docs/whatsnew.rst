@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v5.2.4
+------
+
+* Bugfixes including:
+  * obs/input4MIPs publishing
+  * ``cert`` optional cleanup
+  * unpublication of PIDs 
+* Optional OpenDAP via ``skip_opendap`` setting
+* Retire GridFTP publishing DTN setting
+
+
 v5.2.3
 ------
 

@@ -11,7 +11,7 @@ log = logger.ESGPubLogger()
 class ESGPubUpdate():
 
 
-    def __init__(self, index_node, cert_fn="", silent=False, verbose=False, verify=False, auth=True):
+    def __init__(self, index_node, cert_fn="", silent=False, verbose=False, verify=False, auth=False):
         """
             index_node (string):  The node to search for the update 
             cert_fn (string):  Filename for certicate to use to push updates to the API
