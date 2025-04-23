@@ -12,7 +12,7 @@ class ESGPubIndex:
     """
     Wrapper class for push-publishing of records to the index node.
     """
-    def __init__(self, UUID,  verbose=False, silent=False, verify=True, auth=None, arch_cfg=None, file_cache=None, dry_run=False):
+    def __init__(self, index_node="", UUID=None,  verbose=False, silent=False, verify=True, auth=None, arch_cfg=None, file_cache=None, dry_run=False):
         """
         Constructor, creates a "client" object
         """
@@ -22,6 +22,7 @@ class ESGPubIndex:
         self.publog = log.return_logger('Index Publication', silent, verbose)
         self.arch_cfg = arch_cfg
         self._index_UUID = UUID
+        
         self._cache_dir = file_cache
         self._dry_run = dry_run
 

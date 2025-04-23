@@ -82,7 +82,8 @@ class BasePublisher(object):
                           "archive_path" : self.argdict["archive_path"]}
         print(f"VERBOSE: {self.verbose}")
         # TODO: support solr and Globus using the globus_index argument
-        ip = ESGPubIndex(self.index_node,  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
+
+        ip = ESGPubIndex(UUID=self.argdict["index_UUID"],  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
         rc = True
         try:
             rc = ip.do_globus(dataset_records)

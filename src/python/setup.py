@@ -14,7 +14,8 @@ additional_requirements = [
             "xarray",
             "netcdf4",
             "dask",
-            "pyyaml"
+            "pyyaml",
+            "globus-cli"
 ]
 
 
