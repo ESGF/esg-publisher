@@ -46,7 +46,7 @@ class PublisherArgs:
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
-
+        parser.add_argument("--no-xarray", dest="skipxr", action="store_true", help="Bypass use of Xarray (metadata will be incomplete)")
         pub = parser.parse_args()
 
         return pub
@@ -178,10 +178,6 @@ class PublisherArgs:
         except:
             globus = "none"
 
-        try:
-            dtn = config['data_transfer_node']
-        except:
-            dtn = "none"
 
         disable_citation = config.get("disable_citation", False)
         disable_further_info = config.get("disable_further_info", False)
@@ -234,9 +230,6 @@ class PublisherArgs:
         if globus == "none" and not silent:
             publog.info("No Globus UUID defined.")
 
-        if dtn == "none" and not silent:
-            publog.info("No data transfer node defined.")            
-
         argdict = { "silent": silent, 
                    "verbose": verbose,
                    "autoc_command": autocurator, 
@@ -244,7 +237,6 @@ class PublisherArgs:
                    "data_node": data_node,
                    "data_roots": data_roots, 
                    "globus": globus, 
-                   "dtn": dtn, 
                    "replica": replica,
                    "json_file": json_file, 
                    "test": test, 
@@ -310,11 +302,19 @@ class PublisherArgs:
 
         if "https_url" in config:
             argdict["https_url"] = config["https_url"]
+
         if config.get("globus_index", False):
             argdict["globus_index"] = True
             argdict["index_UUID"] = config.get("index_UUID", "")
+        
+    
         argdict["dry_run"] = config.get("dry_run", False)
         
+        if "skip_opendap" in config:
+            argdict["skip_opendap"] = config["skip_opendap"]
+
+        argdict["skipxr"] = pub.skipxr
+
         return argdict
 
 

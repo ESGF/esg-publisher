@@ -12,9 +12,9 @@ log = logger.ESGPubLogger()
 
 class ESGPubMKDNonNC(ESGPubMakeDataset):
 
-    def __init__(self, data_node, index_node, replica, globus, data_roots, dtn, silent=False, verbose=False, limit_exceeded=False, user_project=None):
+    def __init__(self, data_node, index_node, replica, globus, data_roots,  silent=False, verbose=False, limit_exceeded=False, user_project=None):
         
-        super().__init__(data_node, index_node, replica, globus, data_roots, dtn, None, silent, verbose, limit_exceeded,
+        super().__init__(data_node, index_node, replica, globus, data_roots,  None, silent, verbose, limit_exceeded,
                          user_project)
         self.publog = log.return_logger('Make Non-NetCDF Dataset', silent, verbose)
 

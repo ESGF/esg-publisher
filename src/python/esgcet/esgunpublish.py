@@ -21,7 +21,7 @@ def get_args():
     def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
-    parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
+    parser.add_argument("--certificate", "-c", dest="cert", default=None,
                         help="Use the following certificate file in .pem form for unpublishing (use a myproxy login to generate).")
     parser.add_argument("--delete", dest="delete", action="store_true", help="Specify deletion of dataset (default is retraction).")
     parser.add_argument("--dset-id", dest="dset_id", default=None,
@@ -32,7 +32,6 @@ def get_args():
                         help="Path to a file containing list of dataset_ids.")
     parser.add_argument("--config", "-i", dest="cfg", default=def_config, help="Path to config file.")
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
-    parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
 
@@ -84,13 +83,16 @@ def run():
 
     args = pub_args.PublisherArgs()
     config = args.load_config(cfg_file)
-    if a.cert == "./cert.pem":
-        try:
-            cert = config['cert']
-        except:
-            cert = a.cert
-    else:
+    auth = False
+    cert = ""
+
+    if a.cert:
         cert = a.cert
+    elif 'cert' in config:
+        cert = config['cert']
+
+    if cert:
+        auth = True
 
     if a.index_node is None:
         try:
@@ -122,10 +124,6 @@ def run():
     else:
         d = False
 
-    if a.no_auth:
-        auth = False
-    else:
-        auth = True
         
     if not a.silent:
         try:
@@ -180,7 +178,12 @@ def run():
     if (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
             pid_creds = config['pid_creds']
-            args["pid_creds"] = pid_creds
+            creds_lst = []
+            for it in pid_creds:
+                rec = pid_creds[it]
+                rec['url'] = it
+                creds_lst.append(rec)
+            args["pid_creds"] = creds_lst
         except:
             publog.exception("PID credentials not defined. Define in config file esg.ini.")
             exit(1)    

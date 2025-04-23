@@ -21,7 +21,8 @@ class ESGPubMakeDataset:
         proj: Name of the project to be process
         """
         project = proj
-
+        self.GA = GA
+        
         if project in DRS:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
@@ -42,12 +43,14 @@ class ESGPubMakeDataset:
                 self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
+            if 'GA' in self.user_project[project]:
+                self.GA = { project : self.user_project[project]['GA'] }
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
         
     def __init__(self, data_node, index_node, replica, globus, data_roots, https, handler_class=None, 
-                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False):
+                 silent=False, verbose=False, limit_exceeded=False, user_project=None, disable_further_info=False, skip_opendap=False):
         """
         Constructor
 
@@ -88,6 +91,7 @@ class ESGPubMakeDataset:
             self.handler = handler_class(self.publog)
         self._disable_further_info = disable_further_info
         self.base_path = None #  This is used to create a directory for a dataset-level Globus url
+        self._skip_opendap = skip_opendap
 
     def set_project(self, project_in):
         """
@@ -180,8 +184,8 @@ class ESGPubMakeDataset:
         # handle Global attributes if defined for the project
         projkey = proj.lower()
 
-        if projkey in GA:
-            for facetkey in GA[projkey]:
+        if projkey in self.GA:
+            for facetkey in self.GA[projkey]:
                 # did we find a GA in the data by the the key name
                 if facetkey in scandata:
                     facetval = scandata[facetkey]
@@ -232,6 +236,8 @@ class ESGPubMakeDataset:
 
 
     def format_template(self, template, root, rel):
+        if self._skip_opendap and "dodsC" in template:
+            return None
         if "Globus" in template:
             if self.globus != 'none':
                 return template.format(self.globus, root, rel)
@@ -290,7 +296,6 @@ class ESGPubMakeDataset:
                     proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
-                    print(f"base path = '{self.base_bath}'")
                     if not self.base_path:
                         mapped_root = self.data_roots[root]
                         self.base_path = f"{mapped_root}/{rel_path}"
@@ -352,8 +357,8 @@ class ESGPubMakeDataset:
                         elif "info" in var_rec:
                             record["variable_long_name"].append(var_rec["info"])
                         if "standard_name" in var_rec and len(var_rec["standard_name"]) > 0:
-                            cf_list.append(var_rec["standard_name"])          
-                        if var_rec["units"] != "1" and len(var_rec["units"]) > 0:
+                            cf_list.append(var_rec["standard_name"]) 
+                        if "units" in var_rec and var_rec["units"] != "1" and len(var_rec["units"]) > 0:
                             units_list.append(var_rec["units"])
                         record["variable"].append(vk)
 
@@ -412,7 +417,6 @@ class ESGPubMakeDataset:
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-        self.proc_xattr(xattrfn)
 
         self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
 
@@ -429,6 +433,8 @@ class ESGPubMakeDataset:
         self.dataset["access"] = access
 
         self.dataset['globus_url'] = DATASET_GLOBUS_URL_TEMPLATE.format(self.globus, self.parse_path())
+        self.proc_xattr(xattrfn)
+
         ret.append(self.dataset)
         return ret
 
