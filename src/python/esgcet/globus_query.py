@@ -3,6 +3,7 @@ import tempfile
 import sys, os
 
 from subprocess import Popen, PIPE
+from time import sleep
 
 FILTER_TEMPLATE = {
     "type" : "match_all",
@@ -13,11 +14,6 @@ FILTER_TEMPLATE = {
 SEARCH_TEMPLATE = {
     "q" : "",
     "filters" : [
-        {
-        "type" : "match_all",
-        "field_name" : "latest",
-        "values" : ["true"]
-        }
         ],
     }
 
@@ -29,10 +25,15 @@ class ESGGlobusQuery():
         self._UUID = UUID_in
         self._data_node_filter = self._add_filter("data_node", data_node_in)
 
-    def _add_filter(self, name, value):
+    def _add_filter(self, name, value, any=False):
         tmpfilter = copy.deepcopy(FILTER_TEMPLATE)
         tmpfilter["field_name"] = name
-        tmpfilter["values"].append(value)
+        if isinstance(value, list):
+            tmpfilter["values"] += value
+        else:
+            tmpfilter["values"].append(value)
+        if any:
+            tmpfilter["type"] = "match_any"
         return tmpfilter
     
     def globus_get_record(self, subj):
@@ -48,16 +49,22 @@ class ESGGlobusQuery():
 #        print(f"DEBUG {res}")
         return json.load(proc.stdout)
 
-    def query_file_records(self, dataset_id, post_proc=True, latest=True):
+    def query_file_records(self, dataset_id, post_proc=True, latest=True, wget=False):
         q = copy.deepcopy(SEARCH_TEMPLATE)
         q["filters"].append(self._add_filter("type", "File"))
-        q["filters"].append(self._add_filter("dataset_id", dataset_id))
+        q["filters"].append(self._add_filter("dataset_id", dataset_id, any=wget))
+        if wget:
+            latest = False
 
         if latest:
             q["filters"].append(self._add_filter("latest", "true"))
-        res = self._run_query(q, False)
-        print(f"DEBUG {res}")
-        if post_proc:
+
+        print(f"Query in {q}")
+        res = self._run_query(q, single=False, isjson=wget)
+        
+        if wget:
+            return [entry["content"] for x in res["gmeta"] for entry in x["entries"]]
+        elif post_proc:
             y = []
             for x in res:
                 y.append(self._post_proc_query([x]))
@@ -72,24 +79,40 @@ class ESGGlobusQuery():
 
         q = copy.deepcopy(SEARCH_TEMPLATE)
         q["filters"].append(self._data_node_filter)
-        q["filters"].append(self._add_filter("type", "Dataset"))
+        q["filters"].append(self._add_filter("type", "Dataset", any=True))
         q["filters"].append(self._add_filter(field, _id))
         if latest:
             q["filters"].append(self._add_filter("latest", "true"))
 
         res = self._run_query(q)
-        print (f"DEBUG : {res}")
+
         return self._post_proc_query(res)
 
-    def _run_query(self, q, single=False):
+    def _run_query(self, q, single=False, isjson=False):
         temp = tempfile.NamedTemporaryFile(mode="w", delete=False)
         json.dump(q, temp, indent=1)
         print(f"DEBUG: to {temp.name}")
         temp.close()
+    
+        cmdarr = ["globus", "search", "query", self._UUID, "--query-document",temp.name, "--limit", "10000"]
+        if isjson:
+            cmdarr += ["--format", "json"]
+        subproc = Popen(cmdarr, stdout=PIPE)
 
-        subproc = Popen(["globus", "search", "query", self._UUID, "--query-document",temp.name], stdout=PIPE)
-
-        subproc.wait()
+        sleep(5)
+        
+        #print("Complete")
+        
+        if isjson:
+            res = {}
+            try:
+                res = json.load(subproc.stdout)
+            except Exception as e:
+                print(f"Exception encountered")
+                with open("log.log", "w") as f:
+                    print(f"{e}", file=f)
+            print("Loaded")
+            return res
         
         if single:
             subj = ""
