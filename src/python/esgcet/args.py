@@ -306,7 +306,8 @@ class PublisherArgs:
         if config.get("globus_index", False):
             argdict["globus_index"] = True
             argdict["index_UUID"] = config.get("index_UUID", "")
-        
+        else:
+            argdict["index_UUID"] =""
     
         argdict["dry_run"] = config.get("dry_run", False)
         
