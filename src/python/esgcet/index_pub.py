@@ -18,10 +18,13 @@ class ESGPubIndex:
         """
         self.silent = silent
         self.verbose = verbose
-#        self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
+        if index_node:
+            self.pubCli = publisherClient("", index_node, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
+        else:
+            self._index_UUID = UUID
         self.publog = log.return_logger('Index Publication', silent, verbose)
         self.arch_cfg = arch_cfg
-        self._index_UUID = UUID
+
         
         self._cache_dir = file_cache
         self._dry_run = dry_run

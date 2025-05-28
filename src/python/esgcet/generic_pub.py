@@ -82,12 +82,19 @@ class BasePublisher(object):
         print(f"VERBOSE: {self.verbose}")
         # TODO: support solr and Globus using the globus_index argument
 
-        ip = ESGPubIndex(UUID=self.argdict["index_UUID"],  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
+        
+        
+        ip = ESGPubIndex(index_node=dataset_records[0]["index_node"], UUID=self.argdict["index_UUID"],  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
+        else:
+            
         rc = True
         try:
-            rc = ip.do_globus(dataset_records)
+            if self.argdict["globus_index"]:
+                rc = ip.do_globus(dataset_records)
+            else:
+                rc = ip.do_publish(dataset_records)
         except Exception as ex:
-            self.publog.exception("Failed to publish to index node")
+            self.publog.exception("Failed to publish to index.")
             self.cleanup()
             exit(1)
         return rc
