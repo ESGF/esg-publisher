@@ -76,6 +76,13 @@ class ESGUnpublish:
         except:
             return(-1)
             
+        if args["deprecate"]:
+            self.globus_deprecate(dset_id, query)
+            res = query.query_file_records(dset_id, False)
+            for x in res:
+                self.globus_deprecate(x, query)  
+            return (0)
+
         notretracted = not res["retracted"]
         
         if (not notretracted) and (not do_delete):
@@ -108,6 +115,16 @@ class ESGUnpublish:
         return(0)
     
     
+    def globus_deprecate(self, dset_id, query):
+        res = query._post_proc_query([dset_id])
+        gs = GlobusSearchIngest([res])        
+
+        res3 = gs.run(True, False, True)        
+        if not self._args.get("dry_run", False):
+            gs.extern_globus_publish(res3, self.UUID)
+        else:
+            self.publog.info(f"Dry Run publish-deprecate {res3}")
+
     def globus_retract_dataset(self, dset_id, query):
     
    #     query= ESGGlobusQuery(self.UUID, self.data_node)

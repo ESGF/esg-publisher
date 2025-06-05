@@ -86,7 +86,7 @@ class GlobusSearchIngest:
         os.system(f"globus search ingest {indexid} {filename}")
 
     # pair with json.load(open(fn))
-    def update_record(self, res, retract=False):
+    def update_record(self, res, retract=False, deprecate=False):
 
         for suprec in res["ingest_data"]["gmeta"]:
             rec = suprec["content"]
@@ -94,6 +94,10 @@ class GlobusSearchIngest:
             rec["mod_timestamp"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             if (retract):
                 rec["retracted"] = True
+                rec["dataset_status"] = "retracted"
+            elif (deprecate):
+                rec["deprecated"] = True
+                rec["dataset_status"] = "deprecated"
         print(f"DEBUG {res}")
         return res
 
@@ -119,11 +123,14 @@ class GlobusSearchIngest:
         tmp_filename = f'{tmp_abspath}/{mid}.v{version}.json'
         return tmp_filename, tmp_abspath
     
-    def run(self, update=False, retract=False):
+    def run(self, update=False, retract=False, deprecate=False):
         
         doc_res = self.convert2esgf2()
         if update:
-            self.update_record(doc_res, retract)
+            if deprecate:
+                self.update_record(doc_res, retract=False, deprecate=True)
+            else:
+                self.update_record(doc_res, retract=retract)
 
         tmp_filename, tmp_abspath = self._get_cache_filename()
         print(f"makedirs {tmp_abspath}")

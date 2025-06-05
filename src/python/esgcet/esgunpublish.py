@@ -23,7 +23,8 @@ def get_args():
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
     parser.add_argument("--certificate", "-c", dest="cert", default=None,
                         help="Use the following certificate file in .pem form for unpublishing (use a myproxy login to generate).")
-    parser.add_argument("--delete", dest="delete", action="store_true", help="Specify deletion of dataset (default is retraction).")
+    parser.add_argument("--delete",  action="store_true", help="Specify deletion of dataset (default is retraction).")
+    parser.add_argument("--deprecate",  action="store_true", help="Specify deprecation of dataset (default is retraction).")
     parser.add_argument("--dset-id", dest="dset_id", default=None,
                         help="Dataset ID for dataset to be retracted or deleted.")
     parser.add_argument("--map", dest="map", default=None, nargs="+",
@@ -159,6 +160,7 @@ def run():
              "verbose" : verbose,
              "silent" :silent, "index_UUID" : config.get("index_UUID", "") }
     args["dry_run"] = config.get("dry_run", False)
+    args["deprecate"] = a.deprecate
 
     if len(dset_id) > 0:
         args["dataset_id_lst"] = [dset_id]
