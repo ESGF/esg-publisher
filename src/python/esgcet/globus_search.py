@@ -91,7 +91,9 @@ class GlobusSearchIngest:
         for suprec in res["ingest_data"]["gmeta"]:
             rec = suprec["content"]
             rec["latest"] = False
-            rec["mod_timestamp"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            ts_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            rec["pub_timestamp"] = rec["_timestamp"]
+            rec["_timestamp"] = ts_str
             if (retract):
                 rec["retracted"] = True
         print(f"DEBUG {res}")
