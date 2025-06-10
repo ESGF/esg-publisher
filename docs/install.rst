@@ -10,7 +10,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.2.4
+    esgpublish --version #  Ensure you have upgraded to v5.3.1
 
 
 All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
@@ -24,7 +24,7 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.2.4 has been installed
+    esgpublish --version  # Confirm that v5.3.1 has been installed
 
 Now you will be able to call all commands in this package from any directory.  
 
@@ -101,12 +101,13 @@ Project Configuration
 
 You may define a custom project in several ways.  First, using the
 ``user_project_config`` setting, specify an alternate *DRS* and constant attribute values (``CONST_ATTR``) for your project.
-``DRS`` is followed an array with the components.
-``version`` is *always* the ultimate component of the dataset.  
+``DRS:`` is followed an array with the components.
+``version`` is *always* the ultimate component of the dataset and should not be listed among the DRS components.  If you wish to specify a custom set of *Global Atributes* 
+you may do so using the .yaml section ``GA:``
 
 If your project desires to use the features of CMIP6 included extracted Global Attributes use the ``cmip6_clone``
 config file property and assign to your custom project name within the ``user_project_config``.  The project name must be overridden using ``CONST_ATTR`` ``project setting`` (see example below).  If you CMIP6 project wishes to register PIDs, you must assign a ``pid_prefix`` within 
-config settings.
+config settings.   
 
 Example Config
 ^^^^^^^^^^^^^^
