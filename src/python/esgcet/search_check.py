@@ -52,7 +52,10 @@ class ESGSearchCheck():
             if len(docs) < 1:
                 raise RuntimeError("Error in response from index server, record not found!")
             dsetid = docs[0]['id']
-            retracted = docs[0]['retracted']
+            try:
+                retracted = docs[0]['retracted']
+            except KeyError: # support older publication without a retracted flag
+                retracted = False
             if retracted:
                 self.publog.info("Dataset already retracted")
                 return True, False
