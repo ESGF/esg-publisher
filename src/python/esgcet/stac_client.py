@@ -1,18 +1,18 @@
 import os
-import argparse
-import json
-from globus_sdk import NativeAppAuthClient, RefreshTokenAuthorizer, BaseClient, GroupsClient
+
+import esgcet.logger as logger
+import httpx
+from esgcet import __version__
+from esgcet.settings import EGI_AUTH, STAC_CLIENT, STAC_TRANSACTION_API, TOKEN_STORAGE_FILE
+from globus_sdk import BaseClient, GroupsClient, NativeAppAuthClient, RefreshTokenAuthorizer
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.tokenstorage import SimpleJSONFileAdapter
-from esgcet.settings import STAC_CLIENT, TOKEN_STORAGE_FILE, STAC_TRANSACTION_API
-from esgcet import __version__
-import esgcet.logger as logger
-
+from httpx_auth import JsonTokenFileCache, OAuth2, OAuth2AuthorizationCodePKCE
 
 log = logger.ESGPubLogger()
 
 
-class TransactionClient:
+class GlobusTransactionClient:
     def __init__(self, stac_api=None, verbose=False, silent=False):
         if stac_api:
             self.stac_api = stac_api
@@ -20,21 +20,21 @@ class TransactionClient:
             self.stac_api = STAC_TRANSACTION_API.get("base_url")
         self.verbose = verbose
         self.silent = silent
-        self.publog = log.return_logger('STAC Client', silent, verbose)
+        self.publog = log.return_logger("STAC Client", silent, verbose)
         self.scopes = [
             GroupsScopes.view_my_groups_and_memberships,
-            STAC_TRANSACTION_API.get("scope_string")
+            STAC_TRANSACTION_API.get("scope_string"),
         ]
         self.auth_client = NativeAppAuthClient(
             client_id=STAC_CLIENT.get("client_id"),
-            app_name="ESGF2 STAC Transaction API"
-        )   
+            app_name="ESGF2 STAC Transaction API",
+        )
         self._create_clients()
 
     def _do_login_flow(self):
         self.auth_client.oauth2_start_flow(
             requested_scopes=self.scopes,
-            refresh_tokens=True
+            refresh_tokens=True,
         )
         authorize_url = self.auth_client.oauth2_get_authorize_url()
         print("Please go to this URL and login: {0}".format(authorize_url))
@@ -61,7 +61,7 @@ class TransactionClient:
             on_refresh=token_storage.on_refresh,
         )
         self.groups_client = GroupsClient(
-            authorizer=groups_authorizer
+            authorizer=groups_authorizer,
         )
 
         transaction_authorizer = RefreshTokenAuthorizer(
@@ -73,24 +73,74 @@ class TransactionClient:
         )
         self.transaction_client = BaseClient(
             base_url=self.stac_api,
-            authorizer=transaction_authorizer
+            authorizer=transaction_authorizer,
         )
 
     def get_my_groups(self):
         groups = self.groups_client.get_my_groups()
         return groups
-    
+
     def publish(self, entry):
-        collection = entry.get('collection')
+        collection = entry.get("collection")
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
-        resp = self.transaction_client.post(f"/collections/{collection}/items", headers=headers, data=entry)
-        if resp.http_status == 201:
-            self.publog.info(resp.http_status)
+        resp = self.transaction_client.post(
+            f"{self.stac_api}/collections/{collection}/items",
+            headers=headers,
+            json=entry,
+        )
+        print("DATA", entry)
+        if resp.status_code == 201:
+            self.publog.info(resp.status_code)
             self.publog.info("Published")
-        elif resp.http_status == 202:
-            self.publog.info(resp.http_status)
+        elif resp.status_code == 202:
+            self.publog.info(resp.status_code)
             self.publog.info("Queued for publication")
         else:
-            self.publog.error(f"Failed to publish: Error {resp.http_status}")
+            self.publog.error(f"Failed to publish: Error {resp.status_code}")
+
+
+class EGITransactionClient:
+    def __init__(self, stac_api=None, verbose=False, silent=False):
+        if stac_api:
+            self.stac_api = stac_api
+        else:
+            self.stac_api = STAC_TRANSACTION_API.get("base_url")
+        self.verbose = verbose
+        self.silent = silent
+        self.publog = log.return_logger("STAC Client", silent, verbose)
+
+        filename = os.path.expanduser(TOKEN_STORAGE_FILE)
+        OAuth2.token_cache = JsonTokenFileCache(filename)
+        self.auth = OAuth2AuthorizationCodePKCE(
+            authorization_url=EGI_AUTH.get("authorization_url"),
+            token_url=EGI_AUTH.get("token_url"),
+            client_id=EGI_AUTH.get("client_id"),
+            # client_secret=EGI_AUTH["client_secret"],
+        )
+        self.transaction_client = httpx.Client(
+            timeout=EGI_AUTH.get("timeout", 5.0), verify=EGI_AUTH.get("verify", True)
+        )
+
+    def publish(self, entry):
+        collection = entry.get("collection")
+        headers = {
+            "User-Agent": f"esgf_publisher/{__version__}",
+        }
+
+        resp = self.transaction_client.post(
+            f"{self.stac_api}/collections/{collection}/items",
+            headers=headers,
+            json=entry,
+            auth=self.auth,
+        )
+        print("DATA", entry)
+        if resp.status_code == 201:
+            self.publog.info(resp.status_code)
+            self.publog.info("Published")
+        elif resp.status_code == 202:
+            self.publog.info(resp.status_code)
+            self.publog.info("Queued for publication")
+        else:
+            self.publog.error(f"Failed to publish: Error {resp.status_code}")
