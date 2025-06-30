@@ -1,6 +1,5 @@
 DEBUG = False
 
-INDEX_NODE = "esgf-node.llnl.gov"
 DATA_NODE = None
 
 CMOR_PATH = None
@@ -21,7 +20,8 @@ DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
     'create-ip-model': ['project', 'product', 'institute', 'model', 'source_id', 'realm', 'time_frequency'],
     'create-ip-var': ['project', 'product', 'institute', 'model', 'source_id', 'time_frequency', 'realm', 'variable'],
         'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble'],
-       'obs4mips' : ["activity_id", "institution_id", "source_id", "frequency", "variable_id", "grid_label"] }
+       'obs4mips' : ["activity_id", "institution_id", "source_id", "frequency", "variable_id", "grid_label"],
+        'cmip7' : ["mip_era","activity_id","source_id","experiment_id","member_id","realm","frequency","variable_id","branding_suffix","grid_label"] }
 
 SPLIT_FACET = { 'e3sm' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
 
@@ -51,15 +51,18 @@ GA = { 'cmip6' : ['frequency',
 'Conventions',
 'target_mip_list',                       
 'creation_date'],
-"obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", "institution", "source",  "source_type", "contact", "region", "data_specs_version",  "further_info_url", "source_version_number"]
+"obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", 
+              "institution", "source",  "source_type", "contact", "region", "data_specs_version", 
+                "further_info_url", "source_version_number"],
+"cmip7" : ["realm", "grid", "nominal_resolution", "license_id"]
 }
 
 GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
 #                 'input4mips' : {'target_mip_list' : ','}}
 
 CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered', 'project' : 'CMIP6' },
-              'obs4mips' : {'project' :'obs4MIPs'}, 'input4mips' : { 'project' :'input4MIPs' }
-              }
+              'obs4mips' : {'project' :'obs4MIPs'}, 'input4mips' : { 'project' :'input4MIPs' },
+              'cmip7' : {'project' : 'cmip7', 'acrhive_id' : 'WCRP'}}
 
 GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 
@@ -67,7 +70,7 @@ GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 DATA_ROOTS = { }
 
 
-SOURCE_ID_LIMITS = { 'cmip6' : 25}
+SOURCE_ID_LIMITS = { 'cmip6' : 25, 'cmip7' : 32}
 
 # a certificate file for the index, assumes in the CWD
 CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"

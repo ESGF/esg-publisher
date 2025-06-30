@@ -50,7 +50,7 @@ The config file will contain the following settings, most required settings are 
  * index_node
     * Required. This is the ESGF node (Fully-Qualified Domain Name) where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
  * cmor_path
-    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to run PrePARE to verify the structure of CMIP6 data. Example: /usr/local/cmip6-cmor-tables/Tables  This is either the cmor tables repo cloned from github or prepared using the ``esgfetctables`` tool part of ``esgf-prepare``
+    * Required for CMIPx Projects (CMIP6 and later). This is a full absolute path to a directory containing CMOR tables, used by the publisher to verify specific registrations of CMIP data with WCRP, eg. the ``source_id`` and ``experiment_id``. Example: /usr/local/cmip<X>-cmor-tables/Tables  This is either the cmor tables repo cloned from github or prepared using the ``esgfetctables`` tool part of ``esgf-prepare``. <X> is the CMIP-era of tables to check specific to the publish
  * autoc_path
     * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots

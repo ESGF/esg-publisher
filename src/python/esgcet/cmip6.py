@@ -22,30 +22,9 @@ class cmip6(GenericPublisher):
         else:
             self.cmor_tables = None
         self.test = argdict["test"]
-        if self.replica:
-            self.skip_prepare = not argdict["force_prepare"]
-        else:
-            self.skip_prepare = argdict["skip_prepare"]
+
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
         self._disable_citation = argdict["disable_citation"]
-
-    def prepare_internal(self, json_map, cmor_tables):
-        from cmip6_cv import PrePARE
-        try:
-            if len(cmor_tables) <= 0:
-                raise RuntimeError(f"{cmor_tables} are not specified from config")
-            if not os.path.isdir(cmor_tables):
-                raise RuntimeError(f"{cmor_tables} is not a directory")
-            self.publog.info("Iterating through filenames for PrePARE (internal version)...")
-            validator = PrePARE.PrePARE
-            for info in json_map:
-                filename = info[1]
-                process = validator.checkCMIP6(cmor_tables)
-                process.ControlVocab(filename)
-        except Exception as ex:
-            self.publog.exception("PrePARE failed")
-            self.cleanup()
-            exit(1)
 
     def pid(self, out_json_data):
       
@@ -77,8 +56,7 @@ class cmip6(GenericPublisher):
         map_json_data = self.mapfile()
 
         # step two: PrePARE
-        if not self.skip_prepare:
-            self.prepare_internal(map_json_data, self.cmor_tables)
+
 
         # step three: autocurator
 #        self.publog.info("Running autocurator...")
@@ -92,8 +70,8 @@ class cmip6(GenericPublisher):
         new_json_data = self.mk_dataset(map_json_data)
 
         # step five: assign PID
- #       self.publog.info("Assigning PID...")
- #       new_json_data = self.pid(out_json_data)
+        self.publog.info("Assigning PID...")
+        new_json_data = self.pid(out_json_data)
         
         #step six: update record if exists
         self.publog.info("Updating...")
