@@ -4,7 +4,7 @@ import esgcet.logger as logger
 log = logger.ESGPubLogger()
 
 
-class ESGUpdateBase:
+class ESGUpdateBase(ABC):
 
 
     def __init__(self, silent=False, verbose=False):
