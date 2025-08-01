@@ -92,8 +92,8 @@ class cmip6(GenericPublisher):
         new_json_data = self.mk_dataset(map_json_data)
 
         # step five: assign PID
- #       self.publog.info("Assigning PID...")
- #       new_json_data = self.pid(out_json_data)
+        self.publog.info("Assigning PID...")
+        new_json_data = self.pid(out_json_data)
         
         #step six: update record if exists
         self.publog.info("Updating...")
