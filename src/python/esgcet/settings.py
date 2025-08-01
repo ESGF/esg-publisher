@@ -21,7 +21,16 @@ DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
     'create-ip-var': ['project', 'product', 'institute', 'model', 'source_id', 'time_frequency', 'realm', 'variable'],
         'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble'],
        'obs4mips' : ["activity_id", "institution_id", "source_id", "frequency", "variable_id", "grid_label"],
-        'cmip7' : ["mip_era","activity_id","source_id","experiment_id","member_id","realm","frequency","variable_id","branding_suffix","grid_label"] }
+        'cmip7' : ['mip_era',
+ 'activity_id',
+ 'source_id',
+ 'region',
+ 'frequency',
+ 'experiment_id',
+ 'variant_label',
+ 'variable_id',
+ 'branding_suffix',
+ 'grid_label']      }
 
 SPLIT_FACET = { 'e3sm' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
 
