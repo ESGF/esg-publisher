@@ -10,7 +10,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.3.1
+    esgpublish --version #  Ensure you have upgraded to v5.3.2
 
 
 All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
@@ -18,18 +18,18 @@ All publisher requirements are installed via ``pip`` except for the CMOR tables 
 Installing esgcet via git
 -------------------------
 
-To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
+To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment, and then run::
 
     git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.3.1 has been installed
+    esgpublish --version  # Confirm that v5.3.2 has been installed
 
 Now you will be able to call all commands in this package from any directory.  
 
 
-NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info (https://pcmdi.github.io/CMIP6).
+NOTE: if you are intending to publish CMIP6Plus or CMIP7 data, the publisher will perform several `semantic relationship` checks of the dataset properties to ensure .  To enable this procedure, it is necessary to download CMOR tables before the publisher will successfully run, as those are required input for the checks.
 
 
 

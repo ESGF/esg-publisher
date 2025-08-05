@@ -1,11 +1,17 @@
 Release Notes
 =============
 
+v5.3.2
+------
+
+* Bugfixes: Solr unpublication, type of "latest" impacting Globus index publish
+
 v5.3.1
 ------
 
 * Added ability to publish to Globus Search.  Please see the ESGF2-US pages on the ESGF-1.5 effort.  
 * Bugfix: support older publication without a retracted flag
+* Removal of PrePARE integration 
 
 v5.2.5
 ------
