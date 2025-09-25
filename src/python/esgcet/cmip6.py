@@ -56,8 +56,9 @@ class cmip6(GenericPublisher):
         map_json_data = self.mapfile()
 
         # step two: PrePARE
+        res = self.compliance_check(map_json_data)
 
-
+        self.publog.info(f"QC check result {res}")
         # step three: autocurator
 #        self.publog.info("Running autocurator...")
 #        self.autocurator(map_json_data)

@@ -32,7 +32,8 @@ class BasePublisher(object):
         self.project = argdict["proj"]
         self.dry_run = argdict.get("dry_run", False)
         self.publog = log.return_logger('Generic Non-NetCDF Publisher', self.silent, self.verbose)
-
+        self.mapdict = None
+        
     def cleanup(self):
         pass
 
@@ -47,6 +48,9 @@ class BasePublisher(object):
             self.publog.exception("Failed to convert mapfile")
             self.cleanup()
             exit(1)
+        mapconv.set_map_arr(map_json_data)
+        self.mapdict = mapconv.parse_map_arr()
+        
         return map_json_data
 
     def mk_dataset(self, map_json_data):

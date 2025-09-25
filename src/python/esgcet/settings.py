@@ -120,9 +120,17 @@ CITATION_URLS = { 'cmip6' : {'test' :
 PID_URL = 'http://hdl.handle.net/{}|PID|pid'  # PIDs include hdl:
 TEST_PUB = True
 
-PROJECT = "input4MIPs"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = False
 
+QAQC = { "cmip6" :  {"test" : ["wcrp_cmip6:1.0"],
+                    "criteria" : "normal",
+                    "include_checks" : None,
+                    "skip_checks": None},
+         "cmip7" :  {"test" : ["acdd"],
+                    "criteria" : "normal",
+                    "include_checks" : None,
+                    "skip_checks": None}
+       }
 
 VARIABLE_LIMIT = 75
 
