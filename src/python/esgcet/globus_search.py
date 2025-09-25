@@ -28,6 +28,7 @@ NON_LIST = [
     "number_of_files",
     "size",
     "timestamp",
+    "deprecated",
 ]
 
 class GlobusSearchIngest:
