@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v5.3.3
+------
+
+* Fix bugs related to publishing correct Globus index value types.
+* Documentaton update.
+
 v5.3.2
 ------
 

@@ -2,10 +2,9 @@ CMOR Table input
 ================
 
 Before running the publisher for CMIP6, you will need to obtain a directory of CMOR Tables, used by ``esgpublish`` to check the metadata of your files.
-
-You can get this directory either using ``esgprep`` or by cloning the git repository.  
-
-NOTE: ``esgprep`` uses python 2.6 or greater, but less than python 3.0. Configure your virtual environment as needed.
+The CMOR table files are used by the publisher for DRS property validation.
+The tables must be fetched from Github prior to publishing.
+As of v5.3.2 PrePARE is no longer run to check CMIP6 data (deprecated module).
 
 Clone Git Repository
 --------------------
@@ -17,27 +16,4 @@ Clone the repository::
 Your tables will be in the folder ``cmip6-cmor-tables/Tables`` (unless you specify a different target directory name for the clone).
 You can now update the ``cmor_path`` variable in your config file, or specify it at run time in the command line.
 
-esgprep
--------
-
-You can install ``esgprep`` (esgf-prepare) using pip::
-
-    pip install esgprep
-
-You can also clone their git repository and run setup.py::
-
-    git clone git://github.com/ESGF/esgf-prepare.git
-    cd esgf-prepare
-    python setup.py install
-
-Following install, simply run::
-
-    esgfetchtables
-
-You can specify project using ``--project`` and the output directory using ``--table-dir`` like so::
-
-    esgfetchtables --project CMIP6 --table-dir <path>
-
-Once you have fetched the tables, you can update the ``cmor_path`` variable in your config file, or specify it at run time in the command line.
-See https://esgf.github.io/esgf-prepare/ for more information.
 
