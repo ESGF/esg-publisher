@@ -29,6 +29,7 @@ NON_LIST = [
     "size",
     "timestamp",
     "deprecated",
+    "dataset_id",
 ]
 
 class GlobusSearchIngest:
