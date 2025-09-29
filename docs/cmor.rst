@@ -1,10 +1,21 @@
-PrePARE
-=======
+CMOR Table input
+================
 
-Before running the publisher for CMIP6, you will need to obtain a directory of CMOR Tables, used by PrePARE to check the metadata of your files.
-You can get this directory either using ``esgprep`` or by cloning the git repository.  CMOR/PrePARE is available for Linux and MacOS Intel.  Mac Apple M1 systems are not currently supported.
+Before running the publisher for CMIP6, you will need to obtain a directory of CMOR Tables, used by ``esgpublish`` to check the metadata of your files.
+
+You can get this directory either using ``esgprep`` or by cloning the git repository.  
 
 NOTE: ``esgprep`` uses python 2.6 or greater, but less than python 3.0. Configure your virtual environment as needed.
+
+Clone Git Repository
+--------------------
+
+Clone the repository::
+
+    git clone https://github.com/PCMDI/cmip6-cmor-tables.git
+
+Your tables will be in the folder ``cmip6-cmor-tables/Tables`` (unless you specify a different target directory name for the clone).
+You can now update the ``cmor_path`` variable in your config file, or specify it at run time in the command line.
 
 esgprep
 -------
@@ -30,12 +41,3 @@ You can specify project using ``--project`` and the output directory using ``--t
 Once you have fetched the tables, you can update the ``cmor_path`` variable in your config file, or specify it at run time in the command line.
 See https://esgf.github.io/esgf-prepare/ for more information.
 
-Clone Git Repository
---------------------
-
-Clone the repository::
-
-    git clone https://github.com/PCMDI/cmip6-cmor-tables.git
-
-Your tables will be in the folder ``cmip6-cmor-tables/Tables`` (unless you specify a different target directory name for the clone).
-You can now update the ``cmor_path`` variable in your config file, or specify it at run time in the command line.

@@ -57,7 +57,7 @@ class ESGGlobusQuery():
             latest = False
 
         if latest:
-            q["filters"].append(self._add_filter("latest", "true"))
+            q["filters"].append(self._add_filter("latest", True))
 
         print(f"Query in {q}")
         res = self._run_query(q, single=False, isjson=wget)
@@ -82,7 +82,7 @@ class ESGGlobusQuery():
         q["filters"].append(self._add_filter("type", "Dataset", any=True))
         q["filters"].append(self._add_filter(field, _id))
         if latest:
-            q["filters"].append(self._add_filter("latest", "true"))
+            q["filters"].append(self._add_filter("latest", True))
 
         res = self._run_query(q)
 
