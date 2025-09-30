@@ -1,10 +1,13 @@
 Release Notes
 =============
 
-v5.3.4
+v5.3.5
 ------
 
 * **BUGFIX** - Correct issue with CMIP6Plus publication 
+
+v5.3.4 - Deprecated
+-------------------
 
 v5.3.3 - Deprecated
 -------------------
