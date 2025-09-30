@@ -10,7 +10,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.3.3
+    esgpublish --version #  Ensure you have upgraded to v5.3.4
 
 
 All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
@@ -24,7 +24,7 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.3.3 has been installed
+    esgpublish --version  # Confirm that v5.3.4 has been installed
 
 Now you will be able to call all commands in this package from any directory.  
 
