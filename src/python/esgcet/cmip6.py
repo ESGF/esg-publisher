@@ -61,7 +61,7 @@ class cmip6(GenericPublisher):
 
         # step three: make dataset
         self.publog.info("Making dataset...")
-        new_json_data = self.mk_dataset(map_json_data)
+        out_json_data = self.mk_dataset(map_json_data)
 
         # step four: assign PID
         self.publog.info("Assigning PID...")
