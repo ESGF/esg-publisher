@@ -1,8 +1,13 @@
 Release Notes
 =============
 
-v5.3.3
+v5.3.4
 ------
+
+* **BUGFIX** - Correct issue with CMIP6Plus publication 
+
+v5.3.3 - Deprecated
+-------------------
 
 * Fix bugs related to publishing correct Globus index value types.
 * Documentaton update.
