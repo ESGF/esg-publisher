@@ -85,8 +85,9 @@ class GlobusSearchIngest:
         return gingest
 
     def extern_globus_publish(self, filename, indexid):
-        os.system(f"globus search ingest {indexid} {filename}")
-
+        rc = os.system(f"globus search ingest {indexid} {filename}")
+        return (rc == 0)
+    
     # pair with json.load(open(fn))
     def update_record(self, res, retract=False, deprecate=False):
 
@@ -102,7 +103,7 @@ class GlobusSearchIngest:
             elif (deprecate):
                 rec["deprecated"] = True
                 rec["dataset_status"] = "deprecated"
-        print(f"DEBUG {res}")
+
         return res
 
     def check_cache(self):
