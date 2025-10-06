@@ -11,7 +11,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         destpath = os.path.dirname(datafile)
 
         filespec = f"{destpath}/*.nc"
-        return xarray.open_mfdataset(filespec, use_cftime=True)
+        res = xarray.open_mfdataset(filespec, use_cftime=True)
+        return res
 
     def get_attrs_dict(self, scanobj):
         return scanobj.attrs
@@ -43,7 +44,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             idx = x.index('.')
             return x[:idx] + 'Z'
         else:
-            return timeval.item().isoformat() + "Z"
+            return timeval.item().isoformat(timespec="seconds") + "Z"
         
     def _get_min_max_bounds(self, latlon):
         bigarr = latlon[0] + latlon[-1]
@@ -56,8 +57,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if "lat" in scanobj.coords:
             lat = scanobj.coords["lat"]
             if len(lat) > 0:
-                record["north_degrees"] = float(lat[-1])
-                record["south_degrees"] = float(lat[0])
+                record["north_degrees"] = lat.values.max()
+                record["south_degrees"] = lat.values.min()
             else:
                 self.publog.warn("'lat' found but len 0")          
         elif "latitude" in scanobj.coords:
@@ -80,8 +81,8 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if "lon" in scanobj.coords:
             lon = scanobj.coords["lon"]
             if len(lon) > 0:
-                record["east_degrees"] = float(lon[-1])
-                record["west_degrees"] = float(lon[0])
+                record["east_degrees"] = lon.values.max()
+                record["west_degrees"] = lon.values.min()
             else:
                 self.publog.warn("'lon' found but len 0")          
         elif "longitude" in scanobj.coords:

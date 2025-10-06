@@ -1,6 +1,34 @@
 Release Notes
 =============
 
+v5.3.4
+------
+
+* **BUGFIX** - Correct issue with CMIP6Plus publication 
+
+v5.3.3 - Deprecated
+-------------------
+
+* Fix bugs related to publishing correct Globus index value types.
+* Documentaton update.
+
+v5.3.2
+------
+
+* Bugfixes: Solr unpublication, type of "latest" impacting Globus index publish
+
+v5.3.1
+------
+
+* Added ability to publish to Globus Search.  Please see the ESGF2-US pages on the ESGF-1.5 effort.  
+* Bugfix: support older publication without a retracted flag
+* Removal of PrePARE integration 
+
+v5.2.5
+------
+
+* Additional bugfixes for XArray time bound reads, xml error
+
 v5.2.4
 ------
 

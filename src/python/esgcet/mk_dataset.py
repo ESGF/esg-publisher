@@ -1,6 +1,7 @@
 import sys, json
 from esgcet.mapfile import ESGPubMapConv
 import configparser as cfg
+import numpy as np
 
 from datetime import datetime, timedelta
 
@@ -21,7 +22,8 @@ class ESGPubMakeDataset:
         proj: Name of the project to be process
         """
         project = proj
-
+        self.GA = GA
+        
         if project in DRS:
             self.DRS = DRS[project]
             if project in CONST_ATTR:
@@ -42,6 +44,8 @@ class ESGPubMakeDataset:
                 self.DRS = self.user_project[project]['DRS']
             if 'CONST_ATTR' in self.user_project[project]:
                 self.CONST_ATTR = self.user_project[project]['CONST_ATTR']
+            if 'GA' in self.user_project[project]:
+                self.GA = { project : self.user_project[project]['GA'] }
         else:
             raise (BaseException(f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"))
         self.dataset['project'] = project
@@ -181,8 +185,8 @@ class ESGPubMakeDataset:
         # handle Global attributes if defined for the project
         projkey = proj.lower()
 
-        if projkey in GA:
-            for facetkey in GA[projkey]:
+        if projkey in self.GA:
+            for facetkey in self.GA[projkey]:
                 # did we find a GA in the data by the the key name
                 if facetkey in scandata:
                     facetval = scandata[facetkey]
@@ -221,9 +225,9 @@ class ESGPubMakeDataset:
             self.dataset['short_description'] = self.dataset['title']
         self.dataset['title'] = self.dataset['master_id']
         self.dataset['replica'] = self.replica
-        self.dataset['latest'] = 'true'
+        self.dataset['latest'] = True
         self.dataset['type'] = 'Dataset'
-        self.dataset['version'] = version
+        self.dataset['version'] = int(version)
 
 
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
@@ -293,7 +297,6 @@ class ESGPubMakeDataset:
                     proj_root = root
                     rel_path = rel_path.replace(f"{self.first_val}/","")
                     root_found = True
-                    print(f"base path = '{self.base_bath}'")
                     if not self.base_path:
                         mapped_root = self.data_roots[root]
                         self.base_path = f"{mapped_root}/{rel_path}"
@@ -415,8 +418,7 @@ class ESGPubMakeDataset:
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-
-        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
+        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4, default=lambda o: o.item() if isinstance(o, np.generic) else str(o)))
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()

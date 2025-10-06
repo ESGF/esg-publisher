@@ -131,3 +131,6 @@ STAC_API = "https://api.stac.esgf-west.org"
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
+
+CACHE_DIR_DEPTH = 6
+

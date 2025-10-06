@@ -2,6 +2,9 @@ from esgcet.pub_client import publisherClient
 import esgcet.logger as logger
 import os
 
+
+from esgcet.globus_search import GlobusSearchIngest
+
 log = logger.ESGPubLogger()
 
 
@@ -9,15 +12,31 @@ class ESGPubIndex:
     """
     Wrapper class for push-publishing of records to the index node.
     """
-    def __init__(self, hostname, cert_fn="", verbose=False, silent=False, verify=False, auth=True, arch_cfg=None):
+    def __init__(self, index_node="", UUID=None,  verbose=False, silent=False, verify=True, auth=None, arch_cfg=None, file_cache=None, dry_run=False):
         """
         Constructor, creates a "client" object
         """
         self.silent = silent
         self.verbose = verbose
-        self.pubCli = publisherClient(cert_fn, hostname, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
+        if index_node:
+            self.pubCli = publisherClient("", index_node, verify=verify, verbose=self.verbose, silent=self.silent, auth=auth)
+        else:
+            self._index_UUID = UUID
         self.publog = log.return_logger('Index Publication', silent, verbose)
         self.arch_cfg = arch_cfg
+
+        
+        self._cache_dir = file_cache
+        self._dry_run = dry_run
+
+    def do_globus(self, d):
+        gs = GlobusSearchIngest(d, self._cache_dir)
+        res = gs.run(False)
+        if not self._dry_run:
+            gs.extern_globus_publish(res, self._index_UUID)
+        else:
+            self.publog.info(f"dry run on, not publishing {res}")
+#        os.system(f"globus search ingest {self._index_UUID} {res}")
 
     def gen_xml(self, d):
         out = []

@@ -1,5 +1,6 @@
 import requests
 import esgcet.logger as logger
+from esgcet.xmlfix import fixup_xml
 
 log = logger.ESGPubLogger()
 
@@ -33,6 +34,12 @@ class publisherClient(object):
             url - the url
             data - the post data payload
         """
+        new_data = data #fixup_xml(data) #TODO: Re-Include
+        if self.verbose and data != new_data:
+            self.publog.info(f'payload before tweaking XML: {data}')
+            self.publog.info(f'payload after tweaking XML: {new_data}')
+        data = new_data
+        
         if self.use_cert:
             resp = requests.post(url, data=data, cert=(self.certFile, self.keyFile), verify=self.verify, allow_redirects=True)
         else:

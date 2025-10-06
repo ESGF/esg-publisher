@@ -35,8 +35,8 @@ class PublisherArgs:
         parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
         parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
         parser.add_argument("--certificate", "-c", dest="cert", default=None, help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
-        parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.")
-        parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.")
+        parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PIDs.")
+        parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP CMOR tables for metadata checks. Required for CMIP6Plus and later.")
         parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.")
         parser.add_argument("--map", dest="map", required=True, nargs="+", help="Mapfile or list of mapfiles.")
         parser.add_argument("--config", "-cfg", dest="cfg", default=str(def_config), help="Path to yaml config file.")
@@ -46,7 +46,7 @@ class PublisherArgs:
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
-
+        parser.add_argument("--no-xarray", dest="skipxr", action="store_true", help="Bypass use of Xarray (metadata will be incomplete)")
         pub = parser.parse_args()
 
         return pub
@@ -181,9 +181,6 @@ class PublisherArgs:
 
         disable_citation = config.get("disable_citation", False)
         disable_further_info = config.get("disable_further_info", False)
-
-        skip_prepare = config.get('skip_prepare', False)
-        force_prepare = not skip_prepare
         
         if pub.set_replica and pub.no_replica:
             publog.error("Replica publication simultaneously set and disabled.")
@@ -243,8 +240,6 @@ class PublisherArgs:
                    "user_project_config": proj_config, 
                    "verify": verify,
                    "auth": auth, 
-                   "skip_prepare": skip_prepare, 
-                   "force_prepare": force_prepare,
                    "non_nc": non_nc, 
                    "mountpoints": mountpoints,
                    "disable_citation": disable_citation,
@@ -302,8 +297,19 @@ class PublisherArgs:
 
         if "https_url" in config:
             argdict["https_url"] = config["https_url"]
+
+        if config.get("globus_index", False):
+            argdict["globus_index"] = True
+            argdict["index_UUID"] = config.get("index_UUID", "")
+        else:
+            argdict["index_UUID"] =""
+    
+        argdict["dry_run"] = config.get("dry_run", False)
+        
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
+
+        argdict["skipxr"] = pub.skipxr
 
         return argdict
 

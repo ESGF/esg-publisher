@@ -1,19 +1,19 @@
-The esgcet package for ESGF Publication - Version 5.2.4
+The esgcet package for ESGF Publication - Version 5.3.4
 =======================================================
 
 Esgcet is a package of publisher commands for publishing to the `ESGF
-<https://esgf-node.llnl.gov/projects/esgf-llnl/>`_ search database.
+<https://aims2.llnl.gov/search>`_ search database.
 
 
 TL;DR
 -----
 
-If you have conda on a Linux system you can install the publisher wih the following into a fresh environment, and update to the latest version:::
+If you have conda or mamba on a Linux system you can install the publisher wih the following into a fresh environment, and update to the latest version:::
 
-     conda create -n esgf-pub -c conda-forge pip cmor  # most commun
+     conda create -n esgf-pub  pip  # most commom
      conda activate esgf-pub
      pip install esgcet  
-     esgpublish --version #  Ensure you have upgraded to v5.2.4
+     esgpublish --version #  Ensure you have upgraded to v5.3.4
      esgpublish # will print the usage information.
 
 
