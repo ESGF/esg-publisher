@@ -10,7 +10,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.3.4
+    esgpublish --version #  Ensure you have upgraded to v5.4.0a
 
 
 All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
@@ -24,7 +24,7 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.3.4 has been installed
+    esgpublish --version  # Confirm that v5.4.0a has been installed
 
 Now you will be able to call all commands in this package from any directory.  
 
@@ -52,7 +52,8 @@ The config file will contain the following settings, most required settings are 
  * index_node
     * Required. This is the ESGF node (Fully-Qualified Domain Name) where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
  * cmor_path
-    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to validate several key metadata fields. Example: /usr/local/cmip6-cmor-tables/Tables  These are the Cmor tables repo cloned from github.  (See Cmor page on the left).
+    * Required for CMIPx Projects (CMIP6 and later). This is a full absolute path to a directory containing CMOR tables, used by the publisher to verify specific registrations of CMIP data with WCRP, eg. the ``source_id`` and ``experiment_id``. Example: /usr/local/cmip<X>-cmor-tables/Tables  This is either the cmor tables repo cloned from github or prepared using the ``esgfetctables`` tool part of ``esgf-prepare``. <X> is the CMIP-era of tables to check specific to the publish
+ * autoc_path
     * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots
     * Required. These are paths where you place your project data for publication, typically within mounted large storage systems, on the local server where running the publisher.  Each entry maps the path to a logical subdirectory within a data url on the datanode.  Please note two configurations (1) these may be different from the data node mounts --or-- (2) may also appear in data node setup within ``esgf-docker`` configuations (Ansible playbooks or Helm charts) if the local publishing node uses the same mounts. Contact your node/site administrator for more info.

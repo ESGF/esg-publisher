@@ -22,9 +22,9 @@ class cmip6(GenericPublisher):
         else:
             self.cmor_tables = None
         self.test = argdict["test"]
+
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
         self._disable_citation = argdict["disable_citation"]
-
 
     def pid(self, out_json_data):
       
@@ -55,7 +55,13 @@ class cmip6(GenericPublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
+        # step two: PrePARE
+        res = self.compliance_check(map_json_data)
+
+        self.publog.info(f"QC check result {res}")
+        
         # step two: extract
+
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
 
