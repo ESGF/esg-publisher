@@ -1,7 +1,7 @@
 Installation
 ============
 
-We recommend creating a ``conda`` environment or ``venv`` for running the esg publisher.
+We recommend creating a ``conda`` / ``mamba(forge)`` environment or ``venv`` for running the esg publisher.
 
 Pip Install
 -----------
@@ -10,7 +10,7 @@ Use the following command to install ``esgcet`` into a previously created conda 
 
     conda activate esgf-pub
     pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.3.1
+    esgpublish --version #  Ensure you have upgraded to v5.4.0a
 
 
 All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
@@ -18,18 +18,18 @@ All publisher requirements are installed via ``pip`` except for the CMOR tables 
 Installing esgcet via git
 -------------------------
 
-To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment (see below for information on conda, etc.), and then run::
+To install esgcet by cloning our github repository (useful if you want to modiy the software): first, you should ensure you have a suitable python in your environment, and then run::
 
     git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.3.1 has been installed
+    esgpublish --version  # Confirm that v5.4.0a has been installed
 
 Now you will be able to call all commands in this package from any directory.  
 
 
-NOTE: if you are intending to publish CMIP6 data, the publisher will run the PrePARE module to check all file metadata.  To enable this procedure, it is necessry to download CMOR tables before the publisher will successfully run. See those pages for more info (https://pcmdi.github.io/CMIP6).
+NOTE: if you are intending to publish CMIP6Plus or CMIP7 data, the publisher will perform several `semantic relationship` checks of the dataset properties to ensure that the model and experiment being publisher were successfully registered with the WCRP Controlled-vocabulary (CV).  To enable this procedure, it is necessary to download CMOR tables before the publisher will successfully run, as those are required input for the checks.
 
 
 
@@ -39,14 +39,16 @@ Config File (esg.yaml)
 Starting with ``v5.2.0`` the ESGF Publisher uses a .yaml file for configuration.  Download a copy of the default config file ``esg.yaml`` to the default directory,
  or see below regarding migrating a previous config  ::
 
-   wget https://raw.githubusercontent.com/ESGF/esg-publisher/refactor/src/python/esg.yaml
+   wget https://raw.githubusercontent.com/ESGF/esg-publisher/main/src/python/esg.yaml
    mkdir $HOME/.esg
    cp esg.yaml $HOME/.esg
+
+The ``--config`` command-line argument lets you set a configuration file of your choosing other than the default location.
 
 The config file will contain the following settings, most required settings are also available as command line arguments:
 
  * data_node
-    * Required. This is the ESGF node (Fully-Qualified Domain Name) at which the data is stored that you are publishing. It will be concatenated with the dataset_id (instance_id) to form the full id for your dataset.
+    * Required. This is the ESGF node (Fully-Qualified Domain Name) at which the data is stored that you are publishing. It will be concatenated with the dataset_id (instance_id) to form the full id for your dataset. 
  * index_node
     * Required. This is the ESGF node (Fully-Qualified Domain Name) where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
  * cmor_path
@@ -56,8 +58,7 @@ The config file will contain the following settings, most required settings are 
  * data_roots
     * Required. These are paths where you place your project data for publication, typically within mounted large storage systems, on the local server where running the publisher.  Each entry maps the path to a logical subdirectory within a data url on the datanode.  Please note two configurations (1) these may be different from the data node mounts --or-- (2) may also appear in data node setup within ``esgf-docker`` configuations (Ansible playbooks or Helm charts) if the local publishing node uses the same mounts. Contact your node/site administrator for more info.
  * mountpoint_map
-    * Optional. Must be in yaml dictionary format.  Specifies an additonal mapping for the data root mounts that appear in the input mapfiles to the mounted data root on the host running the publisher, in the event mapfile generation occurred on a different host where the data resided at a different mountpoint.
-    Changes specified "aliased" roots in mapfile to actual file roots like so: /source/path/in/mapfiles: "/actual/path/to/data"
+    * Optional. Must be in yaml dictionary format.  Specifies an additonal mapping for the data root mounts that appear in the input mapfiles to the mounted data root on the host running the publisher, in the event mapfile generation occurred on a different host where the data resided at a different mountpoint. Changes specified "aliased" roots in mapfile to actual file roots like so: /source/path/in/mapfiles: "/actual/path/to/data"
  * cert
     * Optional. This is the full path to the certificate file used for publishing if publishing to a legacy ``esg-search`` site requiring authorization.
  * test
@@ -86,6 +87,14 @@ The config file will contain the following settings, most required settings are 
     * Optional. (Required when enable_archive = True) Path on local file system to build directory tree and write xml files for record archive. 
  * archive_depth
     * Optional. (Required when enable_archive = True) sets the directory depth of subdirectories to create/use in the xml archive. (see :ref:`arch_info`)
+ * globus_index
+    * Optional boolean.  Set to **true** if you are publishing to a ESGF2-US ESGF-1.5 Globus Search index.
+ * index_UUID
+    * Optional. (Required for ESGF-1.5).  Set this value to the ESGF-1.5 index (see `ESGF-1.5 Index list <https://github.com/esgf2-us/esgf-1.5-design/blob/main/indexes.md>`_ for the listing)
+ * https_url
+    * Optional. (Require for sites that don't run a standard Nginx http server container, eg. use of Globus).  For Globus-enabled sites, this is a template in the form: https://<hostname>.data.globus.org/{}/{}|application/netcdf|HTTPServer.  Get your <hostname> from your site/data node administrator.  The software will populate the ``{}`` fields, leave as is. 
+
+      
 
 Fill out the necessary variables, and either leave or override the optional configurations.
 Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.yaml`` when you install ``esgcet``.
@@ -144,7 +153,7 @@ The following contains example ``.yaml`` code and configures the *primavera* pro
             project: primavera
          pid_prefix: '21.14100'
    verbose: 'false'
-
+   https_url:  https://hostname.data.globus.org/{}/{}|application/netcdf|HTTPServer
 
 
 Run Time Args

@@ -1,6 +1,7 @@
 import sys, json
 from esgcet.mapfile import ESGPubMapConv
 import configparser as cfg
+import numpy as np
 
 from datetime import datetime, timedelta
 
@@ -224,9 +225,9 @@ class ESGPubMakeDataset:
             self.dataset['short_description'] = self.dataset['title']
         self.dataset['title'] = self.dataset['master_id']
         self.dataset['replica'] = self.replica
-        self.dataset['latest'] = 'true'
+        self.dataset['latest'] = True
         self.dataset['type'] = 'Dataset'
-        self.dataset['version'] = version
+        self.dataset['version'] = int(version)
 
 
         fmat_list = ['%({})s'.format(x) for x in self.DRS]
@@ -417,8 +418,7 @@ class ESGPubMakeDataset:
         self.dataset["number_of_files"] = len(mapobj)  # place this better
         project = self.dataset['project']
 
-
-        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4))
+        self.publog.debug("Record:\n" + json.dumps(self.dataset, indent=4, default=lambda o: o.item() if isinstance(o, np.generic) else str(o)))
 
         self.mapconv.set_map_arr(mapobj)
         mapdict = self.mapconv.parse_map_arr()

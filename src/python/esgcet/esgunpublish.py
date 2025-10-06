@@ -1,4 +1,5 @@
-from esgcet.unpublish import ESGUnpublish
+from esgcet.unpublish_globus import ESGUnpublishGlobus
+from esgcet.unpublish_solr import ESGUnpublishSolr
 import os
 import sys
 import json
@@ -72,7 +73,6 @@ def maps_to_dataset_list(maps):
     return dset_list
 
 def run():
-    upub = ESGUnpublish()
     a = get_args()
 
     cfg_file = a.cfg
@@ -152,13 +152,21 @@ def run():
         verbose = True
         silent = False
 
-    args = { "delete": d, 
-             "data_node": data_node, 
-             "index_node": index_node, 
-             "cert": cert, 
-             "auth" :auth, 
+    args = { "delete": d,
+             "data_node": data_node,
+             "index_node": index_node,
+             "cert": cert,
+             "auth" :auth,
              "verbose" : verbose,
-             "silent" :silent, "index_UUID" : config.get("index_UUID", "") }
+             "silent" :silent,
+             }
+
+    if config.get("globus_index", False):
+        args["index_UUID"] = config.get("index_UUID", "")
+        upub = ESGUnpublishGlobus()
+    else:
+        upub = ESGUnpublishSolr()
+
     args["dry_run"] = config.get("dry_run", False)
     args["deprecate"] = a.deprecate
 
