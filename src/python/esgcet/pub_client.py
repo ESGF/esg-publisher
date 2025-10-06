@@ -34,7 +34,7 @@ class publisherClient(object):
             url - the url
             data - the post data payload
         """
-        new_data = fixup_xml(data)
+        new_data = data #fixup_xml(data) #TODO: Re-Include
         if self.verbose and data != new_data:
             self.publog.info(f'payload before tweaking XML: {data}')
             self.publog.info(f'payload after tweaking XML: {new_data}')

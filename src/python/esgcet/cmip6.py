@@ -55,29 +55,23 @@ class cmip6(GenericPublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
-        # step two: PrePARE
-
-
-        # step three: autocurator
-#        self.publog.info("Running autocurator...")
-#        self.autocurator(map_json_data)
-        # step two: autocurator
+        # step two: extract
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
 
-        # step four: make dataset
+        # step three: make dataset
         self.publog.info("Making dataset...")
-        new_json_data = self.mk_dataset(map_json_data)
+        out_json_data = self.mk_dataset(map_json_data)
 
-        # step five: assign PID
+        # step four: assign PID
         self.publog.info("Assigning PID...")
         new_json_data = self.pid(out_json_data)
         
-        #step six: update record if exists
+        #step five: update record if exists
         self.publog.info("Updating...")
         self.update(new_json_data)
 
-        # step seven: publish to database
+        # step six: publish to database
         self.publog.info("Running index pub...")
         rc = self.index_pub(new_json_data)
 

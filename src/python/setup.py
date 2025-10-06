@@ -16,6 +16,7 @@ additional_requirements = [
             "dask",
             "pyyaml",
             "globus-cli"
+            "globus-sdk"
 ]
 
 
@@ -40,5 +41,7 @@ setup(
                                         'esgupdate=esgcet.esgupdate:main',
                                         'esgmapconv=esgcet.esgmapconv:main',
                                         'esgmigrate=esgcet.migratecmd:main',
-                                        'esgunpublish=esgcet.esgunpublish:main']}
+                                        'esgunpublish=esgcet.esgunpublish:main',
+                                        'esgstacpub=esgcet.esgstacpub:main',
+                                        'esgstacaddrep=esgcet.esgstacaddrep:main']}
 )

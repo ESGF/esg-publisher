@@ -11,7 +11,7 @@ log = logger.ESGPubLogger()
 
 import pdb
 
-class ESGUnpublish:
+class ESGUnpublishGlobus:
 
     def __init__(self):
         self.publog = log.return_logger('esgunpublish-2')
