@@ -47,7 +47,7 @@ class PublisherArgs:
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
         parser.add_argument("--stac-api", dest="stac_api", default=None, help="Specify STAC Transaction API.")
-        
+        parser.add_argument("--no-xarray", dest="skipxr", action="store_true", help="Bypass use of Xarray (metadata will be incomplete)")
         pub = parser.parse_args()
 
         return pub
@@ -298,15 +298,12 @@ class PublisherArgs:
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
 
-        argdict["stac_config"] = config["stac_config"]
+        argdict["stac_config"] = config.get("stac_config",{})
         stac_api = pub["stac_api"]
         if stac_api:
             argdict["stac_config"]["stac_api"] = stac_api
-        if not argdict["stac_config"].get("stac_api", None):
-            publog.exception("STAC API not configured")
-            exit(1)
-                            
-        
+
+        argdict["skipxr"] = pub.skipxr
         return argdict
 
 

@@ -1,5 +1,7 @@
 from esgcet.mk_dataset_autoc import ESGPubAutocHandler
 from esgcet.mk_dataset_xarray import ESGPubXArrayHandler
+from esgcet.mk_dataset_nc4 import ESGPubNC4Handler
+
 from esgcet.mk_dataset import ESGPubMakeDataset
 
 import json, os, sys
@@ -18,8 +20,12 @@ class GenericPublisher(BasePublisher):
     def __init__(self, argdict):
         super().__init__(argdict)
 
-        self.MKD_Construct = ESGPubMakeDataset        
-        if argdict["autoc_command"]:
+        self.MKD_Construct = ESGPubMakeDataset
+        if argdict["skipxr"]:
+            self.autoc_command = None
+            self.format_handler = ESGPubNC4Handler
+            self.extract_method = self.nc4_load
+        elif argdict["autoc_command"]:
             self.autoc_command = argdict["autoc_command"]
             self.format_handler = ESGPubAutocHandler
             self.extract_method = self.autocurator
@@ -33,6 +39,13 @@ class GenericPublisher(BasePublisher):
 
     def cleanup(self):
         self.scan_file.close()
+
+    ## TODO: refactor these down to a single scan command
+    def nc4_load(self, map_json_data):
+        """
+        netCDF4 LOAD
+        """
+        self.nc4_set = self.format_handler.nc4_load(map_json_data)
 
     def xarray_load(self, map_json_data):
         """
@@ -66,7 +79,9 @@ class GenericPublisher(BasePublisher):
                                  https_url, self.format_handler, self.silent, self.verbose, skip_opendap=self.argdict.get("skip_opendap",False))
         mkd.set_project(self.project)
 
-        if self.autoc_command:
+        if self.argdict["skipxr"]:
+            scan_arg = self.nc4_set
+        elif self.autoc_command:
             scan_arg = json.load(open(self.scanfn))
         else:
             scan_arg = self.xarray_set
