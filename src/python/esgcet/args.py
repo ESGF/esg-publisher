@@ -46,7 +46,8 @@ class PublisherArgs:
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
-
+        parser.add_argument("--stac-api", dest="stac_api", default=None, help="Specify STAC Transaction API.")
+        
         pub = parser.parse_args()
 
         return pub
@@ -148,20 +149,12 @@ class PublisherArgs:
             autocurator = pub.autocurator_path
 
         if pub.index_node is None:
-            try:
-                index_node = config['index_node']
-            except:
-                publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
-                exit(1)
+            index_node = config.get('index_node', None)
         else:
             index_node = pub.index_node
 
         if pub.data_node is None:
-            try:
-                data_node = config['data_node']
-            except:
-                publog.exception("Data node not defined. Use --data-node option or define in esg.ini.")
-                exit(1)
+            data_node = config.get('data_node',None)
         else:
             data_node = pub.data_node
         try:
@@ -305,6 +298,15 @@ class PublisherArgs:
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
 
+        argdict["stac_config"] = config["stac_config"]
+        stac_api = pub["stac_api"]
+        if stac_api:
+            argdict["stac_config"]["stac_api"] = stac_api
+        if not argdict["stac_config"].get("stac_api", None):
+            publog.exception("STAC API not configured")
+            exit(1)
+                            
+        
         return argdict
 
 
