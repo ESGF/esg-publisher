@@ -56,6 +56,10 @@ class ESGPubUpdate():
 
         return txt
 
+    def globus_update():
+
+        # 
+        pass         
 
     def update_core(self, dsetid, type):
         """ For a specific core, generate the xml and run the update.
@@ -85,6 +89,20 @@ class ESGPubUpdate():
         mst = input_rec[dset_idx]['master_id']
         dnode = input_rec[dset_idx]['data_node']
 
+        dsetid = self.query_esg_search(dnode, mst)
+
+        if dsetid:
+            self.update_core(dsetid,"datasets")
+            self.update_core(dsetid, "files")
+            self.publog.info('Found previous version, updating the record: {}'.format(dsetid))
+
+        else:
+            version = input_rec[dset_idx]['version']
+            self.publog.info('First dataset version for {}: v{}.)'.format(mst, version))
+
+
+    def query_esg_search(self, dnode, mst):
+
         # query for
         url = self.SEARCH_TEMPLATE.format(self.index_node, dnode, mst)
 
@@ -101,11 +119,7 @@ class ESGPubUpdate():
         if res['response']['numFound'] > 0:
             docs = res['response']["docs"]
             dsetid = docs[0]['id']
-
-            self.update_core(dsetid,"datasets")
-            self.update_core(dsetid, "files")
-            self.publog.info('INFO: Found previous version, updating the record: {}'.format(dsetid))
-
+            return dsetid
         else:
-            version = input_rec[dset_idx]['version']
-            self.publog.info('First dataset version for {}: v{}.)'.format(mst, version))
+            return ""
+    

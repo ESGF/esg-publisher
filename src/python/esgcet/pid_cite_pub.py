@@ -58,7 +58,7 @@ class ESGPubPidCite(object):
         # if publish:
         http_service_path = HTTP_SERVICE
 
-        self.publog.debug(f" self.pid_connector = esgfpid.Connector(handle_prefix={self.pid_prefix}, \
+        print(f" self.pid_connector = esgfpid.Connector(handle_prefix={self.pid_prefix}, \
                                           messaging_service_exchange_name={pid_messaging_service_exchange_name}, \
                                           messaging_service_credentials={pid_messaging_service_credentials}, \
                                           data_node={pid_data_node}, \
@@ -202,6 +202,7 @@ class ESGPubPidCite(object):
         self.ds_records[index] = dset_rec
 
     def do_pidcite(self):
+        
         ret = self.pid_flow_code()
 
         if not ret:

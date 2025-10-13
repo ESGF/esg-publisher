@@ -132,7 +132,6 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
 
-
 STAC_item_properties = {
     "CMIP6": [
         "version",
@@ -199,3 +198,5 @@ STAC_item_properties = {
         #"score",
     ]
 }
+CACHE_DIR_DEPTH = 6
+
