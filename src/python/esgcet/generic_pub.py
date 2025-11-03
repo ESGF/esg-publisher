@@ -2,6 +2,8 @@ from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import ESGPubMKDNonNC
 from esgcet.update_solr import ESGUpdateSolr
 from esgcet.update_globus import ESGUpdateGlobus
+from esgcet.stac_client import TransactionClient
+
 
 from esgcet.index_pub import ESGPubIndex
 import sys
@@ -82,12 +84,23 @@ class BasePublisher(object):
         print(f"VERBOSE: {self.verbose}")
         # TODO: support solr and Globus using the globus_index argument
 
-        globuspub = self.argdict.get("globus_index", False)
+        if argdict.get("stac_config"):
+            tc = TransactionClient(argdict)            
+            try:
+                stac_item = tc.convert2stac(dataset_records)
+            #publog.warn(json.dumps(stac_item, indent=4))
+                rc = tc.publish(stac_item)
+            except Exception as ex:
+                publog.exception("Failed to publish to STAC Transaction API")
+                exit(1)
+            return rc
         
+        globuspub = self.argdict.get("globus_index", False)            
         if globuspub:
             index_node = ""
         else:
             index_node = dataset_records[0]["index_node"]
+
         ip = ESGPubIndex(index_node=index_node, UUID=self.argdict["index_UUID"],  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
             
         rc = True
