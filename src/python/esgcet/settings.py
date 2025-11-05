@@ -21,16 +21,19 @@ DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
     'create-ip-var': ['project', 'product', 'institute', 'model', 'source_id', 'time_frequency', 'realm', 'variable'],
         'cmip5' : ['project', 'product', 'institute', 'model', 'experiment', 'realm', 'time_frequency',  'ensemble'],
        'obs4mips' : ["activity_id", "institution_id", "source_id", "frequency", "variable_id", "grid_label"],
-        'cmip7' : ['mip_era',
+        'mip-drs7' : ['drs_specs', 'mip_era',
  'activity_id',
+ 'institution_id',
  'source_id',
- 'region',
- 'frequency',
  'experiment_id',
  'variant_label',
+ 'region',
+ 'frequency',
  'variable_id',
  'branding_suffix',
  'grid_label']      }
+
+#             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
 
 SPLIT_FACET = { 'e3sm' : { 'delim' : '_' , 'facet' : 'grid_resolution', 0 : ''}  }
 
@@ -63,7 +66,7 @@ GA = { 'cmip6' : ['frequency',
 "obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", 
               "institution", "source",  "source_type", "contact", "region", "data_specs_version", 
                 "further_info_url", "source_version_number"],
-"cmip7" : ["realm", "grid", "nominal_resolution", "license_id"]
+"mip-drs7" : ["realm", "grid", "nominal_resolution", "license_id"]
 }
 
 GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
@@ -79,7 +82,7 @@ GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 DATA_ROOTS = { }
 
 
-SOURCE_ID_LIMITS = { 'cmip6' : 25, 'cmip7' : 32}
+SOURCE_ID_LIMITS = { 'cmip6' : 25, 'mip-drs7' : 32}
 
 # a certificate file for the index, assumes in the CWD
 CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
@@ -126,7 +129,7 @@ QAQC = { "cmip6" :  {"test" : ["wcrp_cmip6:1.0"],
                     "criteria" : "normal",
                     "include_checks" : None,
                     "skip_checks": None},
-         "cmip7" :  {"test" : ["acdd"],
+         "mip-drs7" :  {"test" : ["acdd"],
                     "criteria" : "normal",
                     "include_checks" : None,
                     "skip_checks": None}
