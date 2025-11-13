@@ -1,0 +1,43 @@
+cmip6_clone: cmip6plus
+cmor_path: /home/jovyan/cmip6-cmor-tables/Tables
+data_node: 
+data_roots:
+  /path/to/data: esg_dataroot
+globus_uuid: 
+index_node: 
+index_UUID: 
+globus_index: false
+pid_creds:
+  handle-esgf-trusted.dkrz.de:
+    password: 
+    port: 5671
+    priority: 1
+    ssl_enabled: true
+    user: esgf-publisher
+    vhost: esgf-pid
+set_replica: false
+silent: false
+verbose: false
+skip_prepare: true
+test: false
+user_project_config:
+  cmip6plus:
+    CONST_ATTR:
+      project: CMIP6Plus
+    pid_prefix: '21.14100'
+  samplesec:
+    CONST_ATTR:
+      project: sampleSEC
+    DRS:
+      - project
+      - source_id
+      - experiment_id
+      - frequency
+      - variable_id
+non_netcdf: false
+disable_citation: true
+disable_further_info: true
+#dry_run: true
+https_url:  
+skip_opendap: false
+

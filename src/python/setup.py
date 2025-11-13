@@ -15,7 +15,7 @@ additional_requirements = [
             "netcdf4",
             "dask",
             "pyyaml",
-            "globus-sdk"
+            "globus-sdk",
             "globus-cli"
 ]
 

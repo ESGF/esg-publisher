@@ -39,7 +39,7 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         return [x for x in variable]
 
     def _get_time_str(self, timeval):
-        if type(timeval.item()) is int:
+        if type(timeval.item()) is float or type(timeval.item()) is int:
             x = str(timeval)
             idx = x.index('.')
             return x[:idx] + 'Z'
