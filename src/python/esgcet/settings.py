@@ -51,7 +51,7 @@ GA = { 'cmip6' : ['frequency',
 'Conventions',
 'target_mip_list',                       
 'creation_date'],
-"obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", "institution", "source",  "source_type", "contact", "region", "data_specs_version",  "further_info_url", "source_version_number"]
+"obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", "institution", "source",  "source_type", "contact", "region", "data_specs_version",  "further_info_url", "source_version_number", "cmor_version"]
 }
 
 GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
