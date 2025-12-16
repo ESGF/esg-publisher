@@ -303,7 +303,7 @@ class PublisherArgs:
             argdict["skip_opendap"] = config["skip_opendap"]
 
         argdict["stac_config"] = config.get("stac_config",{})
-        stac_api = pub["stac_api"]
+        stac_api = pub.stac_api
         if stac_api:
             argdict["stac_config"]["stac_api"] = stac_api
 

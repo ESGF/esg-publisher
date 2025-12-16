@@ -88,14 +88,14 @@ class BasePublisher(object):
         print(f"VERBOSE: {self.verbose}")
         # TODO: support solr and Globus using the globus_index argument
 
-        if argdict.get("stac_config"):
-            tc = TransactionClient(argdict)            
+        if self.argdict.get("stac_config"):
+            tc = TransactionClient(self.argdict)            
             try:
                 stac_item = tc.convert2stac(dataset_records)
             #publog.warn(json.dumps(stac_item, indent=4))
                 rc = tc.publish(stac_item)
             except Exception as ex:
-                publog.exception("Failed to publish to STAC Transaction API")
+                self.publog.exception("Failed to publish to STAC Transaction API")
                 exit(1)
             return rc
         

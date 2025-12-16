@@ -48,7 +48,10 @@ class GenericPublisher(BasePublisher):
 
         check_suite = CheckSuite()
         check_suite.load_all_available_checkers()
-        project_qc_config = QAQC[self.project]
+        project_qc_config = QAQC.get(self.project, None)
+        if not project_qc_config:
+            self.publog.warn(f"QAQC not configured for {self.project}")
+            return True
         returnvals = []
         for mapfile_record in self.mapdict:
             print(mapfile_record)

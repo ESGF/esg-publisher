@@ -4,7 +4,7 @@ import json
 from globus_sdk import NativeAppAuthClient, RefreshTokenAuthorizer, BaseClient, GroupsClient
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.tokenstorage import SimpleJSONFileAdapter
-from esgcet.settings import STAC_CLIENT, TOKEN_STORAGE_FILE, STAC_TRANSACTION_API. STAC_item_properties
+from esgcet.settings import STAC_CLIENT, TOKEN_STORAGE_FILE, STAC_TRANSACTION_API, STAC_item_properties
 from esgcet import __version__
 import esgcet.logger as logger
 
@@ -14,8 +14,8 @@ log = logger.ESGPubLogger()
 
 class TransactionClient:
     def __init__(self, args):
-        self.verbose = args.get("verbose", False)
-        self.silent = silent
+        verbose = args.get("verbose", False)
+        silent = args.get("silent", False)
         self.publog = log.return_logger('STAC Client', silent, verbose)
 
         self.stac_config = args.get("stac_config", None)
@@ -23,14 +23,19 @@ class TransactionClient:
         if not self.stac_config:
             self.publog.exception("STAC client not configured")
             exit(1)
-        transaction_api = self.stac_config.get("stac_tranasction_api", {})
-        self.stac_api = transaction_api.get("base_url"), STAC_TRANSACTION_API.get("base_url"))
-        scope_string = STAC_TRANSACTION_API.get("scope_string")
+        transaction_api = self.stac_config.get("stac_transaction_api", None)
+        if not transaction_api:
+            self.publog.exception("Misconfig of STAC client")
+            exit(1)
+        self.stac_api = transaction_api.get("base_url", STAC_TRANSACTION_API.get("base_url"))
+
+        scope_string = transaction_api.get("scope_string", STAC_TRANSACTION_API.get("scope_string"))
         self.scopes = [
             GroupsScopes.view_my_groups_and_memberships,
             scope_string           
         ]
-        self.client_id = args.get("stac_config"]["stac_client"].get("client_id", STAC_CLIENT.get("client_id"))
+        print(f"DEBUG {self.scopes} ")
+        self.client_id = args.get("stac_config")["stac_client"].get("client_id", STAC_CLIENT.get("client_id"))
         self.auth_client = NativeAppAuthClient(
             client_id=self.client_id,
             app_name="ESGF2 STAC Transaction API"
@@ -48,12 +53,13 @@ class TransactionClient:
         return self.auth_client.oauth2_exchange_code_for_tokens(auth_code)
 
     def _create_clients(self):
-        token_storage_file = get("token_storage_file", TOKEN_STORAGE_FILE)
+        token_storage_file = self.stac_config.get("token_storage_file", TOKEN_STORAGE_FILE)
         filename = os.path.expanduser(token_storage_file)
         token_storage = SimpleJSONFileAdapter(filename)
         if not token_storage.file_exists():
             response = self._do_login_flow()
             token_storage.store(response)
+            print(f"DEBUG: {response.by_resource_server}")
             self.groups_tokens = response.by_resource_server[GroupsClient.resource_server]
             self.transaction_tokens = response.by_resource_server[self.client_id]
         else:
@@ -87,7 +93,7 @@ class TransactionClient:
         groups = self.groups_client.get_my_groups()
         return groups
 
-    def convert2stac(json_data):
+    def convert2stac(self, json_data):
         dataset_doc = {}
         for doc in json_data:
             if doc.get("type") == "Dataset":
@@ -135,22 +141,22 @@ class TransactionClient:
                 {
                     "rel": "self",
                     "type": "application/json",
-                    "href": f"{STAC_API}/collections/{collection}/items/{item_id}"
+                    "href": f"{self.stac_api}/collections/{collection}/items/{item_id}"
                 },
                 {
                     "rel": "parent",
                     "type": "application/json",
-                    "href": f"{STAC_API}/collections/{collection}"
+                    "href": f"{self.stac_api}/collections/{collection}"
                 },
                 {
                     "rel": "collection",
                     "type": "application/json",
-                    "href": f"{STAC_API}/collections/{collection}"
+                    "href": f"{self.stac_api}/collections/{collection}"
                 },
                 {
                     "rel": "root",
                     "type": "application/json",
-                    "href": f"{STAC_API}/collections"
+                    "href": f"{self.stac_api}/collections"
                 }
             ],
             "properties": properties,

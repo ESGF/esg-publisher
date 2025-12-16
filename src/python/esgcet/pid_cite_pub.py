@@ -33,7 +33,8 @@ class ESGPubPidCite(object):
         self.data_node = data_node
         self.publog = log.return_logger('PID Citation', silent, verbose)
         self._disable_cite = disable_cite
-
+        self.dataset_pid = None
+    
     def establish_pid_connection(self):
         """Establish a connection to the PID service
         pid_prefix
@@ -58,12 +59,13 @@ class ESGPubPidCite(object):
         # if publish:
         http_service_path = HTTP_SERVICE
 
-        print(f" self.pid_connector = esgfpid.Connector(handle_prefix={self.pid_prefix}, \
+        PID_STR = f" self.pid_connector = esgfpid.Connector(handle_prefix={self.pid_prefix}, \
                                           messaging_service_exchange_name={pid_messaging_service_exchange_name}, \
                                           messaging_service_credentials={pid_messaging_service_credentials}, \
                                           data_node={pid_data_node}, \
                                           thredds_service_path={http_service_path}, \
-                                          test_publication={self.test_publication}")
+                                          test_publication={self.test_publication}"
+        
         self.pid_connector = esgfpid.Connector(handle_prefix=self.pid_prefix,
                                           messaging_service_exchange_name=pid_messaging_service_exchange_name,
                                           messaging_service_credentials=pid_messaging_service_credentials,
@@ -187,8 +189,10 @@ class ESGPubPidCite(object):
             keystr = 'prod'
 
         
-        dset_rec['pid'] = self.dataset_pid
-        if not (dset_rec['type'] == 'File'):
+#        dset_rec['pid'] = self.dataset_pid
+
+        
+        if self.dataset_pid and not (dset_rec['type'] == 'File'):
             dset_rec['xlink'] = [PID_URL.format(self.dataset_pid)]
 
         if not self._disable_cite:
@@ -203,10 +207,10 @@ class ESGPubPidCite(object):
 
     def do_pidcite(self):
         
-        ret = self.pid_flow_code()
+        # ret = self.pid_flow_code()
 
-        if not ret:
-            exit(-1)
+        # if not ret:
+        #     exit(-1)
 
         try:
             for i in range(len(self.ds_records)):
@@ -215,10 +219,10 @@ class ESGPubPidCite(object):
         except Exception as e:
             traceback.print_exc()
             self.publog.exception("Some exception encountered!")
-            self.pid_connector.force_finish_messaging_thread()
+#            self.pid_connector.force_finish_messaging_thread()
             exit(-1)
 
-        self.pid_connector.finish_messaging_thread()
+ #       self.pid_connector.finish_messaging_thread()
 
         return self.ds_records
 

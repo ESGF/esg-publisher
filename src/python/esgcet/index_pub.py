@@ -78,6 +78,7 @@ class ESGPubIndex:
     def pub_xml(self, doc):
         self.pubCli.publish(doc)
 
+
     def archive_rec(self, rec, new_xml):
 
         if "dataset_id" in rec:
