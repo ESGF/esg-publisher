@@ -1,13 +1,14 @@
 import os
 import argparse
 import json
+import re
 from globus_sdk import NativeAppAuthClient, RefreshTokenAuthorizer, BaseClient, GroupsClient
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.tokenstorage import SimpleJSONFileAdapter
-from esgcet.settings import STAC_CLIENT, TOKEN_STORAGE_FILE, STAC_TRANSACTION_API, STAC_item_properties
+from esgcet.settings import STAC_CLIENT, TOKEN_STORAGE_FILE, STAC_TRANSACTION_API, STAC_item_properties, STAC_proj_item_properties, STAC_list_properties
 from esgcet import __version__
 import esgcet.logger as logger
-
+from datetime import datetime
 
 log = logger.ESGPubLogger()
 
@@ -29,15 +30,17 @@ class TransactionClient:
             exit(1)
         self.stac_api = transaction_api.get("base_url", STAC_TRANSACTION_API.get("base_url"))
 
+        self.trans_client_id = transaction_api.get('client_id', STAC_TRANSACTION_API.get('client_id'))
+
         scope_string = transaction_api.get("scope_string", STAC_TRANSACTION_API.get("scope_string"))
         self.scopes = [
             GroupsScopes.view_my_groups_and_memberships,
             scope_string           
         ]
         print(f"DEBUG {self.scopes} ")
-        self.client_id = args.get("stac_config")["stac_client"].get("client_id", STAC_CLIENT.get("client_id"))
+        stac_client_id = args.get("stac_config")["stac_client"].get("client_id", STAC_CLIENT.get("client_id"))
         self.auth_client = NativeAppAuthClient(
-            client_id=self.client_id,
+            client_id=stac_client_id,
             app_name="ESGF2 STAC Transaction API"
         )   
         self._create_clients()
@@ -59,12 +62,12 @@ class TransactionClient:
         if not token_storage.file_exists():
             response = self._do_login_flow()
             token_storage.store(response)
-            print(f"DEBUG: {response.by_resource_server}")
+
             self.groups_tokens = response.by_resource_server[GroupsClient.resource_server]
-            self.transaction_tokens = response.by_resource_server[self.client_id]
+            self.transaction_tokens = response.by_resource_server[self.trans_client_id]
         else:
             self.groups_tokens = token_storage.get_token_data(GroupsClient.resource_server)
-            self.transaction_tokens = token_storage.get_token_data(self.client_id)
+            self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         groups_authorizer = RefreshTokenAuthorizer(
             self.groups_tokens["refresh_token"],
@@ -93,12 +96,68 @@ class TransactionClient:
         groups = self.groups_client.get_my_groups()
         return groups
 
+
+
     def convert2stac(self, json_data):
+        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         dataset_doc = {}
         for doc in json_data:
             if doc.get("type") == "Dataset":
                 dataset_doc = doc
                 break
+    
+        assets = {}
+    
+        if "Globus" in dataset_doc.get("access"):
+            for doc in json_data:
+                if doc.get("type") == "File":
+                    urls = doc.get("url")
+                    for url in urls:
+                        if url.startswith("globus:"):
+                            m = re.search(r"^globus:([^/]*)(.*/)[^/]*$", url)
+                            href = f"https://app.globus.org/file-manager?origin_id={m[1]}&origin_path={m[2]}"
+                            assets = {
+                                "globus": {
+                                    "href": href,
+                                    "description": "Globus Web App Link",
+                                    "type": "text/html",
+                                    "roles": ["data"],
+                                    "alternate:name": dataset_doc.get("data_node"),
+                                }
+                            }
+                    break
+    
+        size = 0
+        if "HTTPServer" in dataset_doc.get("access"):
+            counter = 0
+            for doc in json_data:
+                if doc.get("type") == "File":
+                    urls = doc.get("url")
+                    for url in urls:
+                        if url.endswith("application/netcdf|HTTPServer"):
+                            url_split = url.split("|")
+                            href = url_split[0]
+                            checksum_type = doc.get("checksum_type")
+                            if checksum_type != "SHA256":
+                                raise RuntimeError(f"{checksum_type} not supported")
+                                
+                            assets[f"data{counter:04}"] = {
+                                "href": href,
+                                "description": "HTTPServer Link",
+                                "type": "application/netcdf",
+                                "roles": ["data"],
+                                "alternate:name": dataset_doc.get("data_node"),
+                                "file:size": doc.get("size", 0),
+                                "file:checksum": "1220" + doc.get("checksum")[0],
+                                "cmip6:tracking_id": doc.get("tracking_id")[0],
+                            }
+                            size += doc.get("size", 0)
+                            counter += 1
+                            break
+    
+        if not assets:
+            return None
+    
     
         collection = dataset_doc.get("project")
         item_id = dataset_doc.get("instance_id")
@@ -111,15 +170,45 @@ class TransactionClient:
             "datetime": None,
             "start_datetime": dataset_doc.get("datetime_start", "1975-01-01T00:00:00Z"),
             "end_datetime": dataset_doc.get("datetime_end", "1975-01-02T00:00:00Z"),
+            "size": size,
+            "created": now,
+            "updated": now
         }
-        property_keys = STAC_item_properties.get(collection)
+    
+        collection_item_properties = STAC_proj_item_properties.get(collection, [])
+        property_keys = STAC_item_properties + collection_item_properties
+        namespace = collection.lower()
+    
         for k in property_keys:
-            properties[k] = dataset_doc.get(k)
+            v = dataset_doc.get(k)
+            if k in STAC_item_properties:
+                nk = k
+            elif k in collection_item_properties:
+                nk = f"{namespace}:{k}"
+            if isinstance(v, list):
+                if k in STAC_list_properties:
+                    properties[nk] = v
+                else:
+                    if v[0] is None or v[0] == "none":
+                        continue
+                    properties[nk] = v[0]
+            else:
+                if v is None or v == "none":
+                    continue
+                properties[nk] = v
     
         item = {
             "type": "Feature",
-            "stac_version": "1.0.0",
-            "extensions": ["https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"],
+            "stac_version": "1.1.0",
+            "stac_extensions": [
+                #"https://stac-extensions.github.io/cmip6/v3.0.0/schema.json",
+                "https://esgf.github.io/stac-transaction-api/cmip6/v1.0.0/schema.json",
+                #"http://host.docker.internal/cmip6/v2.0.2/schema.json",
+                "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json",
+                #"http://host.docker.internal/alternate-assets/v1.2.0/schema.json",
+                "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+                #"http://host.docker.internal/file/v2.1.0/schema.json"
+            ],
             "id": item_id,
             "geometry": {
                 "type": "Polygon",
@@ -137,6 +226,7 @@ class TransactionClient:
                 west_degrees, south_degrees, east_degrees, north_degrees
             ],
             "collection": collection,
+            
             "links": [
                 {
                     "rel": "self",
@@ -160,44 +250,11 @@ class TransactionClient:
                 }
             ],
             "properties": properties,
+            "assets": assets
         }
     
-        assets = {}
-    
-        globus_href = dataset_doc.get("globus_url",None)
-    
-        if globus_href:
-            assets = {
-            "globus": {
-                "href": globus_href,
-                "description": "Globus Web App Link",
-                "type": "text/html",
-                "roles": ["data"],
-                "alternate:name": dataset_doc.get("data_node"),
-                }
-            }
-        
-    
-        if "HTTPServer" in dataset_doc.get("access"):
-            for doc in json_data:
-                if doc.get("type") == "File":
-                    urls = doc.get("url")
-                    for url in urls:
-                        if url.endswith("application/netcdf|HTTPServer"):
-                            url_split = url.split("|")
-                            href = url_split[0]
-                            assets[doc["title"]] = {
-                                "href": href,
-                                "description": "HTTPServer Link",
-                                "type": "application/netcdf",
-                                "roles": ["data"],
-                                "alternate:name": dataset_doc.get("data_node"),
-                            }
-                            break
-    
-        item["assets"] = assets
-    
         return item
+    
 
     
     def publish(self, entry):
@@ -205,6 +262,9 @@ class TransactionClient:
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
+        with open(f"{entry["id"]}.json", "w") as f:
+            f.write(json.dumps(entry,indent=1))
+
         resp = self.transaction_client.post(f"/collections/{collection}/items", headers=headers, data=entry)
         if resp.http_status == 201:
             self.publog.info(resp.http_status)
@@ -216,6 +276,7 @@ class TransactionClient:
             self.publog.error(f"Failed to publish: Error {resp.http_status}")
 
     def put(self, entry):
+        
         collection = entry.get("collection")
         item_id = entry.get("id")
         headers = {

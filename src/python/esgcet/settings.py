@@ -155,71 +155,52 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_item_properties = {
+STAC_item_properties = [
+    "access",
+    "latest",
+    "pid",
+    "project",
+    "retracted",
+    "title",
+    "version",
+]
+
+STAC_proj_item_properties = {
     "CMIP6": [
-        "version",
-        "access",
-        #"activity_drs",
         "activity_id",
         "cf_standard_name",
         "citation_url",
-        #"data_node",
-        #"data_specs_version",
-        #"dataset_id_template_",
-        #"datetime_start",
-        #"datetime_stop",
-        #"directory_format_template_",
+        "data_specs_version",
         "experiment_id",
         "experiment_title",
         "frequency",
         "further_info_url",
-        #"north_degrees",
-        #"west_degrees",
-        #"south_degrees",
-        #"east_degrees",
-        #"geo",
-        #"geo_units",
         "grid",
         "grid_label",
-        #"height_bottom",
-        #"height_top",
-        #"height_units",
-        #"index_node",
-        #"instance_id",
         "institution_id",
-        #"latest",
-        "master_id",
-        #"member_id",
-        #"metadata_format",
+        "member_id",
         "mip_era",
-        "model_cohort",
         "nominal_resolution",
-        #"number_of_aggregations",
-        #"number_of_files",
-        ###"pid",
+        "pid",
         "product",
-        "project",
         "realm",
-        #"replica",
-        #"size",
         "source_id",
         "source_type",
         "sub_experiment_id",
         "table_id",
-        "title",
-        #"type",
-        #"url",
         "variable",
-        "variable_id",
         "variable_long_name",
         "variable_units",
         "variant_label",
-        #"xlink",
-        "version_",
-        "retracted",
-        #"_timestamp",
-        #"score",
     ]
 }
+
+STAC_list_properties = {
+    "access",
+    "realm",
+    "source_type",
+    
+}
+
 CACHE_DIR_DEPTH = 6
 
