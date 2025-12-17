@@ -176,6 +176,7 @@ class TransactionClient:
             "updated": now
         }
         if (dt_start and dt_end):
+            properties["datetime"] = None
             properties["start_datetime"] = dt_start
             properties["end_datetime"] = dt_end
         else:
