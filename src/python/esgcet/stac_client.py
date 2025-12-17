@@ -165,16 +165,26 @@ class TransactionClient:
         south_degrees = dataset_doc.get("south_degrees", -90.0)
         east_degrees = dataset_doc.get("east_degrees", -360.0)
         north_degrees = dataset_doc.get("north_degrees", 90.0)
-    
+
+
+        dt_start = dataset_doc.get("datetime_start", None)
+        dt_end = dataset_doc.get("datetime_start", None)
         properties = {
-            "datetime": None,
-            "start_datetime": dataset_doc.get("datetime_start", "1975-01-01T00:00:00Z"),
-            "end_datetime": dataset_doc.get("datetime_end", "1975-01-02T00:00:00Z"),
+
             "size": size,
             "created": now,
             "updated": now
         }
-    
+        if (dt_start and dt_end):
+            properties["start_datetime"] = dt_start
+            properties["end_datetime"] = dt_end
+        else:
+
+            properties["datetime"] = None
+            properties["start_datetime"] = "1850-01-01T00:00:00Z"
+            properties["end_datetime"] = "1850-01-01T00:00:01Z"
+
+        
         collection_item_properties = STAC_proj_item_properties.get(collection, [])
         property_keys = STAC_item_properties + collection_item_properties
         namespace = collection.lower()
