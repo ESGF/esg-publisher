@@ -5,7 +5,7 @@ import re
 from globus_sdk import NativeAppAuthClient, RefreshTokenAuthorizer, BaseClient, GroupsClient
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.tokenstorage import SimpleJSONFileAdapter
-from esgcet.settings import STAC_CLIENT, TOKEN_STORAGE_FILE, STAC_TRANSACTION_API, STAC_item_properties, STAC_proj_item_properties, STAC_list_properties
+from esgcet.settings import *
 from esgcet import __version__
 import esgcet.logger as logger
 from datetime import datetime
@@ -42,9 +42,12 @@ class TransactionClient:
         self.auth_client = NativeAppAuthClient(
             client_id=stac_client_id,
             app_name="ESGF2 STAC Transaction API"
-        )   
+
+        )
+        self.dry_run = False
+        #        self.dry_run = args.get("")
         self._create_clients()
-        
+    
     def _do_login_flow(self):
         self.auth_client.oauth2_start_flow(
             requested_scopes=self.scopes,
@@ -123,6 +126,10 @@ class TransactionClient:
                                     "type": "text/html",
                                     "roles": ["data"],
                                     "alternate:name": dataset_doc.get("data_node"),
+                                    "created" : doc.get("timestamp", now),
+                                    "updated" : doc.get("timestamp", now),
+                                    "protocol" : "globus"
+                                    
                                 }
                             }
                     break
@@ -141,15 +148,19 @@ class TransactionClient:
                             if checksum_type != "SHA256":
                                 raise RuntimeError(f"{checksum_type} not supported")
                                 
-                            assets[f"data{counter:04}"] = {
+                            assets[doc.get("title", f"data{counter:04}")] = {
                                 "href": href,
                                 "description": "HTTPServer Link",
                                 "type": "application/netcdf",
                                 "roles": ["data"],
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
-                                "file:checksum": "1220" + doc.get("checksum")[0],
-                                "cmip6:tracking_id": doc.get("tracking_id")[0],
+                                "file:checksum": "1220" + doc.get("checksum"),
+                                "cmip6:tracking_id": doc.get("tracking_id"),
+                                "created" : doc.get("timestamp", now),
+                                "updated" : doc.get("timestamp", now),
+
+                                "protocol" : "https"
                             }
                             size += doc.get("size", 0)
                             counter += 1
@@ -160,6 +171,9 @@ class TransactionClient:
     
     
         collection = dataset_doc.get("project")
+        if collection == "mip-drs7":
+            collection = "cmip7"
+            
         item_id = dataset_doc.get("instance_id")
         west_degrees = dataset_doc.get("west_degrees", 0.0)
         south_degrees = dataset_doc.get("south_degrees", -90.0)
@@ -173,7 +187,8 @@ class TransactionClient:
 
             "size": size,
             "created": now,
-            "updated": now
+            "updated": now,
+            "retracted" : False
         }
         if (dt_start and dt_end):
             properties["datetime"] = None
@@ -207,13 +222,17 @@ class TransactionClient:
                 if v is None or v == "none":
                     continue
                 properties[nk] = v
-    
+
+        sc_version = STAC_schema_versions.get(collection)
+        if not sc_version:
+            raise RuntimeError(f"No version of STAC schema for {collection}")
+        
         item = {
             "type": "Feature",
             "stac_version": "1.1.0",
             "stac_extensions": [
                 #"https://stac-extensions.github.io/cmip6/v3.0.0/schema.json",
-                "https://esgf.github.io/stac-transaction-api/cmip6/v1.0.0/schema.json",
+                 f"https://esgf.github.io/stac-transaction-api/{namespace}/{sc_version}/schema.json",               
                 #"http://host.docker.internal/cmip6/v2.0.2/schema.json",
                 "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json",
                 #"http://host.docker.internal/alternate-assets/v1.2.0/schema.json",
@@ -276,15 +295,16 @@ class TransactionClient:
         with open(f"{entry["id"]}.json", "w") as f:
             f.write(json.dumps(entry,indent=1))
 
-        resp = self.transaction_client.post(f"/collections/{collection}/items", headers=headers, data=entry)
-        if resp.http_status == 201:
-            self.publog.info(resp.http_status)
-            self.publog.info("Published")
-        elif resp.http_status == 202:
-            self.publog.info(resp.http_status)
-            self.publog.info("Queued for publication")
-        else:
-            self.publog.error(f"Failed to publish: Error {resp.http_status}")
+        if not self.dry_run:
+            resp = self.transaction_client.post(f"/collections/{collection}/items", headers=headers, data=entry)
+            if resp.http_status == 201:
+                self.publog.info(resp.http_status)
+                self.publog.info("Published")
+            elif resp.http_status == 202:
+                self.publog.info(resp.http_status)
+                self.publog.info("Queued for publication")
+            else:
+                self.publog.error(f"Failed to publish: Error {resp.http_status}")
 
     def put(self, entry):
         
@@ -293,6 +313,7 @@ class TransactionClient:
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
+    
         resp = self.transaction_client.put(f"/collections/{collection}/items/{item_id}", headers=headers, data=entry)
         if resp.http_status == 201:
             self.publog.info(resp.http_status)

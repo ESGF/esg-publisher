@@ -30,7 +30,7 @@ DRS = { 'cmip6' : [ 'mip_era' , 'activity_drs','institution_id','source_id','exp
  'region',
  'frequency',
  'variable_id',
- 'branding_suffix',
+ 'variable_branded_suffix',
  'grid_label']      }
 
 #             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
@@ -66,15 +66,16 @@ GA = { 'cmip6' : ['frequency',
 "obs4mips" : ["realm", "product", "nominal_resolution", "source_type", "creation_date", 
               "institution", "source",  "source_type", "contact", "region", "data_specs_version", 
                 "further_info_url", "source_version_number", "cmor_version"],
-"mip-drs7" : ["realm", "grid", "nominal_resolution", "license_id"]
+"mip-drs7" : ["grid", "nominal_resolution", "license_id", "area_label", "data_specs_version", "product", "realm", "Conventions", "source_type", "title"]
 }
 
-GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  }}
+GA_DELIMITED = { 'cmip6' : { 'source_type' : ' ', 'activity_id' : ' ', 'realm' : ' '  },
+               "mip-drs7" : {"realm" : ' ', 'Conventions' : ' ' } }
 #                 'input4mips' : {'target_mip_list' : ','}}
 
 CONST_ATTR =  { 'cmip6' : { 'model_cohort' : 'Registered', 'project' : 'CMIP6' },
               'obs4mips' : {'project' :'obs4MIPs'}, 'input4mips' : { 'project' :'input4MIPs' },
-              'cmip7' : {'project' : 'cmip7', 'acrhive_id' : 'WCRP'}}
+              'mip-drs7' : {'project' : 'CMIP7', 'acrhive_id' : 'WCRP'}}
 
 GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 
@@ -82,10 +83,10 @@ GA_MAPPED = { 'cmip6' : { 'experiment' : 'experiment_title'} }
 DATA_ROOTS = { }
 
 
+
 SOURCE_ID_LIMITS = { 'cmip6' : 25, 'mip-drs7' : 32}
 
 # a certificate file for the index, assumes in the CWD
-CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 
 # for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX
@@ -155,17 +156,50 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = [ "lat_bounds", "lon_bounds", "time_bounds"]
 
+STAC_schema_versions = { "CMIP7" : "v3.0.1" }
+
 STAC_item_properties = [
     "access",
     "latest",
     "pid",
     "project",
-    "retracted",
     "title",
     "version",
+    "drs_specs",
 ]
 
 STAC_proj_item_properties = {
+    "CMIP7": [
+        "activity_id",
+        "area_label",
+        "region",
+        #"cf_standard_name",
+        "citation_url",
+        "data_specs_version",
+        "experiment_id",
+        "experiment_title",
+        "frequency",
+        "further_info_url",
+        "grid",
+        #"grid_label",
+        "institution_id",
+        "member_id",
+        #"mip_era",
+        "nominal_resolution",
+        "product",
+        "realm",
+        "source_id",
+        #"source_type",
+        "sub_experiment_id",
+        "table_id",
+        "variable_id",
+        "variable_long_name",
+        "variable_units",
+        "variant_label",
+        "variable_branded_suffix",
+        "Conventions",
+        "license_id"
+    ],
     "CMIP6": [
         "activity_id",
         "cf_standard_name",
@@ -182,6 +216,7 @@ STAC_proj_item_properties = {
         "mip_era",
         "nominal_resolution",
         "pid",
+        
         "product",
         "realm",
         "source_id",
