@@ -1,14 +1,13 @@
 import argparse
 import json
 import os
-import re
 import sys
 from pathlib import Path
 
 import esgcet.args as pub_args
 import esgcet.logger as logger
-from esgcet.settings import STAC_API
-from esgcet.stac_client import TransactionClient, convert2stac
+from esgcet.stac_client import TransactionClient
+from esgcet.stac_converter import convert2stac
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esgstacpub")

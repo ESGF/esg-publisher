@@ -1,7 +1,5 @@
 import json
 import os
-import re
-from datetime import datetime, timezone
 from typing import Any
 
 import esgcet.logger as logger
@@ -9,6 +7,7 @@ import requests
 from esgcet import __version__
 from esgcet.settings import *
 from esgcet.settings import (
+    AUTH_PROVIDER,
     EGI_AUTH,
     STAC_CLIENT,
     STAC_TRANSACTION_API,
@@ -28,7 +27,7 @@ from .egi_oauth2_device_flow import OAuthDeviceFlowPKCE
 log = logger.ESGPubLogger()
 
 
-class TransactionClient:
+class GlobusTransactionClient:
     def __init__(self, args):
         verbose = args.get("verbose", False)
         silent = args.get("silent", False)
@@ -258,3 +257,8 @@ class EGITransactionClient:
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
+
+
+TransactionClient = (
+    EGITransactionClient if AUTH_PROVIDER == "EGI" else GlobusTransactionClient
+)

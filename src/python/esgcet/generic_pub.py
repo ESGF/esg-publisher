@@ -4,7 +4,8 @@ import esgcet.logger as logger
 from esgcet.index_pub import ESGPubIndex
 from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import ESGPubMKDNonNC
-from esgcet.stac_client import TransactionClient, convert2stac
+from esgcet.stac_client import TransactionClient
+from esgcet.stac_converter import convert2stac
 from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
 
