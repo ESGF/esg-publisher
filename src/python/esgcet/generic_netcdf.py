@@ -1,12 +1,18 @@
 from esgcet.mk_dataset_autoc import ESGPubAutocHandler
 from esgcet.mk_dataset_xarray import ESGPubXArrayHandler
+from esgcet.mk_dataset_nc4 import ESGPubNC4Handler
+
 from esgcet.mk_dataset import ESGPubMakeDataset
+
+from esgcet.settings import *
 
 import json, os, sys
 import tempfile
 from esgcet.generic_pub import BasePublisher
 import traceback
 import esgcet.logger as logger
+
+from compliance_checker.runner import CheckSuite, ComplianceChecker
 
 log = logger.ESGPubLogger()
 
@@ -18,8 +24,12 @@ class GenericPublisher(BasePublisher):
     def __init__(self, argdict):
         super().__init__(argdict)
 
-        self.MKD_Construct = ESGPubMakeDataset        
-        if argdict["autoc_command"]:
+        self.MKD_Construct = ESGPubMakeDataset
+        if argdict["skipxr"]:
+            self.autoc_command = None
+            self.format_handler = ESGPubNC4Handler
+            self.extract_method = self.nc4_load
+        elif argdict["autoc_command"]:
             self.autoc_command = argdict["autoc_command"]
             self.format_handler = ESGPubAutocHandler
             self.extract_method = self.autocurator
@@ -33,6 +43,40 @@ class GenericPublisher(BasePublisher):
 
     def cleanup(self):
         self.scan_file.close()
+
+    def compliance_check(self, map_json_data):
+
+        check_suite = CheckSuite()
+        check_suite.load_all_available_checkers()
+        project_qc_config = QAQC.get(self.project, None)
+        if not project_qc_config:
+            self.publog.warn(f"QAQC not configured for {self.project}")
+            return True
+        returnvals = []
+        for mapfile_record in self.mapdict:
+            print(mapfile_record)
+            hashval = mapfile_record['checksum'][0:16]
+            return_value, errors = ComplianceChecker.run_checker(
+                mapfile_record['file'],
+                project_qc_config['test'],
+                self.verbose,
+                project_qc_config['criteria'],
+                None, # skip_checks
+                None, # include
+                f"tmpfile.{hashval}.txt",  # outputfilename
+                 ["text"]
+            )
+        if errors:
+            self.publog.info(f"Checker Errors {errors}")       
+        return return_value
+        
+    
+    ## TODO: refactor these down to a single scan command
+    def nc4_load(self, map_json_data):
+        """
+        netCDF4 LOAD
+        """
+        self.nc4_set = self.format_handler.nc4_load(map_json_data)
 
     def xarray_load(self, map_json_data):
         """
@@ -66,7 +110,9 @@ class GenericPublisher(BasePublisher):
                                  https_url, self.format_handler, self.silent, self.verbose, skip_opendap=self.argdict.get("skip_opendap",False))
         mkd.set_project(self.project)
 
-        if self.autoc_command:
+        if self.argdict["skipxr"]:
+            scan_arg = self.nc4_set
+        elif self.autoc_command:
             scan_arg = json.load(open(self.scanfn))
         else:
             scan_arg = self.xarray_set
@@ -85,10 +131,14 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
+        if self.project in QAQC:
+            self.compliance_check(map_json_data)
+        
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
 
+            
         # step three: make dataset
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)

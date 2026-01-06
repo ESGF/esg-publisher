@@ -1,6 +1,5 @@
 DEBUG = False
 
-INDEX_NODE = "esgf-node.llnl.gov"
 DATA_NODE = None
 
 CMOR_PATH = None
@@ -112,7 +111,23 @@ DRS = {
         "variable_id",
         "grid_label",
     ],
+    "mip-drs7": [
+        "drs_specs",
+        "mip_era",
+        "activity_id",
+        "institution_id",
+        "source_id",
+        "experiment_id",
+        "variant_label",
+        "region",
+        "frequency",
+        "variable_id",
+        "variable_branded_suffix",
+        "grid_label",
+    ],
 }
+
+#             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
 
 SPLIT_FACET = {"e3sm": {"delim": "_", "facet": "grid_resolution", 0: ""}}
 
@@ -162,16 +177,33 @@ GA = {
         "data_specs_version",
         "further_info_url",
         "source_version_number",
+        "cmor_version",
+    ],
+    "mip-drs7": [
+        "grid",
+        "nominal_resolution",
+        "license_id",
+        "area_label",
+        "data_specs_version",
+        "product",
+        "realm",
+        "Conventions",
+        "source_type",
+        "title",
     ],
 }
 
-GA_DELIMITED = {"cmip6": {"source_type": " ", "activity_id": " ", "realm": " "}}
+GA_DELIMITED = {
+    "cmip6": {"source_type": " ", "activity_id": " ", "realm": " "},
+    "mip-drs7": {"realm": " ", "Conventions": " "},
+}
 #                 'input4mips' : {'target_mip_list' : ','}}
 
 CONST_ATTR = {
     "cmip6": {"model_cohort": "Registered", "project": "CMIP6"},
     "obs4mips": {"project": "obs4MIPs"},
     "input4mips": {"project": "input4MIPs"},
+    "mip-drs7": {"project": "CMIP7", "acrhive_id": "WCRP"},
 }
 
 GA_MAPPED = {"cmip6": {"experiment": "experiment_title"}}
@@ -180,10 +212,9 @@ GA_MAPPED = {"cmip6": {"experiment": "experiment_title"}}
 DATA_ROOTS = {}
 
 
-SOURCE_ID_LIMITS = {"cmip6": 25}
+SOURCE_ID_LIMITS = {"cmip6": 25, "mip-drs7": 32}
 
 # a certificate file for the index, assumes in the CWD
-CERT_FN = "/p/user_pub/publish-queue/certs/certificate-file"
 
 # for these the following are inserted in order: 1. hostname 2. prefix 3. relative dataset path
 # Eg replace /thredds/fileServer with the prefix for NginX
@@ -231,9 +262,22 @@ CITATION_URLS = {
 PID_URL = "http://hdl.handle.net/{}|PID|pid"  # PIDs include hdl:
 TEST_PUB = True
 
-PROJECT = "input4MIPs"  # project setting.  This would be used to consider some project-specific features, eg. for CMIP6
 SET_REPLICA = False
 
+QAQC = {
+    "cmip6": {
+        "test": ["wcrp_cmip6:1.0"],
+        "criteria": "normal",
+        "include_checks": None,
+        "skip_checks": None,
+    },
+    "mip-drs7": {
+        "test": ["acdd"],
+        "criteria": "normal",
+        "include_checks": None,
+        "skip_checks": None,
+    },
+}
 
 STAC_CLIENT = {
     "client_id": "ec5f07c0-7ed8-4f2b-94f2-ddb6f8fc91a3",
@@ -262,3 +306,84 @@ EGI_AUTH = {
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
+
+STAC_schema_versions = {"CMIP7": "v3.0.1"}
+
+STAC_item_properties = [
+    "access",
+    "latest",
+    "pid",
+    "project",
+    "title",
+    "version",
+    "drs_specs",
+]
+
+STAC_proj_item_properties = {
+    "CMIP7": [
+        "activity_id",
+        "area_label",
+        "region",
+        # "cf_standard_name",
+        "citation_url",
+        "data_specs_version",
+        "experiment_id",
+        "experiment_title",
+        "frequency",
+        "further_info_url",
+        "grid",
+        # "grid_label",
+        "institution_id",
+        "member_id",
+        # "mip_era",
+        "nominal_resolution",
+        "product",
+        "realm",
+        "source_id",
+        # "source_type",
+        "sub_experiment_id",
+        "table_id",
+        "variable_id",
+        "variable_long_name",
+        "variable_units",
+        "variant_label",
+        "variable_branded_suffix",
+        "Conventions",
+        "license_id",
+    ],
+    "CMIP6": [
+        "activity_id",
+        "cf_standard_name",
+        "citation_url",
+        "data_specs_version",
+        "experiment_id",
+        "experiment_title",
+        "frequency",
+        "further_info_url",
+        "grid",
+        "grid_label",
+        "institution_id",
+        "member_id",
+        "mip_era",
+        "nominal_resolution",
+        "pid",
+        "product",
+        "realm",
+        "source_id",
+        "source_type",
+        "sub_experiment_id",
+        "table_id",
+        "variable",
+        "variable_long_name",
+        "variable_units",
+        "variant_label",
+    ],
+}
+
+STAC_list_properties = {
+    "access",
+    "realm",
+    "source_type",
+}
+
+CACHE_DIR_DEPTH = 6
