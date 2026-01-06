@@ -194,7 +194,9 @@ URL_Templates = [
     "globus:{}/{}/{}|Globus|Globus",
 ]
 
-DATASET_GLOBUS_URL_TEMPLATE = "https://app.globus.org/file_manager?origin_id={}&amp;origin_path=/{}"
+DATASET_GLOBUS_URL_TEMPLATE = (
+    "https://app.globus.org/file_manager?origin_id={}&amp;origin_path=/{}"
+)
 
 
 #        handle-esgf-trusted.dkrz.de | 5671 | esgf-pid | esgf-publisher
@@ -252,7 +254,7 @@ STAC_API = "https://api.stac.esgf-west.org"
 AUTH_PROVIDER = "EGI"
 
 EGI_AUTH = {
-    "authorization_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth",
+    "device_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth",
     "token_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token",
     "client_id": "",
 }

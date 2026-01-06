@@ -1,13 +1,25 @@
 import os
+from typing import Any
 
 import esgcet.logger as logger
-import httpx
+import requests
 from esgcet import __version__
-from esgcet.settings import EGI_AUTH, STAC_CLIENT, STAC_TRANSACTION_API, TOKEN_STORAGE_FILE
-from globus_sdk import BaseClient, GroupsClient, NativeAppAuthClient, RefreshTokenAuthorizer
+from esgcet.settings import (
+    EGI_AUTH,
+    STAC_CLIENT,
+    STAC_TRANSACTION_API,
+    TOKEN_STORAGE_FILE,
+)
+from globus_sdk import (
+    BaseClient,
+    GroupsClient,
+    NativeAppAuthClient,
+    RefreshTokenAuthorizer,
+)
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.tokenstorage import SimpleJSONFileAdapter
-from httpx_auth import JsonTokenFileCache, OAuth2, OAuth2AuthorizationCodePKCE
+
+from .egi_oauth2_device_flow import OAuthDeviceFlowPKCE
 
 log = logger.ESGPubLogger()
 
@@ -47,11 +59,19 @@ class GlobusTransactionClient:
         if not token_storage.file_exists():
             response = self._do_login_flow()
             token_storage.store(response)
-            self.groups_tokens = response.by_resource_server[GroupsClient.resource_server]
-            self.transaction_tokens = response.by_resource_server[STAC_TRANSACTION_API.get("client_id")]
+            self.groups_tokens = response.by_resource_server[
+                GroupsClient.resource_server
+            ]
+            self.transaction_tokens = response.by_resource_server[
+                STAC_TRANSACTION_API.get("client_id")
+            ]
         else:
-            self.groups_tokens = token_storage.get_token_data(GroupsClient.resource_server)
-            self.transaction_tokens = token_storage.get_token_data(STAC_TRANSACTION_API.get("client_id"))
+            self.groups_tokens = token_storage.get_token_data(
+                GroupsClient.resource_server
+            )
+            self.transaction_tokens = token_storage.get_token_data(
+                STAC_TRANSACTION_API.get("client_id")
+            )
 
         groups_authorizer = RefreshTokenAuthorizer(
             self.groups_tokens["refresh_token"],
@@ -102,45 +122,57 @@ class GlobusTransactionClient:
 
 
 class EGITransactionClient:
+    """EGI Transaction client for publishing ESGF items."""
+
     def __init__(self, stac_api=None, verbose=False, silent=False):
         if stac_api:
             self.stac_api = stac_api
+
         else:
             self.stac_api = STAC_TRANSACTION_API.get("base_url")
+
         self.verbose = verbose
         self.silent = silent
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        filename = os.path.expanduser(TOKEN_STORAGE_FILE)
-        OAuth2.token_cache = JsonTokenFileCache(filename)
-        self.auth = OAuth2AuthorizationCodePKCE(
-            authorization_url=EGI_AUTH.get("authorization_url"),
-            token_url=EGI_AUTH.get("token_url"),
+        self.auth = OAuthDeviceFlowPKCE(
             client_id=EGI_AUTH.get("client_id"),
-            # client_secret=EGI_AUTH["client_secret"],
-        )
-        self.transaction_client = httpx.Client(
-            timeout=EGI_AUTH.get("timeout", 5.0), verify=EGI_AUTH.get("verify", True)
+            client_secret=EGI_AUTH.get("client_secret"),
+            device_endpoint=EGI_AUTH.get("device_url"),
+            token_endpoint=EGI_AUTH.get("token_url"),
+            scope=EGI_AUTH.get("scope"),
+            refresh_file=os.path.expanduser(TOKEN_STORAGE_FILE),
         )
 
-    def publish(self, entry):
+    def publish(self, entry: dict[str, Any]) -> None:
+        """Publish an item to the EGI authenticated STAC endpoint.
+
+        Args:
+            entry (dict[str, Any]): entry to be published
+        """
         collection = entry.get("collection")
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
 
-        resp = self.transaction_client.post(
-            f"{self.stac_api}/collections/{collection}/items",
-            headers=headers,
-            json=entry,
-            auth=self.auth,
-        )
-        print("DATA", entry)
-        if resp.status_code == 201:
-            self.publog.info(resp.status_code)
-            self.publog.info("Published")
-        elif resp.status_code == 202:
-            self.publog.info(resp.status_code)
-            self.publog.info("Queued for publication")
-        else:
-            self.publog.error(f"Failed to publish: Error {resp.status_code}")
+        try:
+            response = requests.post(
+                f"{self.stac_api}/collections/{collection}/items",
+                headers=headers,
+                json=entry,
+                auth=self.auth,
+                verify=EGI_AUTH.get("verify", True),
+                timeout=EGI_AUTH.get("timeout", 5.0),
+            )
+
+            response.raise_for_status()
+
+            match response.status_code:
+                case 200:
+                    self.publog.info("Published")
+
+                case 202:
+                    self.publog.info("Queued for publication")
+
+        except requests.exceptions.HTTPError as err:
+            self.publog.error("Failed to publish: Error %s", err.response.status_code)
