@@ -4,8 +4,8 @@ import esgcet.logger as logger
 from esgcet.index_pub import ESGPubIndex
 from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import ESGPubMKDNonNC
-from esgcet.stac_client import TransactionClient
-from esgcet.stac_converter import convert2stac
+from esgcet.stac_client import getTransactionClient
+from esgcet.stac_converter import ESGSTACConverter
 from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
 
@@ -113,9 +113,13 @@ class BasePublisher(object):
         # TODO: support solr and Globus using the globus_index argument
 
         if self.argdict.get("stac_config"):
+            TransactionClient = getTransactionClient(self.argdict.get("stac_config", {}))
             tc = TransactionClient(self.argdict)
+            if not tc:
+                raise RuntimeError("Failed to create STAC transaction client")
+            sc = ESGSTACConverter(self.argdict.get("stac_config", {}))
             try:
-                stac_item = convert2stac(dataset_records)
+                stac_item = sc.convert2stac(dataset_records)
                 # publog.warn(json.dumps(stac_item, indent=4))
                 rc = tc.publish(stac_item)
             except Exception as ex:

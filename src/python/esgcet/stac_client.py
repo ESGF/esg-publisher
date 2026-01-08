@@ -259,6 +259,14 @@ class EGITransactionClient:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
 
 
-TransactionClient = (
-    EGITransactionClient if AUTH_PROVIDER == "EGI" else GlobusTransactionClient
-)
+def getTransactionClient(stac_config):
+    sc = stac_config.get("stac_client", {})
+    
+    if "globus" in sc.get("redirect_uri", ""):
+        auth = "Globus"
+    else:
+        auth = AUTH_PROVIDER
+    res = (
+        EGITransactionClient if auth == "EGI" else GlobusTransactionClient
+    )
+    return res
