@@ -93,7 +93,8 @@ The config file will contain the following settings, most required settings are 
     * Optional. (Required for ESGF-1.5).  Set this value to the ESGF-1.5 index (see `ESGF-1.5 Index list <https://github.com/esgf2-us/esgf-1.5-design/blob/main/indexes.md>`_ for the listing)
  * https_url
     * Optional. (Require for sites that don't run a standard Nginx http server container, eg. use of Globus).  For Globus-enabled sites, this is a template in the form: https://<hostname>.data.globus.org/{}/{}|application/netcdf|HTTPServer.  Get your <hostname> from your site/data node administrator.  The software will populate the ``{}`` fields, leave as is. 
-
+ * stac_config
+    * Reuqired for publishing to ESGF Stac catalogs. see :ref:`esglogin` for more information
       
 
 Fill out the necessary variables, and either leave or override the optional configurations.

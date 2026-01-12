@@ -128,7 +128,7 @@ class GlobusTransactionClient:
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
-        with open(f"{entry["id"]}.json", "w") as f:
+        with open(f"{entry['id']}.json", "w") as f:
             f.write(json.dumps(entry, indent=1))
 
         if not self.dry_run:
