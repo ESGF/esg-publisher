@@ -171,9 +171,10 @@ class GlobusTransactionClient:
 class EGITransactionClient:
     """EGI Transaction client for publishing ESGF items."""
 
-    def __init__(self, stac_api=None, verbose=False, silent=False):
-        if stac_api:
-            self.stac_api = stac_api
+    def __init__(self, args=None, verbose=False, silent=False):
+        stac_config=args.get("stac_config")
+        if stac_config:
+            self.stac_api = stac_config.get("stac_api")
 
         else:
             self.stac_api = STAC_TRANSACTION_API.get("base_url")
