@@ -22,7 +22,6 @@ class OAuthDeviceFlowPKCE:
     def __init__(
         self,
         client_id: str,
-        client_secret: str,
         device_endpoint: str,
         token_endpoint: str,
         scope: str,
@@ -40,7 +39,6 @@ class OAuthDeviceFlowPKCE:
             refresh_file (str): Path to store token data locally.
         """
         self.client_id = client_id
-        self.client_secret = client_secret
         self.device_endpoint = device_endpoint
         self.token_endpoint = token_endpoint
         self.scope = scope
@@ -104,7 +102,6 @@ class OAuthDeviceFlowPKCE:
         """
         payload = {
             "client_id": self.client_id,
-            "client_secret": self.client_secret,
             "scope": self.scope,
             "code_challenge": self.code_challenge,
             "code_challenge_method": "S256",
@@ -207,15 +204,14 @@ class OAuthDeviceFlowPKCE:
             print("Refresh token expired. Login required...")
             return self.initiate_device_flow()
 
-        auth = requests.auth.HTTPBasicAuth(self.client_id, self.client_secret)
-
         payload = {
+            "client_id": self.client_id,
             "grant_type": "refresh_token",
             "refresh_token": self.token_data["refresh_token"],
             "scope": self.scope,
         }
 
-        response = requests.post(self.token_endpoint, data=payload, auth=auth)
+        response = requests.post(self.token_endpoint, data=payload)
         response.raise_for_status()
         token_data = response.json()
 

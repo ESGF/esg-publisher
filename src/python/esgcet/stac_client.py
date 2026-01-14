@@ -172,7 +172,7 @@ class EGITransactionClient:
     """EGI Transaction client for publishing ESGF items."""
 
     def __init__(self, args=None, verbose=False, silent=False):
-        stac_config=args.get("stac_config")
+        stac_config = args.get("stac_config")
         if stac_config:
             self.stac_api = stac_config.get("stac_api")
 
@@ -185,7 +185,6 @@ class EGITransactionClient:
 
         self.auth = OAuthDeviceFlowPKCE(
             client_id=EGI_AUTH.get("client_id"),
-            client_secret=EGI_AUTH.get("client_secret"),
             device_endpoint=EGI_AUTH.get("device_url"),
             token_endpoint=EGI_AUTH.get("token_url"),
             scope=EGI_AUTH.get("scope"),
@@ -262,12 +261,10 @@ class EGITransactionClient:
 
 def getTransactionClient(stac_config):
     sc = stac_config.get("stac_client", {})
-    
+
     if "globus" in sc.get("redirect_uri", ""):
         auth = "Globus"
     else:
         auth = AUTH_PROVIDER
-    res = (
-        EGITransactionClient if auth == "EGI" else GlobusTransactionClient
-    )
+    res = EGITransactionClient if auth == "EGI" else GlobusTransactionClient
     return res
