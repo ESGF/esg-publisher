@@ -32,7 +32,6 @@ class OAuthDeviceFlowPKCE:
 
         Args:
             client_id (str): OAuth client ID.
-            client_secret (str): OAuth client secret.
             device_endpoint (str): URL to initiate device code flow.
             token_endpoint (str): URL to exchange device code or refresh token.
             scope (str): OAuth scopes to request.
@@ -149,7 +148,6 @@ class OAuthDeviceFlowPKCE:
                 "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
                 "device_code": device_code,
                 "client_id": self.client_id,
-                "client_secret": self.client_secret,
                 "code_verifier": self.code_verifier,
             }
 
