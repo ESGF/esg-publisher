@@ -147,6 +147,7 @@ GA = {
         "activity_id",
         "data_specs_version",
         "title",
+        
     ],
     "input4mips": [
         "contact",
@@ -190,6 +191,14 @@ GA = {
         "Conventions",
         "source_type",
         "title",
+        "temporal_label",
+        "vertical_label",
+        "forcing_index",
+        "initialization_index",
+        "realization_index",
+        "physics_index",
+        "member_id",
+        "branded_variable",
     ],
 }
 
@@ -307,7 +316,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.1", "CMIP6" : "v1.0.0"}
+STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v1.0.0"}
 
 STAC_item_properties = [
     "access",
@@ -315,27 +324,35 @@ STAC_item_properties = [
     "pid",
     "project",
     "title",
-    "version",
-    "drs_specs",
+    "master_id",
 ]
+
+
+# MAPS STAC property to legacy esgcet property
+MAP_properties = {
+ "CMIP7" : {
+     "variable_cf_standard_name" : "cf_standard_name",
+     "variable_branded_name" : "branded_variable",
+ }   
+}
 
 STAC_proj_item_properties = {
     "CMIP7": [
         "activity_id",
         "area_label",
         "region",
-        # "cf_standard_name",
+        "variable_cf_standard_name",
         "citation_url",
         "data_specs_version",
+        "drs_specs",
         "experiment_id",
         "experiment_title",
         "frequency",
         "further_info_url",
-        "grid",
-        # "grid_label",
+        "grid_label",
         "institution_id",
         "member_id",
-        # "mip_era",
+        "mip_era",
         "nominal_resolution",
         "product",
         "realm",
@@ -350,6 +367,15 @@ STAC_proj_item_properties = {
         "variable_branded_suffix",
         "Conventions",
         "license_id",
+        "variable_branded_name",
+        "variable_cf_standard_name",
+        "temporal_label",
+        "vertical_label",
+        "forcing_index",
+        "initialization_index",
+        "realization_index",
+        "physics_index",
+        "version"
     ],
     "CMIP6": [
         "activity_id",
@@ -384,6 +410,7 @@ STAC_list_properties = {
     "access",
     "realm",
     "source_type",
+    "Conventions",
 }
 
 CACHE_DIR_DEPTH = 6

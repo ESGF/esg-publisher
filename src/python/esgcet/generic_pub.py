@@ -8,6 +8,8 @@ from esgcet.stac_client import getTransactionClient
 from esgcet.stac_converter import ESGSTACConverter
 from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
+from esgcet.update_stac import ESGUpdateStac
+
 
 log = logger.ESGPubLogger()
 
@@ -80,7 +82,11 @@ class BasePublisher(object):
 
     def update(self, json_data):
 
-        if self.argdict.get("globus_index", False):
+        stac_conf = self.argdict.get("stac_config", {})
+        if stac_conf
+            up = ESGFUpdateSTAC
+        
+        elif self.argdict.get("globus_index", False):
             up = ESGUpdateGlobus(
                 self.argdict.get("index_UUID"),
                 json_data[0]["data_node"],
