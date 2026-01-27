@@ -134,7 +134,7 @@ class ESGSTACConverter():
                     continue
                 properties[nk] = v
     
-        sc_version = STAC_schema_versions.get(collection)
+        sc_version = STAC_schema_versions.get(collection.upper())
         if not sc_version:
             raise RuntimeError(f"No version of STAC schema for {collection}")
         

@@ -125,6 +125,7 @@ DRS = {
         "variable_branded_suffix",
         "grid_label",
     ],
+    "cordex-cmip6":  ["collection", "activity_id","domain","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
 }
 
 #             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
@@ -191,6 +192,17 @@ GA = {
         "source_type",
         "title",
     ],
+    "cordex-cmip6": [
+        "grid",
+        "nominal_resolution",
+        "license_id",
+        "product",
+        "realm",
+        "Conventions",
+        "title", 
+        "mip_era",
+        "domain",
+    "project_id"]
 }
 
 GA_DELIMITED = {
@@ -204,6 +216,7 @@ CONST_ATTR = {
     "obs4mips": {"project": "obs4MIPs"},
     "input4mips": {"project": "input4MIPs"},
     "mip-drs7": {"project": "CMIP7", "acrhive_id": "WCRP"},
+        "cordex-cmip6" : { "project" : "CORDEX-CMIP6"}
 }
 
 GA_MAPPED = {"cmip6": {"experiment": "experiment_title"}}
@@ -307,7 +320,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.1", "CMIP6" : "v1.0.0"}
+STAC_schema_versions = {"CMIP7": "v3.0.1", "CMIP6" : "v1.0.0","CORDEX-CMIP6" : "v3.1.0"}
 
 STAC_item_properties = [
     "access",
@@ -378,7 +391,70 @@ STAC_proj_item_properties = {
         "variable_units",
         "variant_label",
     ],
+    "CORDEX-CMIP6"  :  ["activity_id",
+                        "domain_id",
+                        "domain",
+                        "institution_id",
+                        "driving_source_id",
+                        "driving_experiment_id",
+                        "driving_institution_id",
+                        "driving_variant_label",
+                        "source_id",
+                        "version_realization",
+                    "frequency",
+            "grid",
+        "nominal_resolution",
+        "license_id",
+        "product",
+        "realm",
+        "Conventions",
+                       "project_id",
+                               "variable_cf_standard_name",]
 }
+
+                    "required": [
+                        "cordex-cmip6:project_id"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:source_id"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:source_type"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:variable_cf_standard_name"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:variable_id"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:variable_long_name"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:variable_units"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:version"
+                    ]
+                },
+                {
+                    "required": [
+                        "cordex-cmip6:version_realization"
+"version_realization_info"
 
 STAC_list_properties = {
     "access",
