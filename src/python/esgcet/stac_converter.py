@@ -4,7 +4,8 @@ from esgcet.settings import (
     STAC_item_properties, 
     STAC_proj_item_properties, 
     STAC_list_properties, 
-    STAC_schema_versions
+    STAC_schema_versions,
+    MAP_properties
 )
 
 class ESGSTACConverter():
@@ -117,7 +118,11 @@ class ESGSTACConverter():
         namespace = collection.lower()
     
         for k in property_keys:
-            v = dataset_doc.get(k)
+            if collection in MAP_properties and k in MAP_properties[collection]:
+                mapped_k = MAP_properties[collection][k]
+                v = dataset_doc.get(mapped_k)
+            else:
+                v = dataset_doc.get(k)
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
@@ -132,6 +137,11 @@ class ESGSTACConverter():
             else:
                 if v is None or v == "none":
                     continue
+                # SKA workaround if integer index's are wanted
+                #                if "_index" in nk:
+                #                    v = int(v[1:])
+                if nk == "cmip7:version":
+                    v = f"{v}"
                 properties[nk] = v
     
         sc_version = STAC_schema_versions.get(collection.upper())
