@@ -125,7 +125,7 @@ DRS = {
         "variable_branded_suffix",
         "grid_label",
     ],
-    "cordex-cmip6":  ["collection", "activity_id","domain","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
+    "cordex-cmip6":  ["collection", "activity_id","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
 }
 
 #             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
@@ -204,7 +204,7 @@ GA = {
     "cordex-cmip6": [
         "grid",
         "nominal_resolution",
-        "license_id",
+        "license",
         "product",
         "realm",
         "Conventions",
@@ -212,7 +212,10 @@ GA = {
         "mip_era",
         "domain",
     "project_id",
-    "version_realization_info"
+    "version_realization_info",
+        "driving_institution_id",
+        "source_type"
+
 ]
 }
 
@@ -432,18 +435,19 @@ STAC_proj_item_properties = {
                         "frequency",
                         "grid",
                         "nominal_resolution",
-                        "license_id",
+                        "license",
                         "product",
                         "realm",
                         "Conventions",
                         "project_id",
-                        "source_type"
+                        "source_type",
                         "variable_cf_standard_name",
                         "variable_id",
                         "variable_long_name",
                         "variabl_units",
                         "version",
-                        "version_realization_info"
+                        "version_realization_info",
+                        "mip_era"
                        ]
 }
 
