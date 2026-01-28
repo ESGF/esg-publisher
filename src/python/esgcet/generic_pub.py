@@ -83,9 +83,9 @@ class BasePublisher(object):
     def update(self, json_data):
 
         stac_conf = self.argdict.get("stac_config", {})
-        if stac_conf
-            up = ESGFUpdateSTAC
-        
+        if stac_conf:
+#            up = ESGFUpdateSTAC()
+            pass
         elif self.argdict.get("globus_index", False):
             up = ESGUpdateGlobus(
                 self.argdict.get("index_UUID"),
