@@ -171,17 +171,24 @@ class GlobusTransactionClient:
 class EGITransactionClient:
     """EGI Transaction client for publishing ESGF items."""
 
-    def __init__(self, args=None, verbose=False, silent=False):
-        stac_config = args.get("stac_config")
-        if stac_config:
-            self.stac_api = stac_config.get("stac_api")
-
-        else:
-            self.stac_api = STAC_TRANSACTION_API.get("base_url")
-
-        self.verbose = verbose
-        self.silent = silent
+    def __init__(self, args):
+        verbose = args.get("verbose", False)
+        silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
+
+        self.stac_config = args.get("stac_config", None)
+        if not self.stac_config:
+            self.publog.exception("STAC client not configured")
+            exit(1)
+
+        transaction_api = self.stac_config.get("stac_transaction_api", None)
+        if not transaction_api:
+            self.publog.exception("Misconfig of STAC client")
+            exit(1)
+
+        self.stac_api = transaction_api.get(
+            "base_url", STAC_TRANSACTION_API.get("base_url")
+        )
 
         self.auth = OAuthDeviceFlowPKCE(
             client_id=EGI_AUTH.get("client_id"),
