@@ -298,10 +298,11 @@ STAC_API = "https://api.stac.esgf-west.org"
 AUTH_PROVIDER = "Glob"
 
 EGI_AUTH = {
+    "client_id": "3da9c21e-2bb9-4576-9054-af420514cb7b",
     "device_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth",
     "token_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token",
-    "client_id": "",
-    "scope": [],
+    "scope": "entitlements",
+    "base_url": "https://api.stac.esgf.ceda.ac.uk",
 }
 
 VARIABLE_LIMIT = 75

@@ -25,6 +25,7 @@ class OAuthDeviceFlowPKCE:
         device_endpoint: str,
         token_endpoint: str,
         scope: str,
+        resource: str,
         refresh_file: str = "token.json",
     ) -> None:
         """
@@ -41,6 +42,7 @@ class OAuthDeviceFlowPKCE:
         self.device_endpoint = device_endpoint
         self.token_endpoint = token_endpoint
         self.scope = scope
+        self.resource = resource
         self.refresh_file = refresh_file
         self.code_verifier = self._generate_code_verifier()
         self.code_challenge = self._generate_code_challenge(self.code_verifier)
@@ -89,7 +91,7 @@ class OAuthDeviceFlowPKCE:
         """
         Saves token data to local file.
         """
-        with open(self.refresh_file, "w", encoding="utf-8") as f:
+        with open(self.refresh_file, "w", mode=0o600, encoding="utf-8") as f:
             json.dump(self.token_data, f)
 
     def initiate_device_flow(self) -> dict[str, Any]:
@@ -102,6 +104,7 @@ class OAuthDeviceFlowPKCE:
         payload = {
             "client_id": self.client_id,
             "scope": self.scope,
+            "resource": self.resource,
             "code_challenge": self.code_challenge,
             "code_challenge_method": "S256",
         }
@@ -207,6 +210,7 @@ class OAuthDeviceFlowPKCE:
             "grant_type": "refresh_token",
             "refresh_token": self.token_data["refresh_token"],
             "scope": self.scope,
+            "resource": self.resource,
         }
 
         response = requests.post(self.token_endpoint, data=payload)

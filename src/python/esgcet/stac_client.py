@@ -195,6 +195,7 @@ class EGITransactionClient:
             device_endpoint=EGI_AUTH.get("device_url"),
             token_endpoint=EGI_AUTH.get("token_url"),
             scope=EGI_AUTH.get("scope"),
+            resource=self.stac_api,
             refresh_file=os.path.expanduser(TOKEN_STORAGE_FILE),
         )
 
