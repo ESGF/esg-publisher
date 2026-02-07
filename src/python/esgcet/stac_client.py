@@ -144,27 +144,29 @@ class GlobusTransactionClient:
             else:
                 self.publog.error(f"Failed to publish: Error {resp.http_status}")
 
-    def put(self, entry):
 
-        collection = entry.get("collection")
-        item_id = entry.get("id")
+    def json_patch(self, collection, item_id, entry):
+        """
+        RFC 6902 https://tools.ietf.org/html/rfc6902
+        JSON Patch is a format for describing changes to a JSON document
+        in a way that is similar to a diff
+        It consists of a sequence of operations to be applied to the target JSON document
+        """
         headers = {
-            "User-Agent": f"esgf_publisher/{__version__}",
+            "Content-Type": "application/json-patch+json",
+            "User-Agent": f"test_client/{__version__}",
         }
-
-        resp = self.transaction_client.put(
-            f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
-        )
+        resp = self.transaction_client.patch(f"/collections/{collection}/items/{item_id}", headers=headers, data=entry)
         if resp.http_status == 201:
-            self.publog.info(resp.http_status)
-            self.publog.info("Updated")
+            print(resp.http_status)
+            print("Updated (JSON PATCH)")
             return True
         elif resp.http_status == 202:
-            self.publog.info(resp.http_status)
-            self.publog.info("Queued for update")
+            print(resp.http_status)
+            print("Queued for update (JSON PATCH)")
             return True
         else:
-            self.publog.error(f"Failed to publish: Error {resp.http_status}")
+            print(f"Failed to update (JSON PATCH): Error {resp.http_status}")
             return False
 
 

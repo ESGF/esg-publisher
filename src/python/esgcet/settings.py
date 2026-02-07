@@ -213,6 +213,7 @@ CONST_ATTR = {
     "obs4mips": {"project": "obs4MIPs"},
     "input4mips": {"project": "input4MIPs"},
     "mip-drs7": {"project": "CMIP7", "acrhive_id": "WCRP"},
+
 }
 
 GA_MAPPED = {"cmip6": {"experiment": "experiment_title"}}
@@ -253,7 +254,13 @@ PID_CREDS = [
     }
 ]
 
-PID_PREFIX = "21.14100"  # for testing use CMIP6,  need to be project-specific
+PID_PREFIX = { 
+ "cmip6" :  "21.14100" ,
+    "cordex-cmip6" : "21.14103" ,
+    "cmip7" : "21.14107" ,
+    # for testing use CMIP6,  need to be project-specific
+}
+    
 PID_EXCHANGE = "esgffed-exchange"
 HTTP_SERVICE = "/thredds/fileServer/"
 

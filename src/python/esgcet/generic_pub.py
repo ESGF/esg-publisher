@@ -10,6 +10,8 @@ from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
 from esgcet.update_stac import ESGUpdateStac
 
+from esgcet.pid_cite_pub import ESGPubPidCite
+from esgcet.settings import PID_PREFIX  # project table of prefixes
 
 log = logger.ESGPubLogger()
 
@@ -84,8 +86,10 @@ class BasePublisher(object):
 
         stac_conf = self.argdict.get("stac_config", {})
         if stac_conf:
-#            up = ESGFUpdateSTAC()
-            pass
+            up = ESGFUpdateSTAC(stac_conf,                 
+                                silent=self.silent,
+                                verbose=self.verbose,
+                                dry_run=self.argdict.get("dry_run", False))
         elif self.argdict.get("globus_index", False):
             up = ESGUpdateGlobus(
                 self.argdict.get("index_UUID"),
@@ -162,6 +166,14 @@ class BasePublisher(object):
             exit(1)
         return rc
 
+    def pid_cite(self):
+
+        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test,
+                            silent=self.silent, verbose=self.verbose,
+                            project_family='CMIP6', disable_cite=self._disable_citation)
+
+        x[-1]["id"]
+        ds_pid = pid.genpid()
     def workflow(self):
 
         # step one: convert mapfile
@@ -172,6 +184,8 @@ class BasePublisher(object):
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
+        self.dataset_rec = out_json_data
+        
         self.publog.info("Updating...")
         self.update(out_json_data)
 

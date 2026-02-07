@@ -8,6 +8,67 @@ from esgcet.settings import (
     MAP_properties
 )
 
+class ESGSTACItem():
+    """
+    Container class for the item with Methods to add Assets
+    """
+    def __init__(self, si):
+        self.stac_item = si
+
+        
+
+    def add_aggregate(self, aggtype, url, site):
+        assets = self.stac_item.get("assets", {})
+        k = list(assets.keys())[0]
+        asset = assets[k]
+        altasset  = {
+                   "description": asset.get("description"),
+                "type": asset.get("type"),
+                "roles": asset.get("roles", []),
+                "alternate:name": site,
+                "href" : url
+        }
+        if not "alternate" in assets:
+            asset["alternate"] = { site : altasset }
+        else:
+            asset["alternate"][site] = altasset    
+        
+
+    def add_replica(self, rep_datanode, rep_globus, rep_path, alt_hostname=""):
+        assets = self.stac_item.get("assets", {})
+        for name, asset in assets.items():
+            if asset.get("alternate:name") == rep_datanode:
+                continue
+    
+            if "alternate" not in asset:
+                asset["alternate"] = {}
+    
+            if rep_datanode in asset.get("alternate"):
+                continue
+    
+            replica_asset = {
+                "description": asset.get("description"),
+                "type": asset.get("type"),
+                "roles": asset.get("roles", []),
+                "alternate:name": rep_datanode,
+            }
+    
+            if name == "globus":
+                replica_asset["href"] = (
+                    f"https://app.globus.org/file-manager?"
+                    f"origin_id={rep_globus}&origin_path={rep_path}"
+                )
+    
+            elif asset.get("type") == "application/netcdf":
+                filename = asset["href"].split("/")[-1]
+                if alt_hostname:
+                    hostname = alt_hostname
+                else:
+                    hostname =rep_datanode
+                replica_asset["href"] = f"https://{hostname}/{rep_path}/{filename}"
+    
+            asset["alternate"][rep_datanode] = replica_asset
+
 class ESGSTACConverter():
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")

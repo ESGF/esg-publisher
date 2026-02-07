@@ -4,8 +4,11 @@ import argparse
 from esgcet.stac_client import getTransactionClient
 import esgcet.args as pub_args
 from pathlib import Path
+import esgcet.logger as logger
 
 
+log = logger.ESGPubLogger()
+publog = log.return_logger("esglogin")
 
 
 def get_config():
