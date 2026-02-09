@@ -295,8 +295,6 @@ STAC_TRANSACTION_API = {
 
 STAC_API = "https://api.stac.esgf-west.org"
 
-AUTH_PROVIDER = "Glob"
-
 EGI_AUTH = {
     "client_id": "3da9c21e-2bb9-4576-9054-af420514cb7b",
     "device_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth",
