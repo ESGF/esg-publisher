@@ -155,45 +155,47 @@ def run():
         sc = ESGSearchCheck(stac_api=stac_api, verbose=verbose, silent=silent)
 
         #si = sc.stac_item_fetch(a.dataset_id)
-        stac_item = ESGSTACItem(si)
+        #stac_item = ESGSTACItem(si)
+        
         if a.rep_datanode:
             site = a.rep_datanode
         else:
             site = config["data_node"]
         if a.agg:
 
-                operations = [
-                        entry = {
-                            "op": "add",
-                            "path": f"/assets/{site}",
-                            "value": {
-                                "alternate": {
-                                    site: {
-                                        "href": a.rep_path,
-                                        "type": a.agg,
-                                        "roles": roles,
-                                        "description": description,
-                                        "alternate:name": site,
-                                    }
-                                },
-                            }
+            operations = [
+                     {
+                        "op": "add",
+                        "path": f"/assets/kerchunk",
+                        "value": {
+                            "alternate": {
+                                site: {
+                                    "href": a.rep_path,
+                                    "type": a.agg,
+                                    "roles": ["data"],
+                                    "description": "TEST",
+                                    "alternate:name": site,
+                                }
+                            },
                         }
-                ]
-                response = tc.json_patch(
-                        "CMIP6",
-                        item_id=item_id,
-                        entry={
-                            "operations": operations
-                        },
-            
-
-            #stac_item.add_aggregate(a.agg, a.rep_path, site)
+                    }
+            ]
+            print(f"DEBUG {operations}")
+            rc = tc.json_patch(
+                    "CMIP6",
+                    item_id=a.dataset_id,
+                    entry={
+                        "operations": operations
+                    }
+            ) 
+            print(f"DEBUG {rc}")
+#            stac_item.add_aggregate(a.agg, a.rep_path, site)
         else:
             patch_entry = {}
             
             stac_item.add_replica(a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname)
         
-        rc = rc and tc.json_patch(collection, a.datasetid, patch_entry)    
+ #       rc = rc and tc.json_patch(collection, a.datasetid, patch_entry)    
     if not rc:
         exit(1)
 
