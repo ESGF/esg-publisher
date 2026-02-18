@@ -7,7 +7,6 @@ import requests
 from esgcet import __version__
 from esgcet.settings import *
 from esgcet.settings import (
-    AUTH_PROVIDER,
     EGI_AUTH,
     STAC_CLIENT,
     STAC_TRANSACTION_API,
@@ -273,6 +272,8 @@ def getTransactionClient(stac_config):
     if "globus" in sc.get("redirect_uri", ""):
         auth = "Globus"
     else:
-        auth = AUTH_PROVIDER
-    res = EGITransactionClient if auth == "EGI" else GlobusTransactionClient
+        auth = "EGI"
+    res = (
+        EGITransactionClient if auth == "EGI" else GlobusTransactionClient
+    )
     return res

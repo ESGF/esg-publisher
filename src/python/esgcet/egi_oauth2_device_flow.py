@@ -109,13 +109,21 @@ class OAuthDeviceFlowPKCE:
             "code_challenge": self.code_challenge,
             "code_challenge_method": "S256",
         }
+        print(f"POSTING to {self.device_endpoint} ")
         response = requests.post(
             self.device_endpoint,
             data=payload,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        response.raise_for_status()
-        device_info = response.json()
+        print("POSTED")
+        # SKA - although I don't see a try/except that is catching this, creates a silent error condition (method returns and publishing fails)
+        #response.raise_for_status()
+
+        try:
+            device_info = response.json()
+        except:
+            raise RuntimeError(f"Error in response from EGI: {response.status_code}  {response.text}")
+            
         print(
             f"Visit {device_info['verification_uri']} and enter code: {device_info['user_code']}"
         )
