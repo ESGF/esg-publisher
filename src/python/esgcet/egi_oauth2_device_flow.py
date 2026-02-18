@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 import requests
+from requests.auth import HTTPBasicAuth
 
 
 class OAuthDeviceFlowPKCE:
@@ -213,6 +214,8 @@ class OAuthDeviceFlowPKCE:
             print("Refresh token expired. Login required...")
             return self.initiate_device_flow()
 
+        auth = HTTPBasicAuth(self.client_id, "")
+
         payload = {
             "client_id": self.client_id,
             "grant_type": "refresh_token",
@@ -221,7 +224,7 @@ class OAuthDeviceFlowPKCE:
             "resource": self.resource,
         }
 
-        response = requests.post(self.token_endpoint, data=payload)
+        response = requests.post(self.token_endpoint, data=payload, auth=auth)
         response.raise_for_status()
         token_data = response.json()
 
