@@ -1,5 +1,7 @@
 from esgcet.unpublish_globus import ESGUnpublishGlobus
 from esgcet.unpublish_solr import ESGUnpublishSolr
+from esgcet.unpublish_stac import ESGUnpublishSTAC
+
 import os
 import sys
 import json
@@ -22,8 +24,6 @@ def get_args():
     def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
-    parser.add_argument("--certificate", "-c", dest="cert", default=None,
-                        help="Use the following certificate file in .pem form for unpublishing (use a myproxy login to generate).")
     parser.add_argument("--delete",  action="store_true", help="Specify deletion of dataset (default is retraction).")
     parser.add_argument("--deprecate",  action="store_true", help="Specify deprecation of dataset (default is retraction).")
     parser.add_argument("--dset-id", dest="dset_id", default=None,
@@ -84,16 +84,7 @@ def run():
 
     args = pub_args.PublisherArgs()
     config = args.load_config(cfg_file)
-    auth = False
-    cert = ""
 
-    if a.cert:
-        cert = a.cert
-    elif 'cert' in config:
-        cert = config['cert']
-
-    if cert:
-        auth = True
 
     if a.index_node is None:
         try:
@@ -155,13 +146,16 @@ def run():
     args = { "delete": d,
              "data_node": data_node,
              "index_node": index_node,
-             "cert": cert,
-             "auth" :auth,
              "verbose" : verbose,
              "silent" :silent,
              }
 
-    if config.get("globus_index", False):
+    STAC = False
+    
+    if config.get("stac_config", {}):
+        STAC = True
+        upub = ESGUnpublishSTAC(config)
+    elif config.get("globus_index", False):
         args["index_UUID"] = config.get("index_UUID", "")
         upub = ESGUnpublishGlobus()
     else:
@@ -185,7 +179,7 @@ def run():
         publog.error("No unpublish input method specified.  Please use from one of the following arguments: --map --use-list --dset-id ; type esgunpublish --help for more info")
         exit(1)
 
-    if (upub.check_for_pid_proj(args["dataset_id_lst"])):
+    if (not STAC) and (upub.check_for_pid_proj(args["dataset_id_lst"])):
         try:
             pid_creds = config['pid_creds']
             creds_lst = []

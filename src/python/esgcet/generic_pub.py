@@ -8,7 +8,7 @@ from esgcet.stac_client import getTransactionClient
 from esgcet.stac_converter import ESGSTACConverter
 from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
-from esgcet.update_stac import ESGUpdateStac
+from esgcet.update_stac import ESGUpdateSTAC
 
 from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.settings import PID_PREFIX  # project table of prefixes
@@ -172,8 +172,10 @@ class BasePublisher(object):
                             silent=self.silent, verbose=self.verbose,
                             project_family='CMIP6', disable_cite=self._disable_citation)
 
-        x[-1]["id"]
-        ds_pid = pid.genpid()
+        dsid = x[-1]["id"]
+        ds_pid = pid.genpid(dsid)
+        self.dataset_rec["pid"] = ds_pid
+        
     def workflow(self):
 
         # step one: convert mapfile

@@ -69,7 +69,7 @@ class ESGSearchCheck():
         if not item:
             return False, False
         retracted = item["properties"].get("retracted", None)
-        if isinstance(retracted, NoneType):
+        if retracted is None:
             raise RuntimeError(f"Retracted property missing for {datasetid}")
         self._stac_item = item
         if retracted:

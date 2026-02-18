@@ -4,9 +4,10 @@ import esgcet.logger as logger
 log = logger.ESGPubLogger()
 
 from pystac_client import Client
-from stac_client import getTransactionClient
+from esgcet.stac_client import getTransactionClient
+from esgcet.update_base import ESGUpdateBase
 
-FIELDNAME = "master_id"
+FIELDNAME = "base_id"
 
 
 class ESGUpdateSTAC(ESGUpdateBase):
@@ -26,19 +27,41 @@ class ESGUpdateSTAC(ESGUpdateBase):
         """
         pass
 
-    def update_dataset(self, dsetid : str, update_dict={}, set_latest=True):
-        self.stac_item["properties"]["latest"] = set_latest
+    def update_dataset(self, dsetid : str, update_dict={}, set_latest=False):
+
+
+        operations = []
+        
+        if not (set_latest):
+            op =                     {
+                        "op": "replace",
+                        "path": "/properties/latest",
+                        "value": set_latest
+                    }
+            operations.append(op) 
+
+                
         # Use STAC property in update not legacy field names from Solr-era
         if update_dict:
             for k in update_dict:
-                props = self.stac_item["properties"]
-                if k in props:
-                    props[k] = update_dict[k]
+    #                props[k] = update_dict[k]
+                op =                     {
+                        "op": "replace",
+                        "path": "/properties/{k}",
+                        "value": update_dict[k]
+                    }
+                operations.append(op) 
 
-        print("WOULD PUT")
+        
 
-        #self.trans_client.put(self.stac_item)
-    
+        response = tc.json_patch(
+                        "CMIP7",
+                        item_id=item_id,
+                        entry={
+                            "operations": operations
+                        },
+                )
+
 
     def query_update(self, data_node : str, master_id : str):
 
