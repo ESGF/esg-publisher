@@ -109,13 +109,18 @@ class OAuthDeviceFlowPKCE:
             "code_challenge": self.code_challenge,
             "code_challenge_method": "S256",
         }
+        print(f"DEBUG: {self.device_endpoint}")
         response = requests.post(
             self.device_endpoint,
             data=payload,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        response.raise_for_status()
-        device_info = response.json()
+    
+        print(f"DEBUG payload: {payload}")
+        try:
+            device_info = response.json()
+        except:
+            print(f"repsonse: {response.status_code} {response.text}")
         print(
             f"Visit {device_info['verification_uri']} and enter code: {device_info['user_code']}"
         )
