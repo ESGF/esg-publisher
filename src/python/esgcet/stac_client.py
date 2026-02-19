@@ -6,12 +6,7 @@ import esgcet.logger as logger
 import requests
 from esgcet import __version__
 from esgcet.settings import *
-from esgcet.settings import (
-    EGI_AUTH,
-    STAC_CLIENT,
-    STAC_TRANSACTION_API,
-    TOKEN_STORAGE_FILE,
-)
+from esgcet.settings import STAC_CLIENT, STAC_TRANSACTION_API, TOKEN_STORAGE_FILE
 from globus_sdk import (
     BaseClient,
     GroupsClient,
@@ -21,7 +16,7 @@ from globus_sdk import (
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.tokenstorage import SimpleJSONFileAdapter
 
-from .egi_oauth2_device_flow import OAuthDeviceFlowPKCE
+from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
 log = logger.ESGPubLogger()
 
@@ -180,22 +175,22 @@ class EGITransactionClient:
             self.publog.exception("STAC client not configured")
             exit(1)
 
-        transaction_api = self.stac_config.get("stac_transaction_api", None)
-        if not transaction_api:
-            self.publog.exception("Misconfig of STAC client")
-            exit(1)
+        transaction_api = self.stac_config.get("stac_transaction_api", {})
+        self.egi_conf = EGIConf(**transaction_api)
 
-        self.stac_api = transaction_api.get(
-            "base_url", STAC_TRANSACTION_API.get("base_url")
+        self.stac_api = self.egi_conf.base_url
+
+        token_storage_file = self.stac_config.get(
+            "token_storage_file", TOKEN_STORAGE_FILE
         )
 
         self.auth = OAuthDeviceFlowPKCE(
-            client_id=EGI_AUTH.get("client_id"),
-            device_endpoint=EGI_AUTH.get("device_url"),
-            token_endpoint=EGI_AUTH.get("token_url"),
-            scope=EGI_AUTH.get("scope"),
+            client_id=self.egi_conf.client_id,
+            device_endpoint=self.egi_conf.device_url,
+            token_endpoint=self.egi_conf.token_url,
+            scope=self.egi_conf.scope,
             resource=self.stac_api,
-            refresh_file=os.path.expanduser(TOKEN_STORAGE_FILE),
+            refresh_file=os.path.expanduser(token_storage_file),
         )
 
     def publish(self, entry: dict[str, Any]) -> None:
@@ -215,8 +210,8 @@ class EGITransactionClient:
                 headers=headers,
                 json=entry,
                 auth=self.auth,
-                verify=EGI_AUTH.get("verify", True),
-                timeout=EGI_AUTH.get("timeout", 5.0),
+                verify=self.egi_conf.verify,
+                timeout=self.egi_conf.timeout,
             )
 
             response.raise_for_status()
@@ -249,8 +244,8 @@ class EGITransactionClient:
                 headers=headers,
                 json=entry,
                 auth=self.auth,
-                verify=EGI_AUTH.get("verify", True),
-                timeout=EGI_AUTH.get("timeout", 5.0),
+                verify=self.egi_conf.verify,
+                timeout=self.egi_conf.timeout,
             )
 
             response.raise_for_status()
@@ -273,7 +268,5 @@ def getTransactionClient(stac_config):
         auth = "Globus"
     else:
         auth = "EGI"
-    res = (
-        EGITransactionClient if auth == "EGI" else GlobusTransactionClient
-    )
+    res = EGITransactionClient if auth == "EGI" else GlobusTransactionClient
     return res
