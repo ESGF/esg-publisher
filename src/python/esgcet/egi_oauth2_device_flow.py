@@ -17,10 +17,10 @@ class EGIConf:
     """
 
     client_id: str = "3da9c21e-2bb9-4576-9054-af420514cb7b"
-    device_url: str = (
+    device_endpoint: str = (
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device"
     )
-    token_url: str = (
+    token_endpoint: str = (
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device"
     )
     scope: str = "offline_access entitlements"
