@@ -1,11 +1,13 @@
-import os
 import argparse
-
-from esgcet.stac_client import getTransactionClient
-import esgcet.args as pub_args
+import os
 from pathlib import Path
 
+import esgcet.args as pub_args
+import esgcet.logger as logger
+from esgcet.stac_client import getTransactionClient
 
+log = logger.ESGPubLogger()
+publog = log.return_logger("esglogin")
 
 
 def get_config():
@@ -38,13 +40,11 @@ def get_config():
     config = args.load_config(ini_file)
     return config
 
+
 def main():
 
     args = get_config()
 
-    
-    TransCli = getTransactionClient(args.get("stac_config",{}))
+    TransCli = getTransactionClient(args.get("stac_config", {}))
 
     tc = TransCli(args)
-
-    

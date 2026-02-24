@@ -295,19 +295,12 @@ STAC_TRANSACTION_API = {
 
 STAC_API = "https://api.stac.esgf-west.org"
 
-AUTH_PROVIDER = "Glob"
-
-EGI_AUTH = {
-    "device_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth",
-    "token_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token",
-    "client_id": "",
-}
 
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.1", "CMIP6" : "v1.0.0"}
+STAC_schema_versions = {"CMIP7": "v3.0.1", "CMIP6": "v1.0.0"}
 
 STAC_item_properties = [
     "access",
