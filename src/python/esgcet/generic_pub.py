@@ -100,6 +100,9 @@ class BasePublisher(object):
             self.publog.exception("Failed to publish to index.")
             self.cleanup()
             exit(1)
+        status = "PASS" if rc else "FAIL"
+        self.publog.info(f"PUB_STATUS={status} id={dataset_records[-1]['id']}")
+            
         return rc
 
     def workflow(self):
