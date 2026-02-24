@@ -295,13 +295,6 @@ STAC_TRANSACTION_API = {
 
 STAC_API = "https://api.stac.esgf-west.org"
 
-EGI_AUTH = {
-    "client_id": "3da9c21e-2bb9-4576-9054-af420514cb7b",
-    "device_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device",
-    "token_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token",
-    "scope": "offline_access entitlements",
-    "base_url": "https://api.stac.esgf.ceda.ac.uk",
-}
 
 VARIABLE_LIMIT = 75
 
