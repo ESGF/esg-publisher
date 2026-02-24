@@ -8,7 +8,7 @@ from esgcet.stac_client import getTransactionClient
 from esgcet.stac_converter import ESGSTACConverter
 from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
-from esgcet.update_stac import ESGUpdateStac
+#from esgcet.update_stac import ESGUpdateStac
 
 
 log = logger.ESGPubLogger()
@@ -101,6 +101,8 @@ class BasePublisher(object):
                 verbose=self.verbose,
                 verify=self.verify,
             )
+        return
+
         try:
             up.run(json_data)
         except Exception as ex:

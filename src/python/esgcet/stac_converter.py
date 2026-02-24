@@ -23,6 +23,11 @@ class ESGSTACConverter():
     
         assets = {}
     
+        collection = dataset_doc.get("project")
+        if collection == "mip-drs7":
+            collection = "cmip7"
+        namespace = collection.lower()
+        
         if "Globus" in dataset_doc.get("access"):
             for doc in json_data:
                 if doc.get("type") == "File":
@@ -40,8 +45,8 @@ class ESGSTACConverter():
                                     "alternate:name": dataset_doc.get("data_node"),
                                     "created" : doc.get("timestamp", now),
                                     "updated" : doc.get("timestamp", now),
-                                    "protocol" : "globus"
-                                    
+                                    "protocol" : "globus",
+                                    f"{namespace}:tracking_id": doc.get("tracking_id")   # hack to use first file tracking_id
                                 }
                             }
                     break
@@ -68,7 +73,7 @@ class ESGSTACConverter():
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
                                 "file:checksum": "1220" + doc.get("checksum"),
-                                "cmip6:tracking_id": doc.get("tracking_id"),
+                                f"{namespace}:tracking_id": doc.get("tracking_id"),
                                 "created" : doc.get("timestamp", now),
                                 "updated" : doc.get("timestamp", now),
     
@@ -81,10 +86,7 @@ class ESGSTACConverter():
         if not assets:
             return None
     
-    
-        collection = dataset_doc.get("project")
-        if collection == "mip-drs7":
-            collection = "cmip7"
+
             
         item_id = dataset_doc.get("instance_id")
         west_degrees = dataset_doc.get("west_degrees", 0.0)
@@ -124,7 +126,7 @@ class ESGSTACConverter():
             elif k in dataset_doc:
                 v = dataset_doc.get(k)
             else:
-                print(f"WARNING {k} not found in dataset")
+                print(f"WARNING {k} not found in dataset")                
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
@@ -142,11 +144,11 @@ class ESGSTACConverter():
                 # SKA workaround if integer index's are wanted
                 #                if "_index" in nk:
                 #                    v = int(v[1:])
-                if nk == "cmip7:version":
-                    v = f"{v}"
+                if k == "version":
+                    v = f"v{v}"
                 properties[nk] = v
     
-        sc_version = STAC_schema_versions.get(collection.upper())
+        sc_version = STAC_schema_versions.get(collection)
         if not sc_version:
             raise RuntimeError(f"No version of STAC schema for {collection}")
         

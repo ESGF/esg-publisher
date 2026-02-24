@@ -203,10 +203,8 @@ GA = {
     ],
     "cordex-cmip6": [
         "grid",
-        "nominal_resolution",
         "license",
         "product",
-        "realm",
         "Conventions",
         "title", 
         "mip_era",
@@ -334,7 +332,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v1.0.0","CORDEX-CMIP6" : "v3.1.0"}
+STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v1.0.0","CORDEX-CMIP6" : "v3.1.1"}
 
 STAC_item_properties = [
     "access",
@@ -351,7 +349,8 @@ MAP_properties = {
  "CMIP7" : {
      "variable_cf_standard_name" : "cf_standard_name",
      "variable_branded_name" : "branded_variable",
- }   
+ },
+    "CORDEX-CMIP6" : {    "variable_cf_standard_name" : "cf_standard_name" } 
 }
 
 STAC_proj_item_properties = {
@@ -434,17 +433,15 @@ STAC_proj_item_properties = {
                         "version_realization",
                         "frequency",
                         "grid",
-                        "nominal_resolution",
                         "license",
                         "product",
-                        "realm",
                         "Conventions",
                         "project_id",
                         "source_type",
                         "variable_cf_standard_name",
                         "variable_id",
                         "variable_long_name",
-                        "variabl_units",
+                        "variable_units",
                         "version",
                         "version_realization_info",
                         "mip_era"
