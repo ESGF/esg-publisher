@@ -68,7 +68,8 @@ class OAuthDeviceFlowPKCE:
         self.code_verifier = self._generate_code_verifier()
         self.code_challenge = self._generate_code_challenge(self.code_verifier)
         self.token_data = self._load_token()
-        self._create_token_file()
+
+        self.get_access_token()
 
     def __call__(self, r: requests.PreparedRequest) -> requests.PreparedRequest:
         token = self.get_access_token()
@@ -119,7 +120,11 @@ class OAuthDeviceFlowPKCE:
             with open(self.refresh_file, "r", encoding="utf-8") as f:
                 return json.load(f)
 
-        except (json.decoder.JSONDecodeError, FileNotFoundError):
+        except json.decoder.JSONDecodeError:
+            return {}
+
+        except FileNotFoundError:
+            self._create_token_file()
             return {}
 
     def _save_token(self) -> None:
