@@ -126,7 +126,7 @@ class OAuthDeviceFlowPKCE:
         """
         Saves token data to local file.
         """
-        with open(self.refresh_file, "w", mode=0o600, encoding="utf-8") as f:
+        with open(self.refresh_file, "w", encoding="utf-8") as f:
             json.dump(self.token_data, f)
 
     def initiate_device_flow(self) -> dict[str, Any]:
@@ -221,7 +221,8 @@ class OAuthDeviceFlowPKCE:
                 else:
                     raise Exception(f"Error during polling: {error}")
 
-            response.raise_for_status()
+            else:
+                response.raise_for_status()
 
         raise TimeoutError("Device code expired before authorization.")
 
