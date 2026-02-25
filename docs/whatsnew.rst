@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v5.3.6
+------
+
+* **BUGFIX** Fix return code bug
+* Add SUCCESS/FAIL message at end of log
+* Add cmor_version to obs4MIPs builtin project
+
 v5.3.5
 ------
 
