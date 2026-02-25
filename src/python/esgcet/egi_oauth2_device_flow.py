@@ -68,7 +68,8 @@ class OAuthDeviceFlowPKCE:
         self.code_verifier = self._generate_code_verifier()
         self.code_challenge = self._generate_code_challenge(self.code_verifier)
         self.token_data = self._load_token()
-        self._create_token_file()
+
+        self.get_access_token()
 
     def __call__(self, r: requests.PreparedRequest) -> requests.PreparedRequest:
         token = self.get_access_token()
@@ -119,14 +120,18 @@ class OAuthDeviceFlowPKCE:
             with open(self.refresh_file, "r", encoding="utf-8") as f:
                 return json.load(f)
 
-        except (json.decoder.JSONDecodeError, FileNotFoundError):
+        except json.decoder.JSONDecodeError:
+            return {}
+
+        except FileNotFoundError:
+            self._create_token_file()
             return {}
 
     def _save_token(self) -> None:
         """
         Saves token data to local file.
         """
-        with open(self.refresh_file, "w", mode=0o600, encoding="utf-8") as f:
+        with open(self.refresh_file, "w", encoding="utf-8") as f:
             json.dump(self.token_data, f)
 
     def initiate_device_flow(self) -> dict[str, Any]:
@@ -221,7 +226,8 @@ class OAuthDeviceFlowPKCE:
                 else:
                     raise Exception(f"Error during polling: {error}")
 
-            response.raise_for_status()
+            else:
+                response.raise_for_status()
 
         raise TimeoutError("Device code expired before authorization.")
 
