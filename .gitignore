@@ -28,6 +28,7 @@ TAGS
 *.class
 *.pyc
 *.egg
+**/*.egg-info
 *#*
 *.md5
 semantic.cache*
