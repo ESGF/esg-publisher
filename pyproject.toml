@@ -31,9 +31,15 @@ dependencies = [
     "netcdf4",
     "dask",
     "pyyaml",
-    "globus-cli",
+    "globus-sdk",
+    "cc-plugin-wcrp>=1.2.0",
 ]
 
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0",
+]
 
 [project.scripts]
 esgpidcitepub = "esgcet.esgpidcitepub:main"
