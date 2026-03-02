@@ -4,8 +4,70 @@ from esgcet.settings import (
     STAC_item_properties, 
     STAC_proj_item_properties, 
     STAC_list_properties, 
-    STAC_schema_versions
+    STAC_schema_versions,
+    MAP_properties
 )
+
+class ESGSTACItem():
+    """
+    Container class for the item with Methods to add Assets
+    """
+    def __init__(self, si):
+        self.stac_item = si
+
+        
+
+    def add_aggregate(self, aggtype, url, site):
+        assets = self.stac_item.get("assets", {})
+        k = list(assets.keys())[0]
+        asset = assets[k]
+        altasset  = {
+                   "description": asset.get("description"),
+                "type": asset.get("type"),
+                "roles": asset.get("roles", []),
+                "alternate:name": site,
+                "href" : url
+        }
+        if not "alternate" in assets:
+            asset["alternate"] = { site : altasset }
+        else:
+            asset["alternate"][site] = altasset    
+        
+
+    def add_replica(self, rep_datanode, rep_globus, rep_path, alt_hostname=""):
+        assets = self.stac_item.get("assets", {})
+        for name, asset in assets.items():
+            if asset.get("alternate:name") == rep_datanode:
+                continue
+    
+            if "alternate" not in asset:
+                asset["alternate"] = {}
+    
+            if rep_datanode in asset.get("alternate"):
+                continue
+    
+            replica_asset = {
+                "description": asset.get("description"),
+                "type": asset.get("type"),
+                "roles": asset.get("roles", []),
+                "alternate:name": rep_datanode,
+            }
+    
+            if name == "globus":
+                replica_asset["href"] = (
+                    f"https://app.globus.org/file-manager?"
+                    f"origin_id={rep_globus}&origin_path={rep_path}"
+                )
+    
+            elif asset.get("type") == "application/netcdf":
+                filename = asset["href"].split("/")[-1]
+                if alt_hostname:
+                    hostname = alt_hostname
+                else:
+                    hostname =rep_datanode
+                replica_asset["href"] = f"https://{hostname}/{rep_path}/{filename}"
+    
+            asset["alternate"][rep_datanode] = replica_asset
 
 class ESGSTACConverter():
     def __init__(self, stac_config):
@@ -117,7 +179,11 @@ class ESGSTACConverter():
         namespace = collection.lower()
     
         for k in property_keys:
-            v = dataset_doc.get(k)
+            if collection in MAP_properties and k in MAP_properties[collection]:
+                mapped_k = MAP_properties[collection][k]
+                v = dataset_doc.get(mapped_k)
+            else:
+                v = dataset_doc.get(k)
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
@@ -132,6 +198,11 @@ class ESGSTACConverter():
             else:
                 if v is None or v == "none":
                     continue
+                # SKA workaround if integer index's are wanted
+                #                if "_index" in nk:
+                #                    v = int(v[1:])
+                if nk == "cmip7:version":
+                    v = f"{v}"
                 properties[nk] = v
     
         sc_version = STAC_schema_versions.get(collection)

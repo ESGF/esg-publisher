@@ -34,6 +34,15 @@ class ESGPubPidCite(object):
         self.publog = log.return_logger('PID Citation', silent, verbose)
         self._disable_cite = disable_cite
         self.dataset_pid = None
+
+    def gen_pid(self, dataset_id):
+        """
+        Generates a PID using a deterministic UUID derived from the dataset ID
+        """
+        ds_uuid = uuid.uuid3(uuid.NAMESPACE_URL, dataset_id)
+        dataset_pid = f'hdl:{self.pid_prefix}/{str(ds_uuid)}'
+        return dataset_pid
+        
     
     def establish_pid_connection(self):
         """Establish a connection to the PID service
