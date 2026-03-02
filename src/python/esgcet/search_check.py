@@ -20,7 +20,7 @@ class ESGSearchCheck():
         """
         if stac_api:
             self.stac_api = stac_api
-            self.index_node = None
+            self.index_node = ""
         elif index_node:
             self.index_node = index_node
     
@@ -38,6 +38,7 @@ class ESGSearchCheck():
     def run_check(self, datasetid):
     
         if self.index_node:
+            print("Solr")
             res = self._run_check_solr(datasetid)
         else:
             res = self._run_check_stac(datasetid)

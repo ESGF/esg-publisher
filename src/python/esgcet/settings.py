@@ -376,6 +376,7 @@ STAC_proj_item_properties = {
         "realization_index",
         "physics_index",
         "version"
+        "pid",
     ],
     "CMIP6": [
         "activity_id",

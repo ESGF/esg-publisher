@@ -13,13 +13,14 @@ FIELDNAME = "base_id"
 class ESGUpdateSTAC(ESGUpdateBase):
 
 
-    def __init__(self, stac_config, silent=False, verbose=False, dry_run=False):
+    def __init__(self, config, silent=False, verbose=False, dry_run=False):
         ESGUpdateBase.__init__(self, silent=silent, verbose=verbose)
 
 
-        self.search_client = Client(stac_config.get("stac_api"))
+        #self.search_client = Client(stac_config.get("stac_api"))
         self._dry_run = dry_run
-        self.trans_client = getTransactionClient(stac_config)
+        self.trans_client = getTransactionClient(config.get("stac_config",{}))(config)
+
 
     def update_file(self, dsetid : str):
         """
@@ -53,14 +54,12 @@ class ESGUpdateSTAC(ESGUpdateBase):
                 operations.append(op) 
 
         
+        entry = operations  
+        #{ "operations": operations}
 
-        response = tc.json_patch(
-                        "CMIP7",
-                        item_id=item_id,
-                        entry={
-                            "operations": operations
-                        },
-                )
+        print(f"DEBUG {self.collection} {dsetid} {entry}")
+        collection = self.collection
+        response = self.trans_client.json_patch(collection, dsetid, entry)
 
 
     def query_update(self, data_node : str, master_id : str):

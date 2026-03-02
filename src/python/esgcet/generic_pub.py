@@ -187,7 +187,8 @@ class BasePublisher(object):
         out_json_data = self.mk_dataset(map_json_data)
 
         self.dataset_rec = out_json_data
-        
+        self.pid_cite()
+            
         self.publog.info("Updating...")
         self.update(out_json_data)
 
