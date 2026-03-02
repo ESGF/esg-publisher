@@ -41,7 +41,7 @@ class cmip6(GenericPublisher):
                 exit(1)
             
         try:
-            new_json_data = pid.do_pidcite(False)
+            new_json_data = pid.do_pidcite()
         except Exception as ex:
             self.publog.exception("Assigning pid failed")
             self.cleanup()

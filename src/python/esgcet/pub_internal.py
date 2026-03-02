@@ -106,7 +106,7 @@ def main():
             for line in myfile:
                 # if parsed line is not mapfile line, run on each file
                 if first:
-                    if '#' in line:
+                    if '|' in line and '.v' in line:
                         ismap = True
                         break
                     first = False
