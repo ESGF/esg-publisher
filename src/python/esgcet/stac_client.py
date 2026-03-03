@@ -14,7 +14,8 @@ from globus_sdk import (
     RefreshTokenAuthorizer,
 )
 from globus_sdk.scopes import GroupsScopes
-from globus_sdk.tokenstorage import SimpleJSONFileAdapter
+
+from globus_sdk.token_storage import JSONTokenStorage
 
 from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
@@ -75,10 +76,11 @@ class GlobusTransactionClient:
             "token_storage_file", TOKEN_STORAGE_FILE
         )
         filename = os.path.expanduser(token_storage_file)
-        token_storage = SimpleJSONFileAdapter(filename)
+        token_storage = JSONTokenStorage(filename)
+
         if not token_storage.file_exists():
             response = self._do_login_flow()
-            token_storage.store(response)
+            token_storage.write_token(response)
 
             self.groups_tokens = response.by_resource_server[
                 GroupsClient.resource_server
