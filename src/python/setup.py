@@ -43,6 +43,6 @@ setup(
                                         'esgmigrate=esgcet.migratecmd:main',
                                         'esgunpublish=esgcet.esgunpublish:main',
                                         'esgstacpub=esgcet.esgstacpub:main',
-                                        'esgstacaddrep=esgcet.esgstacaddrep:main',
+                                        'esgadd=esgcet.esgstacaddrep:main',
                                         'esglogin=esgcet.esglogin:main']}
 )

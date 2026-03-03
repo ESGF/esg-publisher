@@ -1,6 +1,7 @@
 import argparse
 import os
 from pathlib import Path
+import esgcet.logger as logger
 
 import esgcet.args as pub_args
 import esgcet.logger as logger

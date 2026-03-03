@@ -40,6 +40,7 @@ class GlobusSearchIngest:
 
     def _get_gmeta_entry(self, doc, now=None):
         for key, value in doc.items():
+            print(f"DEBUG {value}  {type(value)}")
             if isinstance(value, list):
                 continue
             if key in NON_LIST:
