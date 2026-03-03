@@ -31,8 +31,9 @@ dependencies = [
     "netcdf4",
     "dask",
     "pyyaml",
-    "globus-sdk",
+    "globus-sdk>=4.3.0",
     "cc-plugin-wcrp>=1.2.0",
+    "pathlib",
 ]
 
 
