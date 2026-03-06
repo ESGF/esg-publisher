@@ -408,7 +408,7 @@ class ESGPubMakeDataset:
         lst = []
         for x in last_file["url"]:
             if x:
-                lst.append(x)
+                lst.append(x.replace("%7C", "|"))
         last_file["url"] = lst
         access = [x.split("|")[2] for x in last_file["url"]]
 

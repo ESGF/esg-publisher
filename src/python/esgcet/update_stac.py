@@ -16,8 +16,7 @@ class ESGUpdateSTAC(ESGUpdateBase):
     def __init__(self, config, silent=False, verbose=False, dry_run=False):
         ESGUpdateBase.__init__(self, silent=silent, verbose=verbose)
 
-
-        #self.search_client = Client(stac_config.get("stac_api"))
+        self.pystac_client = Client(config.get("stac_api"), '')
         self._dry_run = dry_run
         self.trans_client = getTransactionClient(config.get("stac_config",{}))(config)
 

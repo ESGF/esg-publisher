@@ -32,6 +32,9 @@ dependencies = [
     "dask",
     "pyyaml",
     "globus-cli",
+    "globus-sdk<4",
+    "pystac_client",
+    "compliance_checker"
 ]
 
 

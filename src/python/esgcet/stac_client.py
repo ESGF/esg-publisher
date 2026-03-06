@@ -174,7 +174,9 @@ class EGITransactionClient:
         silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        self.stac_config = args.get("stac_config", None)
+        #self.stac_config = args.get("stac_config", None)
+        self.stac_config = args
+
         if not self.stac_config:
             self.publog.exception("STAC client not configured")
             exit(1)
