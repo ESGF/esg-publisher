@@ -28,6 +28,29 @@ class ESGUpdateSTAC(ESGUpdateBase):
         """
         pass
 
+    def update_assets(self, dsetid : str, asset_info):
+        operations = []
+        site = asset_info["site"]
+        op = {
+        "op" : "add",
+            "path": f"/assets/reference_file/alternate",
+                        "value": {
+                                site: {
+                                    "href": asset_info["href"],
+                                    "type": asset_info["type"],
+                                    "roles": ["data"],
+                                    "description": "TEST",
+                                    "alternate:name": site,
+                                }
+                            }
+        }
+        
+        collection = self.collection
+        operations.append(op)
+        response = self.trans_client.json_patch(collection, dsetid, operations)
+        # Do something with response?
+        return response
+        
     def update_dataset(self, dsetid : str, update_dict={}, set_latest=False):
 
 

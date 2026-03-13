@@ -71,15 +71,16 @@ class cmip6(GenericPublisher):
 
         # step four: assign PID
         self.publog.info("Assigning PID...")
-        new_json_data = self.pid(out_json_data)
-        
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+    
         #step five: update record if exists
         # self.publog.info("Updating...")
         # self.update(new_json_data)
 
         # step six: publish to database
         self.publog.info("Running index pub...")
-        rc = self.index_pub(new_json_data)
+        rc = self.index_pub(self.dataset_rec)
 
         self.publog.info("Done. Cleaning up.")
         self.cleanup()

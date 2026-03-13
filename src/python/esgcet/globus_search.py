@@ -40,11 +40,15 @@ class GlobusSearchIngest:
 
     def _get_gmeta_entry(self, doc, now=None):
         for key, value in doc.items():
-            print(f"DEBUG {value}  {type(value)}")
+            #print(f"DEBUG {value}  {type(value)}")
             if isinstance(value, list):
                 continue
-            if key in NON_LIST:
+            if key == "version":
+                doc[key] = int(version)
                 continue
+            elif key in NON_LIST:
+                continue
+            
             doc[key] = [value]
 
         doc["retracted"] = False
