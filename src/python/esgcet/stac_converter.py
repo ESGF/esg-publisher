@@ -13,8 +13,10 @@ class ESGSTACItem():
     Container class for the item with Methods to add Assets
     """
     def __init__(self, si):
-        self.stac_item = si
-
+        if si:
+            self.stac_item = si
+        else:
+            return None
         
 
     def add_aggregate(self, aggtype, url, site):

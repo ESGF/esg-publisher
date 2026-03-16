@@ -129,7 +129,10 @@ def run():
         site = a.rep_datanode
     else:
         site = config["data_node"]
-    
+
+    if (not a.rep_prefix) and (not a.agg):
+        publog.info("Neither replica file location prefix nor replica file aggregation type set.  Nothing to do, exiting...")
+        return 0
     
     if a.json_data:
         try:
@@ -153,12 +156,15 @@ def run():
 
         si = sc.stac_item_fetch(a.dataset_id)
         
+        if not si:
+            publog.error("Exiting....")
+            return 0
         stac_item = ESGSTACItem(si)
-        collection = si["collection"]
+        collection = si.get("collection", "")
         datasetid = a.dataset_id
     else:
         publog.warn("No Dataset-ID specified in command line")
-        return
+        return 0
     if a.agg:
 
         operations = stac_item.add_aggregate(a.agg, a.rep_path, site)
@@ -170,7 +176,7 @@ def run():
             entry=operations
         ) 
         print(f"DEBUG {rc}")
-    else:
+    if a.rep_prefix:
         if "https_url" in config:
             http_template = config["https_url"].split('|')[0]
         else:
