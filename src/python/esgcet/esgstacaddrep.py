@@ -165,17 +165,13 @@ def run():
     else:
         publog.warn("No Dataset-ID specified in command line")
         return 0
+
+    stac_ops = []
     if a.agg:
 
-        operations = stac_item.add_aggregate(a.agg, a.rep_path, site)
-        print(f"DEBUG {operations}")
-        
-        rc = tc.json_patch(
-                collection,
-                item_id=a.dataset_id,
-            entry=operations
-        ) 
-        print(f"DEBUG {rc}")
+        agg_op = stac_item.add_aggregate(a.agg, a.rep_path, site)
+        stac_ops += agg_op
+    
     if a.rep_prefix:
         if "https_url" in config:
             http_template = config["https_url"].split('|')[0]
@@ -185,8 +181,17 @@ def run():
             rep_globus = a.rep_globus
         else:
             rep_globus = config.get("globus_uuid", "")
-        patch_entry = stac_item.add_replica(site, http_template, a.rep_prefix, rep_globus)
-        rc = rc and tc.json_patch(collection, datasetid, patch_entry)     
+        rep_op = stac_item.add_replica(site, http_template, a.rep_prefix, rep_globus)
+        stac_ops += rep_op
+
+    publog.debug(stac_ops)    
+    rc = tc.json_patch(
+            collection,
+            item_id=a.dataset_id,
+        entry=stac_ops
+    ) 
+    print(f"DEBUG {rc}")
+
     if not rc:
         exit(1)
 
