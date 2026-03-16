@@ -48,9 +48,6 @@ class ESGSearchCheck():
     def stac_item_fetch(self, datasetid):
         collection = self._check_collection(datasetid)
 
-        if "ceda" in self.stac_api:
-            collection = collection.lower()
-            
         req_str = f"{self.stac_api}/collections/{collection}/items/{datasetid}"
         resp = requests.get(req_str)
 

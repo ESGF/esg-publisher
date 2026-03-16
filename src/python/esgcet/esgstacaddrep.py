@@ -46,8 +46,8 @@ def get_args():
         help="Datanode that will be used to identify replicated assets of the item",
     )
     parser.add_argument(
-        "--rep-url", dest="rep_path", help="Url of reference file asset to add"
-    )    
+        "--agg-url", dest="rep_path", help="Url of reference file or other aggregated asset to add"
+    )
     parser.add_argument(
         "--prefix", dest="rep_prefix", help="Url path prefix that proceeds the dataset DRS in the url"
     )    
