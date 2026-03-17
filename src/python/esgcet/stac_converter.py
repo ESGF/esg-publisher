@@ -80,7 +80,7 @@ class ESGSTACItem():
                     "path" :f"/assets/{name}/alternate/{rep_datanode}",
                     "value" : replica_asset
                  }
-        operations.append(op)
+            operations.append(op)
         
         return operations   
  
