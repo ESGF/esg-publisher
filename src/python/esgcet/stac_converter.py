@@ -20,13 +20,15 @@ class ESGSTACItem():
         
 
     def add_aggregate(self, aggtype, url, site):
-
+        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
                 "href": url,
                 "type": f"application/{aggtype}",
                 "role": ["data"],
                 "description": "TEST",
                 "alternate:name": site,
+                "created" : now,
+                "updated" : now
                 }
 
         if "reference_file" in self.stac_item.get("assets", {}):
@@ -45,7 +47,7 @@ class ESGSTACItem():
     def add_replica(self, rep_datanode, template, prefix, rep_globus=""):
         assets = self.stac_item.get("assets", {})
         operations = []
-        
+        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
         for name, asset in assets.items():
 
             if name == "reference_file":
@@ -62,6 +64,8 @@ class ESGSTACItem():
                 "type": asset.get("type"),
                 "roles": asset.get("roles", []),
                 "alternate:name": rep_datanode,
+                "created" : asset("created"),
+                "updated" : now
             }
             rep_path = "TEST/PATH"
             rep_path = asset.get("file:local_path", rep_path)

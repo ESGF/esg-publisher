@@ -86,10 +86,7 @@ class BasePublisher(object):
 
         stac_conf = self.argdict.get("stac_config", {})
         if stac_conf:
-            up = ESGFUpdateSTAC(stac_conf,                 
-                                silent=self.silent,
-                                verbose=self.verbose,
-                                dry_run=self.argdict.get("dry_run", False))
+            up = ESGUpdateSTAC(self.argdict)
         elif self.argdict.get("globus_index", False):
             up = ESGUpdateGlobus(
                 self.argdict.get("index_UUID"),
