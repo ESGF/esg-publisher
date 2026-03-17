@@ -13,12 +13,12 @@ FIELDNAME = "base_id"
 class ESGUpdateSTAC(ESGUpdateBase):
 
 
-    def __init__(self, config, silent=False, verbose=False, dry_run=False):
-        ESGUpdateBase.__init__(self, silent=silent, verbose=verbose)
+    def __init__(self, config):
+        ESGUpdateBase.__init__(self, silent=config.get("silent", False), verbose=config.get("verbose", False))
 
 
-        #self.search_client = Client(stac_config.get("stac_api"))
-        self._dry_run = dry_run
+        self.stacclient = Client.open(config.get("stac_config", {}).get("stac_api"))
+        self.dry_run = config.get("dry_run")
         self.trans_client = getTransactionClient(config.get("stac_config",{}))(config)
 
 
@@ -79,8 +79,6 @@ class ESGUpdateSTAC(ESGUpdateBase):
         
         entry = operations  
         #{ "operations": operations}
-
-        print(f"DEBUG {self.collection} {dsetid} {entry}")
         collection = self.collection
         response = self.trans_client.json_patch(collection, dsetid, entry)
 
@@ -97,22 +95,25 @@ class ESGUpdateSTAC(ESGUpdateBase):
                 "op": "and",
                 "args": [
                 {
-                    "op": "=", "args": [{"property": f"properties.{FIELDNAME}"}, master_id]
+                    "op": "=", "args": [{"property": "properties.title"}, master_id]
                 },
                 {
                     "op": "=", "args": [{"property": "properties.latest"}, True]} ]
 
                 }
                 
-        resp = self.pystac_client.search(collections=[collection],filter=filt, max_items=1)
+        resp = self.stacclient.search(collections=[collection],filter=filt, max_items=1)
 
         if resp.matched() < 1:
             return False
         elif resp.matched() > 1:
             log.warn("Multiple latest {}")
-        d = l[0].to_dict()
-        self.stac_item = d
 
+        for it in resp.items_as_dicts():
+            d = it
+#        d = l[0].to_dict()
+        self.stac_item = d
+        self.collection = collection
         return d["id"]
         
         

@@ -75,8 +75,8 @@ class cmip6(GenericPublisher):
         self.pid_cite()
     
         #step five: update record if exists
-        # self.publog.info("Updating...")
-        # self.update(new_json_data)
+        self.publog.info("Updating...")
+        self.update(self.dataset_rec)
 
         # step six: publish to database
         self.publog.info("Running index pub...")
