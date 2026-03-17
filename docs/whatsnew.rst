@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v5.4.0
+------
+* Adds publishing to ESGF STAC catalogs
+* CMIP7 project support
+* Integration of IOOS checker for QA/QC suite processing
+
 v5.3.5
 ------
 

@@ -13,7 +13,7 @@ publog = log.return_logger("esglogin")
 
 def get_config():
     parser = argparse.ArgumentParser(
-        description="Publish data sets to ESGF STAC Transaction API."
+        description="One-time login to fetch necessary OAuth2 token, required to publish ESGF STAC Transaction API. Ensure that you have configured your .yaml file with the correct API settings prior to use."
     )
 
     home = str(Path.home())
@@ -23,7 +23,7 @@ def get_config():
         "-cfg",
         dest="cfg",
         default=def_config,
-        help="Path to yaml config file.",
+        help="Path to .yaml config file.",
     )
 
     pub = parser.parse_args()

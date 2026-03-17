@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "esgcet"
+version = "5.3.4"
+description = "ESGCET publication package"
+readme = "README.md"
+authors = [
+    {name = "Sasha Ames", email = "ames4@llnl.gov"}
+]
+license = "BSD-3-Clause"
+license-files = ["bsd-3-clause.txt"]
+
+requires-python = ">=3.10,<3.14"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "requests",
+    "esgfpid",
+    "ESGConfigParser==1.0.0a1",
+    "xarray",
+    "netcdf4",
+    "dask",
+    "pyyaml",
+    "globus-cli",
+]
+
+
+[project.scripts]
+esgpidcitepub = "esgcet.esgpidcitepub:main"
+esgmkpubrec = "esgcet.esgmkpubrec:main"
+esgindexpub = "esgcet.esgindexpub:main"
+esgpublish = "esgcet.pub_internal:main"
+esgupdate = "esgcet.esgupdate:main"
+esgmapconv = "esgcet.esgmapconv:main"
+esgmigrate = "esgcet.migratecmd:main"
+esgunpublish = "esgcet.esgunpublish:main"
+
+[project.urls]
+Homepage = "http://esgf.github.io"
+
+[tool.setuptools]
+package-dir = {"" = "src/python"}
+
+[tool.setuptools.packages.find]
+where = ["src/python"]
