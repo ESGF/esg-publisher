@@ -6,7 +6,6 @@ import esgcet.logger as logger
 import requests
 from esgcet import __version__
 from esgcet.settings import *
-
 from globus_sdk import (
     BaseClient,
     GroupsClient,
@@ -150,9 +149,11 @@ class GlobusTransactionClient:
             "Content-Type": "application/json-patch+json",
             "User-Agent": f"test_client/{__version__}",
         }
-        entry = { "operations" : entry }
+        entry = {"operations": entry}
         print(f"DEBUG {collection} {item_id} {entry}")
-        resp = self.transaction_client.patch(f"/collections/{collection}/items/{item_id}", headers=headers, data=entry)
+        resp = self.transaction_client.patch(
+            f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
+        )
         if resp.http_status == 201:
             print(resp.http_status)
             print("Updated (JSON PATCH)")
@@ -174,8 +175,7 @@ class EGITransactionClient:
         silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        #self.stac_config = args.get("stac_config", None)
-        self.stac_config = args
+        self.stac_config = args.get("stac_config", None)
 
         if not self.stac_config:
             self.publog.exception("STAC client not configured")
@@ -265,14 +265,13 @@ class EGITransactionClient:
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
 
+
 def getTransactionClient(stac_config):
     sc = stac_config.get("stac_client", {})
-    
+
     if "globus" in sc.get("redirect_uri", ""):
         auth = "Globus"
     else:
         auth = "EGI"
-    res = (
-        EGITransactionClient if auth == "EGI" else GlobusTransactionClient
-    )
+    res = EGITransactionClient if auth == "EGI" else GlobusTransactionClient
     return res
