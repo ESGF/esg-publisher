@@ -223,11 +223,13 @@ class EGITransactionClient:
             response.raise_for_status()
 
             match response.status_code:
-                case 200:
+                case 201:
                     self.publog.info("Published")
+                    return True
 
                 case 202:
                     self.publog.info("Queued for publication")
+                    return True
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to publish: Error %s", err.response.status_code)
@@ -258,9 +260,11 @@ class EGITransactionClient:
             match response.status_code:
                 case 201:
                     self.publog.info("Updated")
+                    return True
 
                 case 202:
                     self.publog.info("Queued for update")
+                    return True
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
