@@ -1,8 +1,8 @@
-The esgcet package for ESGF Publication - Version 5.4.0a6
-=======================================================
+The esgcet package for ESGF Publication - Version 5.4.0a6. PRE-RELEASE
+=======================================================================
 
 Esgcet is a package of publisher commands for publishing to the `ESGF
-<https://aims2.llnl.gov/search>`_ search database.
+<https://esgf-node.ornl.gov/search>`_ search database.
 
 
 TL;DR
@@ -25,8 +25,10 @@ If you have conda or mamba on a Linux system you can install the publisher wih t
    install
    autocurator
    cmor
+   esglogin
    esgmigrate
    esgpublish
+   esgadd
    esgmapconv
    esgmkpubrec
    esgpidcitepub
