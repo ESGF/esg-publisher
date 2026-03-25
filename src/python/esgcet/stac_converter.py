@@ -96,7 +96,7 @@ class ESGSTACConverter():
     def citation_link_d(self, url):
 
         return {
-                    "rel": "citation",
+                    "rel": "cite-as",
           "type": "application/json",
            "href" : url
         }

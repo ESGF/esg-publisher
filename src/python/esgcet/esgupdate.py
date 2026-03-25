@@ -82,9 +82,11 @@ def run():
     
     if a.dataset_id:
         if not "stac_config" in config:
-            publog.info("STAC not configured, dataset property mode not supported for legacy")
+            publog.error("STAC not configured, dataset property mode not supported for legacy")
             return
-            
+        if not a.json:
+            publog.error("JSON file for update not specified.")
+            return
         up = ESGUpdateSTAC(config)
         up.update_dataset(a.dataset_id, json.load(open(a.json)), set_latest=True)
         return True
