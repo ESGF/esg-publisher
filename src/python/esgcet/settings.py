@@ -283,13 +283,13 @@ SET_REPLICA = False
 QAQC = {
     "cmip6": {
         "test": ["wcrp_cmip6:1.0"],
-        "criteria": "normal",
+        "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
     },
     "mip-drs7": {
-        "test": ["acdd"],
-        "criteria": "normal",
+        "test": ["wcrp_cmip7:1.0", "cf:1.11"],
+        "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
     },

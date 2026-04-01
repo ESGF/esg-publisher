@@ -231,7 +231,9 @@ class PublisherArgs:
                    "non_nc": non_nc, 
                    "mountpoints": mountpoints,
                    "disable_citation": disable_citation,
-                   "disable_further_info": disable_further_info}
+                   "disable_further_info": disable_further_info,
+                   "disable_qaqc" : config.get("disable_qaqc", False)
+                   }
 
         if auth and cert:
             argdict["cert"] = cert

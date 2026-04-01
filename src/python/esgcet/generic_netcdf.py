@@ -46,11 +46,15 @@ class GenericPublisher(BasePublisher):
 
     def compliance_check(self, map_json_data):
 
+        if self.argdict.get("disable_qaqc", False):
+            self.publog.warning("Skipping QAQC per configuration. This is not recommended.  Ensure your input data has already been validated.")
+            return True
+        
         check_suite = CheckSuite()
         check_suite.load_all_available_checkers()
-        project_qc_config = QAQC.get(self.project, None)
+        project_qc_config = QAQC.get(self.project.lower(), None)
         if not project_qc_config:
-            self.publog.warn(f"QAQC not configured for {self.project}")
+            self.publog.warning(f"QAQC not configured for {self.project}")
             return True
         returnvals = []
         for mapfile_record in self.mapdict:
@@ -131,7 +135,7 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
-        if self.project in QAQC:
+        if self.project.lower() in QAQC:
             self.compliance_check(map_json_data)
         
         # step two: autocurator
