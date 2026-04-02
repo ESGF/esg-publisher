@@ -54,6 +54,7 @@ esgupdate = "esgcet.esgupdate:main"
 esgmapconv = "esgcet.esgmapconv:main"
 esgmigrate = "esgcet.migratecmd:main"
 esgunpublish = "esgcet.esgunpublish:main"
+esgcet = "esgcet.cli:app"
 
 [project.urls]
 Homepage = "http://esgf.github.io"

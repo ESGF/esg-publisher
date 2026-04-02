@@ -12,7 +12,10 @@ from esgcet.generic_pub import BasePublisher
 import traceback
 import esgcet.logger as logger
 
+from typing import Any
+
 from compliance_checker.runner import CheckSuite, ComplianceChecker
+from pathlib import Path
 
 log = logger.ESGPubLogger()
 
@@ -21,7 +24,7 @@ class GenericPublisher(BasePublisher):
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
     scanfn = scan_file.name
 
-    def __init__(self, argdict):
+    def __init__(self, argdict: dict[str, Any]) -> None:
         super().__init__(argdict)
 
         self.MKD_Construct = ESGPubMakeDataset
@@ -41,10 +44,11 @@ class GenericPublisher(BasePublisher):
         self.publog = log.return_logger('Generic NetCDF Publisher', self.silent, self.verbose)
         self._disable_further_info = argdict["disable_further_info"]
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         self.scan_file.close()
 
-    def compliance_check(self, map_json_data):
+    def compliance_check(self, map_json_data:dict[str, Any]) -> list[bool]:
+        """ check the metadata using compliance checker."""
 
         check_suite = CheckSuite()
         check_suite.load_all_available_checkers()
@@ -52,23 +56,25 @@ class GenericPublisher(BasePublisher):
         if not project_qc_config:
             self.publog.warn(f"QAQC not configured for {self.project}")
             return True
-        returnvals = []
-        for mapfile_record in self.mapdict:
-            print(mapfile_record)
-            hashval = mapfile_record['checksum'][0:16]
-            return_value, errors = ComplianceChecker.run_checker(
-                mapfile_record['file'],
-                project_qc_config['test'],
-                self.verbose,
-                project_qc_config['criteria'],
-                None, # skip_checks
-                None, # include
-                f"tmpfile.{hashval}.txt",  # outputfilename
-                 ["text"]
-            )
+
+        ccreport_file = Path(self.fullmap).with_suffix(".ccreport").name
+        return_value, errors = ComplianceChecker.run_checker(
+            {mapfile_record['file'] for mapfile_record in self.mapdict},
+            project_qc_config['test'],
+            self.verbose,
+            project_qc_config['criteria'],
+            None, # skip_checks
+            None, # include
+            ccreport_file,  # outputfilename
+            ["text"]
+        )
+
+        return_values = return_value
         if errors:
-            self.publog.info(f"Checker Errors {errors}")       
-        return return_value
+            self.publog.info(f"Checker Errors {errors}")
+            raise RuntimeError(f"Errors from compliance checker {errors}")
+
+        return return_values, ccreport_file
         
     
     ## TODO: refactor these down to a single scan command
@@ -132,7 +138,29 @@ class GenericPublisher(BasePublisher):
         map_json_data = self.mapfile()
 
         if self.project in QAQC:
-            self.compliance_check(map_json_data)
+
+            checker_name = QAQC[self.project]['test']
+            try:
+                ret, ccreport_file = self.compliance_check(map_json_data)
+                checker_passed = ret        
+
+                if not checker_passed:
+                    # dump to a json file, maybe link the checker results
+                    failed_qc = {self.fullmap: ccreport_file}
+
+                    record["timestamp"] = datetime.utcnow().isoformat()
+                    record["failed"] = failed_qc
+
+                    with open('failed.json', "a", encoding="utf-8") as f:
+                        f.write(json.dumps(record) + "\n")
+
+                    # stop the publication
+                    return None
+            except RuntimeError as e:
+                self.publog.info(f"Checker Errors {e}")       
+
+        else:
+            raise ValueError(f"{self.project} is not in QAQC settings")
         
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")

@@ -288,7 +288,7 @@ QAQC = {
         "skip_checks": None,
     },
     "mip-drs7": {
-        "test": ["acdd"],
+        "test": ["wcrp_cmip7:1.0"],
         "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
