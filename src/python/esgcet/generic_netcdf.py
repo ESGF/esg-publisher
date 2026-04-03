@@ -58,7 +58,6 @@ class GenericPublisher(BasePublisher):
             return True
         returnvals = []
         for mapfile_record in self.mapdict:
-            print(mapfile_record)
             hashval = mapfile_record['checksum'][0:16]
             return_value, errors = ComplianceChecker.run_checker(
                 mapfile_record['file'],
@@ -70,9 +69,10 @@ class GenericPublisher(BasePublisher):
                 f"tmpfile.{hashval}.txt",  # outputfilename
                  ["text"]
             )
+            returnvals.append(return_value)
         if errors:
             self.publog.info(f"Checker Errors {errors}")       
-        return return_value
+        return all(returnvals)
         
     
     ## TODO: refactor these down to a single scan command
@@ -136,8 +136,13 @@ class GenericPublisher(BasePublisher):
         map_json_data = self.mapfile()
 
         if self.project.lower() in QAQC:
-            self.compliance_check(map_json_data)
-        
+            res = self.compliance_check(map_json_data)
+            if not res:
+                self.publog.exception("Dataset FAILED Compliance Check. See tmpfile output in working directory for more information")
+                exit(2)
+            else:
+                self.publog.debug("PASSED compliance check")
+                
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
@@ -147,14 +152,19 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
-        # step four: update record if exists
-        self.publog.info("Updating...")
-        self.update(out_json_data)
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+        
+
 
         # step five: publish to database
         self.publog.info("Running index pub...")
         rc = self.index_pub(out_json_data)
 
+        # step four: update record if exists
+        self.publog.info("Updating...")
+        self.update(out_json_data)
+        
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
         return rc
