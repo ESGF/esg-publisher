@@ -37,6 +37,11 @@ dependencies = [
     "pystac_client",
     "kerchunk",
     "virtualizarr",
+    "esgvoc>=3.0.0",
+    "pydantic",
+    "typer",
+    "attrs",
+    "h5py",
 ]
 
 
