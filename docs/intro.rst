@@ -30,7 +30,7 @@ See the `ESGF site <https://esgf.github.io>`_ for more information on data nodes
 Nor does the Python module manage a workflow of multiple datasets.  Employ other tools or techniques to manage such worklows.
 
 Prerequisites
--------------
+*************
 
 * A python environment, eg. create one using ``venv``, ``conda`` (no longer free) or miniforge/``mamba``.
 * Mountpoint to located data on the same host as publisher software installation, so the publisher scan utility (eg. ``autocurator``) has access.

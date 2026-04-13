@@ -14,7 +14,7 @@ from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.settings import PID_PREFIX  # project table of prefixes
 
 log = logger.ESGPubLogger()
-
+import json
 
 class BasePublisher(object):
 
@@ -86,10 +86,7 @@ class BasePublisher(object):
 
         stac_conf = self.argdict.get("stac_config", {})
         if stac_conf:
-            up = ESGFUpdateSTAC(stac_conf,                 
-                                silent=self.silent,
-                                verbose=self.verbose,
-                                dry_run=self.argdict.get("dry_run", False))
+            up = ESGUpdateSTAC(self.argdict)
         elif self.argdict.get("globus_index", False):
             up = ESGUpdateGlobus(
                 self.argdict.get("index_UUID"),
@@ -167,14 +164,21 @@ class BasePublisher(object):
         return rc
 
     def pid_cite(self):
-
-        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test,
+        lower_proj = self.project.lower()
+        pid = ESGPubPidCite(self.dataset_rec, self.pid_creds, self.data_node, test=self.test,
                             silent=self.silent, verbose=self.verbose,
-                            project_family='CMIP6', disable_cite=self._disable_citation)
+                            project_family=lower_proj, disable_cite=self._disable_citation)
 
-        dsid = x[-1]["id"]
-        ds_pid = pid.genpid(dsid)
-        self.dataset_rec["pid"] = ds_pid
+        dsid = self.dataset_rec[-1]["id"]
+        ds_pid = pid.gen_pid(dsid)
+        citurl = pid.citation_url()
+
+        for rec in self.dataset_rec:
+            rec["pid"] = ds_pid
+            if citurl:
+                rec["citation_url"] = citurl
+
+ #       self.publog.warn(json.dumps(self.dataset_rec, indent=2))
         
     def workflow(self):
 
