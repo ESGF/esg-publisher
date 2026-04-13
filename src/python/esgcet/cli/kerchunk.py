@@ -92,13 +92,6 @@ def generate(
 
         map_files = [map_path]
 
-        #ncfiles, output_file = _parse_mapfile(map_path, output_dir)
-        #generator = KerchunkGenerator(path_url = ncfiles, backend = backend, output_file = output_file, format = format)
-
-        #-with Client(n_workers=4, threads_per_worker=1, processes=True, silence_logs=logging.ERROR) as client:
-        #-    generator.generate(source, target, inline_threshold)
-        #_run_generation(generator, source, target, inline_threshold, use_dask, n_workers)
-
     elif map_path.is_dir():
         map_files = list(map_path.rglob("*.map"))
     else:
@@ -118,8 +111,6 @@ def generate(
                     output_file = Path(mf_cat.records[0].file_path).parent / mf_cat.dataset_id + 'v' + str(mf_cat.version)
                 else:
                     output_file = Path(output_dir) / Path(mf_cat.dataset_id + '.v' + str(mf_cat.version))
-
-                #ncfiles, output_file = _parse_mapfile(map_file, output_dir)
 
                 generator = KerchunkGenerator(path_url = ncfiles, backend = backend, output_file = output_file, format = format)
                 _run_generation(generator, source, target, inline_threshold, use_dask, n_workers)

@@ -29,7 +29,7 @@ dependencies = [
     "ESGConfigParser==1.0.0a1",
     "xarray",
     "netcdf4",
-    "dask",
+    "dask[distributed]",
     "pyyaml",
     "globus-sdk>=4.3.0",
     "cc-plugin-wcrp>=1.2.0",
