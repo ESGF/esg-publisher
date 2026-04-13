@@ -56,10 +56,7 @@ class GlobusTransactionClient:
         self.auth_client = NativeAppAuthClient(
             client_id=stac_client_id, app_name="ESGF2 STAC Transaction API"
         )
-
-        self.dry_run = False
-        #        self.dry_run = args.get("")
-
+        self.dry_run = args.get("dry_run")
         self._create_clients()
 
     def _do_login_flow(self):
@@ -152,8 +149,11 @@ class GlobusTransactionClient:
             "Content-Type": "application/json-patch+json",
             "User-Agent": f"test_client/{__version__}",
         }
-        entry = { "operations" : entry }
+#        entry = { "operations" : entry }
         print(f"DEBUG {collection} {item_id} {entry}")
+        if self.dry_run:
+            print("Not PATCHing (dry-run mode)")
+            return
         resp = self.transaction_client.patch(f"/collections/{collection}/items/{item_id}", headers=headers, data=entry)
         if resp.http_status == 201:
             print(resp.http_status)

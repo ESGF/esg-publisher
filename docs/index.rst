@@ -28,6 +28,7 @@ If you have conda or mamba on a Linux system you can install the publisher wih t
    esglogin
    esgmigrate
    esgpublish
+   esgadd
    esgmapconv
    esgmkpubrec
    esgpidcitepub

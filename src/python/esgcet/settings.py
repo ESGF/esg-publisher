@@ -316,12 +316,12 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v1.0.0"}
+STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v3.0.2"}
 
 STAC_item_properties = [
     "access",
     "latest",
-    "pid",
+    "version",
     "project",
     "title",
     "master_id",
@@ -333,7 +333,12 @@ MAP_properties = {
  "CMIP7" : {
      "variable_cf_standard_name" : "cf_standard_name",
      "variable_branded_name" : "branded_variable",
- }   
+     
+ }   ,
+    "CMIP6" : {
+    "variable_cf_standard_name" : "cf_standard_name",
+    "experiment" : "experiment_title"
+    }
 }
 
 STAC_proj_item_properties = {
@@ -352,7 +357,6 @@ STAC_proj_item_properties = {
         "grid_label",
         "institution_id",
         "member_id",
-        "mip_era",
         "nominal_resolution",
         "product",
         "realm",
@@ -375,32 +379,31 @@ STAC_proj_item_properties = {
         "initialization_index",
         "realization_index",
         "physics_index",
-        "version"
         "pid",
     ],
     "CMIP6": [
         "activity_id",
-        "cf_standard_name",
         "citation_url",
         "data_specs_version",
         "experiment_id",
-        "experiment_title",
+        "experiment",
         "frequency",
         "further_info_url",
         "grid",
         "grid_label",
         "institution_id",
         "member_id",
-        "mip_era",
         "nominal_resolution",
         "pid",
         "product",
         "realm",
         "source_id",
         "source_type",
+        "experiment",
+        "variable_cf_standard_name",
         "sub_experiment_id",
         "table_id",
-        "variable",
+        "variable_id",
         "variable_long_name",
         "variable_units",
         "variant_label",
@@ -408,10 +411,13 @@ STAC_proj_item_properties = {
 }
 
 STAC_list_properties = {
+    "ALL": [
     "access",
     "realm",
     "source_type",
     "Conventions",
+    ],
+    "CMIP6" : { "activity_id"}
 }
 
 CACHE_DIR_DEPTH = 6
