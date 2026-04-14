@@ -15,8 +15,10 @@ additional_requirements = [
             "netcdf4",
             "dask",
             "pyyaml",
-            "globus-sdk",
-            "globus-cli"
+            "globus-sdk<3.44",
+            "globus-cli",
+            "pystac-client",
+            "wcrp-cc-plugi"
 ]
 
 
@@ -30,7 +32,6 @@ setup(
     install_requires = [
         "requests",
             "esgfpid",
-        "ESGConfigParser==1.0.0a1",
     ] + additional_requirements,
     include_package_data = True,
     zip_safe = False,                   # Migration repository must be a directory

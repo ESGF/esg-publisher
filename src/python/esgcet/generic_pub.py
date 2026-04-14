@@ -40,6 +40,7 @@ class BasePublisher(object):
         self.publog = log.return_logger(
             "Generic Non-NetCDF Publisher", self.silent, self.verbose
         )
+        self._disable_citation = argdict.get("disable_citation", False)
         self.mapdict = None
 
     def cleanup(self):
@@ -165,7 +166,7 @@ class BasePublisher(object):
 
     def pid_cite(self):
         lower_proj = self.project.lower()
-        pid = ESGPubPidCite(self.dataset_rec, self.pid_creds, self.data_node, test=self.test,
+        pid = ESGPubPidCite(self.dataset_rec, {}, self.data_node, self.argdict["test"],
                             silent=self.silent, verbose=self.verbose,
                             project_family=lower_proj, disable_cite=self._disable_citation)
 

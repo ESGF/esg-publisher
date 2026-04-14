@@ -53,7 +53,7 @@ class ESGUpdateSTAC(ESGUpdateBase):
         
     def update_dataset(self, dsetid : str, update_dict={}, set_latest=False):
 
-
+        self.set_collection(dsetid)
         operations = []
         
         if not (set_latest):
@@ -67,30 +67,35 @@ class ESGUpdateSTAC(ESGUpdateBase):
                 
         # Use STAC property in update not legacy field names from Solr-era
         if update_dict:
-            for k in update_dict:
+            for k in update_dict.get("properties", {}):
     #                props[k] = update_dict[k]
                 op =                     {
                         "op": "replace",
-                        "path": "/properties/{k}",
+                        "path": f"/properties/{k}",
                         "value": update_dict[k]
                     }
                 operations.append(op) 
-
+            for it in update_dict.get("links", []):
+                op = {  "op" : "add",
+                        "path" : "/links",
+                         "value" : it}
+                operations.append(op) 
+                            
         
         entry = operations  
         #{ "operations": operations}
-        collection = self.collection
-        response = self.trans_client.json_patch(collection, dsetid, entry)
+        response = self.trans_client.json_patch(self.collection, dsetid, entry)
 
-
+    def set_collection(self, msid):
+        parts = msid.split('.')
+        if parts[0] == "MIP-DRS7":
+            self.collection = parts[1]
+        else:
+            self.collection = parts[0]
+    
     def query_update(self, data_node : str, master_id : str):
 
-        parts = master_id.split('.')
-        if parts[0] == "MIP-DRS7":
-            collection = parts[1]
-        else:
-            collection = parts[0]
-            
+        self.set_collection(master_id)            
         filt=  { 
                 "op": "and",
                 "args": [
@@ -102,7 +107,7 @@ class ESGUpdateSTAC(ESGUpdateBase):
 
                 }
                 
-        resp = self.stacclient.search(collections=[collection],filter=filt, max_items=1)
+        resp = self.stacclient.search(collections=[self.collection],filter=filt, max_items=1)
 
         if resp.matched() < 1:
             return False
@@ -113,7 +118,6 @@ class ESGUpdateSTAC(ESGUpdateBase):
             d = it
 #        d = l[0].to_dict()
         self.stac_item = d
-        self.collection = collection
         return d["id"]
         
         

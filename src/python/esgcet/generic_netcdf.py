@@ -46,15 +46,18 @@ class GenericPublisher(BasePublisher):
 
     def compliance_check(self, map_json_data):
 
+        if self.argdict.get("disable_qaqc", False):
+            self.publog.warning("Skipping QAQC per configuration. This is not recommended.  Ensure your input data has already been validated.")
+            return True
+        
         check_suite = CheckSuite()
         check_suite.load_all_available_checkers()
-        project_qc_config = QAQC.get(self.project, None)
+        project_qc_config = QAQC.get(self.project.lower(), None)
         if not project_qc_config:
-            self.publog.warn(f"QAQC not configured for {self.project}")
+            self.publog.warning(f"QAQC not configured for {self.project}")
             return True
         returnvals = []
         for mapfile_record in self.mapdict:
-            print(mapfile_record)
             hashval = mapfile_record['checksum'][0:16]
             return_value, errors = ComplianceChecker.run_checker(
                 mapfile_record['file'],
@@ -66,9 +69,10 @@ class GenericPublisher(BasePublisher):
                 f"tmpfile.{hashval}.txt",  # outputfilename
                  ["text"]
             )
+            returnvals.append(return_value)
         if errors:
             self.publog.info(f"Checker Errors {errors}")       
-        return return_value
+        return all(returnvals)
         
     
     ## TODO: refactor these down to a single scan command
@@ -131,9 +135,14 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
-        if self.project in QAQC:
-            self.compliance_check(map_json_data)
-        
+        if self.project.lower() in QAQC:
+            res = self.compliance_check(map_json_data)
+            if not res:
+                self.publog.exception("Dataset FAILED Compliance Check. See tmpfile output in working directory for more information")
+                exit(2)
+            else:
+                self.publog.debug("PASSED compliance check")
+                
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
@@ -143,14 +152,19 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
-        # step four: update record if exists
-        self.publog.info("Updating...")
-        self.update(out_json_data)
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+        
+
 
         # step five: publish to database
         self.publog.info("Running index pub...")
         rc = self.index_pub(out_json_data)
 
+        # step four: update record if exists
+        self.publog.info("Updating...")
+        self.update(out_json_data)
+        
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
         return rc

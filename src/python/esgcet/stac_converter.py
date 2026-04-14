@@ -96,7 +96,7 @@ class ESGSTACConverter():
     def citation_link_d(self, url):
 
         return {
-                    "rel": "citation",
+                    "rel": "cite-as",
           "type": "application/json",
            "href" : url
         }
@@ -111,7 +111,13 @@ class ESGSTACConverter():
     
         assets = {}
         item_id = dataset_doc.get("instance_id")
-        drspath = item_id.replace('.','/')     
+        drspath = item_id.replace('.','/')         
+        collection = dataset_doc.get("project")
+        if collection == "mip-drs7":
+            collection = "cmip7"
+
+        namespace = collection.lower()
+
         if "Globus" in dataset_doc.get("access"):
             for doc in json_data:
                 if doc.get("type") == "File":
@@ -159,7 +165,7 @@ class ESGSTACConverter():
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
                                 "file:checksum": "1220" + doc.get("checksum"),
-                                "cmip6:tracking_id": doc.get("tracking_id"),
+                                f"{namespace}:tracking_id": doc.get("tracking_id"),
                                 "created" : doc.get("timestamp", now),
                                 "updated" : doc.get("timestamp", now),
                                 "protocol" : "https",
@@ -173,10 +179,6 @@ class ESGSTACConverter():
         if not assets:
             return None
     
-    
-        collection = dataset_doc.get("project")
-        if collection == "mip-drs7":
-            collection = "cmip7"
             
         west_degrees = dataset_doc.get("west_degrees", 0.0)
         south_degrees = dataset_doc.get("south_degrees", -90.0)
@@ -206,7 +208,6 @@ class ESGSTACConverter():
         
         collection_item_properties = STAC_proj_item_properties.get(collection, [])
         property_keys = STAC_item_properties + collection_item_properties
-        namespace = collection.lower()
     
         for k in property_keys:
             if collection in MAP_properties and k in MAP_properties[collection]:
@@ -231,11 +232,6 @@ class ESGSTACConverter():
             else:
                 if v is None:
                     continue
-                # SKA workaround if integer index's are wanted
-                #                if "_index" in nk:
-                #                    v = int(v[1:])
-                if nk == "cmip7:version":
-                    v = f"{v}"
                 properties[nk] = v
     
         sc_version = STAC_schema_versions.get(collection)
