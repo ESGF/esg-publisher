@@ -302,7 +302,13 @@ class PublisherArgs:
         argdict["stac_config"] = config.get("stac_config",{})
         stac_api = pub.stac_api
         if stac_api:
-            argdict["stac_config"]["stac_api"] = stac_api
+            if not argdict.get("stac_config"):
+                argdict["stac_api"] = stac_api
+            elif "stac_transaction_api" in argdict["stac_config"]:
+                argdict["stac_config"]["stac_transaction_api"]["base_url"]
+            else:
+                publog.warning("STAC API not properly configured. ")
+                argdict["stac_api"] = stac_api
 
         argdict["skipxr"] = pub.skipxr
 

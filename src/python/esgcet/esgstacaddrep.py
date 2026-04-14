@@ -122,8 +122,6 @@ def run():
     config["silent"] = silent
     
     rc = True
-    client = getTransactionClient(config["stac_config"])
-    tc = client(config)
 
     if a.rep_datanode:
         site = a.rep_datanode
@@ -146,14 +144,15 @@ def run():
     elif a.dataset_id:
         if a.stac_api:
             stac_api = a.stac_api
+            config["stac_api"] = a.stac_api
         else:
             stac_conf = config.get("stac_config", {})
             stac_api = stac_conf.get("stac_api","") 
             if not stac_api:
                 publog.exception("STAC API not set cannot fetch Item")
                 exit(1)
+                
         sc = ESGSearchCheck(stac_api=stac_api, verbose=verbose, silent=silent)
-
         si = sc.stac_item_fetch(a.dataset_id)
         
         if not si:
@@ -167,6 +166,9 @@ def run():
         return 0
 
     stac_ops = []
+    client = getTransactionClient(config["stac_config"])
+    tc = client(config)
+
     if a.agg:
 
         agg_op = stac_item.add_aggregate(a.agg, a.rep_path, site)
@@ -190,7 +192,7 @@ def run():
             item_id=a.dataset_id,
         entry=stac_ops
     ) 
-    print(f"DEBUG {rc}")
+    publog.debug(f"Returned {rc}")
 
     if not rc:
         exit(1)

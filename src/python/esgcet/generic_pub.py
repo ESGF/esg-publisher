@@ -120,8 +120,9 @@ class BasePublisher(object):
         print(f"VERBOSE: {self.verbose}")
         # TODO: support solr and Globus using the globus_index argument
 
-        if self.argdict.get("stac_config"):
+        if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
             TransactionClient = getTransactionClient(self.argdict.get("stac_config", {}))
+            self.publog.debug(f"{type(TransactionClient)}")
             tc = TransactionClient(self.argdict)
             if not tc:
                 raise RuntimeError("Failed to create STAC transaction client")
