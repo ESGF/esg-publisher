@@ -57,8 +57,11 @@ class cmip6(GenericPublisher):
 
         # step two: PrePARE
         res = self.compliance_check(map_json_data)
-
-        self.publog.info(f"QC check result {res}")
+        if not res:
+            self.publog.exception("Dataset FAILED Compliance Check. See tmpfile output in working directory for more information")
+            exit(2)
+        else:
+            self.publog.debug("PASSED compliance check")
         
         # step two: extract
 

@@ -50,11 +50,15 @@ class GenericPublisher(BasePublisher):
     def compliance_check(self, map_json_data:dict[str, Any]) -> list[bool]:
         """ check the metadata using compliance checker."""
 
+        if self.argdict.get("disable_qaqc", False):
+            self.publog.warning("Skipping QAQC per configuration. This is not recommended.  Ensure your input data has already been validated.")
+            return True
+        
         check_suite = CheckSuite()
         check_suite.load_all_available_checkers()
-        project_qc_config = QAQC.get(self.project, None)
+        project_qc_config = QAQC.get(self.project.lower(), None)
         if not project_qc_config:
-            self.publog.warn(f"QAQC not configured for {self.project}")
+            self.publog.warning(f"QAQC not configured for {self.project}")
             return True
 
         ccreport_file = Path(self.fullmap).with_suffix(".ccreport").name
@@ -75,7 +79,6 @@ class GenericPublisher(BasePublisher):
             raise RuntimeError(f"Errors from compliance checker {errors}")
 
         return return_values, ccreport_file
-        
     
     ## TODO: refactor these down to a single scan command
     def nc4_load(self, map_json_data):
@@ -171,14 +174,19 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
-        # step four: update record if exists
-        self.publog.info("Updating...")
-        self.update(out_json_data)
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+        
+
 
         # step five: publish to database
         self.publog.info("Running index pub...")
         rc = self.index_pub(out_json_data)
 
+        # step four: update record if exists
+        self.publog.info("Updating...")
+        self.update(out_json_data)
+        
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
         return rc

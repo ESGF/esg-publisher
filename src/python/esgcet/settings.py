@@ -122,7 +122,7 @@ DRS = {
         "region",
         "frequency",
         "variable_id",
-        "variable_branded_suffix",
+        "variable_branding_suffix",
         "grid_label",
     ],
 }
@@ -257,7 +257,7 @@ PID_CREDS = [
 PID_PREFIX = { 
  "cmip6" :  "21.14100" ,
     "cordex-cmip6" : "21.14103" ,
-    "cmip7" : "21.14107" ,
+    "mip-drs7" : "21.14107" ,
     # for testing use CMIP6,  need to be project-specific
 }
     
@@ -288,7 +288,7 @@ QAQC = {
         "skip_checks": None,
     },
     "mip-drs7": {
-        "test": ["wcrp_cmip7:1.0"],
+        "test": ["wcrp_cmip7:1.0", "cf:1.11"],
         "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
@@ -316,7 +316,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v3.0.2"}
+STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2"}
 
 STAC_item_properties = [
     "access",
@@ -368,7 +368,7 @@ STAC_proj_item_properties = {
         "variable_long_name",
         "variable_units",
         "variant_label",
-        "variable_branded_suffix",
+        "variable_branding_suffix",
         "Conventions",
         "license_id",
         "variable_branded_name",
