@@ -54,7 +54,7 @@ wheels = [
 
 [[package]]
 name = "cc-plugin-wcrp"
-version = "1.2.0"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cf-xarray", version = "0.10.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -72,9 +72,9 @@ dependencies = [
     { name = "xarray", version = "2025.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "xarray", version = "2026.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/12/a8/fd7ec36f6c502e98cc5f09a15a53854a3000cbb6d42985ce823374a132b5/cc_plugin_wcrp-1.2.0.tar.gz", hash = "sha256:6837f92bd48d7b2e53bf1206d482594ef5a5cecc67bfd55583e258b2be01d995", size = 59693268, upload-time = "2026-02-24T00:47:30.22Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/21/9f75227241e9f68e454aa59b06df1180459902c41fdcc2166ff22910d2cc/cc_plugin_wcrp-2.0.0.tar.gz", hash = "sha256:c7afce833983f8324dbf53bf499fa85b7d59b34e186e15c514aada321bd0a8e0", size = 59699928, upload-time = "2026-03-25T14:29:28.127Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/21/1e/61c7e50435b7c69b59251159362ff389d6fcc81cd0b93ee2ee6e5b42cdeb/cc_plugin_wcrp-1.2.0-py3-none-any.whl", hash = "sha256:d071d3369ab5ef53fc1264b65b4cf6a076efe8a2104816352906c5fd57616091", size = 142760, upload-time = "2026-02-24T00:47:19.061Z" },
+    { url = "https://files.pythonhosted.org/packages/db/1f/d56d31fe034154c33f7e9285ceb76900b372592644a13f2870376426be87/cc_plugin_wcrp-2.0.0-py3-none-any.whl", hash = "sha256:2c41d1fbf200af5eb25892e4ee9762c2c222764625368e6fdf8666f844630735", size = 145239, upload-time = "2026-03-25T14:29:24.19Z" },
 ]
 
 [[package]]
@@ -549,11 +549,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "attrs" },
-    { name = "cc-plugin-wcrp", specifier = ">=1.2.0" },
+    { name = "cc-plugin-wcrp", specifier = ">=2.0.0" },
     { name = "dask", extras = ["distributed"] },
     { name = "esgconfigparser", specifier = "==1.0.0a1" },
     { name = "esgfpid" },
-    { name = "esgvoc", specifier = ">=3.0.0" },
+    { name = "esgvoc", specifier = ">=3.1.0" },
     { name = "globus-sdk", specifier = ">=4.3.0" },
     { name = "h5py" },
     { name = "kerchunk" },
@@ -589,7 +589,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/e5/da/f139dcda5a2d74b56
 
 [[package]]
 name = "esgvoc"
-version = "3.0.0"
+version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "idna" },
@@ -604,9 +604,9 @@ dependencies = [
     { name = "toml" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/9a/12faa56037290b99c635d02e6e6e09f25fa2b67b188273b329539f38216d/esgvoc-3.0.0.tar.gz", hash = "sha256:ce2eb8bcc66094ecfbad424086f5172b9df4dcb58106539d6f20463bc4c1fd51", size = 5525334, upload-time = "2026-03-23T15:23:25.219Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/1c/4d3be03a3a13ea36a1aa3b52d096af94efab2b21952fc88a8409360b174d/esgvoc-3.1.0.tar.gz", hash = "sha256:826eb3fa4bccf7f88766d717b25fdd5fa68acd143eb618c528f068f6bb6357d0", size = 5520556, upload-time = "2026-04-14T06:45:53.203Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/7e/7832c02d94a38db45a47edcab84d86d349a9955ed42fafd9941664c7d147/esgvoc-3.0.0-py3-none-any.whl", hash = "sha256:21822b2c4a33bcbafafce61ca2a7a1b12d2e57f08895232326c34a411ac2ad65", size = 228949, upload-time = "2026-03-23T15:23:23.158Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/a7/55194f30f88634f583ebad03bccbd777c34a7e4e057a86ca6174b5a17d35/esgvoc-3.1.0-py3-none-any.whl", hash = "sha256:85edc28643f77de7091a2652e8fb2fb195e4db477faaacec078ddcbd846c65e2", size = 224053, upload-time = "2026-04-14T06:45:50.463Z" },
 ]
 
 [[package]]
@@ -1907,16 +1907,16 @@ crypto = [
 
 [[package]]
 name = "pyld"
-version = "2.0.4"
+version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
     { name = "frozendict" },
     { name = "lxml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/50/0b/d97dddcc079d4961aa38bec1ad444b8a3e39ea0fd5627682cac25d452c82/PyLD-2.0.4.tar.gz", hash = "sha256:311e350f0dbc964311c79c28e86f84e195a81d06fef5a6f6ac2a4f6391ceeacc", size = 70976, upload-time = "2024-02-16T17:35:51.481Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e1/67/2c69359f671f50b551821dcdf6b85beb52f2b0115da933ae0c179f90092b/pyld-3.0.0.tar.gz", hash = "sha256:b1913a06054f35a31e4d9916d184852909b2a3c5fea55c341bd00917cf8b22ef", size = 85056, upload-time = "2026-04-02T09:10:16.001Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/cd/80760be197a4bd08e7c136ef4bcb4a2c63fc799d8d91f4c177b21183135e/PyLD-2.0.4-py3-none-any.whl", hash = "sha256:6dab9905644616df33f8755489fc9b354ed7d832d387b7d1974b4fbd3b8d2a89", size = 70868, upload-time = "2024-02-16T17:35:49Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/68/51a87c1bdf9beb0fdda6bbff67d32a1689d399e2fc74fe8fb9ada08f1f90/pyld-3.0.0-py3-none-any.whl", hash = "sha256:bfe0f5a476c67d8766d47c445ef2170b868a72654e535dbebc89c8e040b1fe88", size = 76837, upload-time = "2026-04-02T09:10:14.457Z" },
 ]
 
 [[package]]
