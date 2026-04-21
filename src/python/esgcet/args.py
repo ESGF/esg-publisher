@@ -232,7 +232,8 @@ class PublisherArgs:
                    "mountpoints": mountpoints,
                    "disable_citation": disable_citation,
                    "disable_further_info": disable_further_info,
-                   "disable_qaqc" : config.get("disable_qaqc", False)
+                   "disable_qaqc" : config.get("disable_qaqc", False),
+                   "kerchunk" : config.get("kerchunk", None)
                    }
 
         if auth and cert:

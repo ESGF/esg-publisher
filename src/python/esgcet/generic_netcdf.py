@@ -16,6 +16,10 @@ from typing import Any
 
 from compliance_checker.runner import CheckSuite, ComplianceChecker
 from pathlib import Path
+from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
+from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
+
+
 
 log = logger.ESGPubLogger()
 
@@ -47,7 +51,7 @@ class GenericPublisher(BasePublisher):
     def cleanup(self) -> None:
         self.scan_file.close()
 
-    def compliance_check(self, map_json_data:dict[str, Any]) -> list[bool]:
+    def compliance_check(self, map_json_data:dict[str, Any]) -> bool:
         """ check the metadata using compliance checker."""
 
         if self.argdict.get("disable_qaqc", False):
@@ -59,7 +63,7 @@ class GenericPublisher(BasePublisher):
         project_qc_config = QAQC.get(self.project.lower(), None)
         if not project_qc_config:
             self.publog.warning(f"QAQC not configured for {self.project}")
-            return True
+            return False
 
         ccreport_file = Path(self.fullmap).with_suffix(".ccreport").name
         return_value, errors = ComplianceChecker.run_checker(
@@ -73,12 +77,69 @@ class GenericPublisher(BasePublisher):
             ["text"]
         )
 
-        return_values = return_value
         if errors:
             self.publog.info(f"Checker Errors {errors}")
-            raise RuntimeError(f"Errors from compliance checker {errors}")
+            return False
 
-        return return_values, ccreport_file
+        if not return_value:
+            self.publog.info(f"Checker failed, {self.fullmap}:{ccreport_file}")
+            return False
+
+        return True
+
+    def kerchunk_generate(self) -> None:
+        """ generate kerchunk ref files. """
+
+        if not self.argdict.get("kerchunk", None):
+            return None
+        if not self.argdict.get("kerchunk").get("generation", None):
+            return None
+
+        self.publog.info(f"kerchunk generation: {self.fullmap}")
+
+        try:
+            if self.argdict.get("mountpoints", None): 
+                (org, new), = self.argdict['mountpoints'].items()
+                is_replace = True
+            else:
+                is_replace = False
+            records = []
+            with open(str(self.fullmap), 'r') as fmap:
+                for line in fmap:
+
+                    if is_replace:
+                        new_line = line.replace(org, str(new)) if org in line else line
+                    else:
+                        new_line = line
+
+                    rec = MapFileRecord.model_validate(new_line)
+                    records.append(rec)
+
+            mf_cat = MapFileCatalog(records=records)
+
+            output_dir = self.argdict.get("kerchunk").get("data_dir", Path(mf_cat.ncfiles[0]).parent)
+
+            output_file = Path(output_dir) / f"{mf_cat.dataset_id}.v{mf_cat.version}.json"
+
+            generator = KerchunkGenerator(
+                path_url=mf_cat.ncfiles, 
+                backend=self.argdict.get("kerchunk").get("backend", "kerchunk"), 
+                output_file=output_file, 
+                format=self.argdict.get("kerchunk").get("format", "json")
+            )
+
+            old_uri = self.argdict.get("kerchunk").get("old_uri", None)
+            new_uri = self.argdict.get("kerchunk").get("new_uri", None)
+            inline_threshold = self.argdict.get("kerchunk").get("inline_threshold", 0)
+
+            if old_uri is None or new_uri is None:
+                raise ValueError("Incorrect old_uri and new_uri in yaml file")
+
+            generator.generate(old_uri, new_uri, inline_threshold)
+        except Exception as e:
+            self.publog.info(f"kerchunk generation failed: {self.fullmap} with {e}")
+
+
     
     ## TODO: refactor these down to a single scan command
     def nc4_load(self, map_json_data):
@@ -140,30 +201,12 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Converting mapfile...")
         map_json_data = self.mapfile()
 
-        if self.project in QAQC:
+        self.publog.info("QAQC checking ...")
+        if not self.compliance_check(map_json_data):
+            return None
 
-            checker_name = QAQC[self.project]['test']
-            try:
-                ret, ccreport_file = self.compliance_check(map_json_data)
-                checker_passed = ret        
-
-                if not checker_passed:
-                    # dump to a json file, maybe link the checker results
-                    failed_qc = {self.fullmap: ccreport_file}
-
-                    record["timestamp"] = datetime.utcnow().isoformat()
-                    record["failed"] = failed_qc
-
-                    with open('failed.json', "a", encoding="utf-8") as f:
-                        f.write(json.dumps(record) + "\n")
-
-                    # stop the publication
-                    return None
-            except RuntimeError as e:
-                self.publog.info(f"Checker Errors {e}")       
-
-        else:
-            raise ValueError(f"{self.project} is not in QAQC settings")
+        # kerchunk
+        self.kerchunk_generate()
         
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
