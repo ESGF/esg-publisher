@@ -132,9 +132,9 @@ resolution-markers = [
     "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 dependencies = [
-    { name = "cftime", marker = "python_full_version >= '3.11'" },
-    { name = "jinja2", marker = "python_full_version >= '3.11'" },
-    { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "cftime", marker = "python_full_version >= '3.11' and sys_platform != 'emscripten'" },
+    { name = "jinja2", marker = "python_full_version >= '3.11' and sys_platform != 'emscripten'" },
+    { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' and sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/30/27509046e69457605e6eefa4ad7866fcdb6182b1a4f9b9d8404a28e3eb50/cf_units-3.3.1.tar.gz", hash = "sha256:84339f582994ae32ca5c472075c1e603a89f6c6f5a96cc1031bb5da700a14f3a", size = 311647, upload-time = "2026-01-16T15:09:38.423Z" }
 wheels = [
@@ -630,7 +630,7 @@ requires-dist = [
     { name = "esgfpid" },
     { name = "esgvoc", specifier = ">=3.1.0" },
     { name = "globus-cli" },
-    { name = "globus-sdk", specifier = "<3.44" },
+    { name = "globus-sdk", specifier = ">=4.3.0" },
     { name = "h5py" },
     { name = "kerchunk" },
     { name = "netcdf4" },
@@ -740,7 +740,7 @@ wheels = [
 
 [[package]]
 name = "globus-cli"
-version = "3.30.0"
+version = "3.41.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -750,23 +750,24 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d3/8e/2f8cfa626ecba6730b679a4993bbd81f53164c5b68ebec0e92910919c4f8/globus_cli-3.30.0.tar.gz", hash = "sha256:009ff0c04789e88247caf2a2106ebe1e8e1081a588d028ac078e01c9a3df82a3", size = 186718, upload-time = "2024-08-02T16:29:18.679Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/24/029fa94a16bac4df63dcc4051d2398f675642bc7ffb22bdeffadbf6cd4ec/globus_cli-3.41.0.tar.gz", hash = "sha256:62005d23f492a34bedc8db6387af7b63b62b38583e2e68a34ef62cf1f7b556cf", size = 209589, upload-time = "2026-01-15T16:59:41.988Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/fe/37d9aa49b255530792bb60d5cb4f2bb2cdd8a0318528edbadfb27c7687b9/globus_cli-3.30.0-py3-none-any.whl", hash = "sha256:5073fc392d430bb9b17902ebc80b519d8bbe873d7cdd6159d24dcf3cc1e026e1", size = 299002, upload-time = "2024-08-02T16:29:17.079Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/a6/4fcd285c661c8713c844dbda8f43477cb2bece9ecd29a3eba03ce4163cde/globus_cli-3.41.0-py3-none-any.whl", hash = "sha256:62e2ffff8b17616a3c54940aaa7d419d1d63d85dfd193dd283fdd59d4c534532", size = 323609, upload-time = "2026-01-15T16:59:40.507Z" },
 ]
 
 [[package]]
 name = "globus-sdk"
-version = "3.43.0"
+version = "4.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "pyjwt", extra = ["crypto"] },
     { name = "requests" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/19/6fffb9eb1681ae7d00c9b56487b1c0063200c486364ab4c776a9929580b5/globus_sdk-3.43.0.tar.gz", hash = "sha256:753a21baa8c1e26480451cd2075e044e362bbca91b723cc06c4731d4f35097fd", size = 236073, upload-time = "2024-07-25T19:33:19.029Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1d/c3/6fe04fc218be8d226aacaad51fdaa9cd63183c11548e054ca07bf64d9496/globus_sdk-4.3.0.tar.gz", hash = "sha256:bc815d7ee9b3e789b9c5f85cb6bafc9b01db777b638147af3c2f035226087b89", size = 268506, upload-time = "2025-12-17T22:56:33.743Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2f/8f/a086e5e15df813d9b81d3f4d31f91649994bb7d376b752211262bb158d12/globus_sdk-3.43.0-py3-none-any.whl", hash = "sha256:4cfa566c194a46bb281dadbd30742f766d4ddec938de3aeb3ea5a15b4565f9c1", size = 350681, upload-time = "2024-07-25T19:33:16.788Z" },
+    { url = "https://files.pythonhosted.org/packages/28/f6/4e06f764b6484f238cd5ca9a9f00a463ba6dbd5efecb806560b5d8526749/globus_sdk-4.3.0-py3-none-any.whl", hash = "sha256:ac3fff3dae4d85b1ed5b65b71dd1bd82d8c2e25cd78701bcc55b747db09ac0b4", size = 413124, upload-time = "2025-12-17T22:56:32.045Z" },
 ]
 
 [[package]]
@@ -931,7 +932,7 @@ name = "importlib-metadata"
 version = "8.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp" },
+    { name = "zipp", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/f3/49/3b30cad09e7771a4982d9975a8cbf64f00d4a1ececb53297f1d9a7be1b10/importlib_metadata-8.7.1.tar.gz", hash = "sha256:49fef1ae6440c182052f407c8d34a68f72efc36db9ca90dc0113398f2fdde8bb", size = 57107, upload-time = "2025-12-21T10:00:19.278Z" }
 wheels = [
@@ -2463,7 +2464,7 @@ name = "pyudunits2"
 version = "0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "sympy", marker = "platform_machine != 'ARM64' or sys_platform != 'win32'" },
+    { name = "sympy", marker = "(python_full_version < '3.11' and platform_machine != 'ARM64') or (python_full_version < '3.11' and sys_platform != 'win32') or sys_platform == 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3a/22/8c6c8762af2223672bc701d5e72b607a3be4d000f8776c59b72a13a08044/pyudunits2-0.1.tar.gz", hash = "sha256:791d234d402d8877e55a8baaad4a329c7537a187eda5bfc1b19d33150e0a170a", size = 190383, upload-time = "2025-02-07T08:32:22.462Z" }
 wheels = [
@@ -3001,7 +3002,7 @@ name = "sympy"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mpmath", marker = "platform_machine != 'ARM64' or sys_platform != 'win32'" },
+    { name = "mpmath", marker = "(python_full_version < '3.11' and platform_machine != 'ARM64') or (python_full_version < '3.11' and sys_platform != 'win32') or sys_platform == 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [

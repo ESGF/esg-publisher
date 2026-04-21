@@ -41,7 +41,7 @@ dependencies = [
     "attrs",
     "h5py",
     "globus-cli",
-    "globus-sdk<3.44",
+    "globus-sdk>=4.3.0",
 ]
 
 
