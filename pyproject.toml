@@ -46,8 +46,8 @@ esgupdate = "esgcet.esgupdate:main"
 esgmapconv = "esgcet.esgmapconv:main"
 esgmigrate = "esgcet.migratecmd:main"
 esgunpublish = "esgcet.esgunpublish:main"
-esglogin = "egcet.esglogin:main"
-esgadd = "egcet.esgstacaddrep:main"
+esglogin = "esgcet.esglogin:main"
+esgadd = "esgcet.esgstacaddrep:main"
 
 
 [project.urls]
