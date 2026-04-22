@@ -253,18 +253,14 @@ class PublisherArgs:
             else:
                 argdict["cmor_tables"] = pub.cmor_path
         if project == "cmip6" or project == "input4mips" or (project in proj_config and "pid_prefix" in proj_config[project]):  
-            try:
                 # Unpack the PID credentials format from the yaml to be compatible with the legacy format
-                pid_creds = config['pid_creds']
-                creds_lst = []
-                for it in pid_creds:
-                    rec = pid_creds[it]
-                    rec['url'] = it
-                    creds_lst.append(rec)
-                argdict['pid_creds'] = creds_lst
-            except:
-                publog.exception("PID credentials not defined. Define in config file esg.ini.")
-                exit(1)
+            pid_creds = config.get('pid_creds', [])
+            creds_lst = []
+            for it in pid_creds:
+                rec = pid_creds[it]
+                rec['url'] = it
+                creds_lst.append(rec)
+            argdict['pid_creds'] = creds_lst
         if "cmip6_clone" in config and project == config['cmip6_clone'].lower():
             if "pid_creds" in argdict:
                 argdict["cmip6-clone"] = project
@@ -303,7 +299,13 @@ class PublisherArgs:
         argdict["stac_config"] = config.get("stac_config",{})
         stac_api = pub.stac_api
         if stac_api:
-            argdict["stac_config"]["stac_api"] = stac_api
+            if not argdict.get("stac_config"):
+                argdict["stac_api"] = stac_api
+            elif "stac_transaction_api" in argdict["stac_config"]:
+                argdict["stac_config"]["stac_transaction_api"]["base_url"]
+            else:
+                publog.warning("STAC API not properly configured. ")
+                argdict["stac_api"] = stac_api
 
         argdict["skipxr"] = pub.skipxr
 

@@ -24,7 +24,7 @@ class ESGSTACItem():
         value = {
                 "href": url,
                 "type": f"application/{aggtype}",
-                "role": ["data"],
+                "role": ["data","virtual"],
                 "description": "TEST",
                 "alternate:name": site,
                 "created" : now,
