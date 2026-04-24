@@ -1,0 +1,971 @@
+{
+    "version": 1,
+    "refs": {
+        "lat/0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            38201,
+            1280
+        ],
+        "lat_bnds/0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747734,
+            2098
+        ],
+        "lon/0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            42865,
+            2560
+        ],
+        "lon_bnds/0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3749832,
+            726
+        ],
+        "psl/0.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            55889,
+            88143
+        ],
+        "psl/1.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            144032,
+            88047
+        ],
+        "psl/2.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            232079,
+            87439
+        ],
+        "psl/3.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            319518,
+            88644
+        ],
+        "psl/4.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            408162,
+            87936
+        ],
+        "psl/5.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            496098,
+            87570
+        ],
+        "psl/6.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            583668,
+            87646
+        ],
+        "psl/7.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            671314,
+            88988
+        ],
+        "psl/8.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            760302,
+            89350
+        ],
+        "psl/9.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            849652,
+            87366
+        ],
+        "psl/10.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            937018,
+            88200
+        ],
+        "psl/11.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1025218,
+            87635
+        ],
+        "psl/12.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1112853,
+            78570
+        ],
+        "psl/13.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1191423,
+            87264
+        ],
+        "psl/14.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1278687,
+            87976
+        ],
+        "psl/15.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1366663,
+            88945
+        ],
+        "psl/16.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1455608,
+            88235
+        ],
+        "psl/17.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1543843,
+            86883
+        ],
+        "psl/18.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1630726,
+            87231
+        ],
+        "psl/19.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1717957,
+            88283
+        ],
+        "psl/20.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1806240,
+            89496
+        ],
+        "psl/21.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1895736,
+            87581
+        ],
+        "psl/22.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            1983317,
+            87843
+        ],
+        "psl/23.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2071160,
+            88163
+        ],
+        "psl/24.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2159323,
+            88395
+        ],
+        "psl/25.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2247718,
+            87632
+        ],
+        "psl/26.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2335350,
+            87817
+        ],
+        "psl/27.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2423167,
+            88998
+        ],
+        "psl/28.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2512165,
+            88585
+        ],
+        "psl/29.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2600750,
+            87384
+        ],
+        "psl/30.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2688134,
+            86864
+        ],
+        "psl/31.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2774998,
+            88572
+        ],
+        "psl/32.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2863570,
+            88930
+        ],
+        "psl/33.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            2952500,
+            88710
+        ],
+        "psl/34.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3041210,
+            88149
+        ],
+        "psl/35.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3129359,
+            87640
+        ],
+        "psl/36.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3216999,
+            88778
+        ],
+        "psl/37.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3305777,
+            87776
+        ],
+        "psl/38.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3393553,
+            87527
+        ],
+        "psl/39.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3481080,
+            89178
+        ],
+        "psl/40.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3570258,
+            88001
+        ],
+        "psl/41.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3658259,
+            88532
+        ],
+        "psl/42.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3750558,
+            87709
+        ],
+        "psl/43.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3838267,
+            89085
+        ],
+        "psl/44.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3927352,
+            87952
+        ],
+        "psl/45.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4015304,
+            88528
+        ],
+        "psl/46.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4103832,
+            88391
+        ],
+        "psl/47.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4192223,
+            78373
+        ],
+        "psl/48.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4270596,
+            86669
+        ],
+        "psl/49.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4357265,
+            87149
+        ],
+        "psl/50.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4444414,
+            88957
+        ],
+        "psl/51.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4533371,
+            89198
+        ],
+        "psl/52.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4622569,
+            87760
+        ],
+        "psl/53.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4710329,
+            87978
+        ],
+        "psl/54.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4798307,
+            88852
+        ],
+        "psl/55.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4887159,
+            89686
+        ],
+        "psl/56.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            4976845,
+            88500
+        ],
+        "psl/57.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            5065345,
+            88231
+        ],
+        "psl/58.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            5153576,
+            87691
+        ],
+        "psl/59.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            5241267,
+            88537
+        ],
+        "psl/60.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            5329804,
+            88285
+        ],
+        "psl/61.0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            5418089,
+            87503
+        ],
+        "time/0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39481,
+            8
+        ],
+        "time/1": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39489,
+            8
+        ],
+        "time/2": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39497,
+            8
+        ],
+        "time/3": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39505,
+            8
+        ],
+        "time/4": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39513,
+            8
+        ],
+        "time/5": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39521,
+            8
+        ],
+        "time/6": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39529,
+            8
+        ],
+        "time/7": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39537,
+            8
+        ],
+        "time/8": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39545,
+            8
+        ],
+        "time/9": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39553,
+            8
+        ],
+        "time/10": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39561,
+            8
+        ],
+        "time/11": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39569,
+            8
+        ],
+        "time/12": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39577,
+            8
+        ],
+        "time/13": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39585,
+            8
+        ],
+        "time/14": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39593,
+            8
+        ],
+        "time/15": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39601,
+            8
+        ],
+        "time/16": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39609,
+            8
+        ],
+        "time/17": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39617,
+            8
+        ],
+        "time/18": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39625,
+            8
+        ],
+        "time/19": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39633,
+            8
+        ],
+        "time/20": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39641,
+            8
+        ],
+        "time/21": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39649,
+            8
+        ],
+        "time/22": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39657,
+            8
+        ],
+        "time/23": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39665,
+            8
+        ],
+        "time/24": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39673,
+            8
+        ],
+        "time/25": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39681,
+            8
+        ],
+        "time/26": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39689,
+            8
+        ],
+        "time/27": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39697,
+            8
+        ],
+        "time/28": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39705,
+            8
+        ],
+        "time/29": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39713,
+            8
+        ],
+        "time/30": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39721,
+            8
+        ],
+        "time/31": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39729,
+            8
+        ],
+        "time/32": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39737,
+            8
+        ],
+        "time/33": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39745,
+            8
+        ],
+        "time/34": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39753,
+            8
+        ],
+        "time/35": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39761,
+            8
+        ],
+        "time/36": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39769,
+            8
+        ],
+        "time/37": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39777,
+            8
+        ],
+        "time/38": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39785,
+            8
+        ],
+        "time/39": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39793,
+            8
+        ],
+        "time/40": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39801,
+            8
+        ],
+        "time/41": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39809,
+            8
+        ],
+        "time/42": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39817,
+            8
+        ],
+        "time/43": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39825,
+            8
+        ],
+        "time/44": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39833,
+            8
+        ],
+        "time/45": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39841,
+            8
+        ],
+        "time/46": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39849,
+            8
+        ],
+        "time/47": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39857,
+            8
+        ],
+        "time/48": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39865,
+            8
+        ],
+        "time/49": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39873,
+            8
+        ],
+        "time/50": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39881,
+            8
+        ],
+        "time/51": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39889,
+            8
+        ],
+        "time/52": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39897,
+            8
+        ],
+        "time/53": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39905,
+            8
+        ],
+        "time/54": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39913,
+            8
+        ],
+        "time/55": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39921,
+            8
+        ],
+        "time/56": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39929,
+            8
+        ],
+        "time/57": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39937,
+            8
+        ],
+        "time/58": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39945,
+            8
+        ],
+        "time/59": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39953,
+            8
+        ],
+        "time/60": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39961,
+            8
+        ],
+        "time/61": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39969,
+            8
+        ],
+        "time_bnds/0.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39977,
+            20
+        ],
+        "time_bnds/1.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            39997,
+            20
+        ],
+        "time_bnds/2.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40017,
+            20
+        ],
+        "time_bnds/3.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40037,
+            19
+        ],
+        "time_bnds/4.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40056,
+            20
+        ],
+        "time_bnds/5.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40076,
+            19
+        ],
+        "time_bnds/6.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40095,
+            19
+        ],
+        "time_bnds/7.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40114,
+            19
+        ],
+        "time_bnds/8.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40133,
+            20
+        ],
+        "time_bnds/9.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40153,
+            20
+        ],
+        "time_bnds/10.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40173,
+            19
+        ],
+        "time_bnds/11.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40192,
+            19
+        ],
+        "time_bnds/12.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40211,
+            20
+        ],
+        "time_bnds/13.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746791,
+            20
+        ],
+        "time_bnds/14.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746811,
+            20
+        ],
+        "time_bnds/15.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746831,
+            20
+        ],
+        "time_bnds/16.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746851,
+            19
+        ],
+        "time_bnds/17.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746870,
+            19
+        ],
+        "time_bnds/18.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746889,
+            20
+        ],
+        "time_bnds/19.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746909,
+            20
+        ],
+        "time_bnds/20.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746929,
+            19
+        ],
+        "time_bnds/21.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746948,
+            19
+        ],
+        "time_bnds/22.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746967,
+            20
+        ],
+        "time_bnds/23.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3746987,
+            20
+        ],
+        "time_bnds/24.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747007,
+            20
+        ],
+        "time_bnds/25.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747027,
+            19
+        ],
+        "time_bnds/26.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747046,
+            19
+        ],
+        "time_bnds/27.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747065,
+            20
+        ],
+        "time_bnds/28.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747085,
+            20
+        ],
+        "time_bnds/29.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747105,
+            20
+        ],
+        "time_bnds/30.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747125,
+            19
+        ],
+        "time_bnds/31.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747144,
+            19
+        ],
+        "time_bnds/32.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747163,
+            19
+        ],
+        "time_bnds/33.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747182,
+            19
+        ],
+        "time_bnds/34.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747201,
+            20
+        ],
+        "time_bnds/35.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747221,
+            20
+        ],
+        "time_bnds/36.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747241,
+            19
+        ],
+        "time_bnds/37.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747260,
+            19
+        ],
+        "time_bnds/38.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747279,
+            19
+        ],
+        "time_bnds/39.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            40231,
+            18
+        ],
+        "time_bnds/40.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747298,
+            19
+        ],
+        "time_bnds/41.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747317,
+            19
+        ],
+        "time_bnds/42.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747336,
+            20
+        ],
+        "time_bnds/43.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747356,
+            19
+        ],
+        "time_bnds/44.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747375,
+            20
+        ],
+        "time_bnds/45.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747395,
+            20
+        ],
+        "time_bnds/46.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747415,
+            20
+        ],
+        "time_bnds/47.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747435,
+            20
+        ],
+        "time_bnds/48.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747455,
+            20
+        ],
+        "time_bnds/49.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747475,
+            20
+        ],
+        "time_bnds/50.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747495,
+            20
+        ],
+        "time_bnds/51.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747515,
+            20
+        ],
+        "time_bnds/52.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747535,
+            20
+        ],
+        "time_bnds/53.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747555,
+            19
+        ],
+        "time_bnds/54.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747574,
+            20
+        ],
+        "time_bnds/55.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747594,
+            20
+        ],
+        "time_bnds/56.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747614,
+            20
+        ],
+        "time_bnds/57.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747634,
+            20
+        ],
+        "time_bnds/58.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747654,
+            20
+        ],
+        "time_bnds/59.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747674,
+            20
+        ],
+        "time_bnds/60.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747694,
+            20
+        ],
+        "time_bnds/61.0": [
+            "https://esgf-node.ornl.gov/thredds/fileServer/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc",
+            3747714,
+            20
+        ],
+        ".zgroup": "{\"zarr_format\":2}",
+        ".zattrs": "{\"Conventions\":\"CF-1.7 CMIP-6.2\",\"activity_id\":\"DCPP\",\"branch_method\":\"standard\",\"branch_time_in_child\":61300.0,\"branch_time_in_parent\":61300.0,\"creation_date\":\"2021-01-04T18:55:03Z\",\"data_specs_version\":\"01.00.31\",\"experiment\":\"hindcast initialized based on observations and using historical forcing\",\"experiment_id\":\"dcppA-hindcast\",\"external_variables\":\"areacella\",\"forcing_index\":1,\"frequency\":\"mon\",\"further_info_url\":\"https:\\/\\/furtherinfo.es-doc.org\\/CMIP6.MRI.MRI-ESM2-0.dcppA-hindcast.s2017.r1i1p1f1\",\"grid\":\"native atmosphere TL159 gaussian grid (160x320 latxlon)\",\"grid_label\":\"gn\",\"history\":\"2021-01-04T18:55:03Z ; CMOR rewrote data to be consistent with CMIP6, CF-1.7 CMIP-6.2 and CF standards.\",\"initialization_index\":1,\"institution\":\"Meteorological Research Institute, Tsukuba, Ibaraki 305-0052, Japan\",\"institution_id\":\"MRI\",\"mip_era\":\"CMIP6\",\"nominal_resolution\":\"100 km\",\"parent_activity_id\":\"DCPP\",\"parent_experiment_id\":\"dcppA-assim\",\"parent_mip_era\":\"CMIP6\",\"parent_source_id\":\"MRI-ESM2-0\",\"parent_time_units\":\"days since 1850-01-01\",\"parent_variant_label\":\"r1i1p1f1\",\"physics_index\":1,\"product\":\"model-output\",\"realization_index\":1,\"realm\":\"atmos\",\"source\":\"MRI-ESM2.0 (2017): \\naerosol: MASINGAR mk2r4 (TL95; 192 x 96 longitude\\/latitude; 80 levels; top level 0.01 hPa)\\natmos: MRI-AGCM3.5 (TL159; 320 x 160 longitude\\/latitude; 80 levels; top level 0.01 hPa)\\natmosChem: MRI-CCM2.1 (T42; 128 x 64 longitude\\/latitude; 80 levels; top level 0.01 hPa)\\nland: HAL 1.0\\nlandIce: none\\nocean: MRI.COM4.4 (tripolar primarily 0.5 deg latitude\\/1 deg longitude with meridional refinement down to 0.3 deg within 10 degrees north and south of the equator; 360 x 364 longitude\\/latitude; 61 levels; top grid cell 0-2 m)\\nocnBgchem: MRI.COM4.4\\nseaIce: MRI.COM4.4\",\"source_id\":\"MRI-ESM2-0\",\"source_type\":\"AOGCM AER CHEM\",\"sub_experiment\":\"initialized near end of year 2017\",\"sub_experiment_id\":\"s2017\",\"table_id\":\"Amon\",\"table_info\":\"Creation Date:(24 July 2019) MD5:36f28a6dd43b853e01db17a5161de8f3\",\"title\":\"MRI-ESM2-0 output prepared for CMIP6\",\"variable_id\":\"psl\",\"variant_label\":\"r1i1p1f1\",\"license\":\"CMIP6 model data produced by MRI is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (https:\\/\\/creativecommons.org\\/licenses\\/). Consult https:\\/\\/pcmdi.llnl.gov\\/CMIP6\\/TermsOfUse for terms of use governing CMIP6 output, including citation requirements and proper acknowledgment. Further information about this data, including some limitations, can be found via the further_info_url (recorded as a global attribute in this file). The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law.\",\"cmor_version\":\"3.5.0\",\"tracking_id\":\"hdl:21.14100\\/906ca7be-677b-45cd-bd3e-ca2ee11befb2\"}",
+        "lat/.zarray": "{\"shape\":[160],\"chunks\":[160],\"dtype\":\"<f8\",\"fill_value\":null,\"order\":\"C\",\"filters\":null,\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "lat/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"lat\"],\"bounds\":\"lat_bnds\",\"units\":\"degrees_north\",\"axis\":\"Y\",\"long_name\":\"Latitude\",\"standard_name\":\"latitude\"}",
+        "lat_bnds/.zarray": "{\"shape\":[160,2],\"chunks\":[160,2],\"dtype\":\"<f8\",\"fill_value\":null,\"order\":\"C\",\"filters\":[{\"id\":\"shuffle\",\"elementsize\":8},{\"id\":\"zlib\",\"level\":1}],\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "lat_bnds/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"lat\",\"bnds\"]}",
+        "lon/.zarray": "{\"shape\":[320],\"chunks\":[320],\"dtype\":\"<f8\",\"fill_value\":null,\"order\":\"C\",\"filters\":null,\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "lon/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"lon\"],\"bounds\":\"lon_bnds\",\"units\":\"degrees_east\",\"axis\":\"X\",\"long_name\":\"Longitude\",\"standard_name\":\"longitude\"}",
+        "lon_bnds/.zarray": "{\"shape\":[320,2],\"chunks\":[320,2],\"dtype\":\"<f8\",\"fill_value\":null,\"order\":\"C\",\"filters\":[{\"id\":\"shuffle\",\"elementsize\":8},{\"id\":\"zlib\",\"level\":1}],\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "lon_bnds/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"lon\",\"bnds\"]}",
+        "psl/.zarray": "{\"shape\":[62,160,320],\"chunks\":[1,160,320],\"dtype\":\"<f4\",\"fill_value\":1.0000000200408773e+20,\"order\":\"C\",\"filters\":[{\"id\":\"shuffle\",\"elementsize\":4},{\"id\":\"zlib\",\"level\":1}],\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "psl/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"time\",\"lat\",\"lon\"],\"standard_name\":\"air_pressure_at_mean_sea_level\",\"long_name\":\"Sea Level Pressure\",\"comment\":\"Sea Level Pressure\",\"units\":\"Pa\",\"cell_methods\":\"area: time: mean\",\"cell_measures\":\"area: areacella\",\"history\":\"2021-01-04T18:55:03Z altered by CMOR: replaced missing value flag (9.96921e+36) and corresponding data with standard missing value (1e+20).\",\"missing_value\":1.0000000200408773e+20}",
+        "time/.zarray": "{\"shape\":[62],\"chunks\":[1],\"dtype\":\"<f8\",\"fill_value\":null,\"order\":\"C\",\"filters\":null,\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "time/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"time\"],\"bounds\":\"time_bnds\",\"units\":\"days since 1850-01-01\",\"calendar\":\"proleptic_gregorian\",\"axis\":\"T\",\"long_name\":\"time\",\"standard_name\":\"time\"}",
+        "time_bnds/.zarray": "{\"shape\":[62,2],\"chunks\":[1,2],\"dtype\":\"<f8\",\"fill_value\":null,\"order\":\"C\",\"filters\":[{\"id\":\"shuffle\",\"elementsize\":8},{\"id\":\"zlib\",\"level\":1}],\"dimension_separator\":\".\",\"compressor\":null,\"zarr_format\":2}",
+        "time_bnds/.zattrs": "{\"_ARRAY_DIMENSIONS\":[\"time\",\"bnds\"]}"
+    }
+}

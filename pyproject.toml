@@ -28,14 +28,27 @@ dependencies = [
     "esgfpid",
     "xarray",
     "netcdf4",
-    "dask",
+    "dask[distributed]",
     "pyyaml",
+    "cc-plugin-wcrp>=2.0.0",
+    "pathlib",
+    "pystac_client",
+    "kerchunk",
+    "virtualizarr",
+    "esgvoc>=3.1.0",
+    "pydantic",
+    "typer",
+    "attrs",
+    "h5py",
     "globus-cli",
-    "globus-sdk<3.44",
-    "cc-plugin-wcrp",
-    "pystac-client"
+    "globus-sdk>=4.3.0",
 ]
 
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0",
+]
 
 [project.scripts]
 esgpidcitepub = "esgcet.esgpidcitepub:main"
@@ -46,9 +59,9 @@ esgupdate = "esgcet.esgupdate:main"
 esgmapconv = "esgcet.esgmapconv:main"
 esgmigrate = "esgcet.migratecmd:main"
 esgunpublish = "esgcet.esgunpublish:main"
+esgcet = "esgcet.cli:app"
 esglogin = "esgcet.esglogin:main"
 esgadd = "esgcet.esgstacaddrep:main"
-
 
 [project.urls]
 Homepage = "http://esgf.github.io"

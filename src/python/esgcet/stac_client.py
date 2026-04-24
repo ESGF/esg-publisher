@@ -14,7 +14,8 @@ from globus_sdk import (
     RefreshTokenAuthorizer,
 )
 from globus_sdk.scopes import GroupsScopes
-from globus_sdk.tokenstorage import SimpleJSONFileAdapter
+
+from globus_sdk.token_storage import JSONTokenStorage
 
 from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
@@ -73,10 +74,11 @@ class GlobusTransactionClient:
             "token_storage_file", TOKEN_STORAGE_FILE
         )
         filename = os.path.expanduser(token_storage_file)
-        token_storage = SimpleJSONFileAdapter(filename)
+        token_storage = JSONTokenStorage(filename)
+
         if not token_storage.file_exists():
             response = self._do_login_flow()
-            token_storage.store(response)
+            token_storage.store_token_response(response)
 
             self.groups_tokens = response.by_resource_server[
                 GroupsClient.resource_server
@@ -89,22 +91,22 @@ class GlobusTransactionClient:
             self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         groups_authorizer = RefreshTokenAuthorizer(
-            self.groups_tokens["refresh_token"],
+            self.groups_tokens.refresh_token,
             self.auth_client,
-            access_token=self.groups_tokens["access_token"],
-            expires_at=self.groups_tokens["expires_at_seconds"],
-            on_refresh=token_storage.on_refresh,
+            access_token=self.groups_tokens.access_token,
+            expires_at=self.groups_tokens.expires_at_seconds,
+            on_refresh=token_storage.store_token_response,
         )
         self.groups_client = GroupsClient(
             authorizer=groups_authorizer,
         )
 
         transaction_authorizer = RefreshTokenAuthorizer(
-            self.transaction_tokens["refresh_token"],
+            self.transaction_tokens.refresh_token,
             self.auth_client,
-            access_token=self.transaction_tokens["access_token"],
-            expires_at=self.transaction_tokens["expires_at_seconds"],
-            on_refresh=token_storage.on_refresh,
+            access_token=self.transaction_tokens.access_token,
+            expires_at=self.transaction_tokens.expires_at_seconds,
+            on_refresh=token_storage.store_token_response,
         )
         self.transaction_client = BaseClient(
             base_url=self.stac_api,
