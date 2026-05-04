@@ -15,14 +15,23 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import sphinx_rtd_theme
 
+from importlib.metadata import version
+
+
+rst_prolog = """
+.. |version| replace:: {release}
+.. |project| replace:: My Project Name
+""".format(release=release)
 # -- Project information -----------------------------------------------------
 
 project = 'esgcet'
-copyright = '2020, Elysia Witham, Sasha Ames'
-author = 'Elysia Witham, Sasha Ames'
+release = version(project)  # or just hardcode temporarily
+
+copyright = '2026, Sasha Ames'
+author = 'Sasha Ames, Katharina Berger, Elysia Witham, Min Xu'
 
 # The full version, including alpha/beta/rc tags
-release = '5.2.1'
+
 
 
 # -- General configuration ---------------------------------------------------

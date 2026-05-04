@@ -1,2 +1,4 @@
-__version__ = "5.4.0b13"
+# get version from package as the canonical source
+from importlib.metadata import version
+__version__ = version("esgcet")
 
