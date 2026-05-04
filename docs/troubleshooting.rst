@@ -7,10 +7,11 @@ If you encounter issues running any of the esgcet commands, try looking for comm
  - If the program fails to create the dataset, check to see if autocurator exited without error.
  - If you are using a custom project and encounter errors, try using the individual commands one at a time instead of ``esgpublish``. If your project requires customization,
    feel free to open a github issue and request that support for your project is added.
- - For example commands and test scripts, see our `test suite repository <https://github.com/lisi-w/test-suite/tree/main>`_.
+ - For example commands and test scripts, see our `test suite repository <https://github.com/ESGF/test-suite/tree/main>`_.
  - For unexpected behavior, output, or errors, please open a `Github Issue <https://github.com/ESGF/esg-publisher/issues>`_.
 
  Known issues
  ------------
 
  * There is a problem identified with esgunpublish and connecting to the PID server.  Please report if you need support and a team member will assist.
+

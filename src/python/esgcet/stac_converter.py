@@ -187,7 +187,7 @@ class ESGSTACConverter():
     
     
         dt_start = dataset_doc.get("datetime_start", None)
-        dt_end = dataset_doc.get("datetime_start", None)
+        dt_end = dataset_doc.get("datetime_end", None)
         properties = {
     
             "size": size,
