@@ -125,6 +125,7 @@ DRS = {
         "variable_branding_suffix",
         "grid_label",
     ],
+    "cordex-cmip6":  ["collection", "activity_id","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
 }
 
 #             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
@@ -200,6 +201,20 @@ GA = {
         "member_id",
         "branded_variable",
     ],
+    "cordex-cmip6": [
+        "grid",
+        "license",
+        "product",
+        "Conventions",
+        "title", 
+        "mip_era",
+        "domain",
+    "project_id",
+    "version_realization_info",
+        "driving_institution_id",
+        "source_type"
+
+]
 }
 
 GA_DELIMITED = {
@@ -213,7 +228,7 @@ CONST_ATTR = {
     "obs4mips": {"project": "obs4MIPs"},
     "input4mips": {"project": "input4MIPs"},
     "mip-drs7": {"project": "CMIP7", "acrhive_id": "WCRP"},
-
+        "cordex-cmip6" : { "project" : "CORDEX-CMIP6"}
 }
 
 GA_MAPPED = {"cmip6": {"experiment": "experiment_title"}}
@@ -316,7 +331,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2"}
+STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2","CORDEX-CMIP6" : "v3.1.1"}
 
 STAC_item_properties = [
     "access",
@@ -338,8 +353,9 @@ MAP_properties = {
     "CMIP6" : {
     "variable_cf_standard_name" : "cf_standard_name",
     "experiment" : "experiment_title"
-    }
-}
+    },
+    "CORDEX-CMIP6" : {    "variable_cf_standard_name" : "cf_standard_name" } }
+
 
 STAC_proj_item_properties = {
     "CMIP7": [
@@ -408,6 +424,31 @@ STAC_proj_item_properties = {
         "variable_units",
         "variant_label",
     ],
+    "CORDEX-CMIP6"  :  ["activity_id",
+                        "domain_id",
+                        "domain",
+                        "institution_id",
+                        "driving_source_id",
+                        "driving_experiment_id",
+                        "driving_institution_id",
+                        "driving_variant_label",
+                        "source_id",
+                        "version_realization",
+                        "frequency",
+                        "grid",
+                        "license",
+                        "product",
+                        "Conventions",
+                        "project_id",
+                        "source_type",
+                        "variable_cf_standard_name",
+                        "variable_id",
+                        "variable_long_name",
+                        "variable_units",
+                        "version",
+                        "version_realization_info",
+                        "mip_era"
+                       ]
 }
 
 STAC_list_properties = {
