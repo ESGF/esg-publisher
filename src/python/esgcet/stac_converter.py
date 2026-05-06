@@ -137,7 +137,8 @@ class ESGSTACConverter():
                                     "updated" : doc.get("timestamp", now),
                                     "protocol" : "globus",
 #                                    "node" : dataset_doc.get("data_node"),
-                                    "file:local_path" : drspath
+                                    "file:local_path" : drspath,
+                                    f"{namespace}:tracking_id": dataset_doc.get("pid")
                                 }
                             }
                     break

@@ -220,6 +220,7 @@ GA = {
 GA_DELIMITED = {
     "cmip6": {"source_type": " ", "activity_id": " ", "realm": " "},
     "mip-drs7": {"realm": " ", "Conventions": " "},
+    "cordex-cmip6" : {"Conventions": " "}
 }
 #                 'input4mips' : {'target_mip_list' : ','}}
 
@@ -331,7 +332,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2","CORDEX-CMIP6" : "v3.1.1"}
+STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2","CORDEX-CMIP6" : "v3.1.2"}
 
 STAC_item_properties = [
     "access",
@@ -447,7 +448,8 @@ STAC_proj_item_properties = {
                         "variable_units",
                         "version",
                         "version_realization_info",
-                        "mip_era"
+                        "mip_era",
+			"pid"
                        ]
 }
 
