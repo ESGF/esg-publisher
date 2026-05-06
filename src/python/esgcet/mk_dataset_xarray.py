@@ -57,17 +57,17 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if "lat" in scanobj.coords:
             lat = scanobj.coords["lat"]
             if len(lat) > 0:
-                record["north_degrees"] = lat.values.max()
-                record["south_degrees"] = lat.values.min()
+                record["north_degrees"] = float(lat.values.max())
+                record["south_degrees"] = float(lat.values.min())
             else:
                 self.publog.warn("'lat' found but len 0")          
         elif "latitude" in scanobj.coords:
             lat = scanobj.coords["latitude"]
             if len(lat) > 0:
                 if isinstance(lat[0].values, (list, np.ndarray)):
-                    min, max = self._get_min_max_bounds(lat)
-                    record["north_degrees"] = min
-                    record["south_degrees"] = max
+                    minval, maxval = self._get_min_max_bounds(lat)
+                    record["north_degrees"] = minval
+                    record["south_degrees"] = maxval
 
                 else:    
                     record["north_degrees"] = lat[-1].values.item()
@@ -81,20 +81,20 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if "lon" in scanobj.coords:
             lon = scanobj.coords["lon"]
             if len(lon) > 0:
-                record["east_degrees"] = lon.values.max()
-                record["west_degrees"] = lon.values.min()
+                record["east_degrees"] = float(lon.values.max())
+                record["west_degrees"] = float(lon.values.min())
             else:
                 self.publog.warn("'lon' found but len 0")          
         elif "longitude" in scanobj.coords:
             lon = scanobj.coords["longitude"]
             if len(lon) > 0:
                 if isinstance(lon[0].values, (list, np.ndarray)):
-                    min, max = self._get_min_max_bounds(lon)   
-                    record["east_degrees"] = min
-                    record["west_degrees"] = max
+                    minval, maxval = self._get_min_max_bounds(lon)   
+                    record["east_degrees"] = float(minval)
+                    record["west_degrees"] = float(maxval)
                 else:
-                    record["east_degrees"] = lon[-1].values.item()
-                    record["west_degrees"] = lon[0].values.item()
+                    record["east_degrees"] = float(lon[-1].values.item())
+                    record["west_degrees"] = float(lon[0].values.item())
                 geo_units.append(lon.units)
             else:
                 self.publog.warn("Latitude found but len 0")

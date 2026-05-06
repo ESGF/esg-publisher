@@ -6,45 +6,14 @@ from pathlib import Path
 
 import esgcet.args as pub_args
 import esgcet.logger as logger
-from esgcet.stac_client import TransactionClient
-from esgcet.stac_converter import convert2stac
+from esgcet.stac_client import getTransactionClient
+from esgcet.stac_converter import ESGSTACConverter, ESGSTACItem
+
+from esgcet.search_check import ESGSearchCheck
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esgstacpub")
-
-
-def add_replica(stac_item, rep_datanode, rep_globus, rep_path, rep_hostname):
-    assets = stac_item.get("assets", {})
-    for name, asset in assets.items():
-        if asset.get("alternate:name") == rep_datanode:
-            continue
-
-        if "alternate" not in asset:
-            asset["alternate"] = {}
-
-        if rep_datanode in asset.get("alternate"):
-            continue
-
-        replica_asset = {
-            "description": asset.get("description"),
-            "type": asset.get("type"),
-            "roles": asset.get("roles", []),
-            "alternate:name": rep_datanode,
-        }
-
-        if name == "globus":
-            replica_asset["href"] = (
-                f"https://app.globus.org/file-manager?"
-                f"origin_id={rep_globus}&origin_path={rep_path}"
-            )
-
-        elif asset.get("type") == "application/netcdf":
-            filename = asset["href"].split("/")[-1]
-            replica_asset["href"] = f"https://{rep_hostname}{rep_path}/{filename}"
-
-        asset["alternate"][rep_datanode] = replica_asset
-
-    return stac_item
+    
 
 
 def get_args():
@@ -69,29 +38,25 @@ def get_args():
     parser.add_argument(
         "--globus-collection-uuid",
         dest="rep_globus",
-        required=True,
         help="UUID of Globus collection to access replicated item",
-    )
-    parser.add_argument(
-        "--rep-path", dest="rep_path", required=True, help="Path to replicated item"
-    )
-    parser.add_argument(
-        "--http-hostname",
-        dest="rep_hostname",
-        required=True,
-        help="Hostname of the HTTP server",
     )
     parser.add_argument(
         "--datanode",
         dest="rep_datanode",
-        required=True,
-        help="Datanode that iwll be used to identify replicated assets of the item",
+        help="Datanode that will be used to identify replicated assets of the item",
     )
+    parser.add_argument(
+        "--agg-url", dest="rep_path", help="Url of reference file or other aggregated asset to add"
+    )
+    parser.add_argument(
+        "--prefix", dest="rep_prefix", help="Url path prefix that proceeds the dataset DRS in the url"
+    )    
     parser.add_argument(
         "--config",
         "-cfg",
         dest="cfg",
         default=def_config,
+        required=True,
         help="Path to yaml config file.",
     )
     parser.add_argument(
@@ -100,6 +65,8 @@ def get_args():
     parser.add_argument(
         "--verbose", dest="verbose", action="store_true", help="Enable verbose mode."
     )
+    parser.add_argument('--agg', help="Add an aggregtion of the specified type [zarr|kerchunk|virtualizarr|icechunk]. --rep-path is the url for the item", default=None)
+    parser.add_argument('--dataset-id', help="ID of the dataset to add the asset (aggregate or files)", default=None)
     pub = parser.parse_args()
 
     return pub
@@ -120,7 +87,7 @@ def run():
     args = pub_args.PublisherArgs()
     config = args.load_config(ini_file)
 
-    if not a.json_data:
+    if (not a.json_data) and (not a.dataset_id):
         publog.error(
             "Input data argument missing.  Please provide either records in .json form for esgf2 publishing"
         )
@@ -150,30 +117,91 @@ def run():
     else:
         verbose = True
 
-    rc = True
-    tc = TransactionClient(a.stac_api, silent=silent, verbose=verbose)
 
+    config["verbose"] = verbose
+    config["silent"] = silent
+    
+    rc = True
+
+    if a.rep_datanode:
+        site = a.rep_datanode
+    else:
+        site = config["data_node"]
+
+    if (not a.rep_prefix) and (not a.agg):
+        publog.info("Neither replica file location prefix nor replica file aggregation type set.  Nothing to do, exiting...")
+        return 0
+    
     if a.json_data:
         try:
             new_json_data = json.load(open(a.json_data))
         except:
             publog.exception("Could not open json file. Exiting.")
             exit(1)
-        try:
-            stac_item = convert2stac(new_json_data)
-            stac_item = add_replica(
-                stac_item, a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname
-            )
-            rc = rc and tc.put(stac_item)
-        except Exception as ex:
-            publog.exception("Failed to publish replica to STAC Transaction API")
-            exit(1)
+        collection = new_json_data[-1]["project"]
+        datasetid = new_json_data[-1]["instance_id"]
+        
+    elif a.dataset_id:
+        if a.stac_api:
+            stac_api = a.stac_api
+            config["stac_api"] = a.stac_api
+        else:
+            stac_conf = config.get("stac_config", {})
+            stac_api = stac_conf.get("stac_api","") 
+            if not stac_api:
+                publog.exception("STAC API not set cannot fetch Item")
+                exit(1)
+                
+        sc = ESGSearchCheck(stac_api=stac_api, verbose=verbose, silent=silent)
+        si = sc.stac_item_fetch(a.dataset_id)
+        
+        if not si:
+            publog.error("Exiting....")
+            return 0
+        stac_item = ESGSTACItem(si)
+        collection = si.get("collection", "")
+        datasetid = a.dataset_id
+    else:
+        publog.warn("No Dataset-ID specified in command line")
+        return 0
+
+    stac_ops = []
+    client = getTransactionClient(config["stac_config"])
+    tc = client(config)
+
+    if a.agg:
+
+        agg_op = stac_item.add_aggregate(a.agg, a.rep_path, site)
+        stac_ops += agg_op
+    
+    if a.rep_prefix:
+        if "https_url" in config:
+            http_template = config["https_url"].split('|')[0]
+        else:
+            http_template = f"https://{site}/thredds/fileServer/{a.rep_prefix}" + "/{}/{}"
+        if a.rep_globus:
+            rep_globus = a.rep_globus
+        else:
+            rep_globus = config.get("globus_uuid", "")
+        rep_op = stac_item.add_replica(site, http_template, a.rep_prefix, rep_globus)
+        stac_ops += rep_op
+
+    publog.debug(stac_ops)    
+    rc = tc.json_patch(
+            collection,
+            item_id=a.dataset_id,
+        entry=stac_ops
+    ) 
+    publog.debug(f"Returned {rc}")
+
     if not rc:
         exit(1)
 
 
 def main():
-    run()
+    rc = run()
+    if not rc:
+        exit(1)
 
 
 if __name__ == "__main__":

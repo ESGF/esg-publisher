@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 import os
-import esgcet.esgmigrate as em
 import esgcet.logger as logger
 import esgcet
 import yaml
@@ -9,7 +8,6 @@ import yaml
 log = logger.ESGPubLogger()
 publog = log.return_logger('Settings')
 
-DEFAULT_ESGINI = '/esg/config/esgcet'
 
 
 class PublisherArgs:
@@ -30,7 +28,6 @@ class PublisherArgs:
         # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
         parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
         parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
-        parser.add_argument("--esgmigrate", dest="migrate", action="store_true", help="Run esgmigrate before publishing, to migrate over old config. May be left with incomplete config settings.")
         parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
         parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
         parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
@@ -76,8 +73,6 @@ class PublisherArgs:
         pub = self.get_args()
         json_file = pub.json
 
-        if pub.migrate:
-            em.run(DEFAULT_ESGINI, False, False)
 
         config_file = pub.cfg
         config = self.load_config(config_file)
@@ -236,7 +231,10 @@ class PublisherArgs:
                    "non_nc": non_nc, 
                    "mountpoints": mountpoints,
                    "disable_citation": disable_citation,
-                   "disable_further_info": disable_further_info}
+                   "disable_further_info": disable_further_info,
+                   "disable_qaqc" : config.get("disable_qaqc", False),
+                   "kerchunk" : config.get("kerchunk", None)
+                   }
 
         if auth and cert:
             argdict["cert"] = cert
@@ -255,18 +253,14 @@ class PublisherArgs:
             else:
                 argdict["cmor_tables"] = pub.cmor_path
         if project == "cmip6" or project == "input4mips" or (project in proj_config and "pid_prefix" in proj_config[project]):  
-            try:
                 # Unpack the PID credentials format from the yaml to be compatible with the legacy format
-                pid_creds = config['pid_creds']
-                creds_lst = []
-                for it in pid_creds:
-                    rec = pid_creds[it]
-                    rec['url'] = it
-                    creds_lst.append(rec)
-                argdict['pid_creds'] = creds_lst
-            except:
-                publog.exception("PID credentials not defined. Define in config file esg.ini.")
-                exit(1)
+            pid_creds = config.get('pid_creds', [])
+            creds_lst = []
+            for it in pid_creds:
+                rec = pid_creds[it]
+                rec['url'] = it
+                creds_lst.append(rec)
+            argdict['pid_creds'] = creds_lst
         if "cmip6_clone" in config and project == config['cmip6_clone'].lower():
             if "pid_creds" in argdict:
                 argdict["cmip6-clone"] = project
@@ -305,7 +299,13 @@ class PublisherArgs:
         argdict["stac_config"] = config.get("stac_config",{})
         stac_api = pub.stac_api
         if stac_api:
-            argdict["stac_config"]["stac_api"] = stac_api
+            if not argdict.get("stac_config"):
+                argdict["stac_api"] = stac_api
+            elif "stac_transaction_api" in argdict["stac_config"]:
+                argdict["stac_config"]["stac_transaction_api"]["base_url"]
+            else:
+                publog.warning("STAC API not properly configured. ")
+                argdict["stac_api"] = stac_api
 
         argdict["skipxr"] = pub.skipxr
 

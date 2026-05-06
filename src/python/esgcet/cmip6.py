@@ -57,8 +57,11 @@ class cmip6(GenericPublisher):
 
         # step two: PrePARE
         res = self.compliance_check(map_json_data)
-
-        self.publog.info(f"QC check result {res}")
+        if not res:
+            self.publog.exception("Dataset FAILED Compliance Check. See tmpfile output in working directory for more information")
+            exit(2)
+        else:
+            self.publog.debug("PASSED compliance check")
         
         # step two: extract
 
@@ -71,15 +74,16 @@ class cmip6(GenericPublisher):
 
         # step four: assign PID
         self.publog.info("Assigning PID...")
-        new_json_data = self.pid(out_json_data)
-        
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+    
         #step five: update record if exists
-        # self.publog.info("Updating...")
-        # self.update(new_json_data)
+        self.publog.info("Updating...")
+        self.update(self.dataset_rec)
 
         # step six: publish to database
         self.publog.info("Running index pub...")
-        rc = self.index_pub(new_json_data)
+        rc = self.index_pub(self.dataset_rec)
 
         self.publog.info("Done. Cleaning up.")
         self.cleanup()

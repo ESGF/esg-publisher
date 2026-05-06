@@ -8,11 +8,13 @@ from esgcet.stac_client import getTransactionClient
 from esgcet.stac_converter import ESGSTACConverter
 from esgcet.update_globus import ESGUpdateGlobus
 from esgcet.update_solr import ESGUpdateSolr
-#from esgcet.update_stac import ESGUpdateStac
+from esgcet.update_stac import ESGUpdateSTAC
 
+from esgcet.pid_cite_pub import ESGPubPidCite
+from esgcet.settings import PID_PREFIX  # project table of prefixes
 
 log = logger.ESGPubLogger()
-
+import json
 
 class BasePublisher(object):
 
@@ -38,6 +40,7 @@ class BasePublisher(object):
         self.publog = log.return_logger(
             "Generic Non-NetCDF Publisher", self.silent, self.verbose
         )
+        self._disable_citation = argdict.get("disable_citation", False)
         self.mapdict = None
 
     def cleanup(self):
@@ -84,8 +87,7 @@ class BasePublisher(object):
 
         stac_conf = self.argdict.get("stac_config", {})
         if stac_conf:
-#            up = ESGFUpdateSTAC()
-            pass
+            up = ESGUpdateSTAC(self.argdict)
         elif self.argdict.get("globus_index", False):
             up = ESGUpdateGlobus(
                 self.argdict.get("index_UUID"),
@@ -120,8 +122,9 @@ class BasePublisher(object):
         print(f"VERBOSE: {self.verbose}")
         # TODO: support solr and Globus using the globus_index argument
 
-        if self.argdict.get("stac_config"):
+        if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
             TransactionClient = getTransactionClient(self.argdict.get("stac_config", {}))
+            self.publog.debug(f"{type(TransactionClient)}")
             tc = TransactionClient(self.argdict)
             if not tc:
                 raise RuntimeError("Failed to create STAC transaction client")
@@ -164,6 +167,23 @@ class BasePublisher(object):
             exit(1)
         return rc
 
+    def pid_cite(self):
+        lower_proj = self.project.lower()
+        pid = ESGPubPidCite(self.dataset_rec, {}, self.data_node, self.argdict["test"],
+                            silent=self.silent, verbose=self.verbose,
+                            project_family=lower_proj, disable_cite=self._disable_citation)
+
+        dsid = self.dataset_rec[-1]["id"]
+        ds_pid = pid.gen_pid(dsid)
+        citurl = pid.citation_url()
+
+        for rec in self.dataset_rec:
+            rec["pid"] = ds_pid
+            if citurl:
+                rec["citation_url"] = citurl
+
+ #       self.publog.warn(json.dumps(self.dataset_rec, indent=2))
+        
     def workflow(self):
 
         # step one: convert mapfile
@@ -174,6 +194,9 @@ class BasePublisher(object):
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+            
         self.publog.info("Updating...")
         self.update(out_json_data)
 

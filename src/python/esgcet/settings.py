@@ -122,7 +122,7 @@ DRS = {
         "region",
         "frequency",
         "variable_id",
-        "variable_branded_suffix",
+        "variable_branding_suffix",
         "grid_label",
     ],
     "cordex-cmip6":  ["collection", "activity_id","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
@@ -269,7 +269,13 @@ PID_CREDS = [
     }
 ]
 
-PID_PREFIX = "21.14100"  # for testing use CMIP6,  need to be project-specific
+PID_PREFIX = { 
+ "cmip6" :  "21.14100" ,
+    "cordex-cmip6" : "21.14103" ,
+    "mip-drs7" : "21.14107" ,
+    # for testing use CMIP6,  need to be project-specific
+}
+    
 PID_EXCHANGE = "esgffed-exchange"
 HTTP_SERVICE = "/thredds/fileServer/"
 
@@ -292,13 +298,13 @@ SET_REPLICA = False
 QAQC = {
     "cmip6": {
         "test": ["wcrp_cmip6:1.0"],
-        "criteria": "normal",
+        "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
     },
     "mip-drs7": {
-        "test": ["acdd"],
-        "criteria": "normal",
+        "test": ["wcrp_cmip7:1.0", "cf:1.11"],
+        "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
     },
@@ -320,24 +326,17 @@ STAC_TRANSACTION_API = {
 
 STAC_API = "https://api.stac.esgf-west.org"
 
-AUTH_PROVIDER = "Glob"
-
-EGI_AUTH = {
-    "device_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth",
-    "token_url": "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token",
-    "client_id": "",
-}
 
 VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.2", "CMIP6" : "v1.0.0","CORDEX-CMIP6" : "v3.1.1"}
+STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2","CORDEX-CMIP6" : "v3.1.1"}
 
 STAC_item_properties = [
     "access",
     "latest",
-    "pid",
+    "version",
     "project",
     "title",
     "master_id",
@@ -349,9 +348,14 @@ MAP_properties = {
  "CMIP7" : {
      "variable_cf_standard_name" : "cf_standard_name",
      "variable_branded_name" : "branded_variable",
- },
-    "CORDEX-CMIP6" : {    "variable_cf_standard_name" : "cf_standard_name" } 
-}
+     
+ }   ,
+    "CMIP6" : {
+    "variable_cf_standard_name" : "cf_standard_name",
+    "experiment" : "experiment_title"
+    },
+    "CORDEX-CMIP6" : {    "variable_cf_standard_name" : "cf_standard_name" } }
+
 
 STAC_proj_item_properties = {
     "CMIP7": [
@@ -369,7 +373,6 @@ STAC_proj_item_properties = {
         "grid_label",
         "institution_id",
         "member_id",
-        "mip_era",
         "nominal_resolution",
         "product",
         "realm",
@@ -381,7 +384,7 @@ STAC_proj_item_properties = {
         "variable_long_name",
         "variable_units",
         "variant_label",
-        "variable_branded_suffix",
+        "variable_branding_suffix",
         "Conventions",
         "license_id",
         "variable_branded_name",
@@ -392,31 +395,31 @@ STAC_proj_item_properties = {
         "initialization_index",
         "realization_index",
         "physics_index",
-        "version"
+        "pid",
     ],
     "CMIP6": [
         "activity_id",
-        "cf_standard_name",
         "citation_url",
         "data_specs_version",
         "experiment_id",
-        "experiment_title",
+        "experiment",
         "frequency",
         "further_info_url",
         "grid",
         "grid_label",
         "institution_id",
         "member_id",
-        "mip_era",
         "nominal_resolution",
         "pid",
         "product",
         "realm",
         "source_id",
         "source_type",
+        "experiment",
+        "variable_cf_standard_name",
         "sub_experiment_id",
         "table_id",
-        "variable",
+        "variable_id",
         "variable_long_name",
         "variable_units",
         "variant_label",
@@ -449,10 +452,13 @@ STAC_proj_item_properties = {
 }
 
 STAC_list_properties = {
+    "ALL": [
     "access",
     "realm",
     "source_type",
     "Conventions",
+    ],
+    "CMIP6" : { "activity_id"}
 }
 
 CACHE_DIR_DEPTH = 6

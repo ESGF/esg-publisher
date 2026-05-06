@@ -1,5 +1,7 @@
 import os
 from esgcet.update import ESGPubUpdate
+from esgcet.update_stac import ESGUpdateSTAC
+
 import sys
 import json
 import argparse
@@ -12,16 +14,18 @@ publog = log.return_logger('esgupdate')
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
+    parser = argparse.ArgumentParser(description="Update existing Items in the ESGF Index (modify properties).  Legacy mode supports changing the latest status to False.")
 
     home = str(Path.home())
     def_config = home + "/.esg/esg.yaml"
     parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
     parser.add_argument("--certificate", "-c", dest="cert", default="./cert.pem",
                         help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
-    parser.add_argument("--pub-rec", dest="json_data", required=True,
+    parser.add_argument("--pub-rec", dest="json_data", 
                         help="JSON file output from esgpidcitepub or esgmkpubrec.")
-    parser.add_argument("--config", "-cfg", dest="cfg", default=def_config, help="Path to yaml config file.")
+    parser.add_argument("--dataset-id", help="Dataset ID to update")
+    parser.add_argument("--json", help=".json file containing properties")
+    parser.add_argument("--config", "-cfg", dest="cfg", required=True, default=def_config, help="Path to yaml config file.")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
     parser.add_argument("--no-auth", dest="no_auth", action="store_true",
@@ -47,6 +51,8 @@ def run():
     args = pub_args.PublisherArgs()
     config = args.load_config(ini_file)
 
+
+    
     if not a.silent:
         try:
             s = config['silent']
@@ -71,6 +77,21 @@ def run():
     else:
         verbose = True
 
+    config["verbose"] = verbose
+    config["silent"] = silent
+    
+    if a.dataset_id:
+        if not "stac_config" in config:
+            publog.error("STAC not configured, dataset property mode not supported for legacy")
+            return
+        if not a.json:
+            publog.error("JSON file for update not specified.")
+            return
+        up = ESGUpdateSTAC(config)
+        up.update_dataset(a.dataset_id, json.load(open(a.json)), set_latest=True)
+        return True
+    
+    
     if a.cert == "./cert.pem":
         try:
             cert = config['cert']
@@ -104,6 +125,8 @@ def run():
         publog.exception("Could not open json file. Exiting.")
         exit(1)
 
+        
+    
     up = ESGPubUpdate(index_node, cert, silent=silent, verbose=verbose, verify=verify,
                       auth=auth)
     try:
@@ -114,7 +137,9 @@ def run():
 
 
 def main():
-    run()
+    rc = run()
+    if rc:
+        exit(0)
 
 
 if __name__ == '__main__':

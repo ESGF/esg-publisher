@@ -6,13 +6,7 @@ import esgcet.logger as logger
 import requests
 from esgcet import __version__
 from esgcet.settings import *
-from esgcet.settings import (
-    AUTH_PROVIDER,
-    EGI_AUTH,
-    STAC_CLIENT,
-    STAC_TRANSACTION_API,
-    TOKEN_STORAGE_FILE,
-)
+
 from globus_sdk import (
     BaseClient,
     GroupsClient,
@@ -20,9 +14,10 @@ from globus_sdk import (
     RefreshTokenAuthorizer,
 )
 from globus_sdk.scopes import GroupsScopes
-from globus_sdk.tokenstorage import SimpleJSONFileAdapter
 
-from .egi_oauth2_device_flow import OAuthDeviceFlowPKCE
+from globus_sdk.token_storage import JSONTokenStorage
+
+from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
 log = logger.ESGPubLogger()
 
@@ -61,9 +56,7 @@ class GlobusTransactionClient:
         self.auth_client = NativeAppAuthClient(
             client_id=stac_client_id, app_name="ESGF2 STAC Transaction API"
         )
-
-        self.dry_run = False
-        #        self.dry_run = args.get("")
+        self.dry_run = args.get("dry_run")
         self._create_clients()
 
     def _do_login_flow(self):
@@ -81,10 +74,11 @@ class GlobusTransactionClient:
             "token_storage_file", TOKEN_STORAGE_FILE
         )
         filename = os.path.expanduser(token_storage_file)
-        token_storage = SimpleJSONFileAdapter(filename)
+        token_storage = JSONTokenStorage(filename)
+
         if not token_storage.file_exists():
             response = self._do_login_flow()
-            token_storage.store(response)
+            token_storage.store_token_response(response)
 
             self.groups_tokens = response.by_resource_server[
                 GroupsClient.resource_server
@@ -97,22 +91,22 @@ class GlobusTransactionClient:
             self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         groups_authorizer = RefreshTokenAuthorizer(
-            self.groups_tokens["refresh_token"],
+            self.groups_tokens.refresh_token,
             self.auth_client,
-            access_token=self.groups_tokens["access_token"],
-            expires_at=self.groups_tokens["expires_at_seconds"],
-            on_refresh=token_storage.on_refresh,
+            access_token=self.groups_tokens.access_token,
+            expires_at=self.groups_tokens.expires_at_seconds,
+            on_refresh=token_storage.store_token_response,
         )
         self.groups_client = GroupsClient(
             authorizer=groups_authorizer,
         )
 
         transaction_authorizer = RefreshTokenAuthorizer(
-            self.transaction_tokens["refresh_token"],
+            self.transaction_tokens.refresh_token,
             self.auth_client,
-            access_token=self.transaction_tokens["access_token"],
-            expires_at=self.transaction_tokens["expires_at_seconds"],
-            on_refresh=token_storage.on_refresh,
+            access_token=self.transaction_tokens.access_token,
+            expires_at=self.transaction_tokens.expires_at_seconds,
+            on_refresh=token_storage.store_token_response,
         )
         self.transaction_client = BaseClient(
             base_url=self.stac_api,
@@ -144,53 +138,71 @@ class GlobusTransactionClient:
             else:
                 self.publog.error(f"Failed to publish: Error {resp.http_status}")
 
-    def put(self, entry):
-
-        collection = entry.get("collection")
-        item_id = entry.get("id")
+    def json_patch(self, collection, item_id, entry):
+        """
+        RFC 6902 https://tools.ietf.org/html/rfc6902
+        JSON Patch is a format for describing changes to a JSON document
+        in a way that is similar to a diff
+        It consists of a sequence of operations to be applied to the target JSON document
+        """
         headers = {
-            "User-Agent": f"esgf_publisher/{__version__}",
+            "Content-Type": "application/json-patch+json",
+            "User-Agent": f"test_client/{__version__}",
         }
-
-        resp = self.transaction_client.put(
-            f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
-        )
+#        entry = { "operations" : entry }
+        print(f"DEBUG {collection} {item_id} {entry}")
+        if self.dry_run:
+            print("Not PATCHing (dry-run mode)")
+            return
+        resp = self.transaction_client.patch(f"/collections/{collection}/items/{item_id}", headers=headers, data=entry)
         if resp.http_status == 201:
-            self.publog.info(resp.http_status)
-            self.publog.info("Updated")
+            print(resp.http_status)
+            print("Updated (JSON PATCH)")
             return True
         elif resp.http_status == 202:
-            self.publog.info(resp.http_status)
-            self.publog.info("Queued for update")
+            print(resp.http_status)
+            print("Queued for update (JSON PATCH)")
             return True
         else:
-            self.publog.error(f"Failed to publish: Error {resp.http_status}")
+            print(f"Failed to update (JSON PATCH): Error {resp.http_status}")
             return False
 
 
 class EGITransactionClient:
     """EGI Transaction client for publishing ESGF items."""
 
-    def __init__(self, args=None, verbose=False, silent=False):
-        stac_config=args.get("stac_config")
-        if stac_config:
-            self.stac_api = stac_config.get("stac_api")
-
-        else:
-            self.stac_api = STAC_TRANSACTION_API.get("base_url")
-
-        self.verbose = verbose
-        self.silent = silent
+    def __init__(self, args):
+        verbose = args.get("verbose", False)
+        silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        self.auth = OAuthDeviceFlowPKCE(
-            client_id=EGI_AUTH.get("client_id"),
-            client_secret=EGI_AUTH.get("client_secret"),
-            device_endpoint=EGI_AUTH.get("device_url"),
-            token_endpoint=EGI_AUTH.get("token_url"),
-            scope=EGI_AUTH.get("scope"),
-            refresh_file=os.path.expanduser(TOKEN_STORAGE_FILE),
-        )
+        stac_api_overr = args.get("stac_api", None)
+        if stac_api_overr:
+            self.stac_api = stac_api_overr
+            self.egi_conf = EGIConf(verify=False)
+            self.auth = None
+        else:        
+            self.stac_config = args.get("stac_config", None)
+            if not self.stac_config:
+                self.publog.exception("STAC client not configured")
+                exit(1)
+    
+            transaction_api = self.stac_config.get("stac_transaction_api", {})
+            self.egi_conf = EGIConf(**transaction_api)
+            self.stac_api = self.egi_conf.base_url
+
+            token_storage_file = self.stac_config.get(
+                "token_storage_file", TOKEN_STORAGE_FILE
+            )
+
+            self.auth = OAuthDeviceFlowPKCE(
+                client_id=self.egi_conf.client_id,
+                device_endpoint=self.egi_conf.device_endpoint,
+                token_endpoint=self.egi_conf.token_endpoint,
+                scope=self.egi_conf.scope,
+                resource=self.stac_api,
+                refresh_file=os.path.expanduser(token_storage_file),
+            )
 
     def publish(self, entry: dict[str, Any]) -> None:
         """Publish an item to the EGI authenticated STAC endpoint.
@@ -209,8 +221,8 @@ class EGITransactionClient:
                 headers=headers,
                 json=entry,
                 auth=self.auth,
-                verify=EGI_AUTH.get("verify", True),
-                timeout=EGI_AUTH.get("timeout", 5.0),
+                verify=self.egi_conf.verify,
+                timeout=self.egi_conf.timeout,
             )
 
             response.raise_for_status()
@@ -225,26 +237,25 @@ class EGITransactionClient:
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to publish: Error %s", err.response.status_code)
 
-    def put(self, entry):
+    def json_patch(self, collection, item_id, entry):
         """Publish an update to the EGI authenticated STAC endpoint.
 
         Args:
             entry (dict[str, Any]): entry to be published
         """
-        collection = entry.get("collection")
-        item_id = entry.get("id")
+
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
 
         try:
-            response = requests.put(
+            response = requests.patch(
                 f"{self.stac_api}/collections/{collection}/items/{item_id}",
                 headers=headers,
                 json=entry,
                 auth=self.auth,
-                verify=EGI_AUTH.get("verify", True),
-                timeout=EGI_AUTH.get("timeout", 5.0),
+                verify=self.egi_conf.verify,
+                timeout=self.egi_conf.timeout,
             )
 
             response.raise_for_status()
@@ -259,14 +270,13 @@ class EGITransactionClient:
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
 
-
 def getTransactionClient(stac_config):
     sc = stac_config.get("stac_client", {})
     
     if "globus" in sc.get("redirect_uri", ""):
         auth = "Globus"
     else:
-        auth = AUTH_PROVIDER
+        auth = "EGI"
     res = (
         EGITransactionClient if auth == "EGI" else GlobusTransactionClient
     )

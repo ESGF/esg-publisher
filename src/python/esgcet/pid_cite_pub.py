@@ -2,7 +2,7 @@ import sys, json
 from esgcet.settings import PID_PREFIX, PID_EXCHANGE, HTTP_SERVICE, CITATION_URLS, PID_URL
 import traceback
 import esgcet.logger as logger
-
+import uuid
 
 log = logger.ESGPubLogger()
 
@@ -34,7 +34,38 @@ class ESGPubPidCite(object):
         self.publog = log.return_logger('PID Citation', silent, verbose)
         self._disable_cite = disable_cite
         self.dataset_pid = None
-    
+
+    def gen_pid(self, dataset_id):
+        """
+        Generates a PID using a deterministic UUID derived from the dataset ID
+        """
+        ds_uuid = uuid.uuid3(uuid.NAMESPACE_URL, dataset_id)
+        prefix = self.pid_prefix[self.project_family]
+        dataset_pid = f'hdl:{prefix}/{str(ds_uuid)}'
+        return dataset_pid
+
+    def citation_url(self):
+        dset_rec = self.ds_records[-1]
+        # project is taken from the record metadata unless project_family is a truthy value
+        # (defaults to None, but might be e.g. 'CMIP6')
+        project = (self.project_family or dset_rec['project']).lower()
+        # At present we only support the stock templates from CMIP6
+        if not project in CITATION_URLS:
+            return
+        if self.test_publication:
+            keystr = 'test'
+        else:
+            keystr = 'prod'
+
+        
+#        dset_rec['pid'] = self.dataset_pid
+
+
+        if not self._disable_cite:
+
+            return CITATION_URLS[project][keystr].format(dset_rec['master_id'], dset_rec['version'])
+        return
+        
     def establish_pid_connection(self):
         """Establish a connection to the PID service
         pid_prefix
@@ -132,7 +163,7 @@ class ESGPubPidCite(object):
                                         checksum=file_rec['checksum'],
                                         file_size=file_rec['size'],
                                         publish_path=file_rec['publish_path'],
-                                        checksum_type=file_rec['checksum_type'],
+                                        checksum_type=file_rec.get('checksum_type','sha256'),
                                         file_version=file_rec['version'] )
             else:
                 file_rec = dsrec
