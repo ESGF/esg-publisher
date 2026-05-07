@@ -137,7 +137,8 @@ class ESGSTACConverter():
                                     "updated" : doc.get("timestamp", now),
                                     "protocol" : "globus",
 #                                    "node" : dataset_doc.get("data_node"),
-                                    "file:local_path" : drspath
+                                    "file:local_path" : drspath,
+                                    f"{namespace}:tracking_id": dataset_doc.get("pid")
                                 }
                             }
                     break
@@ -213,8 +214,10 @@ class ESGSTACConverter():
             if collection in MAP_properties and k in MAP_properties[collection]:
                 mapped_k = MAP_properties[collection][k]
                 v = dataset_doc.get(mapped_k)
-            else:
+            elif k in dataset_doc:
                 v = dataset_doc.get(k)
+            else:
+                print(f"WARNING {k} not found in dataset")                
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:

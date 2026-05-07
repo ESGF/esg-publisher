@@ -15,7 +15,7 @@ additional_requirements = [
             "netcdf4",
             "dask",
             "pyyaml",
-            "globus-sdk<3.44",
+            "globus-sdk>=4.3",
             "globus-cli",
             "pystac-client",
             "wcrp-cc-plugi"

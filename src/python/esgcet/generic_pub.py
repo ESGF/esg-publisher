@@ -103,6 +103,7 @@ class BasePublisher(object):
                 verbose=self.verbose,
                 verify=self.verify,
             )
+
         try:
             up.run(json_data)
         except Exception as ex:
