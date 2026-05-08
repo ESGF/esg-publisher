@@ -57,6 +57,7 @@ class GlobusTransactionClient:
             client_id=stac_client_id, app_name="ESGF2 STAC Transaction API"
         )
         self.dry_run = args.get("dry_run")
+        self.save_stac = args.get("save_stac")
         self._create_clients()
 
     def _do_login_flow(self):
@@ -122,21 +123,24 @@ class GlobusTransactionClient:
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
-        with open(f"{entry["id"]}.json", "w") as f:
-            f.write(json.dumps(entry, indent=1))
+
+        if self.save_stac:
+            with open(f"{entry["id"]}.json", "w") as f:
+                f.write(json.dumps(entry, indent=1))
 
         if not self.dry_run:
-            resp = self.transaction_client.post(
-                f"/collections/{collection}/items", headers=headers, data=entry
-            )
-            if resp.http_status == 201:
-                self.publog.info(resp.http_status)
-                self.publog.info("Published")
-            elif resp.http_status == 202:
-                self.publog.info(resp.http_status)
-                self.publog.info("Queued for publication")
-            else:
-                self.publog.error(f"Failed to publish: Error {resp.http_status}")
+            try:
+                resp = self.transaction_client.post(
+                    f"/collections/{collection}/items", headers=headers, data=entry
+                )
+                if resp.http_status == 201:
+                    self.publog.info(f"{resp.http_status}: Published")
+                elif resp.http_status == 202:
+                    self.publog.info(f"{resp.http_status}: Queued for publication")
+                else:
+                    self.publog.error(f"Failed to publish: Error {resp.http_status}")
+            except Exception as ex:
+                print(ex.http_status, entry["id"])
 
     def json_patch(self, collection, item_id, entry):
         """

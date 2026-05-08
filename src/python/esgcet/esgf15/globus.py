@@ -7,7 +7,7 @@ from globus_sdk import (
     SearchQueryV1,
 
 )
-from typing import Any, Literal
+from typing import Any, Literal, Generator
 
 from collections import defaultdict
 
@@ -60,7 +60,7 @@ class ESGFGlobusIndex:
         self.marker = None
 
     @staticmethod
-    def generate_query_str(
+    def _generate_query_str(
         meta_type: Literal['File', 'Dataset'],
         project: Project,
         fixed_facet: dict[str, Any],
@@ -88,7 +88,7 @@ class ESGFGlobusIndex:
         query_dict["filters"].append(
             {
                 "field_name": 'project',
-                "values": [project],
+                "values": [project.value],
                 "type": "match_all",
             }
         )
@@ -130,11 +130,11 @@ class ESGFGlobusIndex:
         data_node: str,
         is_replica: bool = False,
         dataset_limit: int = 1000,
-    ) -> None:
+    ) -> Generator[list[list[dict[str, Any]]], None, None]:
         """query index using project and a fixed_facet"""
 
         
-        query_str = self.generate_query_str(
+        query_str = self._generate_query_str(
             'Dataset', 
             project, 
             fixed_facet, 
