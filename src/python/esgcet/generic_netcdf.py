@@ -63,7 +63,7 @@ class GenericPublisher(BasePublisher):
         project_qc_config = QAQC.get(self.project.lower(), None)
         if not project_qc_config:
             self.publog.warning(f"QAQC not configured for {self.project}")
-            return False
+            return True
 
         ccreport_file = Path(self.fullmap).with_suffix(".ccreport").name
         return_value, errors = ComplianceChecker.run_checker(

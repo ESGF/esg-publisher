@@ -15,14 +15,28 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import sphinx_rtd_theme
 
+try:
+    import tomllib          # Python 3.11+ stdlib
+except ImportError:
+    import tomli as tomllib # fallback for older Python
+
+from pathlib import Path
+
+with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as f:
+    data = tomllib.load(f)
+
+version = data["project"]["version"]
+release = version
+
+rst_prolog = f"""
+.. |version| replace:: {release}
+"""
+
 # -- Project information -----------------------------------------------------
 
-project = 'esgcet'
-copyright = '2020, Elysia Witham, Sasha Ames'
-author = 'Elysia Witham, Sasha Ames'
 
-# The full version, including alpha/beta/rc tags
-release = '5.2.1'
+copyright = '2026, Sasha Ames'
+author = 'Sasha Ames, Katharina Berger, Elysia Witham, Min Xu'
 
 
 # -- General configuration ---------------------------------------------------

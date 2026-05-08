@@ -26,28 +26,6 @@ class cmip6(GenericPublisher):
         self.publog = log.return_logger('CMIP6', self.silent, self.verbose)
         self._disable_citation = argdict["disable_citation"]
 
-    def pid(self, out_json_data):
-      
-        pid = ESGPubPidCite(out_json_data, self.pid_creds, self.data_node, test=self.test,
-                            silent=self.silent, verbose=self.verbose,
-                            project_family='CMIP6', disable_cite=self._disable_citation)
-        if self.cmor_tables:
-            check = FieldCheck(self.cmor_tables, silent=self.silent)
-            try:
-                check.run_check(out_json_data)
-            except:
-                self.publog.exception("Activity/Metadata agreement check failed!")
-                self.cleanup()
-                exit(1)
-            
-        try:
-            new_json_data = pid.do_pidcite()
-        except Exception as ex:
-            self.publog.exception("Assigning pid failed")
-            self.cleanup()
-            exit(1)
-
-        return new_json_data
 
     def workflow(self):
 

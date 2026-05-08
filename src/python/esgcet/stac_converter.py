@@ -137,7 +137,8 @@ class ESGSTACConverter():
                                     "updated" : doc.get("timestamp", now),
                                     "protocol" : "globus",
 #                                    "node" : dataset_doc.get("data_node"),
-                                    "file:local_path" : drspath
+                                    "file:local_path" : drspath,
+                                    f"{namespace}:tracking_id": dataset_doc.get("pid")
                                 }
                             }
                     break
@@ -187,7 +188,7 @@ class ESGSTACConverter():
     
     
         dt_start = dataset_doc.get("datetime_start", None)
-        dt_end = dataset_doc.get("datetime_start", None)
+        dt_end = dataset_doc.get("datetime_end", None)
         properties = {
     
             "size": size,
@@ -213,8 +214,12 @@ class ESGSTACConverter():
             if collection in MAP_properties and k in MAP_properties[collection]:
                 mapped_k = MAP_properties[collection][k]
                 v = dataset_doc.get(mapped_k)
-            else:
+            elif k in dataset_doc:
                 v = dataset_doc.get(k)
+            else:
+                print(f"WARNING {k} not found in dataset")
+            if k == "master_id":
+                nk = "base_id"
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
@@ -296,5 +301,6 @@ class ESGSTACConverter():
 
         if "citation_url" in dataset_doc:
             item["links"].append(self.citation_link_d(dataset_doc["citation_url"]) )
-            
+        else:
+            print("WARNING no Citation url")
         return item

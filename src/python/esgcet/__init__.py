@@ -1,2 +1,5 @@
-__version__ = "5.4.0b12"
+from importlib.metadata import version
+project = 'esgcet'
+__version__ = str(version(project))  # or just hardcode temporarily
+
 
