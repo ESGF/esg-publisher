@@ -217,7 +217,9 @@ class ESGSTACConverter():
             elif k in dataset_doc:
                 v = dataset_doc.get(k)
             else:
-                print(f"WARNING {k} not found in dataset")                
+                print(f"WARNING {k} not found in dataset")
+            if k == "master_id":
+                nk = "base_id"
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
@@ -299,5 +301,6 @@ class ESGSTACConverter():
 
         if "citation_url" in dataset_doc:
             item["links"].append(self.citation_link_d(dataset_doc["citation_url"]) )
-            
+        else:
+            print("WARNING no Citation url")
         return item
