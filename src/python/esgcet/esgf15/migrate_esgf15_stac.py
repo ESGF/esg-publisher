@@ -108,6 +108,8 @@ def _esgf1_5_type_conversion(
         doc["project"] = doc["project"][0] if isinstance(doc["project"], list) else doc["project"]
         if 'tracking_id' in doc:
             doc["tracking_id"] = doc["tracking_id"][0] if isinstance(doc["tracking_id"], list) else doc["tracking_id"]
+        if 'pid' in doc:
+            doc["pid"] = doc["pid"][0] if isinstance(doc["pid"], list) else doc["pid"]
         if 'checksum_type' in doc:
             doc["checksum_type"] = doc["checksum_type"][0] if isinstance(doc["checksum_type"], list) else doc["checksum_type"]
         if 'checksum' in doc:
