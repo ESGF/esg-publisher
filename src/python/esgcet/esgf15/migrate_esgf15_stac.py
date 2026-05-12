@@ -83,11 +83,21 @@ def migrate(*,
 
     no_published = 1
     for record in esgf15_generator:
-        stac_data =  [
-            esgf_stac_convert.convert2stac(_esgf1_5_type_conversion(entry)) 
-            for entry in record
-        ]
-        for stac_item in stac_data:
+        stac_data = []
+        for entry in record:
+            dataset_id = entry[0].get("id")
+            type_fixed_docs = _esgf1_5_type_conversion(entry)
+            if type_fixed_docs is None:
+                print(f"{dataset_id} error in type fixes")
+                continue
+        
+            stac_item = esgf_stac_convert.convert2stac(type_fixed_docs)
+            if stac_item is None:
+                print(f"{dataset_id} cannot be converted to stac")
+                continue
+        
+            stac_data.append(stac_item)
+
             try:
                 rc = tc.publish(stac_item)
                 if total and no_published >= total:
@@ -99,24 +109,38 @@ def migrate(*,
 
 
 def _esgf1_5_type_conversion(
-    dataset_doc: list[dict[str, Any]]
+    dataset_doc: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Convert the esgf1.5 types for stac_converter."""
-    new_dataset_doc = [] 
-    for doc in dataset_doc:
-        # list -> scalar
-        doc["project"] = doc["project"][0] if isinstance(doc["project"], list) else doc["project"]
-        if 'tracking_id' in doc:
-            doc["tracking_id"] = doc["tracking_id"][0] if isinstance(doc["tracking_id"], list) else doc["tracking_id"]
-        if 'pid' in doc:
-            doc["pid"] = doc["pid"][0] if isinstance(doc["pid"], list) else doc["pid"]
-        if 'checksum_type' in doc:
-            doc["checksum_type"] = doc["checksum_type"][0] if isinstance(doc["checksum_type"], list) else doc["checksum_type"]
-        if 'checksum' in doc:
-            doc["checksum"] = doc["checksum"][0] if isinstance(doc["checksum"], list) else doc["checksum"]
-        doc["citation_url"] = doc["citation_url"][0] if isinstance(doc["citation_url"], list) else doc["citation_url"] 
-        # int to str
-        doc["version"] = str(doc["version"]) 
-        new_dataset_doc.append(doc)
+    """Type fixes of ESGF 1.5 document field for STAC conversion."""
 
-    return new_dataset_doc
+    type_fix_fields = {
+        "project",
+        "tracking_id",
+        "pid",
+        "checksum_type",
+        "checksum",
+        "citation_url",
+    }
+
+    type_fixed_docs = []
+
+    for doc in dataset_doc:
+        type_fixed_doc = doc.copy()
+
+        # Convert selected fields from list -> scalar
+        for field in type_fix_fields:
+            value = type_fixed_doc.get(field)
+
+            if isinstance(value, list):
+                if not value:
+                    print(f"Empty ESGF field: {field}")
+                    return None
+                    
+                type_fixed_doc[field] = value[0]
+        # Convert version to string
+        if "version" in type_fixed_doc and type_fixed_doc["version"] is not None:
+            type_fixed_doc["version"] = str(type_fixed_doc["version"])
+
+        type_fixed_docs.append(type_fixed_doc)
+
+    return type_fixed_docs
