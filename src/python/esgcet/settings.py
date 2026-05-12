@@ -144,7 +144,6 @@ GA = {
         "creation_date",
         "variant_label",
         "sub_experiment_id",
-        "further_info_url",
         "activity_id",
         "data_specs_version",
         "title",
@@ -332,7 +331,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.2","CORDEX-CMIP6" : "v3.1.2"}
+STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
 
 STAC_item_properties = [
     "access",
@@ -340,7 +339,6 @@ STAC_item_properties = [
     "version",
     "project",
     "title",
-    "master_id",
 ]
 
 
@@ -400,12 +398,10 @@ STAC_proj_item_properties = {
     ],
     "CMIP6": [
         "activity_id",
-        "citation_url",
         "data_specs_version",
         "experiment_id",
         "experiment",
         "frequency",
-        "further_info_url",
         "grid",
         "grid_label",
         "institution_id",
