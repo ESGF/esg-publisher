@@ -2,29 +2,11 @@ import esgcet.logger as logger
 
 log = logger.ESGPubLogger()
 
-import requests
-import urllib3
 from esgcet.stac_client import getTransactionClient
 from esgcet.update_base import ESGUpdateBase
 from pystac_client import Client
-from pystac_client.stac_api_io import StacApiIO
 
 FIELDNAME = "base_id"
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-class NoVerifySession(requests.Session):
-    def send(self, *args, **kwargs):
-        kwargs["verify"] = False
-        return super().send(*args, **kwargs)
-
-
-class IONoVerify(StacApiIO):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.session = NoVerifySession()
 
 
 class ESGUpdateSTAC(ESGUpdateBase):
