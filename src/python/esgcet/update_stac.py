@@ -93,7 +93,6 @@ class ESGUpdateSTAC(ESGUpdateBase):
                 operations.append(op)
 
         entry = operations
-        # { "operations": operations}
         response = self.trans_client.json_patch(self.collection, dsetid, entry)
 
     def set_collection(self, msid):
