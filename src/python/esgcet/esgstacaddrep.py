@@ -13,7 +13,6 @@ from esgcet.search_check import ESGSearchCheck
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esgstacpub")
-    
 
 
 def get_args():
@@ -67,8 +66,16 @@ def get_args():
     parser.add_argument(
         "--verbose", dest="verbose", action="store_true", help="Enable verbose mode."
     )
-    parser.add_argument('--agg', help="Add an aggregtion of the specified type [zarr|kerchunk|virtualizarr|icechunk]. --rep-path is the url for the item", default=None)
-    parser.add_argument('--dataset-id', help="ID of the dataset to add the asset (aggregate or files)", default=None)
+    parser.add_argument(
+        "--agg",
+        help="Add an aggregtion of the specified type [zarr|kerchunk|virtualizarr|icechunk]. --rep-path is the url for the item",
+        default=None,
+    )
+    parser.add_argument(
+        "--dataset-id",
+        help="ID of the dataset to add the asset (aggregate or files)",
+        default=None,
+    )
     pub = parser.parse_args()
 
     return pub
@@ -119,10 +126,9 @@ def run():
     else:
         verbose = True
 
-
     config["verbose"] = verbose
     config["silent"] = silent
-    
+
     rc = True
     client = getTransactionClient(config["stac_config"])
     tc = client(config)
@@ -137,9 +143,11 @@ def run():
             sc = ESGSTACConverter(config["stac_config"])
             si = sc.convert2stac(new_json_data)
             stac_item = ESGSTACItem(si)
-            stac_item.add_replica(a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname)
+            stac_item.add_replica(
+                a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname
+            )
             rc = rc and tc.put(stac_item.stac_item)
-            
+
         except Exception as ex:
             publog.exception(f"Failed to publish replica to STAC Transaction API {ex}")
             exit(1)
@@ -148,15 +156,15 @@ def run():
             stac_api = a.stac_api
         else:
             stac_conf = config.get("stac_config", {})
-            stac_api = stac_conf.get("stac_api","") 
+            stac_api = stac_conf.get("stac_api", "")
             if not stac_api:
                 publog.exception("STAC API not set cannot fetch Item")
                 exit(1)
         sc = ESGSearchCheck(stac_api=stac_api, verbose=verbose, silent=silent)
 
-        #si = sc.stac_item_fetch(a.dataset_id)
-        #stac_item = ESGSTACItem(si)
-        
+        # si = sc.stac_item_fetch(a.dataset_id)
+        # stac_item = ESGSTACItem(si)
+
         if a.rep_datanode:
             site = a.rep_datanode
         else:
@@ -164,38 +172,34 @@ def run():
         if a.agg:
 
             operations = [
-                     {
-                        "op": "add",
-                        "path": f"/assets/kerchunk",
-                        "value": {
-                            "alternate": {
-                                site: {
-                                    "href": a.rep_path,
-                                    "type": a.agg,
-                                    "roles": ["data"],
-                                    "description": "TEST",
-                                    "alternate:name": site,
-                                }
-                            },
-                        }
-                    }
+                {
+                    "op": "add",
+                    "path": f"/assets/kerchunk",
+                    "value": {
+                        "alternate": {
+                            site: {
+                                "href": a.rep_path,
+                                "type": a.agg,
+                                "roles": ["data"],
+                                "description": "TEST",
+                                "alternate:name": site,
+                            }
+                        },
+                    },
+                }
             ]
             print(f"DEBUG {operations}")
-            rc = tc.json_patch(
-                    "CMIP6",
-                    item_id=a.dataset_id,
-                    entry={
-                        "operations": operations
-                    }
-            ) 
+            rc = tc.json_patch("CMIP6", item_id=a.dataset_id, entry=operations)
             print(f"DEBUG {rc}")
-#            stac_item.add_aggregate(a.agg, a.rep_path, site)
+        #            stac_item.add_aggregate(a.agg, a.rep_path, site)
         else:
             patch_entry = {}
-            
-            stac_item.add_replica(a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname)
-        
- #       rc = rc and tc.json_patch(collection, a.datasetid, patch_entry)    
+
+            stac_item.add_replica(
+                a.rep_datanode, a.rep_globus, a.rep_path, a.rep_hostname
+            )
+
+    #       rc = rc and tc.json_patch(collection, a.datasetid, patch_entry)
     if not rc:
         exit(1)
 

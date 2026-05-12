@@ -65,12 +65,9 @@ class ESGUpdateSTAC(ESGUpdateBase):
                 }
                 operations.append(op)
 
-        entry = operations
-        # { "operations": operations}
-
-        print(f"DEBUG {self.collection} {dsetid} {entry}")
+        print(f"DEBUG {self.collection} {dsetid} {operations}")
         collection = self.collection
-        response = self.trans_client.json_patch(collection, dsetid, entry)
+        response = self.trans_client.json_patch(collection, dsetid, operations)
 
     def query_update(self, data_node: str, master_id: str):
 

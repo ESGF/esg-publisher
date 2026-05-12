@@ -149,7 +149,6 @@ class GlobusTransactionClient:
             "Content-Type": "application/json-patch+json",
             "User-Agent": f"test_client/{__version__}",
         }
-        entry = {"operations": entry}
         print(f"DEBUG {collection} {item_id} {entry}")
         resp = self.transaction_client.patch(
             f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
