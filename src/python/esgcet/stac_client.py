@@ -91,7 +91,7 @@ class GlobusTransactionClient:
             self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         groups_authorizer = RefreshTokenAuthorizer(
-            self.groups_tokens.refresh_token,
+            self.groups_tokens.get("refresh_token", ""),
             self.auth_client,
             access_token=self.groups_tokens.access_token,
             expires_at=self.groups_tokens.expires_at_seconds,
@@ -102,7 +102,7 @@ class GlobusTransactionClient:
         )
 
         transaction_authorizer = RefreshTokenAuthorizer(
-            self.transaction_tokens.refresh_token,
+            self.transaction_tokens.get("refresh_token", ""),
             self.auth_client,
             access_token=self.transaction_tokens.access_token,
             expires_at=self.transaction_tokens.expires_at_seconds,

@@ -199,6 +199,14 @@ GA = {
         "physics_index",
         "member_id",
         "branded_variable",
+        "branch_time_in_parent",
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+        "horizontal_label"
     ],
     "cordex-cmip6": [
         "grid",
@@ -331,7 +339,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
+STAC_schema_versions = {"CMIP7": "v3.0.7", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
 
 STAC_item_properties = [
     "access",
@@ -395,6 +403,13 @@ STAC_proj_item_properties = {
         "realization_index",
         "physics_index",
         "pid",
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+        "horizontal_label"        
     ],
     "CMIP6": [
         "activity_id",
