@@ -13,37 +13,50 @@ class ESGSTACItem():
     Container class for the item with Methods to add Assets
     """
     def __init__(self, si):
-        self.stac_item = si
-
+        if si:
+            self.stac_item = si
+        else:
+            return None
         
 
     def add_aggregate(self, aggtype, url, site):
-        assets = self.stac_item.get("assets", {})
-        k = list(assets.keys())[0]
-        asset = assets[k]
-        altasset  = {
-                   "description": asset.get("description"),
-                "type": asset.get("type"),
-                "roles": asset.get("roles", []),
+        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        value = {
+                "href": url,
+                "type": f"application/{aggtype}",
+                "role": ["data","virtual"],
+                "description": "TEST",
                 "alternate:name": site,
-                "href" : url
-        }
-        if not "alternate" in assets:
-            asset["alternate"] = { site : altasset }
-        else:
-            asset["alternate"][site] = altasset    
-        
+                "created" : now,
+                "updated" : now
+                }
 
-    def add_replica(self, rep_datanode, rep_globus, rep_path, alt_hostname=""):
+        if "reference_file" in self.stac_item.get("assets", {}):
+            path = f"/assets/reference_file/alternate/{site}"
+        else:
+            path = f"/assets/reference_file"
+        #    value["file:size"] = 
+        operations = [{
+                    "op": "add",
+                    "path": path,
+                    "value": value
+                    }]
+        
+        return operations       
+
+    def add_replica(self, rep_datanode, template, prefix, rep_globus=""):
         assets = self.stac_item.get("assets", {})
+        operations = []
+        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
         for name, asset in assets.items():
+
+            if name == "reference_file":
+                continue
+            
             if asset.get("alternate:name") == rep_datanode:
                 continue
-    
-            if "alternate" not in asset:
-                asset["alternate"] = {}
-    
-            if rep_datanode in asset.get("alternate"):
+                               
+            if rep_datanode in asset.get("alternate",{}):
                 continue
     
             replica_asset = {
@@ -51,29 +64,43 @@ class ESGSTACItem():
                 "type": asset.get("type"),
                 "roles": asset.get("roles", []),
                 "alternate:name": rep_datanode,
+                "created" : asset("created"),
+                "updated" : now
             }
-    
+            rep_path = "TEST/PATH"
+            rep_path = asset.get("file:local_path", rep_path)
+            
             if name == "globus":
+                if not rep_globus:
+                    continue
                 replica_asset["href"] = (
                     f"https://app.globus.org/file-manager?"
                     f"origin_id={rep_globus}&origin_path={rep_path}"
                 )
     
             elif asset.get("type") == "application/netcdf":
-                filename = asset["href"].split("/")[-1]
-                if alt_hostname:
-                    hostname = alt_hostname
-                else:
-                    hostname =rep_datanode
-                replica_asset["href"] = f"https://{hostname}/{rep_path}/{filename}"
-    
-            asset["alternate"][rep_datanode] = replica_asset
-
+                replica_asset["href"] = template.format(prefix,rep_path)
+            op = {  "op" : "add",
+                    "path" :f"/assets/{name}/alternate/{rep_datanode}",
+                    "value" : replica_asset
+                 }
+            operations.append(op)
+        
+        return operations   
+ 
 class ESGSTACConverter():
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
         
 
+    def citation_link_d(self, url):
+
+        return {
+                    "rel": "cite-as",
+          "type": "application/json",
+           "href" : url
+        }
+    
     def convert2stac(self, json_data):
         now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         dataset_doc = {}
@@ -83,7 +110,14 @@ class ESGSTACConverter():
                 break
     
         assets = {}
-    
+        item_id = dataset_doc.get("instance_id")
+        drspath = item_id.replace('.','/')         
+        collection = dataset_doc.get("project")
+        if collection == "mip-drs7":
+            collection = "cmip7"
+
+        namespace = collection.lower()
+
         if "Globus" in dataset_doc.get("access"):
             for doc in json_data:
                 if doc.get("type") == "File":
@@ -101,8 +135,10 @@ class ESGSTACConverter():
                                     "alternate:name": dataset_doc.get("data_node"),
                                     "created" : doc.get("timestamp", now),
                                     "updated" : doc.get("timestamp", now),
-                                    "protocol" : "globus"
-                                    
+                                    "protocol" : "globus",
+#                                    "node" : dataset_doc.get("data_node"),
+                                    "file:local_path" : drspath,
+                                    f"{namespace}:tracking_id": dataset_doc.get("pid")
                                 }
                             }
                     break
@@ -110,6 +146,7 @@ class ESGSTACConverter():
         size = 0
         if "HTTPServer" in dataset_doc.get("access"):
             counter = 0
+
             for doc in json_data:
                 if doc.get("type") == "File":
                     urls = doc.get("url")
@@ -117,10 +154,10 @@ class ESGSTACConverter():
                         if url.endswith("application/netcdf|HTTPServer"):
                             url_split = url.split("|")
                             href = url_split[0]
-                            checksum_type = doc.get("checksum_type")
+                            checksum_type = doc.get("checksum_type", "SHA256")
                             if checksum_type != "SHA256":
                                 raise RuntimeError(f"{checksum_type} not supported")
-                                
+                
                             assets[doc.get("title", f"data{counter:04}")] = {
                                 "href": href,
                                 "description": "HTTPServer Link",
@@ -129,11 +166,12 @@ class ESGSTACConverter():
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
                                 "file:checksum": "1220" + doc.get("checksum"),
-                                "cmip6:tracking_id": doc.get("tracking_id"),
+                                f"{namespace}:tracking_id": doc.get("tracking_id"),
                                 "created" : doc.get("timestamp", now),
                                 "updated" : doc.get("timestamp", now),
-    
-                                "protocol" : "https"
+                                "protocol" : "https",
+#                                "node" : dataset_doc.get("data_node"),                               
+                                "file:local_path" : f"{drspath}/{doc.get("title")}"
                             }
                             size += doc.get("size", 0)
                             counter += 1
@@ -142,12 +180,7 @@ class ESGSTACConverter():
         if not assets:
             return None
     
-    
-        collection = dataset_doc.get("project")
-        if collection == "mip-drs7":
-            collection = "cmip7"
             
-        item_id = dataset_doc.get("instance_id")
         west_degrees = dataset_doc.get("west_degrees", 0.0)
         south_degrees = dataset_doc.get("south_degrees", -90.0)
         east_degrees = dataset_doc.get("east_degrees", -360.0)
@@ -155,7 +188,7 @@ class ESGSTACConverter():
     
     
         dt_start = dataset_doc.get("datetime_start", None)
-        dt_end = dataset_doc.get("datetime_start", None)
+        dt_end = dataset_doc.get("datetime_end", None)
         properties = {
     
             "size": size,
@@ -176,33 +209,34 @@ class ESGSTACConverter():
         
         collection_item_properties = STAC_proj_item_properties.get(collection, [])
         property_keys = STAC_item_properties + collection_item_properties
-        namespace = collection.lower()
     
         for k in property_keys:
             if collection in MAP_properties and k in MAP_properties[collection]:
                 mapped_k = MAP_properties[collection][k]
                 v = dataset_doc.get(mapped_k)
-            else:
+            elif k in dataset_doc:
                 v = dataset_doc.get(k)
+            else:
+                print(f"WARNING {k} not found in dataset")
+            if k == "master_id":
+                nk = "base_id"
             if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
                 nk = f"{namespace}:{k}"
             if isinstance(v, list):
-                if k in STAC_list_properties:
+                
+                if k in STAC_list_properties["ALL"]:
+                    properties[nk] = v
+                elif collection in STAC_list_properties and k in STAC_list_properties[collection]:
                     properties[nk] = v
                 else:
-                    if v[0] is None or v[0] == "none":
+                    if v[0] is None:
                         continue
                     properties[nk] = v[0]
             else:
-                if v is None or v == "none":
+                if v is None:
                     continue
-                # SKA workaround if integer index's are wanted
-                #                if "_index" in nk:
-                #                    v = int(v[1:])
-                if nk == "cmip7:version":
-                    v = f"{v}"
                 properties[nk] = v
     
         sc_version = STAC_schema_versions.get(collection)
@@ -264,5 +298,9 @@ class ESGSTACConverter():
             "properties": properties,
             "assets": assets
         }
-    
+
+        if "citation_url" in dataset_doc:
+            item["links"].append(self.citation_link_d(dataset_doc["citation_url"]) )
+        else:
+            print("WARNING no Citation url")
         return item

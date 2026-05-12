@@ -238,7 +238,7 @@ class ESGPubMakeDataset:
         self.dataset['replica'] = self.replica
         self.dataset['latest'] = True
         self.dataset['type'] = 'Dataset'
-        self.dataset['version'] = int(version)
+        self.dataset['version'] = version
 
 
         fmat_list = ['%({})s'.format(x) for x in self.DRS]

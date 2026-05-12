@@ -13,7 +13,8 @@ from globus_sdk import (
     RefreshTokenAuthorizer,
 )
 from globus_sdk.scopes import GroupsScopes
-from globus_sdk.tokenstorage import SimpleJSONFileAdapter
+
+from globus_sdk.token_storage import JSONTokenStorage
 
 from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
@@ -54,10 +55,7 @@ class GlobusTransactionClient:
         self.auth_client = NativeAppAuthClient(
             client_id=stac_client_id, app_name="ESGF2 STAC Transaction API"
         )
-
-        self.dry_run = False
-        #        self.dry_run = args.get("")
-
+        self.dry_run = args.get("dry_run")
         self._create_clients()
 
     def _do_login_flow(self):
@@ -75,10 +73,11 @@ class GlobusTransactionClient:
             "token_storage_file", TOKEN_STORAGE_FILE
         )
         filename = os.path.expanduser(token_storage_file)
-        token_storage = SimpleJSONFileAdapter(filename)
+        token_storage = JSONTokenStorage(filename)
+
         if not token_storage.file_exists():
             response = self._do_login_flow()
-            token_storage.store(response)
+            token_storage.store_token_response(response)
 
             self.groups_tokens = response.by_resource_server[
                 GroupsClient.resource_server
@@ -91,22 +90,22 @@ class GlobusTransactionClient:
             self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         groups_authorizer = RefreshTokenAuthorizer(
-            self.groups_tokens["refresh_token"],
+            self.groups_tokens.refresh_token,
             self.auth_client,
-            access_token=self.groups_tokens["access_token"],
-            expires_at=self.groups_tokens["expires_at_seconds"],
-            on_refresh=token_storage.on_refresh,
+            access_token=self.groups_tokens.access_token,
+            expires_at=self.groups_tokens.expires_at_seconds,
+            on_refresh=token_storage.store_token_response,
         )
         self.groups_client = GroupsClient(
             authorizer=groups_authorizer,
         )
 
         transaction_authorizer = RefreshTokenAuthorizer(
-            self.transaction_tokens["refresh_token"],
+            self.transaction_tokens.refresh_token,
             self.auth_client,
-            access_token=self.transaction_tokens["access_token"],
-            expires_at=self.transaction_tokens["expires_at_seconds"],
-            on_refresh=token_storage.on_refresh,
+            access_token=self.transaction_tokens.access_token,
+            expires_at=self.transaction_tokens.expires_at_seconds,
+            on_refresh=token_storage.store_token_response,
         )
         self.transaction_client = BaseClient(
             base_url=self.stac_api,
@@ -150,6 +149,9 @@ class GlobusTransactionClient:
             "User-Agent": f"test_client/{__version__}",
         }
         print(f"DEBUG {collection} {item_id} {entry}")
+        if self.dry_run:
+            print("Not PATCHing (dry-run mode)")
+            return
         resp = self.transaction_client.patch(
             f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
         )
@@ -174,29 +176,33 @@ class EGITransactionClient:
         silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        self.stac_config = args.get("stac_config", None)
+        stac_api_overr = args.get("stac_api", None)
+        if stac_api_overr:
+            self.stac_api = stac_api_overr
+            self.egi_conf = EGIConf(verify=False)
+            self.auth = None
+        else:
+            self.stac_config = args.get("stac_config", None)
+            if not self.stac_config:
+                self.publog.exception("STAC client not configured")
+                exit(1)
 
-        if not self.stac_config:
-            self.publog.exception("STAC client not configured")
-            exit(1)
+            transaction_api = self.stac_config.get("stac_transaction_api", {})
+            self.egi_conf = EGIConf(**transaction_api)
+            self.stac_api = self.egi_conf.base_url
 
-        transaction_api = self.stac_config.get("stac_transaction_api", {})
-        self.egi_conf = EGIConf(**transaction_api)
+            token_storage_file = self.stac_config.get(
+                "token_storage_file", TOKEN_STORAGE_FILE
+            )
 
-        self.stac_api = self.egi_conf.base_url
-
-        token_storage_file = self.stac_config.get(
-            "token_storage_file", TOKEN_STORAGE_FILE
-        )
-
-        self.auth = OAuthDeviceFlowPKCE(
-            client_id=self.egi_conf.client_id,
-            device_endpoint=self.egi_conf.device_endpoint,
-            token_endpoint=self.egi_conf.token_endpoint,
-            scope=self.egi_conf.scope,
-            resource=self.stac_api,
-            refresh_file=os.path.expanduser(token_storage_file),
-        )
+            self.auth = OAuthDeviceFlowPKCE(
+                client_id=self.egi_conf.client_id,
+                device_endpoint=self.egi_conf.device_endpoint,
+                token_endpoint=self.egi_conf.token_endpoint,
+                scope=self.egi_conf.scope,
+                resource=self.stac_api,
+                refresh_file=os.path.expanduser(token_storage_file),
+            )
 
     def publish(self, entry: dict[str, Any]) -> None:
         """Publish an item to the EGI authenticated STAC endpoint.

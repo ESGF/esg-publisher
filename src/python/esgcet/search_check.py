@@ -47,12 +47,12 @@ class ESGSearchCheck():
 
     def stac_item_fetch(self, datasetid):
         collection = self._check_collection(datasetid)
-        
+
         req_str = f"{self.stac_api}/collections/{collection}/items/{datasetid}"
         resp = requests.get(req_str)
 
         if resp.status_code != 200:
-            self.publog.info("Dataset not found")            
+            self.publog.info(f"Dataset not found at {req_str} status {resp.status_code}")            
             return None
         item = resp.json()
         return item
