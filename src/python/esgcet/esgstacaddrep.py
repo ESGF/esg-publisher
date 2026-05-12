@@ -213,6 +213,8 @@ def main():
     if not rc:
         exit(1)
 
+    exit(0)
+
 
 if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

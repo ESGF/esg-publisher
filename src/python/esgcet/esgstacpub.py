@@ -114,6 +114,8 @@ def run():
     if not rc:
         exit(1)
 
+    exit(0)
+
 
 def main():
     run()
