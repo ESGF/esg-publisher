@@ -146,7 +146,7 @@ class GlobusTransactionClient:
         """
         headers = {
             "Content-Type": "application/json-patch+json",
-            "User-Agent": f"test_client/{__version__}",
+            "User-Agent": f"esgf_publisher/{__version__}",
         }
         print(f"DEBUG {collection} {item_id} {entry}")
         if self.dry_run:
@@ -248,6 +248,7 @@ class EGITransactionClient:
 
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
+            "Content-Type": "application/json-patch+json",
         }
 
         try:
