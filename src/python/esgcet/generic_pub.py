@@ -16,6 +16,7 @@ from esgcet.settings import PID_PREFIX  # project table of prefixes
 log = logger.ESGPubLogger()
 import json
 
+
 class BasePublisher(object):
 
     def __init__(self, argdict):
@@ -122,7 +123,9 @@ class BasePublisher(object):
         # TODO: support solr and Globus using the globus_index argument
 
         if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
-            TransactionClient = getTransactionClient(self.argdict.get("stac_config", {}))
+            TransactionClient = getTransactionClient(
+                self.argdict.get("stac_config", {})
+            )
             self.publog.debug(f"{type(TransactionClient)}")
             tc = TransactionClient(self.argdict)
             if not tc:
@@ -170,9 +173,16 @@ class BasePublisher(object):
 
     def pid_cite(self):
         lower_proj = self.project.lower()
-        pid = ESGPubPidCite(self.dataset_rec, {}, self.data_node, self.argdict["test"],
-                            silent=self.silent, verbose=self.verbose,
-                            project_family=lower_proj, disable_cite=self._disable_citation)
+        pid = ESGPubPidCite(
+            self.dataset_rec,
+            {},
+            self.data_node,
+            self.argdict["test"],
+            silent=self.silent,
+            verbose=self.verbose,
+            project_family=lower_proj,
+            disable_cite=self._disable_citation,
+        )
 
         dsid = self.dataset_rec[-1]["id"]
         ds_pid = pid.gen_pid(dsid)
@@ -183,8 +193,8 @@ class BasePublisher(object):
             if citurl:
                 rec["citation_url"] = citurl
 
- #       self.publog.warn(json.dumps(self.dataset_rec, indent=2))
-        
+    #       self.publog.warn(json.dumps(self.dataset_rec, indent=2))
+
     def workflow(self):
 
         # step one: convert mapfile
@@ -197,7 +207,7 @@ class BasePublisher(object):
 
         self.dataset_rec = out_json_data
         self.pid_cite()
-            
+
         self.publog.info("Updating...")
         self.update(out_json_data)
 
