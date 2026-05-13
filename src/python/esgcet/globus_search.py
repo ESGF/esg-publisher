@@ -44,7 +44,7 @@ class GlobusSearchIngest:
             if isinstance(value, list):
                 continue
             if key == "version":
-                doc[key] = int(version)
+                doc[key] = int(value)
                 continue
             elif key in NON_LIST:
                 continue
@@ -127,7 +127,7 @@ class GlobusSearchIngest:
         tmp_subpath =  '/'.join(parts[0:CACHE_DIR_DEPTH])
 
         if self._cache_dir:
-            tmp_abspath = f'{self.cache_dir}/{tmp_subpath}'
+            tmp_abspath = f'{self._cache_dir}/{tmp_subpath}'
         else:
             tmp_abspath = f'/tmp/.esg-publisher/{tmp_subpath}'
         tmp_filename = f'{tmp_abspath}/{mid}.v{version}.json'
