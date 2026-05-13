@@ -4,12 +4,20 @@ Release Notes
 v5.4.0
 ------
 * Adds publishing to ESGF STAC catalogs
-* CMIP7 project support
+* CMIP7 and CORDEX-CMIP6 projects support
 * Integration of IOOS checker for QA/QC suite processing
+* ``esgadd`` and ``esglogin`` CLI tools
+* Kerchunk generator and additonal ``esgcet`` CLI
+* Test modules
+
+v5.3.6
+------
+* **BUGFIX** Fix return code bug
+* Add SUCCESS/FAIL message at end of log
+* Add cmor_version to obs4MIPs builtin project
 
 v5.3.5
 ------
-
 * **BUGFIX** - Correct issue with CMIP6Plus publication 
 
 v5.3.4 - Deprecated

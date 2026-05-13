@@ -21,7 +21,7 @@ class EGIConf:
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device"
     )
     token_endpoint: str = (
-        "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device"
+        "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token"
     )
     scope: str = "offline_access entitlements"
     base_url: str = "https://api.stac.esgf.ceda.ac.uk"

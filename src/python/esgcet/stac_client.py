@@ -6,7 +6,6 @@ import esgcet.logger as logger
 import requests
 from esgcet import __version__
 from esgcet.settings import *
-
 from globus_sdk import (
     BaseClient,
     GroupsClient,
@@ -137,6 +136,8 @@ class GlobusTransactionClient:
                 self.publog.info("Queued for publication")
             else:
                 self.publog.error(f"Failed to publish: Error {resp.http_status}")
+                return False
+        return True
 
     def json_patch(self, collection, item_id, entry):
         """
@@ -147,14 +148,15 @@ class GlobusTransactionClient:
         """
         headers = {
             "Content-Type": "application/json-patch+json",
-            "User-Agent": f"test_client/{__version__}",
+            "User-Agent": f"esgf_publisher/{__version__}",
         }
-#        entry = { "operations" : entry }
         print(f"DEBUG {collection} {item_id} {entry}")
         if self.dry_run:
             print("Not PATCHing (dry-run mode)")
             return
-        resp = self.transaction_client.patch(f"/collections/{collection}/items/{item_id}", headers=headers, data=entry)
+        resp = self.transaction_client.patch(
+            f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
+        )
         if resp.http_status == 201:
             print(resp.http_status)
             print("Updated (JSON PATCH)")
@@ -181,12 +183,12 @@ class EGITransactionClient:
             self.stac_api = stac_api_overr
             self.egi_conf = EGIConf(verify=False)
             self.auth = None
-        else:        
+        else:
             self.stac_config = args.get("stac_config", None)
             if not self.stac_config:
                 self.publog.exception("STAC client not configured")
                 exit(1)
-    
+
             transaction_api = self.stac_config.get("stac_transaction_api", {})
             self.egi_conf = EGIConf(**transaction_api)
             self.stac_api = self.egi_conf.base_url
@@ -228,15 +230,19 @@ class EGITransactionClient:
             response.raise_for_status()
 
             match response.status_code:
-                case 200:
+                case 201:
                     self.publog.info("Published")
+                    return True
 
                 case 202:
                     self.publog.info("Queued for publication")
+                    return True
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to publish: Error %s", err.response.status_code)
-
+            return False
+        return True
+    
     def json_patch(self, collection, item_id, entry):
         """Publish an update to the EGI authenticated STAC endpoint.
 
@@ -246,6 +252,7 @@ class EGITransactionClient:
 
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
+            "Content-Type": "application/json-patch+json",
         }
 
         try:
@@ -263,21 +270,22 @@ class EGITransactionClient:
             match response.status_code:
                 case 201:
                     self.publog.info("Updated")
+                    return True
 
                 case 202:
                     self.publog.info("Queued for update")
+                    return True
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
 
+
 def getTransactionClient(stac_config):
     sc = stac_config.get("stac_client", {})
-    
+
     if "globus" in sc.get("redirect_uri", ""):
         auth = "Globus"
     else:
         auth = "EGI"
-    res = (
-        EGITransactionClient if auth == "EGI" else GlobusTransactionClient
-    )
+    res = EGITransactionClient if auth == "EGI" else GlobusTransactionClient
     return res

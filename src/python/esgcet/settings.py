@@ -199,6 +199,14 @@ GA = {
         "physics_index",
         "member_id",
         "branded_variable",
+        "branch_time_in_parent",
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+        "horizontal_label"
     ],
     "cordex-cmip6": [
         "grid",
@@ -331,7 +339,7 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
+STAC_schema_versions = {"CMIP7": "v3.0.6", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
 
 STAC_item_properties = [
     "access",
@@ -362,23 +370,17 @@ STAC_proj_item_properties = {
         "area_label",
         "region",
         "variable_cf_standard_name",
-        "citation_url",
         "data_specs_version",
         "drs_specs",
         "experiment_id",
-        "experiment_title",
         "frequency",
-        "further_info_url",
         "grid_label",
         "institution_id",
-        "member_id",
         "nominal_resolution",
         "product",
         "realm",
         "source_id",
         # "source_type",
-        "sub_experiment_id",
-        "table_id",
         "variable_id",
         "variable_long_name",
         "variable_units",
@@ -386,6 +388,7 @@ STAC_proj_item_properties = {
         "variable_branding_suffix",
         "Conventions",
         "license_id",
+        "mip_era",
         "variable_branded_name",
         "variable_cf_standard_name",
         "temporal_label",
@@ -395,6 +398,13 @@ STAC_proj_item_properties = {
         "realization_index",
         "physics_index",
         "pid",
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+        "horizontal_label"        
     ],
     "CMIP6": [
         "activity_id",
