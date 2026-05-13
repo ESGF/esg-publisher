@@ -137,6 +137,8 @@ class GlobusTransactionClient:
                 self.publog.info("Queued for publication")
             else:
                 self.publog.error(f"Failed to publish: Error {resp.http_status}")
+                return False
+        return True
 
     def json_patch(self, collection, item_id, entry):
         """
@@ -236,7 +238,9 @@ class EGITransactionClient:
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to publish: Error %s", err.response.status_code)
-
+            return False
+        return True
+    
     def json_patch(self, collection, item_id, entry):
         """Publish an update to the EGI authenticated STAC endpoint.
 
