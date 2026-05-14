@@ -137,7 +137,7 @@ class GlobusTransactionClient:
                 case 202:
                     self.publog.info(f"{resp.http_status}: Queued for publication")
                 case 400:
-                    self.publog.info(f"{resp.http_status}: Validation error")
+                    self.publog.error(f"{resp.http_status}: Validation error")
                     return False
                 case _:
                     self.publog.error(f"Failed to publish: Error {resp.http_status}")
