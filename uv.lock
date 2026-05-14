@@ -590,7 +590,7 @@ wheels = [
 
 [[package]]
 name = "esgcet"
-version = "5.4.0a9"
+version = "5.4.0b16"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
@@ -628,7 +628,7 @@ requires-dist = [
     { name = "cc-plugin-wcrp", specifier = ">=2.0.0" },
     { name = "dask", extras = ["distributed"] },
     { name = "esgfpid" },
-    { name = "esgvoc", specifier = ">=3.1.0" },
+    { name = "esgvoc", specifier = ">=4.0.0" },
     { name = "globus-cli" },
     { name = "globus-sdk", specifier = ">=4.3.0" },
     { name = "h5py" },
@@ -659,7 +659,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/e5/da/f139dcda5a2d74b56
 
 [[package]]
 name = "esgvoc"
-version = "3.1.0"
+version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "idna" },
@@ -674,9 +674,9 @@ dependencies = [
     { name = "toml" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/1c/4d3be03a3a13ea36a1aa3b52d096af94efab2b21952fc88a8409360b174d/esgvoc-3.1.0.tar.gz", hash = "sha256:826eb3fa4bccf7f88766d717b25fdd5fa68acd143eb618c528f068f6bb6357d0", size = 5520556, upload-time = "2026-04-14T06:45:53.203Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/37/c9/bb9333b2afc8690e6cc713d8215f1eb4b6d321fc89e152d4fb67ace6302c/esgvoc-4.0.0.tar.gz", hash = "sha256:7531aae6818b8b7e69ccafeb3b9f9d3945746d13d4b1163fa29454859bd08ed8", size = 5504979, upload-time = "2026-05-06T13:53:46.406Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/a7/55194f30f88634f583ebad03bccbd777c34a7e4e057a86ca6174b5a17d35/esgvoc-3.1.0-py3-none-any.whl", hash = "sha256:85edc28643f77de7091a2652e8fb2fb195e4db477faaacec078ddcbd846c65e2", size = 224053, upload-time = "2026-04-14T06:45:50.463Z" },
+    { url = "https://files.pythonhosted.org/packages/40/4c/139951667d985a008b1efd613a9917483b1fe9e890548d481414311fc721/esgvoc-4.0.0-py3-none-any.whl", hash = "sha256:8903b18517cf6adfca68d3010aeb692fa55f8af38d57a20a2d5e8a7b1e22464f", size = 229514, upload-time = "2026-05-06T13:53:44.953Z" },
 ]
 
 [[package]]
