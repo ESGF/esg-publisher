@@ -128,19 +128,20 @@ class GlobusTransactionClient:
                 f.write(json.dumps(entry, indent=1))
 
         if not self.dry_run:
-            try:
-                resp = self.transaction_client.post(
-                    f"/collections/{collection}/items", headers=headers, data=entry
-                )
-                if resp.http_status == 201:
+            resp = self.transaction_client.post(
+                f"/collections/{collection}/items", headers=headers, data=entry
+            )
+            match resp.http_status:
+                case 201:
                     self.publog.info(f"{resp.http_status}: Published")
-                elif resp.http_status == 202:
+                case 202:
                     self.publog.info(f"{resp.http_status}: Queued for publication")
-                else:
+                case 400:
+                    self.publog.info(f"{resp.http_status}: Validation error")
+                    return False
+                case _:
                     self.publog.error(f"Failed to publish: Error {resp.http_status}")
-            except Exception as ex:
-                print(ex.http_status, entry["id"])
-                return False
+                    return False
         return True
 
     def json_patch(self, collection, item_id, entry):
