@@ -116,6 +116,7 @@ class ESGSTACConverter():
         if collection == "mip-drs7":
             collection = "cmip7"
 
+            
         namespace = collection.lower()
 
         if "Globus" in dataset_doc.get("access"):
@@ -206,13 +207,17 @@ class ESGSTACConverter():
             properties["start_datetime"] = "1850-01-01T00:00:00Z"
             properties["end_datetime"] = "1850-01-01T00:00:01Z"
     
-        
-        collection_item_properties = STAC_proj_item_properties.get(collection, [])
+        if namespace == "cmip6plus":
+            collection_key_name = "CMIP6"
+        else:
+            collection_key_name = collection
+
+        collection_item_properties = STAC_proj_item_properties.get(collection_key_name, [])
         property_keys = STAC_item_properties + collection_item_properties
     
         for k in property_keys:
-            if collection in MAP_properties and k in MAP_properties[collection]:
-                mapped_k = MAP_properties[collection][k]
+            if collection in MAP_properties and k in MAP_properties[collection_key_name]:
+                mapped_k = MAP_properties[collection_key_name][k]
                 v = dataset_doc.get(mapped_k)
             elif k in dataset_doc:
                 v = dataset_doc.get(k)
@@ -228,7 +233,7 @@ class ESGSTACConverter():
                 
                 if k in STAC_list_properties["ALL"]:
                     properties[nk] = v
-                elif collection in STAC_list_properties and k in STAC_list_properties[collection]:
+                elif collection in STAC_list_properties and k in STAC_list_properties[collection_key_name]:
                     properties[nk] = v
                 else:
                     if v[0] is None:

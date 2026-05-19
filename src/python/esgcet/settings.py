@@ -279,6 +279,8 @@ PID_CREDS = [
 
 PID_PREFIX = { 
  "cmip6" :  "21.14100" ,
+ "cmip6plus" : "21.14100",
+ "input4mips" : "21:14100",
     "cordex-cmip6" : "21.14103" ,
     "mip-drs7" : "21.14107" ,
     # for testing use CMIP6,  need to be project-specific
@@ -339,7 +341,10 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.6", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
+STAC_schema_versions = {"CMIP7": "v3.0.6",
+                         "CMIP6" : "v3.0.4",
+                         "CORDEX-CMIP6" : "v3.1.2", 
+                         "CMIP6Plus" : "v1.0.4"}
 
 STAC_item_properties = [
     "access",

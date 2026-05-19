@@ -130,7 +130,7 @@ The following contains example ``.yaml`` code and configures the *primavera* pro
    data_roots:
       /mounted/path/to/data: data_in_url
       # UUID example don't use actual UUID, get from your site administrator
-   globus_uuid: 415a6320-e49c-11e5-9798-22000b9da45e
+   globus_uuid: <Valid-Globus-collection-UUID>
    set_replica: false
    silent: false
    test: true
