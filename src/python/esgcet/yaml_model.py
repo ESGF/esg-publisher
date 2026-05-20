@@ -1,7 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 from uuid import UUID
 
+import types
 from pathlib import Path
+from typing import Any, get_args, get_origin, Literal, Union
+
 
 
 class PIDCred(BaseModel):
@@ -33,7 +36,6 @@ class StacConfig(BaseModel):
     token_storage_file: Path
     stac_transaction_api: StacTransactionAPI
     stac_api: HttpUrl
-    disable_qaqc: bool = False
 
 class KerchunkConfig(BaseModel):
     data_dir: Path
@@ -51,8 +53,12 @@ class Config(BaseModel):
     data_node: str | None = None
     data_roots: dict[str, str] | None = None
 
+    project: str
+
     globus_uuid: UUID | None = None
     index_node: str | None = None
+    index_UUID: UUID | None = None
+    globus_index: bool | None = False
 
     pid_creds: dict[str, PIDCred] | None = None
 
@@ -73,3 +79,113 @@ class Config(BaseModel):
 
     stac_config: StacConfig | None
     kerchunk_config: KerchunkConfig | None
+    disable_qaqc: bool = False
+
+
+# helpers
+
+def is_optional(annotation: Any) -> bool:
+    origin = get_origin(annotation)
+    return (
+        origin in (types.UnionType, Union)
+        and type(None) in get_args(annotation)
+    )
+
+
+def unwrap_optional(annotation: Any) -> Any:
+    return next(a for a in get_args(annotation) if a is not type(None))
+
+
+def type_str(annotation: Any) -> str:
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+
+    if is_optional(annotation):
+        return type_str(unwrap_optional(annotation))
+
+    if origin is Literal:
+        return f"Literal[{', '.join(map(str, args))}]"
+
+    if origin is list:
+        inner = args[0] if args else Any
+        return f"list[{type_str(inner)}]"
+
+    if origin is dict:
+        value = args[1] if len(args) > 1 else Any
+        return f"dict[str, {type_str(value)}]"
+
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        return annotation.__name__
+
+    return getattr(annotation, "__name__", str(annotation))
+
+
+def expand(annotation: Any):
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+
+    # Optional[T]
+    if is_optional(annotation):
+        return expand(unwrap_optional(annotation))
+
+    # list[T]
+    if origin is list:
+        inner = args[0] if args else Any
+        return expand(inner)
+
+    # dict[K,V] → ALWAYS example_key
+    if origin is dict:
+        value = args[1] if len(args) > 1 else Any
+        return {
+            "example_key": expand(value)
+        }
+
+    # BaseModel → recurse field-by-field
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        out = {}
+
+        for name, field in annotation.model_fields.items():
+            ann = field.annotation
+            optional = is_optional(ann)
+
+            base = f"{type_str(ann)}, {'optional' if optional else 'required'}"
+
+            nested = expand(ann)   # RECURSION HAPPENS HERE
+
+            if nested:
+                out[name] = {
+                    base: nested
+                }
+            else:
+                out[name] = base
+
+        return out
+
+    return None
+
+
+def model_to_template(model_cls: BaseModel) -> dict:
+    out = {}
+
+    for name, field in model_cls.model_fields.items():
+        ann = field.annotation
+        optional = is_optional(ann)
+
+        base = f"{type_str(ann)}, {'optional' if optional else 'required'}"
+
+        nested = expand(ann)   #  RECURSION ENTRY POINT
+
+        if nested:
+            out[f"{name}{{{base}}}"] = nested
+        else:
+            out[name] = base
+
+    return out
+
+def model_to_yaml(model_cls:BaseModel) -> dict:
+    schema_dict = model_cls.model_json_schema()
+
+    # Convert to YAML
+    yaml_output = yaml.dump(schema_dict, default_flow_style=False)
+
+    return yaml_output
