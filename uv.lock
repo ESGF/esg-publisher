@@ -590,7 +590,7 @@ wheels = [
 
 [[package]]
 name = "esgcet"
-version = "5.4.0b16"
+version = "5.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
