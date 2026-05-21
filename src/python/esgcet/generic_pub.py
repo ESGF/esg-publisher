@@ -21,7 +21,6 @@ class BasePublisher(object):
 
     def __init__(self, argdict):
         self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
         self.cert = argdict.get("cert", "")

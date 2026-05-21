@@ -45,6 +45,7 @@ class PublisherArgs:
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
         parser.add_argument("--stac-api", dest="stac_api", default=None, help="Specify STAC Transaction API.")
         parser.add_argument("--no-xarray", dest="skipxr", action="store_true", help="Bypass use of Xarray (metadata will be incomplete)")
+        parser.add_argument("--dry-run", dest="dry_run", action="store_true", help="Dry run publishing. Scans data but does not interface with index APIs.")
         pub = parser.parse_args()
 
         return pub
@@ -291,7 +292,7 @@ class PublisherArgs:
         else:
             argdict["index_UUID"] =""
     
-        argdict["dry_run"] = config.get("dry_run", False)
+        argdict["dry_run"] = config.get("dry_run", pub.dry_run)
         
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]

@@ -9,7 +9,8 @@ publog = log.return_logger("Publisher-Main")
 from pathlib import Path
 from esgcet.generic_netcdf import GenericPublisher
 from esgcet.generic_pub import BasePublisher
-
+from esgcet.cmip6 import cmip6
+from esgcet.input4mips import input4mips
 
 def check_files(files):
     for file in files:
@@ -22,7 +23,8 @@ def check_files(files):
 
 class PubRunner:
 
-    def __init__(self):
+    def __init__(self, publog):
+        self.log = publog
         self.proj = None
 
     def run(self, fullmap, pub_args):
@@ -39,7 +41,6 @@ class PubRunner:
         check_files(files)
 
         argdict = pub_args.get_dict(project_name)
-        argdict["fullmap"] = fullmap
 
         if argdict["verbose"]:
             publog.info(argdict)
@@ -56,21 +57,15 @@ class PubRunner:
             non_netcdf = True
 
         if not self.proj:
-
             if project == "cmip6" or "cmip6-clone" in argdict:
-                from esgcet.cmip6 import cmip6
-
                 proj = cmip6(argdict)
             elif project == "create-ip":
                 from esgcet.create_ip import CreateIP
-
                 proj = CreateIP(argdict)
             elif project == "cmip5":
                 from esgcet.cmip5 import cmip5
-
                 proj = cmip5(argdict)
             elif project == "input4mips":
-                from esgcet.input4mips import input4mips
 
                 proj = input4mips(argdict)
             elif project == "e3sm" and not non_netcdf:
@@ -98,6 +93,7 @@ class PubRunner:
         # ___________________________________________
         # WORKFLOW - one line call
 
+        self.proj.fullmap = fullmap
         return self.proj.workflow()
 
 
@@ -112,7 +108,7 @@ def main():
         exit(1)
 
     rc = True
-    prunner = PubRunner()
+    prunner = PubRunner(publog)
 
     for m in maps:
         if os.path.isdir(m):
@@ -134,9 +130,7 @@ def main():
                         ismap = True
                         break
                     first = False
-
-                length = len(line)
-                rc = rc and prunner.run(line[0 : length - 1], pub_args)
+                rc = rc and prunner.run(line.rstrip(), pub_args)
             myfile.close()
             if ismap:
                 rc = rc and prunner.run(m, pub_args)

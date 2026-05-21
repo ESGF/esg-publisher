@@ -48,7 +48,6 @@ class GlobusTransactionClient:
             "scope_string", STAC_TRANSACTION_API.get("scope_string")
         )
         self.scopes = [GroupsScopes.view_my_groups_and_memberships, scope_string]
-        print(f"DEBUG {self.scopes} ")
         stac_client_id = args.get("stac_config")["stac_client"].get(
             "client_id", STAC_CLIENT.get("client_id")
         )
