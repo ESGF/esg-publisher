@@ -11,7 +11,13 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         destpath = os.path.dirname(datafile)
 
         filespec = f"{destpath}/*.nc"
-        res = xarray.open_mfdataset(filespec, use_cftime=True)
+
+        time_coder = xarray.coders.CFDatetimeCoder(use_cftime=True)
+        res = xarray.open_mfdataset(
+            filespec,
+            decode_times=time_coder,
+            data_vars='all'
+        )
         return res
 
     def get_attrs_dict(self, scanobj):
