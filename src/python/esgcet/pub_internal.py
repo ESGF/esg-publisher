@@ -7,6 +7,8 @@ log = logger.ESGPubLogger()
 publog = log.return_logger("Publisher-Main")
 
 from pathlib import Path
+from esgcet.generic_netcdf import GenericPublisher
+from esgcet.generic_pub import BasePublisher
 
 
 def check_files(files):
@@ -70,7 +72,6 @@ def run(fullmap, pub_args):
 
         proj = e3sm(argdict)
     elif non_netcdf:
-        from esgcet.generic_pub import BasePublisher
 
         proj = BasePublisher(argdict)
     elif (
@@ -78,7 +79,6 @@ def run(fullmap, pub_args):
     ):
         if project == "none" and not argdict["silent"]:
             publog.info("Using default settings, project not specified.")
-        from esgcet.generic_netcdf import GenericPublisher
 
         proj = GenericPublisher(argdict)
     else:
