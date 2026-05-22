@@ -38,7 +38,7 @@ class PublisherArgs:
         parser.add_argument("--map", dest="map", required=True, nargs="+", help="Mapfile, a file containing list of mapfiles (relative or absolute paths), or a directory containing mapfiles.  esgpublish will determine which input")
         parser.add_argument("--config", "-cfg", dest="cfg", default=str(def_config), help="Path to yaml config file.")
         parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
-        parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+        parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose (debug) mode.")
         parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle certificate verification for publishing, default is off (supports insecure checking to allow for self-signed nodes).")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
         parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
