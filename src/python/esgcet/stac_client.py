@@ -122,7 +122,7 @@ class GlobusTransactionClient:
         }
 
         if self.save_stac:
-            with open(f"{entry["id"]}.json", "w") as f:
+            with open(f"{entry['id']}.json", "w") as f:
                 f.write(json.dumps(entry, indent=1))
 
         if not self.dry_run:
