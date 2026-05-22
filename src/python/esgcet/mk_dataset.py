@@ -143,8 +143,19 @@ class ESGPubMakeDataset:
 
     def get_dataset(self, mapdata, scanobj):
 
-        master_id, version = mapdata.split('#')
-        parts = master_id.split('.')
+        if '#' in mapdata:
+            master_id, version = mapdata.split('#')
+        
+            parts = master_id.split('.')
+        else:
+            parts = mapdata.split('.')
+            version = parts[-1][1:]
+            if parts[-1][0] != 'v' or (not version.isdigit()):
+                raise ValueError(f"Error {parts[-1]}: not a valid version identifier")
+            parts = parts[:-1]
+            master_id = '.'.join(parts)
+
+        
         projkey = parts[0]
         self.first_val = projkey
         scandata = self.handler.get_attrs_dict(scanobj)
