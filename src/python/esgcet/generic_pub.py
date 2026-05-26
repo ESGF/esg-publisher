@@ -134,7 +134,8 @@ class BasePublisher(object):
                 stac_item = sc.convert2stac(dataset_records)
                 rc = tc.publish(stac_item)
             except Exception as ex:
-                self.publog.exception(f"Failed to publish to STAC Transaction API {ex}")
+                self.publog.error(f"Failed to publish to STAC Transaction API, possble Validation Error.")
+                self.publog.debug(str(ex))
                 rc = False
 
         else:

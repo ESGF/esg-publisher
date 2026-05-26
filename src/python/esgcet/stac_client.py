@@ -80,15 +80,13 @@ class GlobusTransactionClient:
             response = self._do_login_flow()
             token_storage.store_token_response(response)
 
-            self.groups_tokens = response.by_resource_server[
-                GroupsClient.resource_server
-            ]
-            self.transaction_tokens = response.by_resource_server[self.trans_client_id]
-        else:
-            self.groups_tokens = token_storage.get_token_data(
-                GroupsClient.resource_server
-            )
-            self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
+        self.groups_tokens = token_storage.get_token_data(
+            GroupsClient.resource_server
+        )
+
+        self.transaction_tokens = token_storage.get_token_data(
+            self.trans_client_id
+        )
 
         groups_authorizer = RefreshTokenAuthorizer(
             self.groups_tokens.refresh_token,
@@ -124,7 +122,7 @@ class GlobusTransactionClient:
         }
 
         if self.save_stac:
-            with open(f"{entry["id"]}.json", "w") as f:
+            with open(f"{entry['id']}.json", "w") as f:
                 f.write(json.dumps(entry, indent=1))
 
         if not self.dry_run:
@@ -137,7 +135,7 @@ class GlobusTransactionClient:
                 case 202:
                     self.publog.info(f"{resp.http_status}: Queued for publication")
                 case 400:
-                    self.publog.info(f"{resp.http_status}: Validation error")
+                    self.publog.error(f"{resp.http_status}: Validation error")
                     return False
                 case _:
                     self.publog.error(f"Failed to publish: Error {resp.http_status}")
