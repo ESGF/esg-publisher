@@ -125,7 +125,7 @@ DRS = {
         "variable_branding_suffix",
         "grid_label",
     ],
-    "cordex-cmip6":  ["collection", "activity_id","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
+    "cordex-cmip6":  ["collection", "activity_drs","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
 }
 
 #             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
@@ -219,7 +219,8 @@ GA = {
     "project_id",
     "version_realization_info",
         "driving_institution_id",
-        "source_type"
+        "source_type",
+        "activity_id"
 
 ]
 }
@@ -227,7 +228,7 @@ GA = {
 GA_DELIMITED = {
     "cmip6": {"source_type": " ", "activity_id": " ", "realm": " "},
     "mip-drs7": {"realm": " ", "Conventions": " "},
-    "cordex-cmip6" : {"Conventions": " "}
+    "cordex-cmip6" : {"Conventions": " ", "activity_id" : ' ' }
 }
 #                 'input4mips' : {'target_mip_list' : ','}}
 
@@ -341,10 +342,9 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.6",
-                         "CMIP6" : "v3.0.4",
-                         "CORDEX-CMIP6" : "v3.1.2", 
-                         "CMIP6Plus" : "v1.0.4"}
+STAC_schema_versions = {
+                         "CMIP6" : "v3.0.4"
+                        }
 
 STAC_item_properties = [
     "access",
@@ -435,6 +435,7 @@ STAC_proj_item_properties = {
         "variable_long_name",
         "variable_units",
         "variant_label",
+        "mip_era",
     ],
     "CORDEX-CMIP6"  :  ["activity_id",
                         "domain_id",
@@ -471,7 +472,8 @@ STAC_list_properties = {
     "source_type",
     "Conventions",
     ],
-    "CMIP6" : { "activity_id"}
+    "CMIP6" : { "activity_id"},
+    "CORDEX-CMIP6" : {"activity_id"}
 }
 
 CACHE_DIR_DEPTH = 6
