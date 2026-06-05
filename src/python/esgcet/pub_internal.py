@@ -11,6 +11,7 @@ from esgcet.generic_netcdf import GenericPublisher
 from esgcet.generic_pub import BasePublisher
 from esgcet.cmip6 import cmip6
 from esgcet.input4mips import input4mips
+from esgcet.settings import BUILTIN_GENERICS, PROJECT_MAP
 
 def check_files(files):
     for file in files:
@@ -49,6 +50,9 @@ class PubRunner:
         else:
             argdict["proj"] = project_name
         project = project_name.lower()
+        if project in PROJECT_MAP:
+            project = PROJECT_MAP[project]
+            
         user_defined = False
         if argdict["user_project_config"]:
             user_defined = True
@@ -75,12 +79,7 @@ class PubRunner:
             elif non_netcdf:
 
                 proj = BasePublisher(argdict)
-            elif (
-                project == "generic" or project == "cordex" or user_defined or project == "none"
-            ):
-                if project == "none" and not argdict["silent"]:
-                    publog.info("Using default settings, project not specified.")
-
+            elif user_defined or project in BUILTIN_GENERICS:
                 proj = GenericPublisher(argdict)
             else:
                 publog.error(
