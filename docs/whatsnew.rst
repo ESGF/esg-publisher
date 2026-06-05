@@ -1,14 +1,23 @@
 Release Notes
 =============
 
-v5.4.0
+v5.4.2
+------
+* Correct issue with multple mapfiles and O(N-squared) growth in log sizes
+* Add CMIP6Plus support for stack, use `--project cmip6plus` and ensure you have the project configured in .yaml
+* Update xarray load to use cftime with a time coder
+* Enforce DRS length in dataset ID
+* Cleanup and refactoring
+* Update args help string
+
+v5.4.1
 ------
 * Adds publishing to ESGF STAC catalogs
 * CMIP7 and CORDEX-CMIP6 projects support
 * Integration of IOOS checker for QA/QC suite processing
 * ``esgadd`` and ``esglogin`` CLI tools
 * Kerchunk generator and additonal ``esgcet`` CLI
-* Test modules
+* Test modules 
 
 v5.3.6
 ------

@@ -48,7 +48,7 @@ class GlobusTransactionClient:
             "scope_string", STAC_TRANSACTION_API.get("scope_string")
         )
         self.scopes = [GroupsScopes.view_my_groups_and_memberships, scope_string]
-        print(f"DEBUG {self.scopes} ")
+        self.publog.debug(f"{self.scopes}")
         stac_client_id = args.get("stac_config")["stac_client"].get(
             "client_id", STAC_CLIENT.get("client_id")
         )
@@ -153,7 +153,7 @@ class GlobusTransactionClient:
             "Content-Type": "application/json-patch+json",
             "User-Agent": f"esgf_publisher/{__version__}",
         }
-        print(f"DEBUG {collection} {item_id} {entry}")
+        self.publog.debug(f"PATCH request {collection} {item_id} {entry}")
         if self.dry_run:
             print("Not PATCHing (dry-run mode)")
             return

@@ -7,7 +7,10 @@ log = logger.ESGPubLogger()
 publog = log.return_logger("Publisher-Main")
 
 from pathlib import Path
-
+from esgcet.generic_netcdf import GenericPublisher
+from esgcet.generic_pub import BasePublisher
+from esgcet.cmip6 import cmip6
+from esgcet.input4mips import input4mips
 
 def check_files(files):
     for file in files:
@@ -18,81 +21,80 @@ def check_files(files):
             publog.exception("Error opening file " + file + ". Exiting.")
             exit(1)
 
+class PubRunner:
 
-def run(fullmap, pub_args):
+    def __init__(self, publog):
+        self.log = publog
+        self.proj = None
+
+    def run(self, fullmap, pub_args):
 
     # SETUP
-    split_map = fullmap.split("/")
-    fname = split_map[-1]
-    fname_split = fname.split(".")
-    project_name = fname_split[0]
+        split_map = fullmap.split("/")
+        fname = split_map[-1]
+        fname_split = fname.split(".")
+        project_name = fname_split[0]
 
-    files = []
-    files.append(fullmap)
+        files = []
+        files.append(fullmap)
 
-    check_files(files)
+        check_files(files)
 
-    argdict = pub_args.get_dict(project_name)
-    argdict["fullmap"] = fullmap
+        argdict = pub_args.get_dict(project_name)
 
-    if argdict["verbose"]:
-        publog.info(argdict)
-    if "proj" in argdict:
-        project_name = argdict["proj"]
-    else:
-        argdict["proj"] = project_name
-    project = project_name.lower()
-    user_defined = False
-    if argdict["user_project_config"]:
-        user_defined = True
-    non_netcdf = False
-    if argdict["non_nc"]:
-        non_netcdf = True
+        if argdict["verbose"]:
+            publog.info(argdict)
+        if "proj" in argdict:
+            project_name = argdict["proj"]
+        else:
+            argdict["proj"] = project_name
+        project = project_name.lower()
+        user_defined = False
+        if argdict["user_project_config"]:
+            user_defined = True
+        non_netcdf = False
+        if argdict["non_nc"]:
+            non_netcdf = True
 
-    if project == "cmip6" or "cmip6-clone" in argdict:
-        from esgcet.cmip6 import cmip6
+        if not self.proj:
+            if project == "cmip6" or "cmip6-clone" in argdict:
+                proj = cmip6(argdict)
+            elif project == "create-ip":
+                from esgcet.create_ip import CreateIP
+                proj = CreateIP(argdict)
+            elif project == "cmip5":
+                from esgcet.cmip5 import cmip5
+                proj = cmip5(argdict)
+            elif project == "input4mips":
 
-        proj = cmip6(argdict)
-    elif project == "create-ip":
-        from esgcet.create_ip import CreateIP
+                proj = input4mips(argdict)
+            elif project == "e3sm" and not non_netcdf:
+                from esgcet.e3sm import e3sm
 
-        proj = CreateIP(argdict)
-    elif project == "cmip5":
-        from esgcet.cmip5 import cmip5
+                proj = e3sm(argdict)
+            elif non_netcdf:
 
-        proj = cmip5(argdict)
-    elif project == "input4mips":
-        from esgcet.input4mips import input4mips
+                proj = BasePublisher(argdict)
+            elif (
+                project == "generic" or project == "cordex" or user_defined or project == "none"
+            ):
+                if project == "none" and not argdict["silent"]:
+                    publog.info("Using default settings, project not specified.")
 
-        proj = input4mips(argdict)
-    elif project == "e3sm" and not non_netcdf:
-        from esgcet.e3sm import e3sm
+                proj = GenericPublisher(argdict)
+            else:
+                publog.error(
+                    "Project "
+                    + project
+                    + " not supported.\nOpen an issue on our github to request additional project support."
+                )
+                exit(1)
+            self.proj = proj
+        # ___________________________________________
+        # WORKFLOW - one line call
 
-        proj = e3sm(argdict)
-    elif non_netcdf:
-        from esgcet.generic_pub import BasePublisher
-
-        proj = BasePublisher(argdict)
-    elif (
-        project == "generic" or project == "cordex" or user_defined or project == "none"
-    ):
-        if project == "none" and not argdict["silent"]:
-            publog.info("Using default settings, project not specified.")
-        from esgcet.generic_netcdf import GenericPublisher
-
-        proj = GenericPublisher(argdict)
-    else:
-        publog.error(
-            "Project "
-            + project
-            + " not supported.\nOpen an issue on our github to request additional project support."
-        )
-        exit(1)
-
-    # ___________________________________________
-    # WORKFLOW - one line call
-
-    return proj.workflow()
+        self.proj.fullmap = fullmap
+        return self.proj.workflow()
 
 
 def main():
@@ -106,6 +108,8 @@ def main():
         exit(1)
 
     rc = True
+    prunner = PubRunner(publog)
+
     for m in maps:
         if os.path.isdir(m):
             mappath = Path(m)
@@ -114,7 +118,7 @@ def main():
                 fullmappath = mappath / f
                 if os.path.isdir(fullmappath):
                     continue  # Do not recurse subdirectories
-                rc = rc and run(str(fullmappath), pub_args)
+                rc = rc and prunner.run(str(fullmappath), pub_args)
         else:
             myfile = open(m)
             ismap = False
@@ -126,12 +130,10 @@ def main():
                         ismap = True
                         break
                     first = False
-
-                length = len(line)
-                rc = rc and run(line[0 : length - 1], pub_args)
+                rc = rc and prunner.run(line.rstrip(), pub_args)
             myfile.close()
             if ismap:
-                rc = rc and run(m, pub_args)
+                rc = rc and prunner.run(m, pub_args)
 
     if not rc:
         exit(1)
