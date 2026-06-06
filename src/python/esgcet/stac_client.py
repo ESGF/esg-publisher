@@ -65,7 +65,7 @@ class GlobusTransactionClient:
             refresh_tokens=True,
         )
         authorize_url = self.auth_client.oauth2_get_authorize_url()
-        print("Please go to this URL and login: {0}".format(authorize_url))
+        print("\nPlease go to this URL and login: {0}".format(authorize_url))
         auth_code = input("Please enter the code here: ").strip()
         return self.auth_client.oauth2_exchange_code_for_tokens(auth_code)
 
@@ -83,10 +83,19 @@ class GlobusTransactionClient:
         self.groups_tokens = token_storage.get_token_data(
             GroupsClient.resource_server
         )
-
         self.transaction_tokens = token_storage.get_token_data(
             self.trans_client_id
         )
+
+        if not self.groups_tokens or not self.transaction_tokens:
+            response = self._do_login_flow()
+            token_storage.store_token_response(response)
+            self.groups_tokens = token_storage.get_token_data(
+                GroupsClient.resource_server
+            )
+            self.transaction_tokens = token_storage.get_token_data(
+                self.trans_client_id
+            )
 
         groups_authorizer = RefreshTokenAuthorizer(
             self.groups_tokens.refresh_token,
@@ -125,21 +134,17 @@ class GlobusTransactionClient:
             with open(f"{entry['id']}.json", "w") as f:
                 f.write(json.dumps(entry, indent=1))
 
-        if not self.dry_run:
+        if self.dry_run:
+            self.publog.info(f"Dry-run mode: Not publishing")
+            return True
+        try:
             resp = self.transaction_client.post(
                 f"/collections/{collection}/items", headers=headers, data=entry
             )
-            match resp.http_status:
-                case 201:
-                    self.publog.info(f"{resp.http_status}: Published")
-                case 202:
-                    self.publog.info(f"{resp.http_status}: Queued for publication")
-                case 400:
-                    self.publog.error(f"{resp.http_status}: Validation error")
-                    return False
-                case _:
-                    self.publog.error(f"Failed to publish: Error {resp.http_status}")
-                    return False
+            self.publog.info(f"STAC Transaction API: {resp.text}")
+        except Exception as e:
+            self.publog.error(f"Failed to publish: Error {e}")
+            return False
         return True
 
     def json_patch(self, collection, item_id, entry):
@@ -154,23 +159,19 @@ class GlobusTransactionClient:
             "User-Agent": f"esgf_publisher/{__version__}",
         }
         self.publog.debug(f"PATCH request {collection} {item_id} {entry}")
+
         if self.dry_run:
-            print("Not PATCHing (dry-run mode)")
+            self.publog.info("Not PATCHing (dry-run mode)")
             return
-        resp = self.transaction_client.patch(
-            f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
-        )
-        if resp.http_status == 201:
-            print(resp.http_status)
-            print("Updated (JSON PATCH)")
-            return True
-        elif resp.http_status == 202:
-            print(resp.http_status)
-            print("Queued for update (JSON PATCH)")
-            return True
-        else:
-            print(f"Failed to update (JSON PATCH): Error {resp.http_status}")
+        try:
+            resp = self.transaction_client.patch(
+                f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
+            )
+            self.publog.info(f"STAC Transaction API: {resp.text}")
+        except Exception as e:
+            self.publog.error(f"Failed to update: Error {e}")
             return False
+        return True
 
 
 class EGITransactionClient:
