@@ -176,8 +176,14 @@ class GlobusTransactionClient:
                 f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
             )
             self.publog.info(f"STAC Transaction API: {resp.text}")
+        except NetworkError as e:
+            self.publog.error(f"Failed to update: {e}: {e.underlying_exception}")
+            return False
+        except GlobusError as e:
+            self.publog.error(f"Failed to update: {e}")
+            return False
         except Exception as e:
-            self.publog.error(f"Failed to update: Error {e}")
+            self.publog.error(f"Failed to update: {e}")
             return False
         return True
 
