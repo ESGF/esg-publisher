@@ -11,6 +11,8 @@ from globus_sdk import (
     GroupsClient,
     NativeAppAuthClient,
     RefreshTokenAuthorizer,
+    GlobusError,
+    NetworkError,
 )
 from globus_sdk.scopes import GroupsScopes
 
@@ -142,8 +144,14 @@ class GlobusTransactionClient:
                 f"/collections/{collection}/items", headers=headers, data=entry
             )
             self.publog.info(f"STAC Transaction API: {resp.text}")
+        except NetworkError as e:
+            self.publog.error(f"Failed to publish: {e}: {e.underlying_exception}")
+            return False
+        except GlobusError as e:
+            self.publog.error(f"Failed to publish: {e}")
+            return False
         except Exception as e:
-            self.publog.error(f"Failed to publish: Error {e}")
+            self.publog.error(f"Failed to publish: {e}")
             return False
         return True
 
