@@ -216,8 +216,8 @@ GA = {
         "title", 
         "mip_era",
         "domain",
-    "project_id",
-    "version_realization_info",
+        "project_id",
+        "version_realization_info",
         "driving_institution_id",
         "source_type",
         "activity_id"
@@ -279,9 +279,9 @@ PID_CREDS = [
 ]
 
 PID_PREFIX = { 
- "cmip6" :  "21.14100" ,
- "cmip6plus" : "21.14100",
- "input4mips" : "21:14100",
+    "cmip6" :  "21.14100" ,
+    "cmip6plus" : "21.14100",
+    "input4mips" : "21:14100",
     "cordex-cmip6" : "21.14103" ,
     "mip-drs7" : "21.14107" ,
     # for testing use CMIP6,  need to be project-specific
