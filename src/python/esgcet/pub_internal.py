@@ -52,7 +52,8 @@ class PubRunner:
         project = project_name.lower()
         if project in PROJECT_MAP:
             project = PROJECT_MAP[project]
-            
+            argdict["project"] = project
+            argdict["proj"] = project
         user_defined = False
         if argdict["user_project_config"]:
             user_defined = True
@@ -80,6 +81,7 @@ class PubRunner:
 
                 proj = BasePublisher(argdict)
             elif user_defined or project in BUILTIN_GENERICS:
+                
                 proj = GenericPublisher(argdict)
             else:
                 publog.error(
