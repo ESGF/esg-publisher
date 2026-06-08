@@ -76,7 +76,7 @@ class PubRunner:
 
                 proj = BasePublisher(argdict)
             elif (
-                project == "generic" or project == "cordex" or user_defined or project == "none"
+                project == "generic" or project == "cordex" or project == "cordex-cmip6" or user_defined or project == "none"
             ):
                 if project == "none" and not argdict["silent"]:
                     publog.info("Using default settings, project not specified.")
