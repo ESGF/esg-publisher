@@ -31,7 +31,6 @@ dependencies = [
     "dask[distributed]",
     "pyyaml",
     "cc-plugin-wcrp>=2.0.0",
-    "pathlib",
     "pystac_client",
     "kerchunk",
     "virtualizarr",
