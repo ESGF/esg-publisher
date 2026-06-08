@@ -435,7 +435,6 @@ STAC_proj_item_properties = {
         "variable_long_name",
         "variable_units",
         "variant_label",
-        "mip_era",
     ],
     "CORDEX-CMIP6"  :  ["activity_id",
                         "domain_id",
@@ -477,3 +476,5 @@ STAC_list_properties = {
 }
 
 CACHE_DIR_DEPTH = 6
+PROJECT_MAP = {"cmip7" : "mip-drs7"}
+BUILTIN_GENERICS = ["mip-drs7", "cordex", "cordex-cmip6"]
