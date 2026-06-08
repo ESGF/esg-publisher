@@ -435,7 +435,6 @@ STAC_proj_item_properties = {
         "variable_long_name",
         "variable_units",
         "variant_label",
-        "mip_era",
     ],
     "CORDEX-CMIP6"  :  ["activity_id",
                         "domain_id",
