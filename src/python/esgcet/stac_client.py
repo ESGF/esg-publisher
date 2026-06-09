@@ -247,7 +247,7 @@ class EGITransactionClient:
             self.publog.error("Failed to publish: Error %s", err.response.status_code)
             return False
         return True
-    
+
     def json_patch(self, collection, item_id, entry):
         """Publish an update to the EGI authenticated STAC endpoint.
 
