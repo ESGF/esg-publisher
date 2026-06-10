@@ -2,8 +2,8 @@ import pydantic
 from typing import Literal, Iterable
 
 from pydantic import (
-    BaseModel, 
-    Field, 
+    BaseModel,
+    Field,
     model_validator,
     field_validator,
     model_serializer,
@@ -15,13 +15,18 @@ from esgvoc.apps.drs.generator import DrsGenerator
 from pathlib import Path
 import re
 
+import esgcet.logger as logger
+
+log = logger.ESGPubLogger()
+
+publog = log.return_logger(__name__)
 
 #mapfile example:
 
 # CMIP6.DCPP.MRI.MRI-ESM2-0.dcppA-hindcast.s2017-r1i1p1f1.Amon.psl.gn#20210114 | $TEST_DATA/CMIP6/DCPP/MRI/MRI-ESM2-0/dcppA-hindcast/s2017-r1i1p1f1/Amon/psl/gn/v20210114/psl_Amon_MRI-ESM2-0_dcppA-hindcast_s2017-r1i1p1f1_gn_201711-202212.nc | 5505592 | mo
 # d_time=1609786526.0 | checksum=1872faa5910eabb2bdc2cc756fd3bad34980d99ff7d2c1a35a5a3c1915339160 | checksum_type=SHA256
 
-# CMIP6.CMIP.MOHC.UKESM1-0-LL.piControl.r1i1p1f2.fx.areacella.gn.v20190705 | /nl/themis/esgf/cli137/world-shared/globus/css03_data/CMIP6/CMIP/MOHC/UKESM1-0-LL/piControl/r1i1p1f2/fx/areacella/gn/v20190705/areacella_fx_UKESM1-0-LL_piControl_r1i1p1f2_gn.nc 
+# CMIP6.CMIP.MOHC.UKESM1-0-LL.piControl.r1i1p1f2.fx.areacella.gn.v20190705 | /nl/themis/esgf/cli137/world-shared/globus/css03_data/CMIP6/CMIP/MOHC/UKESM1-0-LL/piControl/r1i1p1f2/fx/areacella/gn/v20190705/areacella_fx_UKESM1-0-LL_piControl_r1i1p1f2_gn.nc
 #| 65542 | mod_time=1562646491.0 | checksum=f49cfaa297b2ac074517100599db62343b2bc41d106ae22d7f3553259fea598e
 
 class MapFileRecord(BaseModel):
@@ -46,7 +51,7 @@ class MapFileRecord(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def parse_record(
-        cls, 
+        cls,
         value: str,
     ) -> dict[str, str|int|float]:
 
@@ -63,7 +68,7 @@ class MapFileRecord(BaseModel):
 
             cls._validator = DrsValidator(project_id=project.lower())
             cls._generator = DrsGenerator(project_id=project.lower())
-               
+
 
             if "CMIP6" in project and len(parts) < 6:
                 raise ValueError("Invalid record format")
@@ -81,7 +86,7 @@ class MapFileRecord(BaseModel):
                     version_str = parts[0][last_v_index+1:]
                 except:
                     raise ValueError("the dataset_id is invalid")
-               
+
             version = int(version_str)
             file_path = parts[1]
             size = int(parts[2])
@@ -123,8 +128,8 @@ class MapFileRecord(BaseModel):
         try:
             cmip_index = parts.index(self.project)
             result = "/".join(parts[cmip_index:-1])  # Includes everything after CMIP6/7/plus
-        except ValueError:
-            print(f"{self.project} not found in path")
+        except ValueError as err:
+            raise ValueError(f"{self.project} not found in path") from err
 
         vd_dr_result = validator.validate_directory(drs_expression=result)
 
@@ -147,8 +152,8 @@ class MapFileRecord(BaseModel):
         parts = v_path.parts
         try:
             cmip_index = parts.index(self.project)
-        except ValueError:
-            print(f"{self.project} not found in path")
+        except ValueError as err:
+            raise ValueError(f"{self.project} not found in path") from err
         m_bag = list(parts[cmip_index:])
 
         if self.dataset_id.split(".") == generator.generate_dataset_id_from_bag_of_terms(m_bag):

@@ -14,8 +14,14 @@ from dask.distributed import Client
 
 import logging
 from contextlib import nullcontext
+import esgcet.logger as logger
+
 
 app = typer.Typer(help=__doc__)
+
+log = logger.ESGPubLogger()
+
+publog = log.return_logger(f"CLI:kerchunk:generate")
 
 @app.command()
 def generate(
@@ -24,13 +30,13 @@ def generate(
         typer.Argument(
             help = "the path of a map file or a directory with multiple map files"
         )
-    ], 
+    ],
     backend: Annotated[
-        Literal["kerchunk", "virtualizarr"], 
+        Literal["kerchunk", "virtualizarr"],
         typer.Argument(
             help = "backend to generate kerchunk ref files"
         )
-    ] = "kerchunk", 
+    ] = "kerchunk",
 
     inline_threshold: Annotated[
         int,
@@ -82,7 +88,6 @@ def generate(
 
 ) -> None:
 
-
     map_path = Path(mapfile_path)
 
     if map_path.is_file():
@@ -115,17 +120,17 @@ def generate(
                 generator = KerchunkGenerator(path_url = ncfiles, backend = backend, output_file = output_file, format = format)
                 _run_generation(generator, source, target, inline_threshold, use_dask, n_workers)
             except ValidationError as e:
-                print(f"validation failed for {map_file}: {e}")
+                publog.error(f"validation failed for {map_file}: {e}")
             except TypeError as e:
-                print(f"errors in kerchunk generation using {backend} for {map_file}: {e}")
+                publog.error(f"errors in kerchunk generation using {backend} for {map_file}: {e}")
             except Exception as e:
-                print(f"unknown errors in kerchunk generation using {backend} for {map_file}: {e}")
+                publog.error(f"unknown errors in kerchunk generation using {backend} for {map_file}: {e}")
 
 def _run_generation(
-    generator: KerchunkGenerator, 
-    source: str, 
-    target: str, 
-    inline_threshold: int, 
+    generator: KerchunkGenerator,
+    source: str,
+    target: str,
+    inline_threshold: int,
     use_dask: bool,
     n_workers: int,
 ) -> None:
