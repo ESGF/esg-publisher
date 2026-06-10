@@ -25,7 +25,7 @@ class ESGPubLogger:
             publog.setLevel(logging.DEBUG)
         else:
             publog.setLevel(logging.INFO)
-        formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        formatter = logging.Formatter(fmt='%(asctime)s %(name)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         publog.addHandler(handler)

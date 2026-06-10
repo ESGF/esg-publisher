@@ -86,11 +86,10 @@ def cc(
                     ["text"]
                 )
                 if errors:
-                    print(f"Checker Errors {errors}")
                     raise RuntimeError(f"Errors from compliance checker {errors}")
 
             except Exception as e:
-                print (f"something is wrong: {e}")
+                raise RuntimeError(f"something is wrong: {e}")
 
 
 
