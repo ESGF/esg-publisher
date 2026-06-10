@@ -1,12 +1,10 @@
 import re
 from datetime import datetime
-from esgcet.settings import (
-    STAC_item_properties, 
-    STAC_proj_item_properties, 
-    STAC_list_properties, 
-    STAC_schema_versions,
-    MAP_properties
-)
+
+from esgcet.settings import (MAP_properties, STAC_item_properties,
+                             STAC_list_properties, STAC_proj_item_properties,
+                             STAC_schema_versions)
+
 
 from esgvoc.apps.jsg import json_schema_generator as jsg
 
@@ -184,9 +182,9 @@ class ESGSTACConverter():
             return None
     
             
-        west_degrees = dataset_doc.get("west_degrees", 0.0)
+        west_degrees = dataset_doc.get("west_degrees", 0.0) - 180
         south_degrees = dataset_doc.get("south_degrees", -90.0)
-        east_degrees = dataset_doc.get("east_degrees", -360.0)
+        east_degrees = dataset_doc.get("east_degrees", 360.0) - 180
         north_degrees = dataset_doc.get("north_degrees", 90.0)
     
     

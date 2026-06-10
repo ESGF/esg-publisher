@@ -17,6 +17,7 @@ class EGIConf:
     """
 
     client_id: str = "3da9c21e-2bb9-4576-9054-af420514cb7b"
+    client_secret: str = ""
     device_endpoint: str = (
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device"
     )
@@ -43,6 +44,7 @@ class OAuthDeviceFlowPKCE:
     def __init__(
         self,
         client_id: str,
+        client_secret: str,
         device_endpoint: str,
         token_endpoint: str,
         scope: str,
@@ -54,12 +56,14 @@ class OAuthDeviceFlowPKCE:
 
         Args:
             client_id (str): OAuth client ID.
+            client_secret (str): OAuth client secret.
             device_endpoint (str): URL to initiate device code flow.
             token_endpoint (str): URL to exchange device code or refresh token.
             scope (str): OAuth scopes to request.
             refresh_file (str): Path to store token data locally.
         """
         self.client_id = client_id
+        self.client_secret = client_secret
         self.device_endpoint = device_endpoint
         self.token_endpoint = token_endpoint
         self.scope = scope
@@ -148,7 +152,9 @@ class OAuthDeviceFlowPKCE:
             "code_challenge": self.code_challenge,
             "code_challenge_method": "S256",
         }
-        print(f"POSTING to {self.device_endpoint} ")
+        if self.client_secret:
+            payload["client_secret"] = self.client_secret
+
         response = requests.post(
             self.device_endpoint,
             data=payload,
@@ -196,6 +202,8 @@ class OAuthDeviceFlowPKCE:
                 "client_id": self.client_id,
                 "code_verifier": self.code_verifier,
             }
+            if self.client_secret:
+                payload["client_secret"] = self.client_secret
 
             response = requests.post(self.token_endpoint, data=payload)
 
@@ -248,7 +256,7 @@ class OAuthDeviceFlowPKCE:
             print("Refresh token expired. Login required...")
             return self.initiate_device_flow()
 
-        auth = HTTPBasicAuth(self.client_id, "")
+        auth = HTTPBasicAuth(self.client_id, self.client_secret)
 
         payload = {
             "client_id": self.client_id,
@@ -257,6 +265,8 @@ class OAuthDeviceFlowPKCE:
             "scope": self.scope,
             "resource": self.resource,
         }
+        if self.client_secret:
+            payload["client_secret"] = self.client_secret
 
         response = requests.post(self.token_endpoint, data=payload, auth=auth)
         response.raise_for_status()

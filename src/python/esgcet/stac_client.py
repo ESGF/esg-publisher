@@ -15,7 +15,6 @@ from globus_sdk import (
     NetworkError,
 )
 from globus_sdk.scopes import GroupsScopes
-
 from globus_sdk.token_storage import JSONTokenStorage
 
 from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
@@ -217,6 +216,7 @@ class EGITransactionClient:
 
             self.auth = OAuthDeviceFlowPKCE(
                 client_id=self.egi_conf.client_id,
+                client_secret=self.egi_conf.client_secret,
                 device_endpoint=self.egi_conf.device_endpoint,
                 token_endpoint=self.egi_conf.token_endpoint,
                 scope=self.egi_conf.scope,
