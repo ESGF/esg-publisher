@@ -9,6 +9,8 @@ from esgcet.settings import (
 )
 from h5py._hl import dataset
 
+from esgvoc.apps.jsg import json_schema_generator as jsg
+
 class ESGSTACItem():
     """
     Container class for the item with Methods to add Assets
@@ -116,6 +118,7 @@ class ESGSTACConverter():
         if collection == "mip-drs7":
             collection = "cmip7"
 
+            
         namespace = collection.lower()
 
         if "Globus" in dataset_doc.get("access"):
@@ -205,17 +208,21 @@ class ESGSTACConverter():
             properties["datetime"] = None
             properties["start_datetime"] = "1850-01-01T00:00:00Z"
             properties["end_datetime"] = "1850-01-01T00:00:01Z"
+    
+        if namespace == "cmip6plus":
+            collection_key_name = "CMIP6"
+        else:
+            collection_key_name = collection
 
-
-        collection_item_properties = STAC_proj_item_properties.get(collection, [])
+        collection_item_properties = STAC_proj_item_properties.get(collection_key_name, [])
         property_keys = STAC_item_properties + collection_item_properties
 
         for k in property_keys:
-            if collection in MAP_properties and k in MAP_properties[collection]:
-                mapped_k = MAP_properties[collection][k]
-                v = dataset_doc.get(mapped_k)
+            if collection_key_name in MAP_properties and k in MAP_properties[collection_key_name]:
+                mapped_k = MAP_properties[collection_key_name][k]
+                v = dataset_doc.get(mapped_k, "")
             elif k in dataset_doc:
-                v = dataset_doc.get(k)
+                v = dataset_doc.get(k, "")
             else:
                 print(f"WARNING {k} not found in dataset")
             if k == "master_id":
@@ -228,7 +235,7 @@ class ESGSTACConverter():
 
                 if k in STAC_list_properties["ALL"]:
                     properties[nk] = v
-                elif collection in STAC_list_properties and k in STAC_list_properties[collection]:
+                elif collection_key_name in STAC_list_properties and k in STAC_list_properties[collection_key_name]:
                     properties[nk] = v
                 else:
                     if v[0] is None:
@@ -238,11 +245,10 @@ class ESGSTACConverter():
                 if v is None:
                     continue
                 properties[nk] = v
-
-        sc_version = STAC_schema_versions.get(collection)
-        if not sc_version:
-            raise RuntimeError(f"No version of STAC schema for {collection}")
-
+    
+        sc_version = STAC_schema_versions.get(collection, jsg.get_schema_version(namespace))
+        
+        
         item = {
             "type": "Feature",
             "stac_version": "1.1.0",

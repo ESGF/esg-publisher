@@ -21,7 +21,6 @@ class BasePublisher(object):
 
     def __init__(self, argdict):
         self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
         self.cert = argdict.get("cert", "")
@@ -119,7 +118,7 @@ class BasePublisher(object):
                 "length": int(self.argdict["archive_path_length"]),
                 "archive_path": self.argdict["archive_path"],
             }
-        print(f"VERBOSE: {self.verbose}")
+
         # TODO: support solr and Globus using the globus_index argument
 
         if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
@@ -135,8 +134,7 @@ class BasePublisher(object):
                 stac_item = sc.convert2stac(dataset_records)
                 rc = tc.publish(stac_item)
             except Exception as ex:
-                self.publog.error(f"Failed to publish to STAC Transaction API, possble Validation Error.")
-                self.publog.debug(str(ex))
+                self.publog.error(f"Failed to publish to STAC Transaction API: {ex}")
                 rc = False
 
         else:

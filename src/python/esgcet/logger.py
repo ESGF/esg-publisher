@@ -8,12 +8,16 @@ class ESGPubLogger:
     def __init__(self):
         """ Constructor
         """
-        pass
+        self._log = None
+
 
     def return_logger(self, name, silent=False, verbose=False):
         """
         Logger 'factory' method allows for the naming and level specification.
         """
+        if self._log:
+            return self._log
+        
         publog = logging.getLogger(name)
         if silent:
             publog.setLevel(logging.WARNING)
@@ -25,4 +29,5 @@ class ESGPubLogger:
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         publog.addHandler(handler)
+        self._log = publog
         return publog

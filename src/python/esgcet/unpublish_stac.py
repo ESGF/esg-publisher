@@ -43,7 +43,7 @@ class ESGUnpublishSTAC:
         do_delete = args["delete"]
 
         try:
-            stac_api = self.config["stac_config"]["stac_transcation_client"]["base_url"]
+            stac_api = self.config["stac_config"]["stac_api"]
         except:
             raise RuntimeError(
                 "STAC API not configured.  Ensure you have a correct 'stac_config' entry in your config file."

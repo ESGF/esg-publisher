@@ -18,7 +18,6 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
             decode_times=time_coder,
             data_vars='all'
         )
-
         return res
 
     def get_attrs_dict(self, scanobj):
