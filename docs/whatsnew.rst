@@ -9,6 +9,9 @@ v5.4.2
 * Enforce DRS length in dataset ID
 * Cleanup and refactoring
 * Update args help string
+* Integrate esgvoc to supply STAC .json schema version numbers
+* Correct longitude values within records to WGS84 Standard
+* User-friendly STAC server-side validation error messages
 
 v5.4.1
 ------
