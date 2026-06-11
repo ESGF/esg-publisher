@@ -1,23 +1,29 @@
+import sys
+
+import esgcet.logger as logger
+from esgcet.index_pub import ESGPubIndex
 from esgcet.mapfile import ESGPubMapConv
 from esgcet.mkd_non_nc import ESGPubMKDNonNC
-from esgcet.update_solr import ESGUpdateSolr
+from esgcet.stac_client import getTransactionClient
+from esgcet.stac_converter import ESGSTACConverter
 from esgcet.update_globus import ESGUpdateGlobus
+from esgcet.update_solr import ESGUpdateSolr
+from esgcet.update_stac import ESGUpdateSTAC
 
-from esgcet.index_pub import ESGPubIndex
-import sys
-import esgcet.logger as logger
+from esgcet.pid_cite_pub import ESGPubPidCite
+from esgcet.settings import PID_PREFIX  # project table of prefixes
 
 log = logger.ESGPubLogger()
+import json
 
 
 class BasePublisher(object):
 
     def __init__(self, argdict):
         self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
-        self.cert = argdict.get("cert","")
+        self.cert = argdict.get("cert", "")
         self.index_node = argdict["index_node"]
         self.data_node = argdict["data_node"]
         self.data_roots = argdict["data_roots"]
@@ -25,13 +31,17 @@ class BasePublisher(object):
         self.replica = argdict["replica"]
         self.proj = argdict["proj"]
         self.json_file = argdict["json_file"]
-        self.auth = argdict.get("auth",False)
+        self.auth = argdict.get("auth", False)
         self.proj_config = argdict["user_project_config"]
         self.verify = argdict["verify"]
         self.mountpoints = argdict["mountpoints"]
         self.project = argdict["proj"]
         self.dry_run = argdict.get("dry_run", False)
-        self.publog = log.return_logger('Generic Non-NetCDF Publisher', self.silent, self.verbose)
+        self.publog = log.return_logger(
+            "Generic Non-NetCDF Publisher", self.silent, self.verbose
+        )
+        self._disable_citation = argdict.get("disable_citation", False)
+        self.mapdict = None
 
     def cleanup(self):
         pass
@@ -47,14 +57,26 @@ class BasePublisher(object):
             self.publog.exception("Failed to convert mapfile")
             self.cleanup()
             exit(1)
+        mapconv.set_map_arr(map_json_data)
+        self.mapdict = mapconv.parse_map_arr()
+
         return map_json_data
 
     def mk_dataset(self, map_json_data):
-        mkd = ESGPubMKDNonNC(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, 
-                                self.silent, self.verbose)
+        mkd = ESGPubMKDNonNC(
+            self.data_node,
+            self.index_node,
+            self.replica,
+            self.globus,
+            self.data_roots,
+            self.silent,
+            self.verbose,
+        )
         mkd.set_project(self.project)
         try:
-            out_json_data = mkd.get_records(map_json_data, self.json_file, user_project=self.proj_config)
+            out_json_data = mkd.get_records(
+                map_json_data, self.json_file, user_project=self.proj_config
+            )
         except Exception as ex:
             self.publog.exception("Failed to make dataset")
             self.cleanup()
@@ -62,11 +84,26 @@ class BasePublisher(object):
         return out_json_data
 
     def update(self, json_data):
-    
-        if self.argdict.get("globus_index", False):
-            up = ESGUpdateGlobus(self.argdict.get("index_UUID"), json_data[0]["data_node"], silent=self.silent, verbose=self.verbose, dry_run=self.dry_run)
+
+        stac_conf = self.argdict.get("stac_config", {})
+        if stac_conf:
+            up = ESGUpdateSTAC(self.argdict)
+        elif self.argdict.get("globus_index", False):
+            up = ESGUpdateGlobus(
+                self.argdict.get("index_UUID"),
+                json_data[0]["data_node"],
+                silent=self.silent,
+                verbose=self.verbose,
+                dry_run=self.dry_run,
+            )
         else:
-            up = ESGUpdateSolr(self.index_node, silent=self.silent, verbose=self.verbose, verify=self.verify)
+            up = ESGUpdateSolr(
+                self.index_node,
+                silent=self.silent,
+                verbose=self.verbose,
+                verify=self.verify,
+            )
+
         try:
             up.run(json_data)
         except Exception as ex:
@@ -74,36 +111,88 @@ class BasePublisher(object):
             self.cleanup()
             exit(1)
 
-    def index_pub(self,dataset_records):
+    def index_pub(self, dataset_records):
         arch_cfg = None
         if self.argdict["enable_archive"]:
-            arch_cfg = { "length" : int(self.argdict["archive_path_length"]) , 
-                          "archive_path" : self.argdict["archive_path"]}
-        print(f"VERBOSE: {self.verbose}")
+            arch_cfg = {
+                "length": int(self.argdict["archive_path_length"]),
+                "archive_path": self.argdict["archive_path"],
+            }
+
         # TODO: support solr and Globus using the globus_index argument
 
-        globuspub = self.argdict.get("globus_index", False)
-        
-        if globuspub:
-            index_node = ""
+        if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
+            TransactionClient = getTransactionClient(
+                self.argdict.get("stac_config", {})
+            )
+            self.publog.debug(f"{type(TransactionClient)}")
+            tc = TransactionClient(self.argdict)
+            if not tc:
+                raise RuntimeError("Failed to create STAC transaction client")
+            sc = ESGSTACConverter(self.argdict.get("stac_config", {}))
+            try:
+                stac_item = sc.convert2stac(dataset_records)
+                rc = tc.publish(stac_item)
+            except Exception as ex:
+                self.publog.error(f"Failed to publish to STAC Transaction API: {ex}")
+                rc = False
+
         else:
-            index_node = dataset_records[0]["index_node"]
-        ip = ESGPubIndex(index_node=index_node, UUID=self.argdict["index_UUID"],  silent=self.silent, verbose=self.verbose, verify=self.verify, auth=self.auth, arch_cfg=arch_cfg, dry_run=self.dry_run)
-            
-        rc = True
-        try:
+            globuspub = self.argdict.get("globus_index", False)
             if globuspub:
-                rc = ip.do_globus(dataset_records)
+                index_node = ""
             else:
-                rc = ip.do_publish(dataset_records)
-        except Exception as ex:
-            self.publog.exception("Failed to publish to index.")
-            self.cleanup()
-            exit(1)
+                index_node = dataset_records[0]["index_node"]
+
+            ip = ESGPubIndex(
+                index_node=index_node,
+                UUID=self.argdict["index_UUID"],
+                silent=self.silent,
+                verbose=self.verbose,
+                verify=self.verify,
+                auth=self.auth,
+                arch_cfg=arch_cfg,
+                dry_run=self.dry_run,
+            )
+
+            rc = True
+            try:
+                if globuspub:
+                    rc = ip.do_globus(dataset_records)
+                else:
+                    rc = ip.do_publish(dataset_records)
+            except Exception as ex:
+                self.publog.exception("Failed to publish to index.")
+                self.cleanup()
+                exit(1)
         status = "PASS" if rc else "FAIL"
         self.publog.info(f"PUB_STATUS={status} id={dataset_records[-1]['id']}")
             
         return rc
+
+    def pid_cite(self):
+        lower_proj = self.project.lower()
+        pid = ESGPubPidCite(
+            self.dataset_rec,
+            {},
+            self.data_node,
+            self.argdict["test"],
+            silent=self.silent,
+            verbose=self.verbose,
+            project_family=lower_proj,
+            disable_cite=self._disable_citation,
+        )
+
+        dsid = self.dataset_rec[-1]["id"]
+        ds_pid = pid.gen_pid(dsid)
+        citurl = pid.citation_url()
+
+        for rec in self.dataset_rec:
+            rec["pid"] = ds_pid
+            if citurl:
+                rec["citation_url"] = citurl
+
+    #       self.publog.warn(json.dumps(self.dataset_rec, indent=2))
 
     def workflow(self):
 
@@ -115,11 +204,14 @@ class BasePublisher(object):
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
+        self.dataset_rec = out_json_data
+        self.pid_cite()
+
         self.publog.info("Updating...")
         self.update(out_json_data)
 
         self.publog.info("Running index pub...")
-        
+
         rc = self.index_pub(out_json_data)
 
         self.publog.info("Done.")

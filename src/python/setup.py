@@ -15,7 +15,10 @@ additional_requirements = [
             "netcdf4",
             "dask",
             "pyyaml",
-            "globus-cli"
+            "globus-sdk>=4.3",
+            "globus-cli",
+            "pystac-client",
+            "wcrp-cc-plugi"
 ]
 
 
@@ -29,7 +32,6 @@ setup(
     install_requires = [
         "requests",
             "esgfpid",
-        "ESGConfigParser==1.0.0a1",
     ] + additional_requirements,
     include_package_data = True,
     zip_safe = False,                   # Migration repository must be a directory
@@ -40,5 +42,8 @@ setup(
                                         'esgupdate=esgcet.esgupdate:main',
                                         'esgmapconv=esgcet.esgmapconv:main',
                                         'esgmigrate=esgcet.migratecmd:main',
-                                        'esgunpublish=esgcet.esgunpublish:main']}
+                                        'esgunpublish=esgcet.esgunpublish:main',
+                                        'esgstacpub=esgcet.esgstacpub:main',
+                                        'esgadd=esgcet.esgstacaddrep:main',
+                                        'esglogin=esgcet.esglogin:main']}
 )

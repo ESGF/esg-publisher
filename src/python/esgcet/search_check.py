@@ -10,14 +10,20 @@ log = logger.ESGPubLogger()
 class ESGSearchCheck():
 
 
-    def __init__(self, index_node,  silent=False, verbose=False, verify=True):
+    def __init__(self, stac_api="", index_node="",  silent=False, verbose=False, verify=True):
         """
+            stac_api = if using STAC set the discovery API
             index_node (string):  The node to search for the update 
             cert_fn (string):  Filename for certicate to use to push updates to the API
             silent (bool):  suppress INFO messages
             verbose (bool):  extended output, useful for debugging
         """
-        self.index_node = index_node 
+        if stac_api:
+            self.stac_api = stac_api
+            self.index_node = ""
+        elif index_node:
+            self.index_node = index_node
+    
         self.silent = silent
         self.verbose = verbose
         self.verify = verify
@@ -25,9 +31,55 @@ class ESGSearchCheck():
         self.SEARCH_TEMPLATE = 'https://{}/esg-search/search/?format=application%2Fsolr%2Bjson&id={}&fields=id,retracted'
         self.publog = log.return_logger('Search Check', silent, verbose)
 
+    def get_stac_item(self):
 
-
+        return self._stac_item
+    
     def run_check(self, datasetid):
+    
+        if self.index_node:
+            print("Solr")
+            res = self._run_check_solr(datasetid)
+        else:
+            res = self._run_check_stac(datasetid)
+    
+        return res
+
+    def stac_item_fetch(self, datasetid):
+        collection = self._check_collection(datasetid)
+
+        req_str = f"{self.stac_api}/collections/{collection}/items/{datasetid}"
+        resp = requests.get(req_str)
+
+        if resp.status_code != 200:
+            self.publog.info(f"Dataset not found at {req_str} status {resp.status_code}")            
+            return None
+        item = resp.json()
+        return item
+    
+    def _check_collection(self, datasetid):
+        parts = datasetid.split('.')
+        if parts[0] == "MIP-DRS7":
+            return "CMIP7"
+        else:
+            return parts[0]
+    
+    def _run_check_stac(self, datasetid):
+
+        item = self.stac_item_fetch(datasetid)
+        if not item:
+            return False, False
+        retracted = item["properties"].get("retracted", None)
+        if retracted is None:
+            raise RuntimeError(f"Retracted property missing for {datasetid}")
+        self._stac_item = item
+        if retracted:
+            self.publog.info("Dataset already retracted")
+            return True, False
+        return True, True 
+        
+                
+    def _run_check_solr(self, datasetid):
         """ Check a record in the index and peform the updates
 
             input_rec - a json record to be published containing a "master_id" and "data_node" fields with 

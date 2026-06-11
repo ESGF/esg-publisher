@@ -1,7 +1,7 @@
+
 import argparse
 from pathlib import Path
 import os
-import esgcet.esgmigrate as em
 import esgcet.logger as logger
 import esgcet
 import yaml
@@ -9,7 +9,6 @@ import yaml
 log = logger.ESGPubLogger()
 publog = log.return_logger('Settings')
 
-DEFAULT_ESGINI = '/esg/config/esgcet'
 
 
 class PublisherArgs:
@@ -30,23 +29,24 @@ class PublisherArgs:
         # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
         parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
         parser.add_argument("--no-replica", dest="no_replica", action="store_true", help="Disable replica publication.")
-        parser.add_argument("--esgmigrate", dest="migrate", action="store_true", help="Run esgmigrate before publishing, to migrate over old config. May be left with incomplete config settings.")
         parser.add_argument("--json", dest="json", default=None, help="Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.")
         parser.add_argument("--data-node", dest="data_node", default=None, help="Specify data node.")
-        parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node.")
-        parser.add_argument("--certificate", "-c", dest="cert", default=None, help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate).")
-        parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PIDs.")
-        parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP CMOR tables for metadata checks. Required for CMIP6Plus and later.")
-        parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.")
-        parser.add_argument("--map", dest="map", required=True, nargs="+", help="Mapfile or list of mapfiles.")
+        parser.add_argument("--index-node", dest="index_node", default=None, help="Specify index node. Legacy Solr use only.")
+        parser.add_argument("--certificate", "-c", dest="cert", default=None, help="Use the following certificate file in .pem form for publishing (use a myproxy login to generate). Legacy Solr with auth only.")
+        parser.add_argument("--project", dest="proj", default="", help="Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PIDs.  Also required for custom and cloned projects")
+        parser.add_argument("--cmor-tables", dest="cmor_path", default=None, help="Path to CMIP CMOR tables for metadata checks. Required for CMIP6Plus and later. Deprecated for ESGF-NG in favor of compliance checker")
+        parser.add_argument("--autocurator", dest="autocurator_path", default=None, help="Path to autocurator repository folder.  Only use if you have installed autocurator to use in place of xarray scanning")
+        parser.add_argument("--map", dest="map", required=True, nargs="+", help="Mapfile, a file containing list of mapfiles (relative or absolute paths), or a directory containing mapfiles.  esgpublish will determine which input")
         parser.add_argument("--config", "-cfg", dest="cfg", default=str(def_config), help="Path to yaml config file.")
         parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
-        parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
-        parser.add_argument("--no-auth", dest="no_auth", action="store_true", help="Run publisher without certificate, only works on certain index nodes.")
-        parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle verification for publishing, default is off.")
+        parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose (debug) mode.")
+        parser.add_argument("--verify", dest="verify", action="store_true", help="Toggle certificate verification for publishing, default is off (supports insecure checking to allow for self-signed nodes).")
         parser.add_argument("--version", action="version", version=f"esgpublish v{esgcet.__version__}",help="Print the version and exit")
-        parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured.") 
+        parser.add_argument("--xarray", dest="xarray", action="store_true", help="Use Xarray to extract metadata even if Autocurator is configured. (Default, overrides setting)") 
+        parser.add_argument("--stac-api", dest="stac_api", default=None, help="Specify STAC Discovery API.")
         parser.add_argument("--no-xarray", dest="skipxr", action="store_true", help="Bypass use of Xarray (metadata will be incomplete)")
+        parser.add_argument("--dry-run", dest="dry_run", action="store_true", help="Dry run publishing. Scans data but does not interface with index APIs.")
+        parser.add_argument("--save-stac", action="store_true", help="For use with STAC publishing: saves the STAC Item to the cwd named as <dataset-id>.json.  Useful to validate an Item in event of an error.")
         pub = parser.parse_args()
 
         return pub
@@ -75,8 +75,6 @@ class PublisherArgs:
         pub = self.get_args()
         json_file = pub.json
 
-        if pub.migrate:
-            em.run(DEFAULT_ESGINI, False, False)
 
         config_file = pub.cfg
         config = self.load_config(config_file)
@@ -148,20 +146,12 @@ class PublisherArgs:
             autocurator = pub.autocurator_path
 
         if pub.index_node is None:
-            try:
-                index_node = config['index_node']
-            except:
-                publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
-                exit(1)
+            index_node = config.get('index_node', None)
         else:
             index_node = pub.index_node
 
         if pub.data_node is None:
-            try:
-                data_node = config['data_node']
-            except:
-                publog.exception("Data node not defined. Use --data-node option or define in esg.ini.")
-                exit(1)
+            data_node = config.get('data_node',None)
         else:
             data_node = pub.data_node
         try:
@@ -243,7 +233,10 @@ class PublisherArgs:
                    "non_nc": non_nc, 
                    "mountpoints": mountpoints,
                    "disable_citation": disable_citation,
-                   "disable_further_info": disable_further_info}
+                   "disable_further_info": disable_further_info,
+                   "disable_qaqc" : config.get("disable_qaqc", False),
+                   "kerchunk" : config.get("kerchunk", None)
+                   }
 
         if auth and cert:
             argdict["cert"] = cert
@@ -262,18 +255,14 @@ class PublisherArgs:
             else:
                 argdict["cmor_tables"] = pub.cmor_path
         if project == "cmip6" or project == "input4mips" or (project in proj_config and "pid_prefix" in proj_config[project]):  
-            try:
                 # Unpack the PID credentials format from the yaml to be compatible with the legacy format
-                pid_creds = config['pid_creds']
-                creds_lst = []
-                for it in pid_creds:
-                    rec = pid_creds[it]
-                    rec['url'] = it
-                    creds_lst.append(rec)
-                argdict['pid_creds'] = creds_lst
-            except:
-                publog.exception("PID credentials not defined. Define in config file esg.ini.")
-                exit(1)
+            pid_creds = config.get('pid_creds', [])
+            creds_lst = []
+            for it in pid_creds:
+                rec = pid_creds[it]
+                rec['url'] = it
+                creds_lst.append(rec)
+            argdict['pid_creds'] = creds_lst
         if "cmip6_clone" in config and project == config['cmip6_clone'].lower():
             if "pid_creds" in argdict:
                 argdict["cmip6-clone"] = project
@@ -304,13 +293,25 @@ class PublisherArgs:
         else:
             argdict["index_UUID"] =""
     
-        argdict["dry_run"] = config.get("dry_run", False)
+        argdict["dry_run"] = config.get("dry_run", pub.dry_run)
         
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
 
-        argdict["skipxr"] = pub.skipxr
+        argdict["stac_config"] = config.get("stac_config",{})
+        stac_api = pub.stac_api
+        if stac_api:
+            if not argdict.get("stac_config"):
+                argdict["stac_api"] = stac_api
+            elif "stac_transaction_api" in argdict["stac_config"]:
+                argdict["stac_config"]["stac_transaction_api"]["base_url"]
+            else:
+                publog.warning("STAC API not properly configured. ")
+                argdict["stac_api"] = stac_api
 
+        argdict["skipxr"] = pub.skipxr
+        argdict["save_stac"] = config.get("save_stac",pub.save_stac)
+        
         return argdict
 
 

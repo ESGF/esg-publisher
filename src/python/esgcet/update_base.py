@@ -37,17 +37,18 @@ class ESGUpdateBase(ABC):
             self.publog.error("Could not find the Dataset record.  Malformed input, exiting!")
             exit(1)
 
+        version = str(input_rec[dset_idx]["version"])
+
         mst = input_rec[dset_idx]['master_id']
         dnode = input_rec[dset_idx]['data_node']
 
         dsetid = self.query_update(dnode, mst)
 
-        if dsetid:
+        if dsetid and version not in dsetid:
             self.update_dataset(dsetid)
             self.update_file(dsetid)
             self.publog.info('Found previous version, updating the record: {}'.format(dsetid))
 
         else:
-            version = input_rec[dset_idx]['version']
             self.publog.info('First dataset version for {}: v{}.)'.format(mst, version))
 

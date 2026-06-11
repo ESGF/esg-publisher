@@ -9,8 +9,8 @@ Pip Install
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
     conda activate esgf-pub
-    pip install esgcet 
-    esgpublish --version #  Ensure you have upgraded to v5.3.6
+    pip install esgcet. # add --upgrade if existing install 
+    esgpublish --version #  Ensure you have installed/upgraded to latest version
 
 
 All publisher requirements are installed via ``pip`` except for the CMOR tables (see below).
@@ -24,7 +24,7 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
     cd esg-publisher
     cd src/python
     pip install -e .  # You can modify the source in place
-    esgpublish --version  # Confirm that v5.3.6 has been installed
+    esgpublish --version  # Confirm that target version has been installed (defined in pyproject.toml)
 
 Now you will be able to call all commands in this package from any directory.  
 
@@ -49,10 +49,9 @@ The config file will contain the following settings, most required settings are 
 
  * data_node
     * Required. This is the ESGF node (Fully-Qualified Domain Name) at which the data is stored that you are publishing. It will be concatenated with the dataset_id (instance_id) to form the full id for your dataset. 
- * index_node
-    * Required. This is the ESGF node (Fully-Qualified Domain Name) where your dataset will be published and indexed. You can then retrieve it or see related metadata by using the ESGF Search API at that index node.
  * cmor_path
-    * Required for CMIP6. This is a full absolute path to a directory containing CMOR tables, used by the publisher to validate several key metadata fields. Example: /usr/local/cmip6-cmor-tables/Tables  These are the Cmor tables repo cloned from github.  (See Cmor page on the left).
+    * Required for CMIP6 (and cloned) Projects (eg CMIP6Plus). This is a full absolute path to a directory containing CMOR tables, used by the publisher to verify specific registrations of CMIP data with WCRP, eg. the ``source_id`` and ``experiment_id``. Example: /usr/local/cmip<X>-cmor-tables/Tables  This is either the cmor tables repo cloned from github or prepared using the ``esgfetctables`` tool part of ``esgf-prepare``. <X> is the CMIP-era of tables to check specific to the publish
+ * autoc_path
     * Optional. This is the path for the autocurator executable.  The default assumes that you have installed it via conda. If you have not installed it via conda, please replace with a file path to your installed binary.  If set to ``none`` or removed, the publisher will default to scanning data using XArrary.
  * data_roots
     * Required. These are paths where you place your project data for publication, typically within mounted large storage systems, on the local server where running the publisher.  Each entry maps the path to a logical subdirectory within a data url on the datanode.  Please note two configurations (1) these may be different from the data node mounts --or-- (2) may also appear in data node setup within ``esgf-docker`` configuations (Ansible playbooks or Helm charts) if the local publishing node uses the same mounts. Contact your node/site administrator for more info.
@@ -69,11 +68,7 @@ The config file will contain the following settings, most required settings are 
  * set_replica
     * Optional. Enable or disable replica publication settings, for sites that publish replica data. Default assumes False, or replica publication off (original data publication).
  * globus_uuid
-    * Optional. Specify the UUID for your site Globus endpoint as configured in the Globus webapp.  Default leaves out Globus URL from dataset metadata.
- * data_transfer_node
-    * Optional. If you run the GridFTP service, set the hostname of that node, whether it the same as your data node or a sepearte Data Transfer Node for gsiftp urls in file records.  Default of "none" will omit.
- * pid_creds
-    * Settings and credentials for RabbitMQ server access for the PID sefvice, required for some projects (CMIP6, input4MIPs). 
+    * Optional. Specify the UUID for your site Globus endpoint as configured in the Globus webapp.  This value should refer to a public/open shared Collection as created by the Endpoint administrator.  Default leaves out Globus URL from dataset metadata.
  * user_project_config
     * Optional. If using a self-defined project compatible with our generic publisher, put DRS and CONST_ATTR in a dictionary designated by project.
  * silent
@@ -92,7 +87,8 @@ The config file will contain the following settings, most required settings are 
     * Optional. (Required for ESGF-1.5).  Set this value to the ESGF-1.5 index (see `ESGF-1.5 Index list <https://github.com/esgf2-us/esgf-1.5-design/blob/main/indexes.md>`_ for the listing)
  * https_url
     * Optional. (Require for sites that don't run a standard Nginx http server container, eg. use of Globus).  For Globus-enabled sites, this is a template in the form: https://<hostname>.data.globus.org/{}/{}|application/netcdf|HTTPServer.  Get your <hostname> from your site/data node administrator.  The software will populate the ``{}`` fields, leave as is. 
-
+ * stac_config
+    * Reuqired for publishing to ESGF Stac catalogs. see :ref:`esglogin` for more information
       
 
 Fill out the necessary variables, and either leave or override the optional configurations.
@@ -124,34 +120,37 @@ The following contains example ``.yaml`` code and configures the *primavera* pro
 
 ..  code-block:: yaml
 
+   # If you are creating a project with CMIP6-like DRS and Global Attributes, you can use the cmip6_clone setting to specify your project as a clone of the CMIP6 project.  
+   # This will enable the CMIP6-specific checks of the publisher, which are not run for other projects.  
+   # If you are not creating a project with CMIP6-like DRS and Global Attributes, you can ignore this setting.
    cmip6_clone: primavera
+   # cmor_path is still used in CMIP6-clone project for the CMIP6-specific checks
    cmor_path: /path/to/cmip6-cmor-tables/Tables
    data_node: esgf-fake-test.llnl.gov
    data_roots:
       /mounted/path/to/data: data_in_url
-   data_transfer_node: aimsdtn2.llnl.gov
-   force_prepare: 'false'
-   globus_uuid: 415a6320-e49c-11e5-9798-22000b9da45e
-   index_node: esgf-fedtest.llnl.gov
-   pid_creds:
-      aims4.llnl.gov:
-         password: password
-         port: 7070
-         priority: 1
-         ssl_enabled: true
-         user: esgf-publisher
-         vhost: esgf-pid
-   project: none
-   set_replica: 'true'
-   silent: 'false'
-   skip_prepare: 'true'
-   test: 'true'
+      # UUID example don't use actual UUID, get from your site administrator
+   globus_uuid: <Valid-Globus-collection-UUID>
+   set_replica: false
+   silent: false
+   test: true
    user_project_config:
       primavera:
          CONST_ATTR:
             project: primavera
          pid_prefix: '21.14100'
-   verbose: 'false'
+   verbose: false
+   # EXAMPLE stac_config for ESGF EAST (EGI check-in) Auth domain, with publication to the ESGF CEDA STAC catalog. 
+   # See :ref:`esglogin` for more information on how to configure for other Auth domains and catalogs.
+   stac_config:
+      token_storage_file: ~/.esgf2-publisher-egi.json
+      stac_transaction_api:
+         client_id: 3da9c21e-2bb9-4576-9054-af420514cb7b
+         device_endpoint: https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device
+         token_endpoint: https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token
+         scope: 'offline_access entitlements'
+         base_url: https://api.stac.esgf.ceda.ac.uk
+      stac_api: https://api.stac.esgf.ceda.ac.uk
    https_url:  https://hostname.data.globus.org/{}/{}|application/netcdf|HTTPServer
 
 
