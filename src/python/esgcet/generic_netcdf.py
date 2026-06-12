@@ -169,10 +169,17 @@ class GenericPublisher(BasePublisher):
 
                 self.publog.info(f"kerchunk generation: {self.fullmap}")
 
-                uri_mapping = self.argdict.get("kerchunk").get("uri_mapping", None)
-                if uri_mapping is None:
-                    raise ValueError("missing uri_mapping in yaml file")
-                (old_uri, new_uri), = uri_mapping.items()
+                data_roots = self.argdict.get("data_roots")
+                if data_roots is None:
+                    raise ValueError("missing data_roots in yaml file")
+                (old_uri, rel_uri), = data_roots.items()
+
+                data_node = self.argdict.get("data_node")
+                if data_node is None:
+                    raise ValueError("missing data_node in yaml file")
+
+                new_uri = f"https://{data_node}/thredds/fileServer/{rel_uri}"
+
 
                 inline_threshold = self.argdict.get("kerchunk").get("inline_threshold", 0)
 
