@@ -62,26 +62,20 @@ class PubRunner:
             non_netcdf = True
 
         if not self.proj:
-            if project == "cmip6" or "cmip6-clone" in argdict:
-                proj = cmip6(argdict)
-            elif project == "create-ip":
+            if project == "create-ip":
                 from esgcet.create_ip import CreateIP
                 proj = CreateIP(argdict)
             elif project == "cmip5":
                 from esgcet.cmip5 import cmip5
                 proj = cmip5(argdict)
             elif project == "input4mips":
-
                 proj = input4mips(argdict)
             elif project == "e3sm" and not non_netcdf:
                 from esgcet.e3sm import e3sm
-
                 proj = e3sm(argdict)
             elif non_netcdf:
-
                 proj = BasePublisher(argdict)
             elif user_defined or project in BUILTIN_GENERICS:
-                
                 proj = GenericPublisher(argdict)
             else:
                 publog.error(

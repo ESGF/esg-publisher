@@ -460,7 +460,7 @@ STAC_proj_item_properties = {
                         "version",
                         "version_realization_info",
                         "mip_era",
-			"pid"
+			            "pid"
                        ]
 }
 
@@ -477,4 +477,4 @@ STAC_list_properties = {
 
 CACHE_DIR_DEPTH = 6
 PROJECT_MAP = {"cmip7" : "mip-drs7"}
-BUILTIN_GENERICS = ["mip-drs7", "cordex", "cordex-cmip6"]
+BUILTIN_GENERICS = ["mip-drs7", "cordex", "cordex-cmip6", "cmip6", "cmip6plus", "obs4mips"]
