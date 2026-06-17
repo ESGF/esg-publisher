@@ -343,7 +343,7 @@ VARIABLE_LIMIT = 75
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
 STAC_schema_versions = {
-                         "CMIP6" : "v3.0.4"
+#                         "CMIP6" : "v3.0.4"
                         }
 
 STAC_item_properties = [
@@ -417,10 +417,10 @@ STAC_proj_item_properties = {
         "experiment_id",
         "experiment",
         "frequency",
-        "grid",
         "grid_label",
         "institution_id",
         "member_id",
+        "mip_era",
         "nominal_resolution",
         "pid",
         "product",
