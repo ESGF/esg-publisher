@@ -103,9 +103,12 @@ class ESGUpdateSTAC(ESGUpdateBase):
             return False
         elif resp.matched() > 1:
             log.warn("Multiple latest {}")
-
+        d = {}
         for it in resp.items_as_dicts():
             d = it
         #        d = l[0].to_dict()
+        if not "id" in d:
+            return False
         self.stac_item = d
-        return d["id"]
+        
+        return d.get("id")
