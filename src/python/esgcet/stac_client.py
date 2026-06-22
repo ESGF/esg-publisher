@@ -199,7 +199,7 @@ class EGITransactionClient:
                 client_secret=self.egi_conf.client_secret,
                 device_endpoint=self.egi_conf.device_endpoint,
                 token_endpoint=self.egi_conf.token_endpoint,
-                scope=self.egi_conf.scope,
+                scope=self.egi_conf.scope_endpoint,
                 resource=self.stac_api,
                 refresh_file=os.path.expanduser(token_storage_file),
             )
