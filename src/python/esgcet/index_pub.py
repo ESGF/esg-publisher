@@ -12,7 +12,7 @@ class ESGPubIndex:
     """
     Wrapper class for push-publishing of records to the index node.
     """
-    def __init__(self, index_node="", UUID=None,  verbose=False, silent=False, verify=True, auth=None, arch_cfg=None, file_cache=None, dry_run=False):
+    def __init__(self, index_node="", UUID=None,  verbose=False, silent=False, verify=True, auth=None, arch_cfg=None, file_cache=".esg-pub", dry_run=False):
         """
         Constructor, creates a "client" object
         """
@@ -33,10 +33,12 @@ class ESGPubIndex:
         gs = GlobusSearchIngest(d, self._cache_dir)
         res = gs.run(False)
         if not self._dry_run:
-            gs.extern_globus_publish(res, self._index_UUID)
+            return gs.extern_globus_publish(res, self._index_UUID)
         else:
             self.publog.info(f"dry run on, not publishing {res}")
-#        os.system(f"globus search ingest {self._index_UUID} {res}")
+            return True
+    
+            #        os.system(f"globus search ingest {self._index_UUID} {res}")
 
     def gen_xml(self, d):
         out = []
@@ -73,6 +75,7 @@ class ESGPubIndex:
                     rc = False
             self.publog.debug(new_xml)
             self.pubCli.publish(new_xml)
+
         return rc
 
     def pub_xml(self, doc):

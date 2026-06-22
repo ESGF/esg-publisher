@@ -1,4 +1,4 @@
-The esgcet package for ESGF Publication - PRE-RELEASE |version|
+The esgcet package for ESGF Publication - |version|
 ================================================================
 
 

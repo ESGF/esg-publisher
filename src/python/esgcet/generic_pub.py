@@ -21,7 +21,6 @@ class BasePublisher(object):
 
     def __init__(self, argdict):
         self.argdict = argdict
-        self.fullmap = argdict["fullmap"]
         self.silent = argdict["silent"]
         self.verbose = argdict["verbose"]
         self.cert = argdict.get("cert", "")
@@ -119,7 +118,7 @@ class BasePublisher(object):
                 "length": int(self.argdict["archive_path_length"]),
                 "archive_path": self.argdict["archive_path"],
             }
-        print(f"VERBOSE: {self.verbose}")
+
         # TODO: support solr and Globus using the globus_index argument
 
         if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
@@ -133,40 +132,42 @@ class BasePublisher(object):
             sc = ESGSTACConverter(self.argdict.get("stac_config", {}))
             try:
                 stac_item = sc.convert2stac(dataset_records)
-                # publog.warn(json.dumps(stac_item, indent=4))
                 rc = tc.publish(stac_item)
             except Exception as ex:
-                self.publog.exception("Failed to publish to STAC Transaction API")
-                exit(1)
-            return rc
+                self.publog.error(f"Failed to publish to STAC Transaction API: {ex}")
+                rc = False
 
-        globuspub = self.argdict.get("globus_index", False)
-        if globuspub:
-            index_node = ""
         else:
-            index_node = dataset_records[0]["index_node"]
-
-        ip = ESGPubIndex(
-            index_node=index_node,
-            UUID=self.argdict["index_UUID"],
-            silent=self.silent,
-            verbose=self.verbose,
-            verify=self.verify,
-            auth=self.auth,
-            arch_cfg=arch_cfg,
-            dry_run=self.dry_run,
-        )
-
-        rc = True
-        try:
+            globuspub = self.argdict.get("globus_index", False)
             if globuspub:
-                rc = ip.do_globus(dataset_records)
+                index_node = ""
             else:
-                rc = ip.do_publish(dataset_records)
-        except Exception as ex:
-            self.publog.exception("Failed to publish to index.")
-            self.cleanup()
-            exit(1)
+                index_node = dataset_records[0]["index_node"]
+
+            ip = ESGPubIndex(
+                index_node=index_node,
+                UUID=self.argdict["index_UUID"],
+                silent=self.silent,
+                verbose=self.verbose,
+                verify=self.verify,
+                auth=self.auth,
+                arch_cfg=arch_cfg,
+                dry_run=self.dry_run,
+            )
+
+            rc = True
+            try:
+                if globuspub:
+                    rc = ip.do_globus(dataset_records)
+                else:
+                    rc = ip.do_publish(dataset_records)
+            except Exception as ex:
+                self.publog.exception("Failed to publish to index.")
+                self.cleanup()
+                exit(1)
+        status = "PASS" if rc else "FAIL"
+        self.publog.info(f"PUB_STATUS={status} id={dataset_records[-1]['id']}")
+            
         return rc
 
     def pid_cite(self):

@@ -17,7 +17,7 @@ publog = log.return_logger("esgstacpub")
 
 def get_args():
     parser = argparse.ArgumentParser(
-        description="Publish data sets to ESGF STAC Transaction API."
+        description="Add assets to existing data sets via ESGF STAC Transaction API."
     )
 
     home = str(Path.home())

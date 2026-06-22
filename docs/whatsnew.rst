@@ -1,15 +1,35 @@
 Release Notes
 =============
 
-v5.4.0
+v5.4.2
+------
+* Correct issue with multple mapfiles and O(N-squared) growth in log sizes
+* Add CMIP6Plus support for stack, use `--project cmip6plus` and ensure you have the project configured in .yaml
+* Update xarray load to use cftime with a time coder
+* Enforce DRS length in dataset ID
+* Cleanup and refactoring
+* Update args help string
+* Integrate esgvoc to supply STAC .json schema version numbers
+* Correct longitude values within records to WGS84 Standard
+* User-friendly STAC server-side validation error messages
+
+v5.4.1
 ------
 * Adds publishing to ESGF STAC catalogs
-* CMIP7 project support
+* CMIP7 and CORDEX-CMIP6 projects support
 * Integration of IOOS checker for QA/QC suite processing
+* ``esgadd`` and ``esglogin`` CLI tools
+* Kerchunk generator and additonal ``esgcet`` CLI
+* Test modules 
+
+v5.3.6
+------
+* **BUGFIX** Fix return code bug
+* Add SUCCESS/FAIL message at end of log
+* Add cmor_version to obs4MIPs builtin project
 
 v5.3.5
 ------
-
 * **BUGFIX** - Correct issue with CMIP6Plus publication 
 
 v5.3.4 - Deprecated

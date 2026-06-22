@@ -226,9 +226,10 @@ class GenericPublisher(BasePublisher):
         self.publog.info("Running index pub...")
         rc = self.index_pub(out_json_data)
 
+        if rc:
         # step four: update record if exists
-        self.publog.info("Updating...")
-        self.update(out_json_data)
+            self.publog.info("Updating...")
+            self.update(out_json_data)
         
         self.publog.info("Done. Cleaning up.")
         self.cleanup()

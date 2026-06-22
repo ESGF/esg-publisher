@@ -125,7 +125,7 @@ DRS = {
         "variable_branding_suffix",
         "grid_label",
     ],
-    "cordex-cmip6":  ["collection", "activity_id","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
+    "cordex-cmip6":  ["collection", "activity_drs","domain_id","institution_id","driving_source_id","driving_experiment_id","driving_variant_label","source_id","version_realization","frequency", "variable_id"]
 }
 
 #             "directory_path_template":"<drs_specs>/<mip_era>/<activity_id>/<institution_id>/<source_id>/<experiment_id>/<variant_label>/<region>/<frequency>/<variable_id>/<branding_suffix>/<grid_label>/<version>",
@@ -199,6 +199,14 @@ GA = {
         "physics_index",
         "member_id",
         "branded_variable",
+        "branch_time_in_parent",
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+        "horizontal_label"
     ],
     "cordex-cmip6": [
         "grid",
@@ -208,10 +216,11 @@ GA = {
         "title", 
         "mip_era",
         "domain",
-    "project_id",
-    "version_realization_info",
+        "project_id",
+        "version_realization_info",
         "driving_institution_id",
-        "source_type"
+        "source_type",
+        "activity_id"
 
 ]
 }
@@ -219,7 +228,7 @@ GA = {
 GA_DELIMITED = {
     "cmip6": {"source_type": " ", "activity_id": " ", "realm": " "},
     "mip-drs7": {"realm": " ", "Conventions": " "},
-    "cordex-cmip6" : {"Conventions": " "}
+    "cordex-cmip6" : {"Conventions": " ", "activity_id" : ' ' }
 }
 #                 'input4mips' : {'target_mip_list' : ','}}
 
@@ -270,7 +279,9 @@ PID_CREDS = [
 ]
 
 PID_PREFIX = { 
- "cmip6" :  "21.14100" ,
+    "cmip6" :  "21.14100" ,
+    "cmip6plus" : "21.14100",
+    "input4mips" : "21:14100",
     "cordex-cmip6" : "21.14103" ,
     "mip-drs7" : "21.14107" ,
     # for testing use CMIP6,  need to be project-specific
@@ -331,7 +342,9 @@ VARIABLE_LIMIT = 75
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
-STAC_schema_versions = {"CMIP7": "v3.0.4", "CMIP6" : "v3.0.4","CORDEX-CMIP6" : "v3.1.2"}
+STAC_schema_versions = {
+                         "CMIP6" : "v3.0.4"
+                        }
 
 STAC_item_properties = [
     "access",
@@ -362,23 +375,17 @@ STAC_proj_item_properties = {
         "area_label",
         "region",
         "variable_cf_standard_name",
-        "citation_url",
         "data_specs_version",
         "drs_specs",
         "experiment_id",
-        "experiment_title",
         "frequency",
-        "further_info_url",
         "grid_label",
         "institution_id",
-        "member_id",
         "nominal_resolution",
         "product",
         "realm",
         "source_id",
         # "source_type",
-        "sub_experiment_id",
-        "table_id",
         "variable_id",
         "variable_long_name",
         "variable_units",
@@ -386,6 +393,7 @@ STAC_proj_item_properties = {
         "variable_branding_suffix",
         "Conventions",
         "license_id",
+        "mip_era",
         "variable_branded_name",
         "variable_cf_standard_name",
         "temporal_label",
@@ -395,6 +403,13 @@ STAC_proj_item_properties = {
         "realization_index",
         "physics_index",
         "pid",
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+        "horizontal_label"        
     ],
     "CMIP6": [
         "activity_id",
@@ -456,7 +471,10 @@ STAC_list_properties = {
     "source_type",
     "Conventions",
     ],
-    "CMIP6" : { "activity_id"}
+    "CMIP6" : { "activity_id"},
+    "CORDEX-CMIP6" : {"activity_id"}
 }
 
 CACHE_DIR_DEPTH = 6
+PROJECT_MAP = {"cmip7" : "mip-drs7"}
+BUILTIN_GENERICS = ["mip-drs7", "cordex", "cordex-cmip6"]

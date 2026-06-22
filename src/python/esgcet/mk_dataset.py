@@ -193,6 +193,7 @@ class ESGPubMakeDataset:
         if "variable" in facets:
             self.variable_name = "variable"
 
+        assert len(facets) == len(parts) , f"Problem with dataset id. {facets} expected. {parts} found"
         for i, f in enumerate(facets):
             if f in scandata:
                 ga_val = scandata[f]
