@@ -24,8 +24,8 @@ class EGIConf:
     token_endpoint: str = (
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token"
     )
-    scope: str = "offline_access entitlements"
-    base_url: str = "https://api.stac.esgf.ceda.ac.uk"
+    scope_endpoint: str = "https://transaction.east.esgf.io/scope"
+    base_url: str = "https://search.east.esgf.io"
     verify: bool = True
     timeout: float = 5.0
 
@@ -47,7 +47,7 @@ class OAuthDeviceFlowPKCE:
         client_secret: str,
         device_endpoint: str,
         token_endpoint: str,
-        scope: str,
+        scope_endpoint: str,
         resource: str,
         refresh_file: str = "token.json",
     ) -> None:
@@ -66,7 +66,7 @@ class OAuthDeviceFlowPKCE:
         self.client_secret = client_secret
         self.device_endpoint = device_endpoint
         self.token_endpoint = token_endpoint
-        self.scope = scope
+        self.scope = self._get_scope(scope_endpoint)
         self.resource = resource
         self.refresh_file = refresh_file
         self.code_verifier = self._generate_code_verifier()
@@ -90,6 +90,19 @@ class OAuthDeviceFlowPKCE:
 
         except FileExistsError:
             pass
+
+    def _get_scope(self, scope_endpoint: str) -> str:
+        """
+        Gets scope string from endpoint.
+
+        Args:
+            scope_endpoint (str): The scope endpoint.
+
+        Returns:
+            str: Scope string.
+        """
+        response = requests.get(scope_endpoint).json()
+        return response["scope"]
 
     def _generate_code_verifier(self) -> str:
         """
