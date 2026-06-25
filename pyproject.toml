@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "esgcet"
-version = "5.4.3-rc1"
+version = "5.4.3"
 description = "ESGCET publication package"
 readme = "README.md"
 authors = [
@@ -62,7 +62,7 @@ esglogin = "esgcet.esglogin:main"
 esgadd = "esgcet.esgstacaddrep:main"
 
 [project.urls]
-Homepage = "http://esgf.github.io"
+Homepage = "http://esgf.github.io/"
 
 [tool.setuptools]
 package-dir = {"" = "src/python"}
