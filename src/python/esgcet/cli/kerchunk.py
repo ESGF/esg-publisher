@@ -69,13 +69,13 @@ def generate_dataset_id_from_path(path: Path, data_roots: dict) -> str:
 def generate(
     mapfile_path: Annotated[
         Path,
-        typer.Argument(
+        typer.Option(
             help = "the path of a map file or a directory with multiple map files"
         )
     ] = None,
     backend: Annotated[
         Literal["kerchunk", "virtualizarr"],
-        typer.Argument(
+        typer.Option(
             help = "backend to generate kerchunk ref files"
         )
     ] = "kerchunk",
@@ -160,7 +160,7 @@ def generate(
 
 
     if path is not None and mapfile_path is not None:
-        raise ValueError("Cannot specify both --path and mapfile_path. Use one or the other.")
+        raise ValueError("Cannot specify both --path and --mapfile_path. Use one or the other.")
 
     if path is None and mapfile_path is None:
         raise ValueError("Must specify either --path or mapfile_path")
