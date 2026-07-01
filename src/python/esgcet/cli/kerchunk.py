@@ -171,6 +171,7 @@ def generate(
             raise ValueError(f"Path {nc_path} is not a directory")
 
         ncfiles = sorted(list(nc_path.glob("*.nc")))
+        ncfiles = [str(x) for x in ncfiles]
         if not ncfiles:
             raise ValueError(f"No .nc files found in {nc_path}")
 
@@ -205,7 +206,7 @@ def generate(
             output_file = Path(output_dir) / f"{dataset_id}.{version}"
 
         try:
-            generator = KerchunkGenerator(path_url=ncfiles, backend=backend, output_file=output_file, format=format)
+            generator = KerchunkGenerator(path_url=ncfiles, backend=backend, output_file=str(output_file), format=format)
             _run_generation(generator, source, target, inline_threshold, use_dask, n_workers)
         except ValidationError as e:
             print(f"validation failed: {e}")
