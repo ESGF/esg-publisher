@@ -1,8 +1,11 @@
 # ESGF Publisher
 
+
 For the current version number of the ESGF Publisher, and release notes for recent releases, see: https://esg-publisher.readthedocs.io/
 
 See below for release notes for versions up to v5.2.2.  Although there is some overlap with what is on readthedocs, the list below is not updated with the most recent releases.
+
+**Pull Requests**:  please set `integration` as the _base_ branch.  PRs set to `main` will be closed.  
 
 ----
 

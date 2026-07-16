@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v5.4.3
+------
+* Error handling for missing `esgvoc` projects
+* Migration of CMIP6 to Generic NetCDF project class
+* Switch EGI checkin auth config to use `scope_endpoint` instead of `scope`
+* Bugfix f-strings Python 3.10
+
 v5.4.2
 ------
 * Correct issue with multple mapfiles and O(N-squared) growth in log sizes

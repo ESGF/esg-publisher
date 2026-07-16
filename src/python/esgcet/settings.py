@@ -343,7 +343,7 @@ VARIABLE_LIMIT = 75
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
 STAC_schema_versions = {
-                         "CMIP6" : "v3.0.4"
+#                         "CMIP6" : "v3.0.4"
                         }
 
 STAC_item_properties = [
@@ -417,10 +417,10 @@ STAC_proj_item_properties = {
         "experiment_id",
         "experiment",
         "frequency",
-        "grid",
         "grid_label",
         "institution_id",
         "member_id",
+        "mip_era",
         "nominal_resolution",
         "pid",
         "product",
@@ -460,7 +460,7 @@ STAC_proj_item_properties = {
                         "version",
                         "version_realization_info",
                         "mip_era",
-			"pid"
+			            "pid"
                        ]
 }
 
@@ -477,4 +477,4 @@ STAC_list_properties = {
 
 CACHE_DIR_DEPTH = 6
 PROJECT_MAP = {"cmip7" : "mip-drs7"}
-BUILTIN_GENERICS = ["mip-drs7", "cordex", "cordex-cmip6"]
+BUILTIN_GENERICS = ["mip-drs7", "cordex", "cordex-cmip6", "cmip6", "cmip6plus", "obs4mips"]

@@ -166,7 +166,7 @@ class ESGSTACConverter:
                                 "created": doc.get("timestamp", now),
                                 "updated": doc.get("timestamp", now),
                                 "protocol": "https",
-                                #                                "node" : dataset_doc.get("data_node"),
+                                # "node" : dataset_doc.get("data_node"),
                                 "file:local_path": f"{drspath}/{doc.get("title")}",
                             }
                             size += doc.get("size", 0)
@@ -242,10 +242,16 @@ class ESGSTACConverter:
                 if v is None:
                     continue
                 properties[nk] = v
-
-        sc_version = STAC_schema_versions.get(
-            collection, jsg.get_schema_version(namespace)
-        )
+        try:
+            esgvoc_version = jsg.get_schema_version(namespace)
+        except:
+            self.publog.warning(
+                f"{namespace} not in esgvoc db, did you remember to 'use' this?"
+            )
+        sc_version = STAC_schema_versions.get(collection, esgvoc_version)
+        if sc_version == "":
+            self.publog.error(f"Collection {namespace} not configured")
+            return None
 
         item = {
             "type": "Feature",
