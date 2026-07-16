@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v5.4.4
+------
+* Added CORDEX-CMIP6 "compliance-check" enforcement per project specification
+* Add removal of aggregates to `esgadd`
+* Update `esgcet` kerchunk generator CLI to include dataset argument.  Mapfiles are no longer required for kerchunk generation. 
+* Corrected East/West bounds for CORDEX-CMIP6 datasets.
+
 v5.4.3
 ------
 * Error handling for missing `esgvoc` projects
