@@ -181,7 +181,7 @@ class ESGSTACConverter:
         east_degrees = dataset_doc.get("east_degrees", 180.0)
         north_degrees = dataset_doc.get("north_degrees", 90.0)
 
-        if namespace == "cmip6":
+        if namespace.startswith("cmip"):
             west_degrees -= 180
             east_degrees -= 180
 
