@@ -7,6 +7,7 @@ from esgcet.pid_cite_pub import ESGPubPidCite
 from esgcet.search_check import ESGSearchCheck
 from esgcet.stac_client import getTransactionClient
 from esgcet.update_stac import ESGUpdateSTAC
+from esgcet.stac_converter import ESGSTACItem
 
 log = logger.ESGPubLogger()
 
@@ -40,7 +41,6 @@ class ESGUnpublishSTAC:
         data_node = args["data_node"]
         verbose = args["verbose"]
         silent = args["silent"]
-        do_delete = args["delete"]
 
         try:
             stac_api = self.config["stac_config"]["stac_api"]
@@ -61,7 +61,9 @@ class ESGUnpublishSTAC:
             upd = ESGUpdateSTAC(self.config)
 
         for dset_id in args["dataset_id_lst"]:
-            if args.get("deprecate", False):
+            if args.get("agg", False):
+                status += self.aggregate_unpublish(dset_id)
+            elif args.get("deprecate", False):
                 found, notretracted = self.searchcheck.run_check(dset_id)
                 if not found:
                     return -1
@@ -76,6 +78,24 @@ class ESGUnpublishSTAC:
             else:
                 status += self.single_unpublish(dset_id, pub_log)
         return status
+
+    def aggregate_unpublish(self, dset_id):
+        args = self._args
+
+        found, notretracted = self.searchcheck.run_check(dset_id)
+
+        if not found:
+            return -1
+
+        # ensure that dataset id is in correct format, use the set data node as a default
+
+        item = self.searchcheck.get_stac_item()
+        si = ESGSTACItem(item)
+        op = si.remove_aggregate(args["data_node"])
+
+        transCli = getTransactionClient(self.config.get("stac_config"))(self.config)
+        transCli.json_patch(item["collection"], dset_id, op)
+        return 0
 
     def single_unpublish(self, dset_id, pub_log):
 

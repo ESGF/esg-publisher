@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from esgcet.settings import (MAP_properties, STAC_item_properties,
                              STAC_list_properties, STAC_proj_item_properties,
@@ -18,9 +18,25 @@ class ESGSTACItem():
         else:
             return None
         
+    def remove_aggregate(self, site):
+        operations = []
+        if "reference_file" in self.stac_item.get("assets", {}) and site in self.stac_item["assets"]["reference_file"].get("alternate", {}):
+            path = f"/assets/reference_file/alternate/{site}"
+            operations.append({
+                    "op": "remove",
+                    "path": path
+                    })
+        elif "reference_file" in self.stac_item.get("assets", {}) and self.stac_item["assets"]["reference_file"]["alternate:name"] == site:
+            path = f"/assets/reference_file"
+            operations.append({
+                    "op": "remove",
+                    "path": path
+                    })
+        return operations
+
 
     def add_aggregate(self, aggtype, url, site):
-        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
                 "href": url,
                 "type": f"application/{aggtype}",
@@ -47,7 +63,7 @@ class ESGSTACItem():
     def add_replica(self, rep_datanode, template, prefix, rep_globus=""):
         assets = self.stac_item.get("assets", {})
         operations = []
-        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
         for name, asset in assets.items():
 
             if name == "reference_file":
@@ -102,7 +118,7 @@ class ESGSTACConverter():
         }
     
     def convert2stac(self, json_data):
-        now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         dataset_doc = {}
         for doc in json_data:
             if doc.get("type") == "Dataset":

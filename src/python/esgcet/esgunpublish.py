@@ -36,6 +36,7 @@ def get_args():
     parser.add_argument("--version", action="version", version=f"esgunpublish v{esgcet.__version__}",help="Print the version and exit")
     parser.add_argument("--silent", dest="silent", action="store_true", help="Enable silent mode.")
     parser.add_argument("--verbose", dest="verbose", action="store_true", help="Enable verbose mode.")
+    parser.add_argument("--agg",  action="store_true", help="Remove aggregation.")
 
     pub = parser.parse_args()
 
@@ -148,13 +149,17 @@ def run():
              "index_node": index_node,
              "verbose" : verbose,
              "silent" :silent,
-             }
+             "agg": a.agg,
+             "stac_config": config.get("stac_config", False)
+        }
 
     STAC = False
     
+    if verbose:
+        publog.debug(args)
     if config.get("stac_config", {}):
         STAC = True
-        upub = ESGUnpublishSTAC(config)
+        upub = ESGUnpublishSTAC(args)
     elif config.get("globus_index", False):
         args["index_UUID"] = config.get("index_UUID", "")
         upub = ESGUnpublishGlobus()
