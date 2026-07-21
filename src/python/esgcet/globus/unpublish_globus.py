@@ -1,11 +1,11 @@
 import sys, json
 import os
-from esgcet.pid_cite_pub import ESGPubPidCite
-from esgcet.globus_query import ESGGlobusQuery
-from esgcet.globus_search import GlobusSearchIngest
+from esgcet.util.pid_cite_pub import ESGPubPidCite
+from esgcet.globus.globus_query import ESGGlobusQuery
+from esgcet.globus.globus_search import GlobusSearchIngest
 
 
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

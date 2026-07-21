@@ -1,4 +1,4 @@
-from esgcet.handler_base import ESGPubHandlerBase
+from esgcet.scan.handler_base import ESGPubHandlerBase
 from datetime import datetime, timedelta
 import json
 

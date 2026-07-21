@@ -4,10 +4,10 @@ import os
 import sys
 from pathlib import Path
 
-import esgcet.args as pub_args
-import esgcet.logger as logger
-from esgcet.stac_client import TransactionClient
-from esgcet.stac_converter import convert2stac
+import esgcet.util.args as pub_args
+import esgcet.util.logger as logger
+from esgcet.stac.stac_client import TransactionClient
+from esgcet.stac.stac_converter import convert2stac
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esgstacpub")

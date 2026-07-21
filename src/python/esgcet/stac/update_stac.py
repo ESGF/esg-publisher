@@ -1,9 +1,9 @@
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 
-from esgcet.stac_client import getTransactionClient
-from esgcet.update_base import ESGUpdateBase
+from esgcet.stac.stac_client import getTransactionClient
+from esgcet.util.update_base import ESGUpdateBase
 from pystac_client import Client
 
 FIELDNAME = "base_id"

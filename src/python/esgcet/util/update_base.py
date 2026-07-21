@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

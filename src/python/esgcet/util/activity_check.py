@@ -1,6 +1,6 @@
 import json
-import esgcet.logger as logger
-from esgcet.settings import SOURCE_ID_LIMITS
+import esgcet.util.logger as logger
+from esgcet.util.settings import SOURCE_ID_LIMITS
 
 log = logger.ESGPubLogger()
 

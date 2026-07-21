@@ -1,5 +1,5 @@
 import xarray, netCDF4
-from esgcet.handler_base import ESGPubHandlerBase
+from esgcet.scan.handler_base import ESGPubHandlerBase
 import os.path
 import numpy as np
 

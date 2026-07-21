@@ -1,6 +1,6 @@
 import requests
-import esgcet.logger as logger
-from esgcet.xmlfix import fixup_xml
+import esgcet.util.logger as logger
+from esgcet.solr.xmlfix import fixup_xml
 
 log = logger.ESGPubLogger()
 

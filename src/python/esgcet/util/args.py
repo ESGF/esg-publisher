@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 import os
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 import esgcet
 import yaml
 

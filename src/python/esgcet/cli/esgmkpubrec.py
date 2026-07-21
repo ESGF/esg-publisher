@@ -1,17 +1,17 @@
-from esgcet.args import PublisherArgs
+from esgcet.util.args import PublisherArgs
 import argparse
 from pathlib import Path
 import sys
-import esgcet.args as pub_args
+import esgcet.util.args as pub_args
 import json
 import os
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 publog = log.return_logger('esgmkpubrec')
 
-from esgcet.mk_dataset_autoc import ESGPubAutocHandler
-from esgcet.mk_dataset_xarray import ESGPubXArrayHandler
+from esgcet.scan.mk_dataset_autoc import ESGPubAutocHandler
+from esgcet.scan.mk_dataset_xarray import ESGPubXArrayHandler
 
 def get_args():
     parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
@@ -189,19 +189,19 @@ def run():
     construct = None
 
     if project == "create-ip":
-        from esgcet.mkd_create_ip import ESGPubMKDCreateIP
+        from esgcet.scan.mkd_create_ip import ESGPubMKDCreateIP
         construct = ESGPubMKDCreateIP
     elif project == "cmip5":
-        from esgcet.mkd_cmip5 import ESGPubMKDCmip5
+        from esgcet.scan.mkd_cmip5 import ESGPubMKDCmip5
         construct = ESGPubMKDCmip5
     elif project == "input4mips":
-        from esgcet.mkd_input4mips import ESGPubMKDinput4MIPs
+        from esgcet.scan.mkd_input4mips import ESGPubMKDinput4MIPs
         construct = ESGPubMKDinput4MIPs
     elif non_nc:
-        from esgcet.mkd_non_nc import ESGPubMKDNonNC
+        from esgcet.scan.mkd_non_nc import ESGPubMKDNonNC
         construct = ESGPubMKDNonNC
     else:
-        from esgcet.mk_dataset import ESGPubMakeDataset
+        from esgcet.scan.mk_dataset import ESGPubMakeDataset
         construct = ESGPubMakeDataset
     mkd = construct(data_node, index_node, replica, globus, data_roots, dtn, format_handler, silent, verbose)
 

@@ -2,10 +2,10 @@ import json
 import os
 from typing import Any
 
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 import requests
 from esgcet import __version__
-from esgcet.settings import *
+from esgcet.util.settings import *
 from globus_sdk import (
     BaseClient,
     GroupsClient,
@@ -17,7 +17,7 @@ from globus_sdk import (
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.token_storage import JSONTokenStorage
 
-from .egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
+from esgcet.util.egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
 log = logger.ESGPubLogger()
 

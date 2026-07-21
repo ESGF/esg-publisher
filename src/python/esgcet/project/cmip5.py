@@ -1,9 +1,9 @@
 import os
-from esgcet.create_ip import CreateIP
-from esgcet.mkd_cmip5 import ESGPubMKDCmip5
-from esgcet.settings import VARIABLE_LIMIT
+from esgcet.project.create_ip import CreateIP
+from esgcet.scan.mkd_cmip5 import ESGPubMKDCmip5
+from esgcet.util.settings import VARIABLE_LIMIT
 import tempfile
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

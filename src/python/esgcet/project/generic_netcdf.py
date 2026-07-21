@@ -1,16 +1,16 @@
-from esgcet.mk_dataset_autoc import ESGPubAutocHandler
-from esgcet.mk_dataset_xarray import ESGPubXArrayHandler
-from esgcet.mk_dataset_nc4 import ESGPubNC4Handler
+from esgcet.scan.mk_dataset_autoc import ESGPubAutocHandler
+from esgcet.scan.mk_dataset_xarray import ESGPubXArrayHandler
+from esgcet.scan.mk_dataset_nc4 import ESGPubNC4Handler
 
-from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.scan.mk_dataset import ESGPubMakeDataset
 
-from esgcet.settings import *
+from esgcet.util.settings import *
 
 import json, os, sys
 import tempfile
-from esgcet.generic_pub import BasePublisher
+from esgcet.project.generic_pub import BasePublisher
 import traceback
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 from typing import Any
 

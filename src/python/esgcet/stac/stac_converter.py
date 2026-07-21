@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timezone
 
-from esgcet.settings import (
+from esgcet.util.settings import (
     MAP_properties,
     STAC_item_properties,
     STAC_list_properties,

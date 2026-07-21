@@ -1,8 +1,8 @@
-from esgcet.pub_client import publisherClient
+from esgcet.solr.pub_client import publisherClient
 import sys, json, requests
 from datetime import datetime
 from pathlib import Path
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

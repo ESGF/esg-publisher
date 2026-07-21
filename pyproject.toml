@@ -49,17 +49,16 @@ dev = [
 ]
 
 [project.scripts]
-esgpidcitepub = "esgcet.esgpidcitepub:main"
-esgmkpubrec = "esgcet.esgmkpubrec:main"
-esgindexpub = "esgcet.esgindexpub:main"
+esgpidcitepub = "esgcet.cli.esgpidcitepub:main"
+esgmkpubrec = "esgcet.cli.esgmkpubrec:main"
+esgindexpub = "esgcet.cli.esgindexpub:main"
 esgpublish = "esgcet.pub_internal:main"
-esgupdate = "esgcet.esgupdate:main"
-esgmapconv = "esgcet.esgmapconv:main"
-esgmigrate = "esgcet.migratecmd:main"
-esgunpublish = "esgcet.esgunpublish:main"
+esgupdate = "esgcet.cli.esgupdate:main"
+esgmapconv = "esgcet.cli.esgmapconv:main"
+esgunpublish = "esgcet.cli.esgunpublish:main"
 esgcet = "esgcet.cli:app"
-esglogin = "esgcet.esglogin:main"
-esgadd = "esgcet.esgstacaddrep:main"
+esglogin = "esgcet.cli.esglogin:main"
+esgadd = "esgcet.cli.esgstacaddrep:main"
 
 [project.urls]
 Homepage = "http://esgf.github.io/"

@@ -1,17 +1,17 @@
 import sys
 
-import esgcet.logger as logger
-from esgcet.index_pub import ESGPubIndex
-from esgcet.mapfile import ESGPubMapConv
-from esgcet.mkd_non_nc import ESGPubMKDNonNC
-from esgcet.stac_client import getTransactionClient
-from esgcet.stac_converter import ESGSTACConverter
-from esgcet.update_globus import ESGUpdateGlobus
-from esgcet.update_solr import ESGUpdateSolr
-from esgcet.update_stac import ESGUpdateSTAC
+import esgcet.util.logger as logger
+from esgcet.solr.index_pub import ESGPubIndex
+from esgcet.util.mapfile import ESGPubMapConv
+from esgcet.scan.mkd_non_nc import ESGPubMKDNonNC
+from esgcet.stac.stac_client import getTransactionClient
+from esgcet.stac.stac_converter import ESGSTACConverter
+from esgcet.globus.update_globus import ESGUpdateGlobus
+from esgcet.solr.update_solr import ESGUpdateSolr
+from esgcet.stac.update_stac import ESGUpdateSTAC
 
-from esgcet.pid_cite_pub import ESGPubPidCite
-from esgcet.settings import PID_PREFIX  # project table of prefixes
+from esgcet.util.pid_cite_pub import ESGPubPidCite
+from esgcet.util.settings import PID_PREFIX  # project table of prefixes
 
 log = logger.ESGPubLogger()
 import json

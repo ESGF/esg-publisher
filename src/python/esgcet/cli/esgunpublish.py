@@ -1,16 +1,16 @@
-from esgcet.unpublish_globus import ESGUnpublishGlobus
-from esgcet.unpublish_solr import ESGUnpublishSolr
-from esgcet.unpublish_stac import ESGUnpublishSTAC
+from esgcet.globus.unpublish_globus import ESGUnpublishGlobus
+from esgcet.solr.unpublish_solr import ESGUnpublishSolr
+from esgcet.stac.unpublish_stac import ESGUnpublishSTAC
 
 import os
 import sys
 import json
 import argparse
 from pathlib import Path
-import esgcet.args as pub_args
-import esgcet.logger as logger
+import esgcet.util.args as pub_args
+import esgcet.util.logger as logger
 
-from esgcet.mapfile import ESGPubMapConv
+from esgcet.util.mapfile import ESGPubMapConv
 
 log = logger.ESGPubLogger()
 publog = log.return_logger('esgunpublish')

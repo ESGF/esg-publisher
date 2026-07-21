@@ -1,9 +1,9 @@
 import sys, json, os
-from esgcet.index_pub import ESGPubIndex
+from esgcet.solr.index_pub import ESGPubIndex
 import argparse
 from pathlib import Path
-import esgcet.logger as logger
-import esgcet.args as pub_args
+import esgcet.util.logger as logger
+import esgcet.util.args as pub_args
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esgindexpub")

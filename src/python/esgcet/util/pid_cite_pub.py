@@ -1,7 +1,7 @@
 import sys, json
-from esgcet.settings import PID_PREFIX, PID_EXCHANGE, HTTP_SERVICE, CITATION_URLS, PID_URL
+from esgcet.util.settings import PID_PREFIX, PID_EXCHANGE, HTTP_SERVICE, CITATION_URLS, PID_URL
 import traceback
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 import uuid
 
 log = logger.ESGPubLogger()

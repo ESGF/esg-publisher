@@ -1,6 +1,6 @@
-from esgcet.mk_dataset import ESGPubMakeDataset
-from esgcet.settings import GA, GA_DELIMITED
-import esgcet.logger as logger
+from esgcet.scan.mk_dataset import ESGPubMakeDataset
+from esgcet.util.settings import GA, GA_DELIMITED
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

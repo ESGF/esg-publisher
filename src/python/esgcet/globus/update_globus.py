@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 
-from esgcet.globus_query import ESGGlobusQuery
-from esgcet.globus_search import GlobusSearchIngest
-from esgcet.update_base import ESGUpdateBase
+from esgcet.globus.globus_query import ESGGlobusQuery
+from esgcet.globus.globus_search import GlobusSearchIngest
+from esgcet.util.update_base import ESGUpdateBase
 
 class ESGUpdateGlobus(ESGUpdateBase):
 

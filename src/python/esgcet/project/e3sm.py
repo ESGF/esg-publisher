@@ -1,4 +1,4 @@
-from esgcet.generic_netcdf import GenericPublisher
+from esgcet.project.generic_netcdf import GenericPublisher
 import sys
 
 

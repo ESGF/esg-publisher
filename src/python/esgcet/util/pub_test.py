@@ -1,7 +1,7 @@
-from esgcet.pub_client import publisherClient
+from esgcet.solr.pub_client import publisherClient
 
 import esgcet.list2json, sys, json
-from esgcet.settings import INDEX_NODE, CERT_FN
+from esgcet.util.settings import INDEX_NODE, CERT_FN
 
 
 def main(outdata):

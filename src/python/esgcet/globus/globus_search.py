@@ -4,7 +4,7 @@ import os
 import json
 from datetime import datetime
 
-from esgcet.settings import *
+from esgcet.util.settings import *
 
 #  migrate to settings.py
 NON_LIST = [

@@ -6,7 +6,7 @@ import shutil
 from datetime import date
 from pathlib import Path
 import json
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 import yaml
 import traceback
 

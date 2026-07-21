@@ -1,12 +1,12 @@
 import os
-from esgcet.generic_netcdf import GenericPublisher
-from esgcet.mkd_create_ip import ESGPubMKDCreateIP
-from esgcet.update import ESGPubUpdate
-from esgcet.index_pub import ESGPubIndex
+from esgcet.project.generic_netcdf import GenericPublisher
+from esgcet.scan.mkd_create_ip import ESGPubMKDCreateIP
+from esgcet.util.update import ESGPubUpdate
+from esgcet.solr.index_pub import ESGPubIndex
 import tempfile
-from esgcet.settings import VARIABLE_LIMIT
+from esgcet.util.settings import VARIABLE_LIMIT
 from copy import deepcopy
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

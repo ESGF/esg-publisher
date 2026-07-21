@@ -1,9 +1,9 @@
-from esgcet.pid_cite_pub import ESGPubPidCite
-from esgcet.activity_check import FieldCheck
+from esgcet.util.pid_cite_pub import ESGPubPidCite
+from esgcet.util.activity_check import FieldCheck
 import tempfile
-from esgcet.generic_netcdf import GenericPublisher
+from esgcet.project.generic_netcdf import GenericPublisher
 import os
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

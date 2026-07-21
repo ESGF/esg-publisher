@@ -1,10 +1,10 @@
 import json
-from esgcet.mapfile import ESGPubMapConv
+from esgcet.util.mapfile import ESGPubMapConv
 import numpy as np
 
 from urllib.parse import unquote
-from esgcet.settings import *
-import esgcet.logger as logger
+from esgcet.util.settings import *
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

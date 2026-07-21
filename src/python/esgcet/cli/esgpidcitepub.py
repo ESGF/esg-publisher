@@ -1,11 +1,11 @@
-from esgcet.pid_cite_pub import ESGPubPidCite
+from esgcet.util.pid_cite_pub import ESGPubPidCite
 import argparse
 import sys
 import json
 from pathlib import Path
 import os
-import esgcet.args as pub_args
-import esgcet.logger as logger
+import esgcet.util.args as pub_args
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 publog = log.return_logger('esgpidcitepub')

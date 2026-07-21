@@ -1,11 +1,11 @@
 import argparse
 import os
 from pathlib import Path
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
-import esgcet.args as pub_args
-import esgcet.logger as logger
-from esgcet.stac_client import getTransactionClient
+import esgcet.util.args as pub_args
+import esgcet.util.logger as logger
+from esgcet.stac.stac_client import getTransactionClient
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esglogin")

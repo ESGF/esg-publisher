@@ -1,11 +1,11 @@
 import sys, json, os
-from esgcet.mapfile import ESGPubMapConv
+from esgcet.util.mapfile import ESGPubMapConv
 import configparser as cfg
-from esgcet.mk_dataset import ESGPubMakeDataset
+from esgcet.scan.mk_dataset import ESGPubMakeDataset
 from datetime import datetime, timedelta
-from esgcet.settings import *
+from esgcet.util.settings import *
 from pathlib import Path
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

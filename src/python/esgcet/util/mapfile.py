@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 import traceback
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

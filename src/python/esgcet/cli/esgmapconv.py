@@ -1,11 +1,11 @@
 import sys
-from esgcet.mapfile import ESGPubMapConv
+from esgcet.util.mapfile import ESGPubMapConv
 import json
 import os
 import argparse
 from pathlib import Path
-import esgcet.logger as logger
-import esgcet.args as pub_args
+import esgcet.util.logger as logger
+import esgcet.util.args as pub_args
 
 log = logger.ESGPubLogger()
 publog = log.return_logger('esgmapconv')

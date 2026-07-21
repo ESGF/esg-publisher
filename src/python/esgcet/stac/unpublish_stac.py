@@ -2,12 +2,12 @@ import json
 import os
 import sys
 
-import esgcet.logger as logger
-from esgcet.pid_cite_pub import ESGPubPidCite
-from esgcet.search_check import ESGSearchCheck
-from esgcet.stac_client import getTransactionClient
-from esgcet.update_stac import ESGUpdateSTAC
-from esgcet.stac_converter import ESGSTACItem
+import esgcet.util.logger as logger
+from esgcet.util.pid_cite_pub import ESGPubPidCite
+from esgcet.solr.search_check import ESGSearchCheck
+from esgcet.stac.stac_client import getTransactionClient
+from esgcet.stac.update_stac import ESGUpdateSTAC
+from esgcet.stac.stac_converter import ESGSTACItem
 
 log = logger.ESGPubLogger()
 

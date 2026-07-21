@@ -4,12 +4,12 @@ import os
 import sys
 from pathlib import Path
 
-import esgcet.args as pub_args
-import esgcet.logger as logger
-from esgcet.stac_client import getTransactionClient
-from esgcet.stac_converter import ESGSTACConverter, ESGSTACItem
+import esgcet.util.args as pub_args
+import esgcet.util.logger as logger
+from esgcet.stac.stac_client import getTransactionClient
+from esgcet.stac.stac_converter import ESGSTACConverter, ESGSTACItem
 
-from esgcet.search_check import ESGSearchCheck
+from esgcet.solr.search_check import ESGSearchCheck
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("esgstacpub")

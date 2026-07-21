@@ -26,6 +26,21 @@ def load_config(config_path: Path) -> dict:
     except IOError:
         raise ValueError(f"Could not open config file: {config_path}")
 
+def normalize_backend(backend: str) -> str:
+    """
+    Normalize backend name, supporting abbreviations.
+
+    Args:
+        backend: Backend name or abbreviation
+
+    Returns:
+        Normalized backend name
+    """
+    backend_lower = backend.lower()
+    if backend_lower == "vz":
+        return "virtualizarr"
+    return backend_lower
+
 def generate_dataset_id_from_path(path: Path, data_roots: dict) -> str:
     """
     Generate dataset-id from path using data_roots prefix mapping.
@@ -74,9 +89,9 @@ def generate(
         )
     ] = None,
     backend: Annotated[
-        Literal["kerchunk", "virtualizarr"],
+        str,
         typer.Option(
-            help = "backend to generate kerchunk ref files"
+            help = "backend to generate kerchunk ref files (kerchunk, virtualizarr, or vz for virtualizarr)"
         )
     ] = "kerchunk",
 
@@ -158,6 +173,10 @@ def generate(
 
 ) -> None:
 
+    # Normalize backend (support 'vz' abbreviation)
+    backend = normalize_backend(backend)
+    if backend not in ["kerchunk", "virtualizarr"]:
+        raise ValueError(f"Invalid backend: {backend}. Must be 'kerchunk', 'virtualizarr', or 'vz'")
 
     if path is not None and mapfile_path is not None:
         raise ValueError("Cannot specify both --path and --mapfile_path. Use one or the other.")

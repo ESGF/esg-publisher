@@ -1,7 +1,7 @@
-from esgcet.mkd_input4mips import ESGPubMKDinput4MIPs
-from esgcet.pid_cite_pub import ESGPubPidCite
-from esgcet.cmip6 import cmip6
-import esgcet.logger as logger
+from esgcet.scan.mkd_input4mips import ESGPubMKDinput4MIPs
+from esgcet.util.pid_cite_pub import ESGPubPidCite
+from esgcet.project.cmip6 import cmip6
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

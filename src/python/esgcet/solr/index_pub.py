@@ -1,9 +1,9 @@
-from esgcet.pub_client import publisherClient
-import esgcet.logger as logger
+from esgcet.solr.pub_client import publisherClient
+import esgcet.util.logger as logger
 import os
 
 
-from esgcet.globus_search import GlobusSearchIngest
+from esgcet.globus.globus_search import GlobusSearchIngest
 
 log = logger.ESGPubLogger()
 

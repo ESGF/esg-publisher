@@ -1,10 +1,10 @@
 import sys, json
 import os
-from esgcet.pid_cite_pub import ESGPubPidCite
-from esgcet.search_check import ESGSearchCheck
-from esgcet.pub_client import publisherClient
+from esgcet.util.pid_cite_pub import ESGPubPidCite
+from esgcet.solr.search_check import ESGSearchCheck
+from esgcet.solr.pub_client import publisherClient
 
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

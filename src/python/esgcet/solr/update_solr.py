@@ -2,9 +2,9 @@ import json
 import requests
 from datetime import datetime
 
-from esgcet.pub_client import publisherClient
-from esgcet.update_base import ESGUpdateBase
-import esgcet.logger as logger
+from esgcet.solr.pub_client import publisherClient
+from esgcet.util.update_base import ESGUpdateBase
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 

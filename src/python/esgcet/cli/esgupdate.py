@@ -1,13 +1,13 @@
 import os
-from esgcet.update import ESGPubUpdate
-from esgcet.update_stac import ESGUpdateSTAC
+from esgcet.util.update import ESGPubUpdate
+from esgcet.stac.update_stac import ESGUpdateSTAC
 
 import sys
 import json
 import argparse
 from pathlib import Path
-import esgcet.args as pub_args
-import esgcet.logger as logger
+import esgcet.util.args as pub_args
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 publog = log.return_logger('esgupdate')
