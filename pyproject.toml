@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "esgcet"
-version = "5.4.4"
+version = "5.5.0a"
 description = "ESGCET publication package"
 readme = "README.md"
 authors = [
@@ -43,7 +43,7 @@ dependencies = [
 ]
 
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "pytest>=9.0.0",
 ]
