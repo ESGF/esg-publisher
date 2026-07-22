@@ -1,11 +1,42 @@
 Release Notes
 =============
 
+v5.5.0a
+-------
+**Major Refactoring Release**
+
+* **Code Organization**: Reorganized 55 files from flat structure into logical subdirectories for improved maintainability
+
+  * ``cli/`` - All command-line entry points (10 esg* commands)
+  * ``project/`` - Project-specific handlers (CMIP5, CMIP6, E3SM, etc.)
+  * ``scan/`` - Metadata extraction and dataset scanning
+  * ``solr/`` - Solr backend publishing
+  * ``stac/`` - STAC catalog publishing
+  * ``globus/`` - Globus Search publishing
+  * ``util/`` - Shared utilities and helpers
+
+* **Backward Compatibility**: Maintained 100% backward compatibility with old import paths through module aliasing
+* **Testing Improvements**:
+
+  * Added 46 comprehensive unit tests (up from ~5)
+  * Backward compatibility tests for all import paths
+  * CLI validation tests for all commands
+  * Utility module tests (mapfile, args)
+
+* **CI/CD**: Added GitHub Actions workflow for automated testing across Python 3.10, 3.11, 3.12
+* **Bug Fixes**:
+
+  * Fixed ``fullmap`` attribute initialization in ``BasePublisher``
+  * Corrected ``Project`` enum usage in esgf15 globus module
+  * Fixed missing config fields in test setup
+
+* **Documentation**: All CLI commands verified working with ``--help`` and ``--version``
+
 v5.4.4
 ------
 * Added CORDEX-CMIP6 "compliance-check" enforcement per project specification
 * Add removal of aggregates to `esgadd`
-* Update `esgcet` kerchunk generator CLI to include dataset argument.  Mapfiles are no longer required for kerchunk generation. 
+* Update `esgcet` kerchunk generator CLI to include dataset argument.  Mapfiles are no longer required for kerchunk generation.
 * Corrected East/West bounds for CORDEX-CMIP6 datasets.
 
 v5.4.3
