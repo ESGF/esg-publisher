@@ -37,6 +37,7 @@ class BasePublisher(object):
         self.mountpoints = argdict["mountpoints"]
         self.project = argdict["proj"]
         self.dry_run = argdict.get("dry_run", False)
+        self.fullmap = argdict.get("fullmap", None)  # Path to mapfile
         self.publog = log.return_logger(
             "Generic Non-NetCDF Publisher", self.silent, self.verbose
         )
