@@ -9,13 +9,19 @@ import pathlib
 import json
 
 
-def test_mapfile_get_args(test_map_cmip6):
+def test_mapfile_get_args(test_map_cmip6, test_config_file):
     pub_args = PublisherArgs()
     test_argv = ["prog", "--map", str(test_map_cmip6)]
     with patch("sys.argv", test_argv):
         args = pub_args.get_args()
 
-    assert args.cfg == str(pathlib.Path.home() / ".esg/esg.yaml")
+    # When ESG_CONFIG_FILE env var is set (by conftest auto-use fixture), args.cfg uses that
+    # Otherwise it defaults to ~/.esg/esg.yaml
+    import os
+    if 'ESG_CONFIG_FILE' in os.environ:
+        assert args.cfg == os.environ['ESG_CONFIG_FILE']
+    else:
+        assert args.cfg == str(pathlib.Path.home() / ".esg/esg.yaml")
     assert args.map[0] == str(test_map_cmip6)
 
 
@@ -93,7 +99,9 @@ def test_compliance_check(data_dir, request, test_map_fixture, project, enable_q
         ("virtualizarr",0),
     ]
 )
-def test_kerchunk_generate(data_dir, tmp_path, test_map_cmip6, backend, inline_threshold):
+def test_kerchunk_generate(data_dir, tmp_path, test_map_cmip6, backend, inline_threshold, esgvoc_available):
+    if not esgvoc_available:
+        pytest.skip("esgvoc not initialized - run 'esgvoc use cmip6@latest' first")
     test_map = test_map_cmip6
     
     pub_args = PublisherArgs()

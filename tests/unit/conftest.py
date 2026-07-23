@@ -6,6 +6,45 @@ import os
 def data_dir():
     return Path(__file__).parent / "data"
 
+@pytest.fixture(scope="session", autouse=True)
+def initialize_esgvoc():
+    """
+    Initialize esgvoc for test session.
+
+    Note: Users are expected to have esgvoc initialized before running the publisher,
+    as it's required for compliance-checking and esgprep workflows. This fixture
+    ensures esgvoc is available during test runs.
+    """
+    try:
+        import subprocess
+        # Try to initialize esgvoc for CMIP6 tests
+        # In CI/CD, this should already be done by the workflow
+        result = subprocess.run(
+            ["esgvoc", "use", "cmip6@latest"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False  # Don't raise on non-zero exit
+        )
+        if result.returncode != 0 and result.stderr:
+            # Log warning but don't fail - esgvoc might already be initialized
+            print(f"esgvoc initialization warning: {result.stderr}")
+    except Exception as e:
+        # esgvoc might not be installed in dev environments
+        print(f"Could not initialize esgvoc: {e}")
+    yield
+
+@pytest.fixture
+def esgvoc_available():
+    """Check if esgvoc is initialized and available."""
+    try:
+        import esgvoc.api as ev
+        # Try to access the universe database
+        ev.Universe()
+        return True
+    except Exception:
+        return False
+
 @pytest.fixture
 def test_config_file(data_dir):
     """Provide path to test configuration file."""
