@@ -7,7 +7,9 @@ from esgcet.kerchunk.mapfile_model import MapFileRecord
     "test_map_cmip6",
     pytest.param("test_map_cmip7", marks=pytest.mark.xfail(strict=True),),
 ])
-def test_model_validator(request, test_map_fixture):
+def test_model_validator(request, test_map_fixture, esgvoc_available):
+    if not esgvoc_available:
+        pytest.skip("esgvoc not initialized - run 'esgvoc use cmip6@latest' first")
 
     test_map = request.getfixturevalue(test_map_fixture)
 

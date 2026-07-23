@@ -1,0 +1,19 @@
+# Minimal test configuration for esgcet tests
+data_node: test.data.node
+index_node: test.index.node
+
+data_roots:
+  /test/data: test_esg_dataroot
+
+globus: false
+replica: false
+
+# CMOR tables path - required for CMIP6 tests
+# In test environment, we use a placeholder path since tests don't actually access CMOR tables
+cmor_path: /tmp/cmor-tables
+
+# Minimal project configuration
+user_project_config:
+  cmip6: {}
+  CMIP6: {}
+  MIP-DRS7: {}

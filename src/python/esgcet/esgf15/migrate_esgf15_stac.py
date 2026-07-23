@@ -6,8 +6,8 @@ from platformdirs import PlatformDirs
 from typing import Any
 
 from esgcet.esgf15.globus import ESGFGlobusIndex, Project
-from esgcet.stac_converter import ESGSTACConverter
-from esgcet.stac_client import getTransactionClient
+from esgcet.stac.stac_converter import ESGSTACConverter
+from esgcet.stac.stac_client import getTransactionClient
 
 DATA_NODE_MAPPING={
     "anl": "eagle.alcf.anl.gov",

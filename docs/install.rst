@@ -45,6 +45,24 @@ Starting with ``v5.2.0`` the ESGF Publisher uses a .yaml file for configuration.
 
 The ``--config`` command-line argument lets you set a configuration file of your choosing other than the default location.
 
+**New in v5.5.0**: You can also set the ``ESG_CONFIG_FILE`` environment variable to specify a configuration file path. This is particularly useful for:
+
+ * Automated testing environments
+ * CI/CD pipelines
+ * Container deployments
+ * Managing multiple configurations
+
+Example usage::
+
+   export ESG_CONFIG_FILE=/path/to/custom/esg.yaml
+   esgpublish --map mydata.map
+
+The priority order for configuration file selection is:
+
+ 1. ``--config`` command-line argument (highest priority)
+ 2. ``ESG_CONFIG_FILE`` environment variable
+ 3. ``$HOME/.esg/esg.yaml`` (default location)
+
 The config file will contain the following settings, most required settings are also available as command line arguments:
 
  * data_node

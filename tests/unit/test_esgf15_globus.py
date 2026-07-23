@@ -1,7 +1,7 @@
 import pytest
 
 
-from esgcet.esgf15.globus import ESGFGlobusIndex
+from esgcet.esgf15.globus import ESGFGlobusIndex, Project
 
 
 marker_1000 = [
@@ -18,7 +18,7 @@ def test_esgf15_globus():
 
     fixed_facet = {'institution_id': 'NCAR'}
 
-    result = esgf_globus_index.query_dataset_file('CMIP6', fixed_facet, 'esgf-node.ornl.gov', True, 1000)
+    result = esgf_globus_index.query_dataset_file(Project.CMIP6, fixed_facet, 'esgf-node.ornl.gov', True, 1000)
 
     for k, res in enumerate(result):
         assert len(res) == 1000

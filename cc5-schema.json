@@ -1,0 +1,619 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://esgf.github.io/stac-transaction-api/cordex/v1.0.0/schema.json#",
+  "title": "CORDEX Extension",
+  "description": "STAC CORDEX Extension for STAC Items and STAC Collection Summaries.",
+  "type": "object",
+  "required": [
+    "stac_extensions"
+  ],
+  "properties": {
+    "stac_extensions": {
+      "type": "array",
+      "allOf": [
+        {
+          "contains": {
+            "const": "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://esgf.github.io/stac-transaction-api/cordex/v1.0.0/schema.json"
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "$comment": "This is the schema for STAC Items.",
+      "type": "object",
+      "required": [
+        "collection"
+      ],
+      "properties": {
+        "type": {
+          "const": "Feature"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^CORDEX-CMIP5(\\.[A-Za-z0-9-]+){10}\\.v[0-9]{8}$"
+        },
+        "base_id": {
+          "type": "string",
+          "pattern": "^CORDEX-CMIP5(\\.[A-Za-z0-9-]+){10}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$"
+        },
+        "collection": {
+          "const": "CORDEX"
+        },
+        "properties": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/require_item_fields"
+            },
+            {
+              "$ref": "#/definitions/item_fields"
+            }
+          ]
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/require_asset_fields"
+              },
+              {
+                "$ref": "#/definitions/asset_fields"
+              }
+            ]
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/link_fields"
+          }
+        }
+      }
+    },
+    {
+      "$comment": "This is the schema for STAC Collections, or more specifically only Collection Summaries in this case. By default, only checks the existence of the properties, but not the schema of the summaries.",
+      "type": "object",
+      "required": [
+        "type",
+        "summaries"
+      ],
+      "properties": {
+        "type": {
+          "const": "Collection"
+        },
+        "summaries": {
+          "$ref": "#/definitions/require_any"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "require_any": {
+      "$comment": "Only used for Collection summarizes.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "require_item_fields": {
+      "$comment": "Please list all fields here so that we can force the existence of one of them in other parts of the schemas.",
+      "allOf": [
+        {
+          "required": [
+            "created"
+          ]
+        },
+        {
+          "required": [
+            "end_datetime"
+          ]
+        },
+        {
+          "required": [
+            "latest"
+          ]
+        },
+        {
+          "required": [
+            "retracted"
+          ]
+        },
+        {
+          "required": [
+            "size"
+          ]
+        },
+        {
+          "required": [
+            "start_datetime"
+          ]
+        },
+        {
+          "required": [
+            "updated"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:activity"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:domain"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:institution_id"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:product"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:rcm_model"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:variable_cf_standard_name"
+          ]
+        },
+        {
+          "required": [
+            "cordex-cmip5:variable_id"
+          ]
+        }
+      ]
+    },
+    "require_asset_fields": {
+      "$comment": "Please list all fields here so that we can force the existence of one of them in other parts of the schemas.",
+      "allOf": [
+        {
+          "required": [
+            "created"
+          ]
+        },
+        {
+          "required": [
+            "protocol"
+          ]
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "application/netcdf"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "file:size",
+              "file:checksum",
+              "file:local_path"
+            ]
+          }
+        },
+        {
+          "required": [
+            "cordex-cmip5:version"
+          ]
+        }
+      ]
+    },
+    "asset_fields": {
+      "$comment": " Don't require fields here, do that above in the corresponding schema.",
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": [
+            "http",
+            "https",
+            "globus",
+            "gridftp",
+            "kerchunk",
+            "netcdfsubset",
+            "opendap",
+            "wms",
+            "wps",
+            "s3"
+          ]
+        },
+        "cordex-cmip5:version": {
+          "type": "string",
+          "pattern": "^v(1\\d{3}|2\\d{3})(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$"
+        }
+      }
+    },
+    "item_fields": {
+      "$comment": " Don't require fields here, do that above in the corresponding schema.",
+      "type": "object",
+      "properties": {
+        "latest": {
+          "type": "boolean"
+        },
+        "retracted": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cordex-cmip5:activity": {
+          "type": "string",
+          "enum": [
+            "CORDEX"
+          ]
+        },
+        "cordex-cmip5:domain": {
+          "type": "string",
+          "enum": [
+            "Africa",
+            "Antarctica",
+            "Arctic",
+            "Australasia",
+            "Central America",
+            "Central Asia",
+            "East Asia",
+            "Europe",
+            "Europe high res.",
+            "Middle East and North Africa",
+            "Middle East and North Africa high res.",
+            "North America",
+            "South America",
+            "South Asia",
+            "South East Asia"
+          ]
+        },
+        "cordex-cmip5:driving_model": {
+          "type": "string",
+          "enum": [
+            "CCCma-CanESM2",
+            "CNRM-CERFACS-CNRM-CM5",
+            "CSIRO-BOM-ACCESS1-0",
+            "CSIRO-BOM-ACCESS1-3",
+            "CSIRO-Mk3-6-0",
+            "CSIRO-QCCCE-CSIRO-Mk3-6-0",
+            "ECMWF-ERAINT",
+            "ICHEC-EC-EARTH",
+            "IPSL-IPSL-CM5A-LR",
+            "IPSL-IPSL-CM5A-MR",
+            "MIROC-MIROC5",
+            "MOHC-HadGEM2-ES",
+            "MPI-M-MPI-ESM-LR",
+            "MPI-M-MPI-ESM-MR",
+            "NCAR-CCSM4",
+            "NCC-NorESM1-M",
+            "NOAA-GFDL-GFDL-CM3",
+            "NOAA-GFDL-GFDL-ESM2G",
+            "NOAA-GFDL-GFDL-ESM2M"
+          ]
+        },
+        "cordex-cmip5:institution": {
+          "type": "string",
+          "enum": [
+            "Alfred Wegener Institute for Polar and Marine Research",
+            "Bogazici University",
+            "Bureau of Meteorology",
+            "CEC",
+            "Centre National de Recherches Meteorologiques",
+            "Climate Limited-area Modelling Community (CLMcom)",
+            "Climate Limited-area Modelling Community (CLMcom) partner: Brandenburg University of Technology Cottbus-Senftenberg",
+            "Climate Limited-area Modelling Community (CLMcom) partner: Federal Institute of Technology Zurich",
+            "Climate Limited-area Modelling Community (CLMcom) partner: Helmholtz-Zentrum Hereon",
+            "Climate Limited-area Modelling Community (CLMcom) partner: Karlsruhe Institute of Technology",
+            "Climate Service Center Germany, Helmholtz Centre hereon GmbH",
+            "Commonwealth Scientific and Industrial Research Organisation",
+            "Consortium on Regional Climatology and Adaptation to Climate Change (Qu\u00e9bec, Canada)",
+            "Croatian Meteorological and Hydrological Service",
+            "DMI",
+            "ETH Zurich",
+            "Environment and Climate Change Canada",
+            "Hungarian Meteorological Service",
+            "IPSL (Institut Pierre Simon Laplace) and INERIS (Institut National de l Environnement industriel et des RISques)",
+            "Indian Institute of Tropical Meteorology",
+            "Institut Pierre-Simon Laplace",
+            "Iowa State University",
+            "Met Office Hadley Centre",
+            "NCAR",
+            "NUIM",
+            "Oak Ridge National Laboratory",
+            "Potsdam Institute for Climate Impact Research",
+            "RU-CORE",
+            "Royal Meteorological Institute of Belgium & Ghent University downscaling consortium",
+            "Royal Netherlands Meteorological Institute",
+            "SMHI",
+            "The Abdus Salam International Centre for Theoretical Physics",
+            "UCAN",
+            "UNSW",
+            "University of Arizona",
+            "University of Hohenheim",
+            "Universit\u00e9 du Qu\u00e9bec \u00e0 Montr\u00e9al",
+            "Voeikov Main Geophysical Observatory"
+          ]
+        },
+        "cordex-cmip5:institution_id": {
+          "type": "string",
+          "enum": [
+            "AWI",
+            "BOM",
+            "BOUN",
+            "CCCma",
+            "CEC",
+            "CLMcom",
+            "CLMcom-BTU",
+            "CLMcom-ETH",
+            "CLMcom-HZG",
+            "CLMcom-KIT",
+            "CNRM",
+            "CSIRO",
+            "DHMZ",
+            "DMI",
+            "ETH",
+            "GERICS",
+            "HMS",
+            "ICTP",
+            "IITM",
+            "IPSL",
+            "IPSL-INERIS",
+            "ISU",
+            "KNMI",
+            "MGO",
+            "MOHC",
+            "MPI-CSC",
+            "NCAR",
+            "NUIM",
+            "ORNL",
+            "OURANOS",
+            "PIK",
+            "RMIB-UGent",
+            "RU-CORE",
+            "SMHI",
+            "UA",
+            "UCAN",
+            "UHOH",
+            "UNSW",
+            "UQAM"
+          ]
+        },
+        "cordex-cmip5:product": {
+          "type": "string",
+          "enum": [
+            "output"
+          ]
+        },
+        "cordex-cmip5:rcm_model": {
+          "type": "string",
+          "enum": [
+            "AWI-HIRHAM5",
+            "BOM-BOM-SDM",
+            "BOUN-RegCM4-3",
+            "CCCma-CanRCM4",
+            "CEC-WETTREG2013",
+            "CLMcom-BTU-CCLM4-8-17",
+            "CLMcom-CCLM4-8-17",
+            "CLMcom-CCLM4-8-17-CLM3-5",
+            "CLMcom-CCLM5-0-2",
+            "CLMcom-CCLM5-0-6",
+            "CLMcom-ETH-COSMO-crCLIM-v1-1",
+            "CLMcom-HZG-CCLM5-0-15",
+            "CLMcom-KIT-CCLM5-0-15",
+            "CNRM-ALADIN53",
+            "CNRM-ALADIN63",
+            "COSMO-crCLIM-v1-1",
+            "CSIRO-CCAM",
+            "CSIRO-CCAM-1704",
+            "CSIRO-CCAM-2008",
+            "DHMZ-RegCM4-2",
+            "DMI-HIRHAM5",
+            "ETH-CCLM5-0-6",
+            "GERICS-REMO2009",
+            "GERICS-REMO2015",
+            "HMS-ALADIN52",
+            "ICTP-RegCM4-3",
+            "ICTP-RegCM4-4",
+            "ICTP-RegCM4-6",
+            "ICTP-RegCM4-7",
+            "IITM-RegCM4-4",
+            "IPSL-INERIS-WRF331F",
+            "IPSL-WRF381P",
+            "ISU-RegCM4",
+            "KNMI-RACMO21P",
+            "KNMI-RACMO22E",
+            "KNMI-RACMO22T",
+            "MGO-RRCM",
+            "MOHC-HadGEM3-RA",
+            "MOHC-HadREM3-GA7-05",
+            "MOHC-HadRM3P",
+            "MPI-CSC-REMO2009",
+            "NCAR-RegCM4",
+            "NCAR-WRF",
+            "NUIM-WRF341E",
+            "ORNL-RegCM4-7",
+            "OURANOS-CRCM5",
+            "PIK-STARS3",
+            "RMIB-UGent-ALARO-0",
+            "RU-CORE-RegCM4-3",
+            "SMHI-RCA4",
+            "SMHI-RCA4-SN",
+            "UA-WRF",
+            "UCAN-WRF331G",
+            "UCAN-WRF341I",
+            "UHOH-WRF361H",
+            "UNSW-WRF360J",
+            "UNSW-WRF360K",
+            "UNSW-WRF360L",
+            "UQAM-CRCM5"
+          ]
+        },
+        "cordex-cmip5:variable_cf_standard_name": {
+          "type": "string",
+          "enum": [
+            "air_pressure_at_mean_sea_level",
+            "air_temperature",
+            "atmosphere_boundary_layer_thickness",
+            "atmosphere_mass_content_of_cloud_condensed_water",
+            "atmosphere_mass_content_of_cloud_ice",
+            "atmosphere_mass_content_of_water_vapor",
+            "cell_area",
+            "cloud_area_fraction",
+            "cloud_area_fraction_in_atmosphere_layer",
+            "convective_precipitation_flux",
+            "duration_of_sunshine",
+            "eastward_wind",
+            "geopotential_height",
+            "land_area_fraction",
+            "land_ice_area_fraction",
+            "mass_content_of_water_in_soil",
+            "northward_wind",
+            "precipitation_flux",
+            "relative_humidity",
+            "root_depth",
+            "runoff_flux",
+            "sea_ice_area_fraction",
+            "snowfall_flux",
+            "soil_frozen_water_content",
+            "soil_moisture_content_at_field_capacity",
+            "specific_humidity",
+            "surface_air_pressure",
+            "surface_altitude",
+            "surface_downward_eastward_stress",
+            "surface_downward_northward_stress",
+            "surface_downwelling_longwave_flux_in_air",
+            "surface_downwelling_shortwave_flux_in_air",
+            "surface_runoff_flux",
+            "surface_snow_amount",
+            "surface_snow_area_fraction",
+            "surface_snow_melt_flux",
+            "surface_snow_thickness",
+            "surface_temperature",
+            "surface_upward_latent_heat_flux",
+            "surface_upward_sensible_heat_flux",
+            "surface_upwelling_longwave_flux_in_air",
+            "surface_upwelling_shortwave_flux_in_air",
+            "toa_incoming_shortwave_flux",
+            "toa_outgoing_longwave_flux",
+            "toa_outgoing_shortwave_flux",
+            "water_evapotranspiration_flux",
+            "water_potential_evaporation_flux",
+            "wind_speed",
+            "wind_speed_of_gust"
+          ]
+        },
+        "cordex-cmip5:variable_id": {
+          "type": "string",
+          "enum": [
+            "areacella",
+            "clh",
+            "clivi",
+            "cll",
+            "clm",
+            "clt",
+            "clwvi",
+            "evspsbl",
+            "evspsblpot",
+            "hfls",
+            "hfss",
+            "hurs",
+            "hus500",
+            "hus700",
+            "hus850",
+            "huss",
+            "mrfso",
+            "mrro",
+            "mrros",
+            "mrso",
+            "mrsofc",
+            "orog",
+            "pr",
+            "prc",
+            "prhmax",
+            "prsn",
+            "prw",
+            "ps",
+            "psl",
+            "rlds",
+            "rlus",
+            "rlut",
+            "rootd",
+            "rsds",
+            "rsdt",
+            "rsus",
+            "rsut",
+            "sfcWind",
+            "sfcWindmax",
+            "sftgif",
+            "sftlf",
+            "sic",
+            "snc",
+            "snd",
+            "snm",
+            "snw",
+            "sund",
+            "ta200",
+            "ta500",
+            "ta850",
+            "tas",
+            "tasmax",
+            "tasmin",
+            "tauu",
+            "tauv",
+            "ts",
+            "ua200",
+            "ua500",
+            "ua700",
+            "ua850",
+            "uas",
+            "va200",
+            "va500",
+            "va700",
+            "va850",
+            "vas",
+            "wsgsmax",
+            "zg200",
+            "zg500",
+            "zg700",
+            "zg850",
+            "zmla"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?!cordex:)": {}
+      },
+      "additionalProperties": false
+    },
+    "link_fields": {
+      "$comment": "Validation schema for STAC links. See https://github.com/radiantearth/stac-spec/blob/master/commons/links.md",
+      "type": "object",
+      "properties": {
+        "href": {
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

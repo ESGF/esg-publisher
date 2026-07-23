@@ -1,17 +1,17 @@
-from esgcet.args import PublisherArgs
+from esgcet.util.args import PublisherArgs
 import os
 import sys
-import esgcet.logger as logger
+import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("Publisher-Main")
 
 from pathlib import Path
-from esgcet.generic_netcdf import GenericPublisher
-from esgcet.generic_pub import BasePublisher
-from esgcet.cmip6 import cmip6
-from esgcet.input4mips import input4mips
-from esgcet.settings import BUILTIN_GENERICS, PROJECT_MAP
+from esgcet.project.generic_netcdf import GenericPublisher
+from esgcet.project.generic_pub import BasePublisher
+from esgcet.project.cmip6 import cmip6
+from esgcet.project.input4mips import input4mips
+from esgcet.util.settings import BUILTIN_GENERICS, PROJECT_MAP
 
 def check_files(files):
     for file in files:
@@ -63,15 +63,15 @@ class PubRunner:
 
         if not self.proj:
             if project == "create-ip":
-                from esgcet.create_ip import CreateIP
+                from esgcet.project.create_ip import CreateIP
                 proj = CreateIP(argdict)
             elif project == "cmip5":
-                from esgcet.cmip5 import cmip5
+                from esgcet.project.cmip5 import cmip5
                 proj = cmip5(argdict)
             elif project == "input4mips":
                 proj = input4mips(argdict)
             elif project == "e3sm" and not non_netcdf:
-                from esgcet.e3sm import e3sm
+                from esgcet.project.e3sm import e3sm
                 proj = e3sm(argdict)
             elif non_netcdf:
                 proj = BasePublisher(argdict)

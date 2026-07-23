@@ -7,7 +7,7 @@ from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
 from typing import Annotated, Literal
 
 from pathlib import Path
-from esgcet.settings import QAQC
+from esgcet.util.settings import QAQC
 
 app = typer.Typer(help=__doc__)
 
