@@ -184,7 +184,7 @@ class ESGSTACConverter:
                                 "updated": doc.get("timestamp", now),
                                 "protocol": "https",
                                 # "node" : dataset_doc.get("data_node"),
-                                "file:local_path": f"{drspath}/{doc.get("title")}",
+                                "file:local_path": f"{drspath}/{doc.get('title')}",
                             }
                             size += doc.get("size", 0)
                             counter += 1
