@@ -14,21 +14,23 @@ def initialize_esgvoc():
     Note: Users are expected to have esgvoc initialized before running the publisher,
     as it's required for compliance-checking and esgprep workflows. This fixture
     ensures esgvoc is available during test runs.
+
+    Requires both universe (for DRS validation) and cmip6 (for project specs).
     """
     try:
         import subprocess
-        # Try to initialize esgvoc for CMIP6 tests
-        # In CI/CD, this should already be done by the workflow
-        result = subprocess.run(
-            ["esgvoc", "use", "cmip6@latest"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False  # Don't raise on non-zero exit
-        )
-        if result.returncode != 0 and result.stderr:
-            # Log warning but don't fail - esgvoc might already be initialized
-            print(f"esgvoc initialization warning: {result.stderr}")
+        # Initialize universe database (required for DRS validation in kerchunk tests)
+        for db in ["universe@latest", "cmip6@latest"]:
+            result = subprocess.run(
+                ["esgvoc", "use", db],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False  # Don't raise on non-zero exit
+            )
+            if result.returncode != 0 and result.stderr:
+                # Log warning but don't fail - esgvoc might already be initialized
+                print(f"esgvoc initialization warning for {db}: {result.stderr}")
     except Exception as e:
         # esgvoc might not be installed in dev environments
         print(f"Could not initialize esgvoc: {e}")

@@ -28,7 +28,9 @@ jobs:
 
     - name: Initialize esgvoc
       run: |
-        # Install and initialize esgvoc for CMIP6 testing
+        # Initialize esgvoc databases for testing
+        # Universe database required for DRS validation in kerchunk tests
+        esgvoc use universe@latest
         esgvoc use cmip6@latest
 
     - name: Run tests
