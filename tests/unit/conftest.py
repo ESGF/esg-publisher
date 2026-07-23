@@ -1,9 +1,23 @@
 from pathlib import Path
 import pytest
+import os
 
 @pytest.fixture
 def data_dir():
     return Path(__file__).parent / "data"
+
+@pytest.fixture
+def test_config_file(data_dir):
+    """Provide path to test configuration file."""
+    return data_dir / "test_esg_config.yaml"
+
+@pytest.fixture(autouse=True)
+def setup_test_environment(test_config_file, monkeypatch):
+    """Set up test environment with config file."""
+    # Set environment variable to point to test config
+    monkeypatch.setenv("ESG_CONFIG_FILE", str(test_config_file))
+    # Also create a mock ~/.esg directory if tests look for it
+    yield
 
 @pytest.fixture
 def test_map_cmip6(data_dir):

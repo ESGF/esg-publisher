@@ -1,0 +1,15 @@
+# Minimal test configuration for esgcet tests
+data_node: test.data.node
+index_node: test.index.node
+
+data_roots:
+  /test/data: test_esg_dataroot
+
+globus: false
+replica: false
+
+# Minimal project configuration
+user_project_config:
+  cmip6: {}
+  CMIP6: {}
+  MIP-DRS7: {}

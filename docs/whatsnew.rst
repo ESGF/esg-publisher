@@ -16,14 +16,21 @@ v5.5.0a
   * ``util/`` - Shared utilities and helpers
 
 * **Backward Compatibility**: Maintained 100% backward compatibility with old import paths through module aliasing
+* **Configuration Enhancement**: Added ``ESG_CONFIG_FILE`` environment variable support
+
+  * Allows specifying config file path via environment variable
+  * Useful for CI/CD, testing, containers, and multi-config workflows
+  * Priority: ``--config`` flag > ``ESG_CONFIG_FILE`` env var > default ``~/.esg/esg.yaml``
+
 * **Testing Improvements**:
 
   * Added 46 comprehensive unit tests (up from ~5)
   * Backward compatibility tests for all import paths
   * CLI validation tests for all commands
   * Utility module tests (mapfile, args)
+  * Test config fixture and environment setup
 
-* **CI/CD**: Added GitHub Actions workflow for automated testing across Python 3.10, 3.11, 3.12
+* **CI/CD**: Added GitHub Actions workflow for automated testing across Python 3.11, 3.12, 3.13
 * **Bug Fixes**:
 
   * Fixed ``fullmap`` attribute initialization in ``BasePublisher``

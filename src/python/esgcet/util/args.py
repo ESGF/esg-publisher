@@ -23,8 +23,14 @@ class PublisherArgs:
         parser = argparse.ArgumentParser(description="Publish data sets to ESGF databases.")
 
         # ANY FILE NAME INPUT: check first to make sure it exists
-        home = Path.home()
-        def_config = home / ".esg/esg.yaml"
+        # Check for environment variable first (useful for testing)
+        import os
+        env_config = os.getenv('ESG_CONFIG_FILE')
+        if env_config:
+            def_config = env_config
+        else:
+            home = Path.home()
+            def_config = home / ".esg/esg.yaml"
         parser.add_argument("--test", dest="test", action="store_true", help="PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.")
         # replica stuff new... hard-coded, modify mk dataset so that it imports it instead
         parser.add_argument("--set-replica", dest="set_replica", action="store_true", help="Enable replica publication.")
