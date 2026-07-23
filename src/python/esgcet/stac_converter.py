@@ -201,6 +201,11 @@ class ESGSTACConverter:
         if namespace.startswith("cmip"):
             west_degrees -= 180
             east_degrees -= 180
+        else:  # STAC needs longitude in range [-180, 180], but CF might use [0, 360]
+            if west_degrees > 180:
+                west_degrees -= 180
+            if east_degrees > 180:
+                east_degrees -= 180
 
         dt_start = dataset_doc.get("datetime_start", None)
         dt_end = dataset_doc.get("datetime_end", None)
