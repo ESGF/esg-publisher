@@ -36,12 +36,12 @@ def initialize_esgvoc():
 
 @pytest.fixture
 def esgvoc_available():
-    """Check if esgvoc is initialized and available."""
+    """Check if esgvoc is initialized and available for CMIP6."""
     try:
         import esgvoc.api as ev
-        # Try to access the universe database
-        ev.Universe()
-        return True
+        # Check if cmip6 database is active
+        info = ev.get_active_database_info('cmip6')
+        return info is not None
     except Exception:
         return False
 
