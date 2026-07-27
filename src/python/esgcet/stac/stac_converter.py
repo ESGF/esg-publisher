@@ -17,10 +17,9 @@ class ESGSTACItem:
     """
 
     def __init__(self, si):
-        if si:
-            self.stac_item = si
-        else:
-            return None
+        # Store the STAC item, even if None
+        # Callers should check si before creating ESGSTACItem
+        self.stac_item = si
         
     def remove_aggregate(self, site):
         operations = []
@@ -80,7 +79,7 @@ class ESGSTACItem:
                 "type": asset.get("type"),
                 "roles": asset.get("roles", []),
                 "alternate:name": rep_datanode,
-                "created": asset("created"),
+                "created": asset.get("created"),
                 "updated": now,
             }
             rep_path = "TEST/PATH"
