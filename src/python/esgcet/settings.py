@@ -308,7 +308,7 @@ SET_REPLICA = False
 
 QAQC = {
     "cordex-cmip6": {
-        "test": ["wcrp_cordexcmip6:1.0"],
+        "test": ["wcrp_cordex_cmip6:1.0"],
         "criteria": "lenient",
         "include_checks": None,
         "skip_checks": None,
