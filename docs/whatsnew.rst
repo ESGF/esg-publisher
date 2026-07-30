@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+Unreleased
+----------
+* **BUGFIX** Corrected the longitude bounding box fix of 5.4.5.
+
 v5.4.5
 ------
 * **BUGFIX** Corrected a typo in the CORDEX-CMIP6 QA/QC check name (``wcrp_cordexcmip6:1.0`` was missing an underscore; now ``wcrp_cordex_cmip6:1.0``), which had prevented the check from matching and being enforced.
