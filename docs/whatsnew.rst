@@ -1,8 +1,8 @@
 Release Notes
 =============
 
-Unreleased
-----------
+v5.4.6
+------
 * **BUGFIX** Corrected the longitude bounding box fix of 5.4.5.
 
 v5.4.5
