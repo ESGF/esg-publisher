@@ -1,8 +1,8 @@
 Release Notes
 =============
 
-v5.5.0a
--------
+v5.5.0
+------
 **Major Refactoring Release**
 
 * **Code Organization**: Reorganized 55 files from flat structure into logical subdirectories for improved maintainability
@@ -38,6 +38,15 @@ v5.5.0a
   * Fixed missing config fields in test setup
 
 * **Documentation**: All CLI commands verified working with ``--help`` and ``--version``
+
+v5.4.6
+------
+* **BUGFIX** Corrected the longitude bounding box fix of 5.4.5.
+
+v5.4.5
+------
+* **BUGFIX** Corrected a typo in the CORDEX-CMIP6 QA/QC check name (``wcrp_cordexcmip6:1.0`` was missing an underscore; now ``wcrp_cordex_cmip6:1.0``), which had prevented the check from matching and being enforced.
+* **BUGFIX** Corrected longitude bounding box calculation for non-CMIP datasets (e.g. CORDEX) whose data crosses the antimeridian. STAC requires longitudes in the [-180, 180] range; CF-convention files using [0, 360] are now converted accordingly. A similar conversion already existed for CMIP datasets; this extends it to the general case.
 
 v5.4.4
 ------
