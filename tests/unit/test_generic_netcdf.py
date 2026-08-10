@@ -112,14 +112,20 @@ def test_kerchunk_generate(data_dir, tmp_path, test_map_cmip6, backend, inline_t
     argdict['fullmap'] = str(test_map)
     argdict['mountpoints'] = {"$TEST_DATA": str(data_dir)}
 
+    # New integration branch requirements
+    # data_roots maps local path prefix to relative URL path
+    # The local files are in .../data/CMIP6/DCPP/...
+    # We want URLs like https://node/thredds/fileServer/CMIP6/DCPP/...
+    # So map data_dir to empty string (the CMIP6 is already in the file path)
+    argdict['data_roots'] = {str(data_dir) + "/": ""}
+    argdict['data_node'] = "esgf-node.ornl.gov"
 
     argdict['kerchunk'] = {}
     argdict['kerchunk']['generation'] = True
-    argdict['kerchunk']['old_uri'] = str(data_dir)
-    argdict['kerchunk']['new_uri'] = "https://esgf-node.ornl.gov/thredds/fileServer/"
     argdict['kerchunk']['backend'] = backend
     argdict['kerchunk']['inline_threshold'] = inline_threshold
-    argdict['kerchunk']['data_dir'] = tmp_path
+    argdict['kerchunk']['data_dir'] = {str(tmp_path): "https://test.data.node/kerchunk"}
+    argdict['kerchunk']['filter_frequency'] = "mon"
 
 
     generic_pub = GenericPublisher(argdict)
