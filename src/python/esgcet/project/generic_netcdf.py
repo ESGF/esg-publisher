@@ -23,6 +23,7 @@ from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
 
 log = logger.ESGPubLogger()
 
+
 class GenericPublisher(BasePublisher):
 
     scan_file = tempfile.NamedTemporaryFile()  # create a temporary file which is deleted afterward for autocurator
@@ -57,7 +58,7 @@ class GenericPublisher(BasePublisher):
         if self.argdict.get("disable_qaqc", False):
             self.publog.warning("Skipping QAQC per configuration. This is not recommended.  Ensure your input data has already been validated.")
             return True
-        
+
         check_suite = CheckSuite()
         check_suite.load_all_available_checkers()
         project_qc_config = QAQC.get(self.project.lower(), None)
@@ -90,15 +91,38 @@ class GenericPublisher(BasePublisher):
     def kerchunk_generate(self) -> None:
         """ generate kerchunk ref files. """
 
+        cmip7_realm = [
+            "aerosol"
+            "atmos",
+            "atmoschem"
+            "land",
+            "landice"
+            "ocean",
+            "ocnbgchem"
+            "seaice",
+        ]
+
+        cmip7_frequency = [
+            "subhr",
+            "1hr",
+            "3hr",
+            "6hr",
+            "day",
+            "mon",
+            "yr",
+            "dec",
+            "clim",   # from cmip6 just for compatibility
+            "fx",
+        ]
+
         if not self.argdict.get("kerchunk", None):
             return None
         if not self.argdict.get("kerchunk").get("generation", None):
             return None
 
-        self.publog.info(f"kerchunk generation: {self.fullmap}")
 
         try:
-            if self.argdict.get("mountpoints", None): 
+            if self.argdict.get("mountpoints", None):
                 (org, new), = self.argdict['mountpoints'].items()
                 is_replace = True
             else:
@@ -117,30 +141,73 @@ class GenericPublisher(BasePublisher):
 
             mf_cat = MapFileCatalog(records=records)
 
-            output_dir = self.argdict.get("kerchunk").get("data_dir", Path(mf_cat.ncfiles[0]).parent)
+            dataset_id = mf_cat.dataset_id
+            if "CMIP7" in dataset_id:
+                time_frequency = dataset_id.split(".")[8]
+            else:
+                time_frequency = dataset_id.split(".")[6]
 
-            output_file = Path(output_dir) / f"{mf_cat.dataset_id}.v{mf_cat.version}.json"
+            need_process = False
 
-            generator = KerchunkGenerator(
-                path_url=mf_cat.ncfiles, 
-                backend=self.argdict.get("kerchunk").get("backend", "kerchunk"), 
-                output_file=output_file, 
-                format=self.argdict.get("kerchunk").get("format", "json")
-            )
+            filter_frequency = self.argdict.get("kerchunk").get("filter_frequency", None)
 
-            old_uri = self.argdict.get("kerchunk").get("old_uri", None)
-            new_uri = self.argdict.get("kerchunk").get("new_uri", None)
-            inline_threshold = self.argdict.get("kerchunk").get("inline_threshold", 0)
+            if isinstance(filter_frequency, str):
+                if filter_frequency in cmip7_frequency:
+                    filters = cmip7_frequency[cmip7_frequency.index(filter_frequency):]
+                else:
+                    filters = None
+            else:
+                filters = cmip7_frequency[cmip7_frequency.index("mon"):]
 
-            if old_uri is None or new_uri is None:
-                raise ValueError("Incorrect old_uri and new_uri in yaml file")
+            if filters is not None:
+               for filter_id in filters:
+                    if filter_id in time_frequency:
+                        need_process = True
+                        break
 
-            generator.generate(old_uri, new_uri, inline_threshold)
+            if need_process:
+
+                self.publog.info(f"kerchunk generation: {self.fullmap}")
+
+                data_roots = self.argdict.get("data_roots")
+                if data_roots is None:
+                    raise ValueError("missing data_roots in yaml file")
+                (old_uri, rel_uri), = data_roots.items()
+
+                data_node = self.argdict.get("data_node")
+                if data_node is None:
+                    raise ValueError("missing data_node in yaml file")
+
+                new_uri = f"https://{data_node}/thredds/fileServer/{rel_uri}"
+
+
+                inline_threshold = self.argdict.get("kerchunk").get("inline_threshold", 0)
+
+                data_dir = self.argdict.get("kerchunk").get("data_dir", None)
+
+                parent_dir = Path(mf_cat.ncfiles[0]).parent
+
+                if data_dir is not None:
+                    (output_dir, kerchunk_uri), = data_dir.items()
+                else:
+                    output_dir = parent_dir
+                    kerchunk_uri = str(parent_dir).replace(old_uri, new_uri, 1)
+                output_file = Path(output_dir) / f"{mf_cat.dataset_id}.v{mf_cat.version}.json"
+
+                generator = KerchunkGenerator(
+                    path_url=mf_cat.ncfiles,
+                    backend=self.argdict.get("kerchunk").get("backend", "kerchunk"),
+                    output_file=output_file,
+                    format=self.argdict.get("kerchunk").get("format", "json")
+                )
+                generator.generate(old_uri, new_uri, inline_threshold)
+
+                return f"{kerchunk_uri}/{output_file.name}"
         except Exception as e:
             self.publog.info(f"kerchunk generation failed: {self.fullmap} with {e}")
 
 
-    
+
     ## TODO: refactor these down to a single scan command
     def nc4_load(self, map_json_data):
         """
@@ -174,9 +241,9 @@ class GenericPublisher(BasePublisher):
             exit(os.WEXITSTATUS(stat))
 
     def mk_dataset(self, map_json_data):
-        
-        https_url = self.argdict.get("https_url",None)    
-        mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots, 
+
+        https_url = self.argdict.get("https_url",None)
+        mkd = self.MKD_Construct(self.data_node, self.index_node, self.replica, self.globus, self.data_roots,
                                  https_url, self.format_handler, self.silent, self.verbose, skip_opendap=self.argdict.get("skip_opendap",False))
         mkd.set_project(self.project)
 
@@ -206,20 +273,23 @@ class GenericPublisher(BasePublisher):
             return None
 
         # kerchunk
-        self.kerchunk_generate()
-        
+        kerchunk_uri = self.kerchunk_generate()
+
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
 
-            
+
         # step three: make dataset
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
 
         self.dataset_rec = out_json_data
+
+        if kerchunk_uri:
+            out_json_data[-1]["reference_file"] = kerchunk_uri
         self.pid_cite()
-        
+
 
 
         # step five: publish to database
@@ -230,7 +300,7 @@ class GenericPublisher(BasePublisher):
         # step four: update record if exists
             self.publog.info("Updating...")
             self.update(out_json_data)
-        
+
         self.publog.info("Done. Cleaning up.")
         self.cleanup()
         return rc

@@ -13,10 +13,15 @@ from pydantic import AnyUrl, ValidationError
 from dask.distributed import Client
 
 import logging
+import esgcet.logger as logger
 from contextlib import nullcontext
 import yaml
 
 app = typer.Typer(help=__doc__)
+
+log = logger.ESGPubLogger()
+
+publog = log.return_logger(f"CLI:kerchunk:generate")
 
 def load_config(config_path: Path) -> dict:
     """Load configuration file."""
@@ -266,17 +271,17 @@ def generate(
                     generator = KerchunkGenerator(path_url = ncfiles, backend = backend, output_file = output_file, format = format)
                     _run_generation(generator, source, target, inline_threshold, use_dask, n_workers)
                 except ValidationError as e:
-                    print(f"validation failed for {map_file}: {e}")
+                    publog.error(f"validation failed for {map_file}: {e}")
                 except TypeError as e:
-                    print(f"errors in kerchunk generation using {backend} for {map_file}: {e}")
+                    publog.error(f"errors in kerchunk generation using {backend} for {map_file}: {e}")
                 except Exception as e:
-                    print(f"unknown errors in kerchunk generation using {backend} for {map_file}: {e}")
+                    publog.error(f"unknown errors in kerchunk generation using {backend} for {map_file}: {e}")
 
 def _run_generation(
-    generator: KerchunkGenerator, 
-    source: str, 
-    target: str, 
-    inline_threshold: int, 
+    generator: KerchunkGenerator,
+    source: str,
+    target: str,
+    inline_threshold: int,
     use_dask: bool,
     n_workers: int,
 ) -> None:

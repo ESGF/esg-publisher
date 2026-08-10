@@ -37,7 +37,6 @@ class ESGSTACItem:
                     })
         return operations
 
-
     def add_aggregate(self, aggtype, url, site):
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
@@ -55,7 +54,11 @@ class ESGSTACItem:
         else:
             path = f"/assets/reference_file"
         #    value["file:size"] =
-        operations = [{"op": "add", "path": path, "value": value}]
+        operations = [{
+                    "op": "add",
+                    "path": path,
+                    "value": value
+                    }]
 
         return operations
 
@@ -104,7 +107,6 @@ class ESGSTACItem:
 
         return operations
 
-
 class ESGSTACConverter:
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
@@ -124,6 +126,7 @@ class ESGSTACConverter:
         assets = {}
         item_id = dataset_doc.get("instance_id")
         drspath = item_id.replace(".", "/")
+
         collection = dataset_doc.get("project")
         if collection == "mip-drs7":
             collection = "cmip7"
@@ -331,4 +334,8 @@ class ESGSTACConverter:
             item["links"].append(self.citation_link_d(dataset_doc["citation_url"]))
         else:
             print("WARNING no Citation url")
+
+        if "reference_file" in dataset_doc:
+            item["assets"]["reference_file"] = dataset_doc["reference_file"]
+
         return item
