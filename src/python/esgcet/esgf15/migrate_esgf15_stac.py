@@ -1,3 +1,4 @@
+from pandas.compat.pyarrow import pa_version_under14p0
 from pydantic import validate_call
 from typing import Literal
 from pathlib import Path
@@ -8,6 +9,10 @@ from typing import Any
 from esgcet.esgf15.globus import ESGFGlobusIndex, Project
 from esgcet.stac_converter import ESGSTACConverter
 from esgcet.stac_client import getTransactionClient
+import esgcet.logger as logger
+
+log = logger.ESGPubLogger()
+publog = log.return_logger(__name__)
 
 DATA_NODE_MAPPING={
     "anl": "eagle.alcf.anl.gov",
@@ -24,7 +29,7 @@ def migrate(*,
     config_file: Path | None,
     total: int | None = None,
 ) -> None:
-    """migrate esgf1.5 cmip6 records to stac collections/items and 
+    """migrate esgf1.5 cmip6 records to stac collections/items and
        plubish them to stac catalog"""
 
     if dataset_limit > 2000:
@@ -43,7 +48,7 @@ def migrate(*,
         alt_config_file = Path(platform_dirs.user_config_dir) / "esg.yaml"
         if alt_config_file.exists():
 
-            print ("use the config file in the system directory")
+            publog.info("use the config file in the system directory")
             with open(alt_config_file, 'r') as file:
                 config = yaml.safe_load(file)
         else:
@@ -56,13 +61,13 @@ def migrate(*,
             raise ValueError("stac_api is missing")
 
 
-    esgf_stac_convert = ESGSTACConverter(config.get('stac_config')) 
+    esgf_stac_convert = ESGSTACConverter(config.get('stac_config'))
 
     esgf15_index = ESGFGlobusIndex()
 
     esgf15_generator = esgf15_index.query_dataset_file(
         project = project,
-        fixed_facet = {"institution_id": institution_id}, 
+        fixed_facet = {"institution_id": institution_id},
         data_node = DATA_NODE_MAPPING[data_node],
         is_replica = True,
         dataset_limit = dataset_limit,
@@ -88,14 +93,14 @@ def migrate(*,
             dataset_id = entry[0].get("id")
             type_fixed_docs = _esgf1_5_type_conversion(entry)
             if type_fixed_docs is None:
-                print(f"{dataset_id} error in type fixes")
+                publog.error(f"{dataset_id} error in type fixes")
                 continue
-        
+
             stac_item = esgf_stac_convert.convert2stac(type_fixed_docs)
             if stac_item is None:
-                print(f"{dataset_id} cannot be converted to stac")
+                publog.error(f"{dataset_id} cannot be converted to stac")
                 continue
-        
+
             stac_data.append(stac_item)
 
             try:
@@ -105,7 +110,7 @@ def migrate(*,
                 no_published += 1
 
             except Exception as ex:
-                 print (f"error: {ex}")
+                 publog.error(f"some error happened during stac publishing: {ex}")
 
 
 def _esgf1_5_type_conversion(
@@ -133,9 +138,9 @@ def _esgf1_5_type_conversion(
 
             if isinstance(value, list):
                 if not value:
-                    print(f"Empty ESGF field: {field}")
+                    publog.warning(f"Empty ESGF field: {field}")
                     return None
-                    
+
                 type_fixed_doc[field] = value[0]
         # Convert version to string
         if "version" in type_fixed_doc and type_fixed_doc["version"] is not None:
