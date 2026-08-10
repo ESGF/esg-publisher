@@ -15,7 +15,7 @@ from esgvoc.apps.drs.generator import DrsGenerator
 from pathlib import Path
 import re
 
-import esgcet.logger as logger
+from esgcet.util import logger
 
 log = logger.ESGPubLogger()
 

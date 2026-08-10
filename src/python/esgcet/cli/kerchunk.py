@@ -13,7 +13,7 @@ from pydantic import AnyUrl, ValidationError
 from dask.distributed import Client
 
 import logging
-import esgcet.logger as logger
+from esgcet.util import logger
 from contextlib import nullcontext
 import yaml
 
