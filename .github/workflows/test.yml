@@ -32,6 +32,8 @@ jobs:
         # Universe database required for DRS validation in kerchunk tests
         esgvoc use universe@latest
         esgvoc use cmip6@latest
+        esgvoc use cmip7@latest
+        esgvoc use cordex-cmip6@latest
 
     - name: Run tests
       run: |
