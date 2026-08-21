@@ -88,11 +88,7 @@ def run():
 
 
     if a.index_node is None:
-        try:
-            index_node = config['index_node']
-        except:
-            publog.exception("Index node not defined. Use the --index-node option or define in esg.ini.")
-            exit(1)
+        index_node = config.get('index_node')
     else:
         index_node = a.index_node
 
@@ -102,11 +98,7 @@ def run():
 
     if not '|' in dset_id or (a.map):
         if a.data_node is None:
-            try:
-                data_node = config['data_node']
-            except:
-                publog.exception("Data node not defined. Use the --data-node option or define in esg.ini.")
-                exit(1)
+            data_node = config.get('data_node')
         else:
             data_node = a.data_node
     else:
@@ -145,14 +137,17 @@ def run():
         silent = False
 
     args = { "delete": d,
-             "data_node": data_node,
-             "index_node": index_node,
              "verbose" : verbose,
              "silent" :silent,
              "agg": a.agg,
              "stac_config": config.get("stac_config", False)
         }
 
+    if data_node is not None:
+        args["data_node"] = data_node
+    if index_node is not None:
+        args["index_node"] = index_node
+        
     STAC = False
     
     if verbose:
