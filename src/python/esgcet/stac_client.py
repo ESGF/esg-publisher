@@ -191,6 +191,8 @@ class EGITransactionClient:
     """EGI Transaction client for publishing ESGF items."""
 
     def __init__(self, args):
+        self.dry_run = args.get("dry_run")
+        self.save_stac = args.get("save_stac")
         verbose = args.get("verbose", False)
         silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
@@ -234,6 +236,14 @@ class EGITransactionClient:
         headers = {
             "User-Agent": f"esgf_publisher/{__version__}",
         }
+
+        if self.save_stac:
+            with open(f"{entry['id']}.json", "w") as f:
+                f.write(json.dumps(entry, indent=1))
+
+        if self.dry_run:
+            self.publog.info(f"Dry-run mode: Not publishing")
+            return True
 
         try:
             response = requests.post(
