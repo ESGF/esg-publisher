@@ -451,15 +451,11 @@ class ESGPubMakeDataset:
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
+            file_rec["url"] = [unquote(x) for x in file_rec["url"] if x]
             last_file = file_rec
             sz += file_rec["size"]
             ret.append(file_rec)
 
-        lst = []
-        for x in last_file["url"]:
-            if x:
-                lst.append(unquote(x))
-        last_file["url"] = lst
         access = [x.split("|")[2] for x in last_file["url"]]
 
         return ret, sz, access
