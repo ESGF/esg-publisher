@@ -590,7 +590,7 @@ wheels = [
 
 [[package]]
 name = "esgcet"
-version = "5.4.6"
+version = "5.5.0a0"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
@@ -618,7 +618,7 @@ dependencies = [
     { name = "xarray", version = "2026.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "pytest" },
 ]
@@ -629,7 +629,7 @@ requires-dist = [
     { name = "cc-plugin-wcrp", specifier = ">=2.0.0" },
     { name = "dask", extras = ["distributed"] },
     { name = "esgfpid" },
-    { name = "esgvoc", specifier = ">=4.0.0" },
+    { name = "esgvoc", specifier = ">=5.0.1" },
     { name = "globus-cli" },
     { name = "globus-sdk", specifier = ">=4.3.0" },
     { name = "h5py" },
@@ -637,6 +637,7 @@ requires-dist = [
     { name = "netcdf4" },
     { name = "pydantic" },
     { name = "pystac-client" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.0" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "scipy", specifier = ">=1.15.3" },
@@ -644,9 +645,7 @@ requires-dist = [
     { name = "virtualizarr" },
     { name = "xarray" },
 ]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.0.0" }]
+provides-extras = ["dev"]
 
 [[package]]
 name = "esgfpid"
@@ -660,7 +659,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/e5/da/f139dcda5a2d74b56
 
 [[package]]
 name = "esgvoc"
-version = "4.0.0"
+version = "5.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "idna" },
@@ -675,9 +674,9 @@ dependencies = [
     { name = "toml" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/37/c9/bb9333b2afc8690e6cc713d8215f1eb4b6d321fc89e152d4fb67ace6302c/esgvoc-4.0.0.tar.gz", hash = "sha256:7531aae6818b8b7e69ccafeb3b9f9d3945746d13d4b1163fa29454859bd08ed8", size = 5504979, upload-time = "2026-05-06T13:53:46.406Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/27/ab/fb45fd46c7dca01acbb58ef1a41a43da2ac56a57f88377a910f1ec7eda22/esgvoc-5.0.1.tar.gz", hash = "sha256:97d90ba8b38a35b13f16c08b166b0e2921b50c4d4cd20dd277cd505c3029fb94", size = 5666062, upload-time = "2026-07-30T15:30:38.246Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/4c/139951667d985a008b1efd613a9917483b1fe9e890548d481414311fc721/esgvoc-4.0.0-py3-none-any.whl", hash = "sha256:8903b18517cf6adfca68d3010aeb692fa55f8af38d57a20a2d5e8a7b1e22464f", size = 229514, upload-time = "2026-05-06T13:53:44.953Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/39/a3a43c2ed73d106e50bfcae0ee8c4dbe1e3a2fee63aed270db3ac4238f06/esgvoc-5.0.1-py3-none-any.whl", hash = "sha256:96b897c069a2ca3fee6526acefec948dcda5c733dbb06a64722ba0aa456184a3", size = 236590, upload-time = "2026-07-30T15:30:36.432Z" },
 ]
 
 [[package]]

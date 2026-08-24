@@ -20,7 +20,8 @@ def initialize_esgvoc():
     try:
         import subprocess
         # Initialize universe database (required for DRS validation in kerchunk tests)
-        for db in ["universe@latest", "cmip6@latest"]:
+        # plus all STAC collections currently supported by the test suite.
+        for db in ["universe@latest", "cmip6@latest", "cmip7@latest", "cordex-cmip6@latest"]:
             result = subprocess.run(
                 ["esgvoc", "use", db],
                 capture_output=True,
