@@ -15,7 +15,7 @@ from esgvoc.apps.drs.generator import DrsGenerator
 from pathlib import Path
 import re
 
-import esgcet.logger as logger
+from esgcet.util import logger
 
 log = logger.ESGPubLogger()
 
@@ -76,10 +76,12 @@ class MapFileRecord(BaseModel):
             elif len(parts) < 5:
                 raise ValueError(f"Invalid record format for {project}")
 
-            if "CMIP6" in project:
+            # Support both '#' and '.v' version separators for all projects
+            if '#' in parts[0]:
+                # Legacy format: CMIP6.project.institution...#20210114
                 dataset_id, version_str = parts[0].split('#')
             else:
-
+                # Modern format: CMIP6.project.institution....v20210114
                 try:
                     last_v_index = parts[0].rfind('v')
                     dataset_id = parts[0][:last_v_index-1]
@@ -118,6 +120,7 @@ class MapFileRecord(BaseModel):
 
         validator = DrsValidator(project_id=self.project.lower())
         # esgvoc provides dataset id validation against vocabularies
+        # Note: esgvoc validates dataset_id WITHOUT the version component
 
         if not validator.validate_dataset_id(drs_expression=self.dataset_id).validated:
             raise ValueError(f"Invalid {self.project} dataset_id: {self.dataset_id}")

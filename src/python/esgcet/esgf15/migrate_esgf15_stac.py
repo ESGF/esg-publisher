@@ -7,9 +7,9 @@ from platformdirs import PlatformDirs
 from typing import Any
 
 from esgcet.esgf15.globus import ESGFGlobusIndex, Project
-from esgcet.stac_converter import ESGSTACConverter
-from esgcet.stac_client import getTransactionClient
-import esgcet.logger as logger
+from esgcet.stac.stac_converter import ESGSTACConverter
+from esgcet.stac.stac_client import getTransactionClient
+from esgcet.util import logger
 
 log = logger.ESGPubLogger()
 publog = log.return_logger(__name__)
