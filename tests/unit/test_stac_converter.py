@@ -271,6 +271,44 @@ class TestESGSTACConverter:
 
         assert item is None
 
+    def test_convert_rejects_non_sha256_checksum(self, stac_config, cmip6_dataset_doc, cmip6_file_doc):
+        """Test that non-SHA256 file checksums are rejected."""
+        file_doc = cmip6_file_doc.copy()
+        file_doc["checksum_type"] = "MD5"
+
+        converter = ESGSTACConverter(stac_config)
+
+        with pytest.raises(RuntimeError, match="MD5 not supported"):
+            converter.convert2stac([cmip6_dataset_doc, file_doc])
+
+    def test_convert_omits_none_properties_and_collapses_lists(
+        self, stac_config, cmip6_dataset_doc, cmip6_file_doc
+    ):
+        """Test list handling and None omission in STAC properties."""
+        dataset = cmip6_dataset_doc.copy()
+        dataset["institution_id"] = ["MRI"]
+        dataset["nominal_resolution"] = None
+
+        converter = ESGSTACConverter(stac_config)
+        item = converter.convert2stac([dataset, cmip6_file_doc])
+        props = item["properties"]
+
+        assert props["cmip6:institution_id"] == "MRI"
+        assert "cmip6:nominal_resolution" not in props
+
+    def test_convert_wraps_longitudes_after_cmip_shift(
+        self, stac_config, cmip6_dataset_doc, cmip6_file_doc
+    ):
+        """Test longitude normalization after CMIP coordinate shift."""
+        dataset = cmip6_dataset_doc.copy()
+        dataset["west_degrees"] = 400.0
+        dataset["east_degrees"] = 500.0
+
+        converter = ESGSTACConverter(stac_config)
+        item = converter.convert2stac([dataset, cmip6_file_doc])
+
+        assert item["bbox"] == [-140.0, -90.0, -40.0, 90.0]
+
     def test_convert_default_datetime(self, stac_config, cmip6_file_doc):
         """Test default datetime when start/end not provided."""
         # Dataset without datetime_start/datetime_end
