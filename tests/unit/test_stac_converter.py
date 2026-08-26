@@ -334,6 +334,21 @@ class TestESGSTACConverter:
         assert props["start_datetime"] == "1850-01-01T00:00:00Z"
         assert props["end_datetime"] == "1850-01-01T00:00:01Z"
 
+    def test_convert_copies_reference_file_asset(
+        self, stac_config, cmip6_dataset_doc, cmip6_file_doc
+    ):
+        """Test reference file assets are copied from the dataset document."""
+        dataset = cmip6_dataset_doc.copy()
+        dataset["reference_file"] = {
+            "href": "https://test.com/reference.zarr",
+            "type": "application/zarr",
+        }
+
+        converter = ESGSTACConverter(stac_config)
+        item = converter.convert2stac([dataset, cmip6_file_doc])
+
+        assert item["assets"]["reference_file"] == dataset["reference_file"]
+
 
 class TestESGSTACItem:
     """Tests for ESGSTACItem class."""
@@ -430,3 +445,94 @@ class TestESGSTACItem:
         op = operations[0]
         assert op["op"] == "remove"
         assert "reference_file" in op["path"]
+
+    def test_remove_aggregate_alternate_site(self, sample_stac_item):
+        """Test removing one alternate aggregate asset site."""
+        sample_stac_item["assets"]["reference_file"] = {
+            "href": "https://test.com/ref.zarr",
+            "alternate:name": "primary.site",
+            "alternate": {
+                "replica.site": {
+                    "href": "https://replica.com/ref.zarr",
+                    "type": "application/zarr",
+                }
+            },
+        }
+
+        stac_item = ESGSTACItem(sample_stac_item)
+        operations = stac_item.remove_aggregate("replica.site")
+
+        assert operations == [
+            {
+                "op": "remove",
+                "path": "/assets/reference_file/alternate/replica.site",
+            }
+        ]
+
+    def test_add_aggregate_as_alternate_when_reference_exists(self, sample_stac_item):
+        """Test adding an aggregate site when reference_file already exists."""
+        sample_stac_item["assets"]["reference_file"] = {
+            "href": "https://test.com/ref.zarr",
+            "alternate:name": "primary.site",
+        }
+
+        stac_item = ESGSTACItem(sample_stac_item)
+        operations = stac_item.add_aggregate(
+            "zarr", "https://replica.com/ref.zarr", "replica.site"
+        )
+
+        assert len(operations) == 1
+        op = operations[0]
+        assert op["op"] == "add"
+        assert op["path"] == "/assets/reference_file/alternate/replica.site"
+        assert op["value"]["href"] == "https://replica.com/ref.zarr"
+        assert op["value"]["alternate:name"] == "replica.site"
+
+    def test_add_replica_skips_reference_matching_and_existing_alternates(self):
+        """Test replica operations skip assets that should not be duplicated."""
+        item = {
+            "id": "test.item.id",
+            "assets": {
+                "reference_file": {
+                    "href": "https://test.com/ref.zarr",
+                    "type": "application/zarr",
+                },
+                "same-node.nc": {
+                    "href": "https://replica.com/same-node.nc",
+                    "type": "application/netcdf",
+                    "file:local_path": "test/path/same-node.nc",
+                    "alternate:name": "replica.node",
+                },
+                "existing-alt.nc": {
+                    "href": "https://test.com/existing-alt.nc",
+                    "type": "application/netcdf",
+                    "file:local_path": "test/path/existing-alt.nc",
+                    "alternate:name": "original.node",
+                    "alternate": {"replica.node": {}},
+                },
+            },
+        }
+
+        operations = ESGSTACItem(item).add_replica(
+            "replica.node", "https://replica.com/{}/{}", "data"
+        )
+
+        assert operations == []
+
+    def test_add_replica_adds_globus_when_endpoint_provided(self, sample_stac_item):
+        """Test adding a Globus replica asset when a replica endpoint is provided."""
+        stac_item = ESGSTACItem(sample_stac_item)
+
+        operations = stac_item.add_replica(
+            "replica.node",
+            "https://replica.com/{}/{}",
+            "data",
+            rep_globus="replica-endpoint",
+        )
+
+        globus_ops = [op for op in operations if op["path"] == "/assets/globus/alternate/replica.node"]
+        assert len(globus_ops) == 1
+        assert globus_ops[0]["value"]["href"] == (
+            "https://app.globus.org/file-manager?"
+            "origin_id=replica-endpoint&origin_path=test/path"
+        )
