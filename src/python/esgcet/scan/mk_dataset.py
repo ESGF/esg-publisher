@@ -234,9 +234,8 @@ class ESGPubMakeDataset:
         projkey = proj.lower()
 
         if projkey in GA_MAPPED:
-            for gakey in GA_MAPPED[projkey]:
+            for gakey, facetkey in GA_MAPPED[projkey].items():
                 if gakey in scandata:
-                    facetkey = GA_MAPPED[projkey][gakey]
                     facetval = scandata[gakey]
                     self.dataset[facetkey] = facetval
                 else:

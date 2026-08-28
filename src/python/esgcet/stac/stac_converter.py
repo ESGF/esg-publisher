@@ -193,6 +193,7 @@ class ESGSTACConverter:
                             break
 
         if not assets:
+            self.publog.error(f"No assets found for {item_id}")
             return None
 
         west_degrees = dataset_doc.get("west_degrees", -180.0)

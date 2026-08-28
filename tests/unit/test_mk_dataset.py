@@ -10,6 +10,9 @@ class FakeHandler:
     def __init__(self, publog):
         self.publog = publog
 
+    def get_attrs_dict(self, scanobj):
+        return scanobj.get("attrs", {})
+
     def get_variables(self, scanobj):
         return scanobj["variables"]
 
@@ -102,6 +105,15 @@ def test_global_attr_mapped_renames_present_attributes():
     mkd.global_attr_mapped("cmip6", {"experiment": "Decadal prediction"})
 
     assert mkd.dataset["experiment_title"] == "Decadal prediction"
+
+
+def test_global_attr_mapped_warns_when_source_attribute_missing():
+    """Test missing mapped attrs warn instead of raising an UnboundLocalError."""
+    mkd = make_dataset()
+
+    mkd.global_attr_mapped("cmip6", {})
+
+    assert "experiment_title" not in mkd.dataset
 
 
 def test_set_variables_uses_selected_variable_metadata():
@@ -230,6 +242,74 @@ def test_xattr_handler_returns_loaded_attributes():
     mkd.xattr = {"tracking_project": "CMIP6"}
 
     assert mkd.xattr_handler() == {"tracking_project": "CMIP6"}
+
+
+def test_get_dataset_accepts_dot_v_version_identifier():
+    """Test .v dataset IDs are split into master_id and version."""
+    mkd = make_dataset()
+    mapdata = (
+        "CMIP6.DCPP.MRI.MRI-ESM2-0.dcppA-hindcast."
+        "s2017-r1i1p1f1.Amon.psl.gn.v20210114"
+    )
+
+    mkd.get_dataset(mapdata, {"attrs": {"experiment": "Decadal prediction"}})
+
+    assert mkd.dataset["master_id"] == (
+        "CMIP6.DCPP.MRI.MRI-ESM2-0.dcppA-hindcast."
+        "s2017-r1i1p1f1.Amon.psl.gn"
+    )
+    assert mkd.dataset["version"] == "20210114"
+    assert mkd.dataset["instance_id"] == mapdata
+
+
+def test_get_dataset_uses_clone_project_for_global_attributes():
+    """Test cloned projects read global attrs from the source project settings."""
+    mkd = make_dataset(
+        user_project={
+            "clone_project": "cmip6",
+            "custom": {"CONST_ATTR": {"project": "custom"}},
+        }
+    )
+    mapdata = (
+        "custom.DCPP.MRI.MRI-ESM2-0.dcppA-hindcast."
+        "s2017-r1i1p1f1.Amon.psl.gn.v20210114"
+    )
+
+    mkd.get_dataset(
+        mapdata,
+        {
+            "attrs": {
+                "experiment": "Decadal prediction",
+                "source_type": "AOGCM BGC",
+                "activity_id": "DCPP ScenarioMIP",
+            }
+        },
+    )
+
+    assert mkd.dataset["project"] == "custom"
+    assert mkd.dataset["source_type"] == ["AOGCM", "BGC"]
+    assert mkd.dataset["activity_id"] == ["DCPP", "ScenarioMIP"]
+
+
+def test_get_dataset_can_disable_further_info_url():
+    """Test configured further_info_url metadata can be removed."""
+    mkd = make_dataset(
+        user_project={
+            "custom": {
+                "DRS": ["project", "variable_id"],
+                "CONST_ATTR": {},
+                "GA": ["further_info_url"],
+            }
+        },
+        disable_further_info=True,
+    )
+
+    mkd.get_dataset(
+        "custom.tas.v20200101",
+        {"attrs": {"further_info_url": "https://furtherinfo.example/test"}},
+    )
+
+    assert "further_info_url" not in mkd.dataset
 
 
 def test_get_dataset_rejects_invalid_version_identifier():
