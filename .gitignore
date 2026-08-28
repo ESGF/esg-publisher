@@ -20,6 +20,7 @@
 TAGS
 .ant-targets-build.xml
 .idea
+.coverage
 *~
 *.cache
 *.DS_Store
@@ -42,7 +43,7 @@ generated/
 /backup
 
 # sphinx
-docs/_build/
+/docs/_build/
 
 # generated build artifacts
 /pkg/.eggs/
@@ -59,4 +60,6 @@ docs/_build/
 # notebook checkpoints
 .ipynb_checkpoints/
 **/.ipynb_checkpoints/
+
+/htmlcov/
 
