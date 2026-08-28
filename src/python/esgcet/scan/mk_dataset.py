@@ -220,6 +220,8 @@ class ESGPubMakeDataset:
 
         if projkey in self.GA:
             for facetkey in self.GA[projkey]:
+                facetval = None
+
                 # did we find a GA in the data by the the key name
                 if facetkey in scandata:
                     facetval = scandata[facetkey]
@@ -227,7 +229,7 @@ class ESGPubMakeDataset:
                     if projkey in GA_DELIMITED and facetkey in GA_DELIMITED[projkey]:
                         delimiter = GA_DELIMITED[projkey][facetkey]
                         self.dataset[facetkey] = facetval.split(delimiter)
-                    else:
+                    elif facetval is not None:
                         self.dataset[facetkey] = facetval
 
     def global_attr_mapped(self, proj, scandata):

@@ -2,11 +2,15 @@ import pytest
 
 from unittest.mock import patch
 
+from netCDF4 import Dataset
+
 from esgcet.args import PublisherArgs
 from esgcet.generic_netcdf import GenericPublisher
+from esgcet.stac.stac_converter import ESGSTACConverter
 
 import pathlib
 import json
+import shutil
 
 
 def test_mapfile_get_args(test_map_cmip6, test_config_file):
@@ -50,6 +54,58 @@ def test_generic_publisher(data_dir, test_map_cmip6):
     generic_pub.extract_method(map_json)
 
     out_json = generic_pub.mk_dataset(map_json)
+
+
+def test_cmip7_missing_parent_attributes_are_not_reused(data_dir, tmp_path, test_map_cmip7):
+    """Test CMIP7 files without optional parent attrs do not reuse prior property values."""
+    parent_attrs = [
+        "parent_activity_id",
+        "parent_experiment_id",
+        "parent_mip_era",
+        "parent_source_id",
+        "parent_time_units",
+        "parent_variant_label",
+    ]
+
+    map_parts = [p.strip() for p in test_map_cmip7.read_text().splitlines()[0].split("|")]
+    source_file = pathlib.Path(map_parts[1].replace("$TEST_DATA", str(data_dir)))
+    target_file = tmp_path / source_file.relative_to(data_dir)
+    target_file.parent.mkdir(parents=True)
+    shutil.copy2(source_file, target_file)
+
+    with Dataset(target_file, "a") as dataset:
+        for attr in parent_attrs:
+            if attr in dataset.ncattrs():
+                dataset.delncattr(attr)
+
+    map_file = tmp_path / "cmip7_missing_parent_attrs.map"
+    map_parts[1] = str(target_file)
+    map_file.write_text(" | ".join(map_parts) + "\n")
+
+    with patch("sys.argv", ["prog", "--map", str(map_file)]):
+        argdict = PublisherArgs().get_dict("MIP-DRS7")
+
+    argdict['fullmap'] = str(map_file)
+    argdict['mountpoints'] = {}
+    argdict['data_roots'] = {str(tmp_path): 'test_esg_dataroot'}
+    argdict['data_node'] = 'test.data.node'
+    argdict['index_node'] = 'test.index.node'
+
+    generic_pub = GenericPublisher(argdict)
+    map_json = generic_pub.mapfile()
+    generic_pub.extract_method(map_json)
+    out_json = generic_pub.mk_dataset(map_json)
+
+    dataset_doc = out_json[-1]
+    pid = "hdl:21.14107/2a9350a4-57bf-3642-a25f-a1b76b106cd4"
+    dataset_doc["pid"] = pid
+    item = ESGSTACConverter({"stac_api": "https://esgf-stac.llnl.gov/api"}).convert2stac(out_json)
+
+    assert item is not None
+    assert item["properties"]["cmip7:pid"] == pid
+    for attr in parent_attrs:
+        assert attr not in dataset_doc
+        assert f"cmip7:{attr}" not in item["properties"]
 
 
 @pytest.mark.skip(reason="Requires QAQC configuration and positive/negative test files - to be implemented")

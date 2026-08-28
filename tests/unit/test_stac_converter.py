@@ -2,6 +2,7 @@
 import pytest
 import json
 from datetime import datetime
+from esgcet.stac import stac_converter
 from esgcet.stac.stac_converter import ESGSTACConverter, ESGSTACItem
 
 
@@ -131,6 +132,19 @@ class TestESGSTACConverter:
         assert item["stac_version"] == "1.1.0"
         assert item["id"] == cmip6_dataset_doc["instance_id"]
         assert item["collection"] == "CMIP6"
+
+    def test_convert_falls_back_to_configured_schema_version(
+        self, monkeypatch, stac_config, cmip6_dataset_doc, cmip6_file_doc
+    ):
+        """Test configured schema version fallback when esgvoc cannot provide one."""
+        monkeypatch.delattr(stac_converter.jsg, "get_schema_version", raising=False)
+        monkeypatch.setitem(stac_converter.STAC_schema_versions, "CMIP6", "v3.0.4")
+
+        converter = ESGSTACConverter(stac_config)
+        item = converter.convert2stac([cmip6_dataset_doc, cmip6_file_doc])
+
+        assert item is not None
+        assert item["stac_extensions"][0].endswith("/cmip6/v3.0.4/schema.json")
 
     def test_convert_cmip6_properties(self, stac_config, cmip6_dataset_doc, cmip6_file_doc):
         """Test CMIP6 properties are correctly mapped."""
