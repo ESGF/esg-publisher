@@ -10,6 +10,10 @@ from esgcet.util.settings import (
     STAC_schema_versions,
 )
 from esgvoc.apps.jsg import json_schema_generator as jsg
+from esgcet.util import logger
+
+
+log = logger.ESGPubLogger()
 
 log = ESGPubLogger()
 
@@ -112,7 +116,11 @@ class ESGSTACItem:
 class ESGSTACConverter:
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
+<<<<<<< HEAD
         self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
+=======
+        self.publog = log.return_logger("STAC Converter")
+>>>>>>> integration
 
     def citation_link_d(self, url):
 
@@ -237,14 +245,15 @@ class ESGSTACConverter:
         property_keys = STAC_item_properties + collection_item_properties
 
         for k in property_keys:
+            v = None
             if (
                 collection_key_name in MAP_properties
                 and k in MAP_properties[collection_key_name]
             ):
                 mapped_k = MAP_properties[collection_key_name][k]
-                v = dataset_doc.get(mapped_k, "")
+                v = dataset_doc.get(mapped_k, None)
             elif k in dataset_doc:
-                v = dataset_doc.get(k, "")
+                v = dataset_doc.get(k, None)
             else:
                 print(f"WARNING {k} not found in dataset")
             if k == "master_id":
@@ -266,17 +275,24 @@ class ESGSTACConverter:
                     if v[0] is None:
                         continue
                     properties[nk] = v[0]
-            else:
-                if v is None:
-                    continue
+            elif v is not None:
                 properties[nk] = v
         try:
             esgvoc_version = jsg.get_schema_version(namespace)
-        except:
+        except AttributeError:
+            esgvoc_version = ""
+            self.publog.warning(
+                "esgvoc json schema generator does not support schema version lookup"
+            )
+        except Exception:
+            esgvoc_version = ""
             self.publog.warning(
                 f"{namespace} not in esgvoc db, did you remember to 'use' this?"
             )
-        sc_version = STAC_schema_versions.get(collection, esgvoc_version)
+
+        # Prefer the schema version from the user's selected esgvoc database.
+        # Fall back to configured versions only when esgvoc cannot provide one.
+        sc_version = esgvoc_version or STAC_schema_versions.get(collection, "")
         if sc_version == "":
             self.publog.error(f"Collection {namespace} not configured")
             return None
