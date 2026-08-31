@@ -1,5 +1,6 @@
 import re
 from datetime import datetime, timezone
+from esgcet.util.logger import ESGPubLogger
 
 from esgcet.util.settings import (
     MAP_properties,
@@ -14,6 +15,7 @@ from esgcet.util import logger
 
 log = logger.ESGPubLogger()
 
+log = ESGPubLogger()
 
 class ESGSTACItem:
     """
@@ -114,7 +116,7 @@ class ESGSTACItem:
 class ESGSTACConverter:
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
-        self.publog = log.return_logger("STAC Converter")
+        self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
 
     def citation_link_d(self, url):
 
@@ -198,6 +200,7 @@ class ESGSTACConverter:
                             break
 
         if not assets:
+            self.publog.error(f"No assets found for {item_id}")
             return None
 
         west_degrees = dataset_doc.get("west_degrees", -180.0)
