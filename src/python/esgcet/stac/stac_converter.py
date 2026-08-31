@@ -116,11 +116,7 @@ class ESGSTACItem:
 class ESGSTACConverter:
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
-<<<<<<< HEAD
         self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
-=======
-        self.publog = log.return_logger("STAC Converter")
->>>>>>> integration
 
     def citation_link_d(self, url):
 
