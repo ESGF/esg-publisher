@@ -1,5 +1,6 @@
 import re
 from datetime import datetime, timezone
+from esgcet.util.logger import ESGPubLogger
 
 from esgcet.util.settings import (
     MAP_properties,
@@ -10,6 +11,7 @@ from esgcet.util.settings import (
 )
 from esgvoc.apps.jsg import json_schema_generator as jsg
 
+log = ESGPubLogger()
 
 class ESGSTACItem:
     """
@@ -110,6 +112,7 @@ class ESGSTACItem:
 class ESGSTACConverter:
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
+        self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
 
     def citation_link_d(self, url):
 
