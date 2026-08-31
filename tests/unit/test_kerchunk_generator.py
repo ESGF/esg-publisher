@@ -12,12 +12,14 @@ import fsspec
 
 @pytest.mark.parametrize(
     "backend, inline_threshold", [
-        ("kerchunk", 0), 
+        ("kerchunk", 0),
         pytest.param("kerchunk", 500, marks=pytest.mark.xfail(strict=True),),
         ("virtualizarr",0),
     ]
 )
-def test_kerychunk_generator_cmip6(data_dir, test_map_cmip6, tmp_path, backend, inline_threshold):
+def test_kerychunk_generator_cmip6(data_dir, test_map_cmip6, tmp_path, backend, inline_threshold, esgvoc_available):
+    if not esgvoc_available:
+        pytest.skip("esgvoc not initialized - run 'esgvoc use cmip6@latest' first")
 
     records = []
     with open(str(test_map_cmip6), 'r') as fmap:

@@ -1,0 +1,26 @@
+{
+ "q": "",
+ "filters": [
+  {
+   "type": "match_all",
+   "field_name": "latest",
+   "values": [
+    "true"
+   ]
+  },
+  {
+   "type": "match_all",
+   "field_name": "data_node",
+   "values": [
+    "esgf-fake-test.llnl.gov"
+   ]
+  },
+  {
+   "type": "match_all",
+   "field_name": "type",
+   "values": [
+    "Dataset"
+   ]
+  }
+   ]
+}

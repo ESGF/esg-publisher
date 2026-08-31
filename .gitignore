@@ -20,6 +20,7 @@
 TAGS
 .ant-targets-build.xml
 .idea
+.coverage
 *~
 *.cache
 *.DS_Store
@@ -42,5 +43,23 @@ generated/
 /backup
 
 # sphinx
-docs/_build/
+/docs/_build/
+
+# generated build artifacts
+/pkg/.eggs/
+/pkg/build/
+/pkg/dist/
+/src/python/build/
+/src/python/dist/
+/src/python/PKG-INFO
+
+# generated documentation/source copies
+/sources/
+*.sav
+
+# notebook checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+/htmlcov/
 
