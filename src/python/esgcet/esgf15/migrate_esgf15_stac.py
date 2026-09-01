@@ -25,6 +25,7 @@ def migrate(*,
     institution_id: str,
     data_node: Literal["anl", "ornl", "nersc"],
     project: Project,
+    is_replica: bool = False,
     dataset_limit: int = 1000,
     config_file: Path | None,
     total: int | None = None,
@@ -67,9 +68,13 @@ def migrate(*,
 
     esgf15_generator = esgf15_index.query_dataset_file(
         project = project,
-        fixed_facet = {"institution_id": institution_id},
+        fixed_facet = {
+            "institution_id": institution_id,
+            "latest": True,
+            "retracted": False,
+        },
         data_node = DATA_NODE_MAPPING[data_node],
-        is_replica = True,
+        is_replica = is_replica,
         dataset_limit = dataset_limit,
     )
 
