@@ -4,9 +4,21 @@ Release Notes
 v5.5.1
 ------
 
- * Remove setup.py as it is no longer supported following the codebase refactoring in v5.5.0.  The package is now installed via pip and the pyproject.toml file.
+* **Packaging**: Removed ``setup.py`` (no longer supported post-refactor); use ``pip install`` with ``pyproject.toml``
+* **Bug Fixes**:
 
- 
+  * STAC: Fixed ``master_id`` to ``base_id`` mapping logic to prevent incorrect property name assignment
+  * STAC: Changed print statement to proper logging in property mapping warnings
+
+* **CLI Enhancements**:
+
+  * Added help descriptions for all ``esgcet`` subcommands (``kerchunk``, ``qc-check``, ``migrate2stac``)
+  * Migration: Added ``--is-replica`` option to ``migrate2stac esgf15`` command (defaults to ``False``)
+  * Migration: Fixed facet filtering to include ``latest: True`` and ``retracted: False`` by default
+
+* **Dependencies**: Updated ``esgvoc`` lockfile version in ``uv.lock``
+* **Code Quality**: Reduced code duplication and improved logic in Globus migration module
+
 v5.5.0
 ------
 **Major Refactoring Release**
