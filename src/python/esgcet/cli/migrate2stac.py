@@ -21,6 +21,7 @@ def esgf15(
     institution_id: str = typer.Argument(help="institution id"),
     data_node: Literal["anl", "ornl", "nersc"] = typer.Argument(help="data node name"),
     project: str = typer.Argument(help="project name", callback=_validate_project),
+    is_replica: bool = typer.Option(help="is replica?", default=False),
     dataset_limit: int = typer.Option(help="dataset limit for each batch query", default=1000),
     config_file: str | None = typer.Option(
         help="config yaml file path, default will read the esg.yaml under $HOME/.config/esg_publisher"
@@ -33,6 +34,7 @@ def esgf15(
         institution_id = institution_id,
         data_node = data_node, 
         project = project,
+        is_replica = is_replica,
         dataset_limit = dataset_limit,
         config_file = config_file,
         total = total,
