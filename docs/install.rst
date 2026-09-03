@@ -8,8 +8,8 @@ Pip Install
 
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
-    conda activate esgf-pub
-    pip install esgcet. # add --upgrade if existing install 
+    conda activate esgf-pub # or source /path/to/venv/bin/activate 
+    pip install esgcet # add --upgrade if existing install 
     esgpublish --version #  Ensure you have installed/upgraded to latest version
 
 
@@ -22,15 +22,10 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
 
     git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
-    cd src/python
     pip install -e .  # You can modify the source in place
     esgpublish --version  # Confirm that target version has been installed (defined in pyproject.toml)
 
 Now you will be able to call all commands in this package from any directory.  
-
-
-NOTE: if you are intending to publish CMIP6Plus or CMIP7 data, the publisher will perform several `semantic relationship` checks of the dataset properties to ensure that the model and experiment being publisher were successfully registered with the WCRP Controlled-vocabulary (CV).  To enable this procedure, it is necessary to download CMOR tables before the publisher will successfully run, as those are required input for the checks.
-
 
 
 Config File (esg.yaml)

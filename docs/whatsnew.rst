@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v5.5.1
+------
+
+ * Remove setup.py as it is no longer supported following the codebase refactoring in v5.5.0.  The package is now installed via pip and the pyproject.toml file.
+
+ 
 v5.5.0
 ------
 **Major Refactoring Release**
