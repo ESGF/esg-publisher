@@ -352,6 +352,7 @@ STAC_item_properties = [
     "version",
     "project",
     "title",
+    "master_id" # note this is legacy and converted to base_id
 ]
 
 
