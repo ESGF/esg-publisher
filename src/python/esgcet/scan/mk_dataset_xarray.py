@@ -158,10 +158,10 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if (bounds_var_name is not None
             and bounds_var_name in scanobj.variables):
             var = scanobj[bounds_var_name]
-            self.publog.info(f"{stdname} has bounds var")
+            self.publog.debug(f"{stdname} has bounds var")
             using_bounds = True
         else:
-            self.publog.info(f"{stdname} no bounds var")
+            self.publog.debug(f"{stdname} no bounds var")
             using_bounds = False
 
         # undo any broadcasting in time that xarray may have done
