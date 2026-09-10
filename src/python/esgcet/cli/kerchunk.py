@@ -162,13 +162,6 @@ def generate(
         )
     ] = None,
 
-    version: Annotated[
-        str,
-        typer.Option(
-            help = "Version string to use when --path is provided (default: 'v1')"
-        )
-    ] = "v1",
-
     config: Annotated[
         Path,
         typer.Option(
@@ -225,9 +218,9 @@ def generate(
             print(f"Auto-generated dataset-id: {dataset_id}")
 
         if output_dir is None:
-            output_file = nc_path / f"{dataset_id}.{version}"
+            output_file = nc_path / f"{dataset_id}"
         else:
-            output_file = Path(output_dir) / f"{dataset_id}.{version}"
+            output_file = Path(output_dir) / f"{dataset_id}"
 
         try:
             generator = KerchunkGenerator(path_url=ncfiles, backend=backend, output_file=str(output_file), format=format)
