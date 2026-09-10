@@ -53,6 +53,7 @@ class ESGSTACItem:
             "alternate:name": site,
             "created": now,
             "updated": now,
+            "protocol": "kerchunk",
         }
 
         if "reference_file" in self.stac_item.get("assets", {}):
