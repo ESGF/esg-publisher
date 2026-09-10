@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "esgcet"
-version = "5.5.1"
+version = "5.5.2"
 description = "ESGCET publication package"
 readme = "README.md"
 authors = [
