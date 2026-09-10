@@ -65,10 +65,10 @@ class KerchunkGenerator(BaseModel):
             json_list.append(jsn)
     
         if len(json_list) > 1:
+            # not setting identical_dims shall be safe
             mzz = MultiZarrToZarr(
                 json_list,
                 concat_dims=["time"],
-                #identical_dims=["lat", "lon"],
             )
             combined = mzz.translate()
         else:
@@ -107,11 +107,11 @@ class KerchunkGenerator(BaseModel):
 
         if formater == 'parquet':
             refs_to_dataframe(refs, 
-                file_path if file_path == ".parq" else file_path.with_suffix(".parq")
+                str(file_path) if file_path.suffix == ".parq" else str(Path(str(file_path) + ".parq"))
             )
         else:
             with open(
-                file_path if file_path == ".json" else file_path.with_suffix(".json"),
+                file_path if file_path.suffix == ".json" else Path(str(file_path) + ".json"),
                 "w"
             ) as fjson:
                 json.dump(refs, fjson)
@@ -209,7 +209,8 @@ class KerchunkGenerator(BaseModel):
 
             combined = self.combine(ref_dir=tmpdir, ref_format="json")
             if old_uri and new_uri:
-                replaced_ref = self.rename_target_prefix(refs = combined, renames = {old_uri: new_uri})
+                replaced_ref = self.rename_target_prefix(refs = combined, renames = {str(old_uri): str(new_uri)})
             else:
                 replaced_ref = combined
+
             self.serialize(replaced_ref, self.format, self.output_file)
