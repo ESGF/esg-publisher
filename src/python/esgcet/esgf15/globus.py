@@ -47,8 +47,9 @@ class ESGFGlobusIndex:
     """ class for ESGF Globus Index """
 
     def __init__(
-        self,
-        globus_index_name:str = "ESGF2-US-1.5-Catalog"
+        self,*,
+        globus_index_name:str = "ESGF2-US-1.5-Catalog",
+        init_marker: str | None = None,
 
     ) -> None:
 
@@ -58,7 +59,8 @@ class ESGFGlobusIndex:
             raise ValueError("the index is not supported")
  
         self.query_client = SearchClient()
-        self.marker = None
+        self.marker = init_marker
+        self.next_marker = None
 
     @staticmethod
     def _generate_query_dict(
@@ -132,6 +134,10 @@ class ESGFGlobusIndex:
             is_replica,
         )
         query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
+
+        if self.marker is not None:
+            query_str["marker"] = self.marker
+
         paginator = self.query_client.paginated.scroll(self.index_id, query_str) 
 
         query_dict_file = self._generate_query_dict(
@@ -157,7 +163,8 @@ class ESGFGlobusIndex:
                     f"{json.dumps(query_dict_dset)}"
                 )
 
-            self.marker = response.data.get('marker')
+            self.next_marker = response.data.get('marker')
+
             result_dict = defaultdict(list)
             dataset_ids = []
             for g in response.data["gmeta"]:
@@ -191,4 +198,5 @@ class ESGFGlobusIndex:
                 ds_id = gmeta["entries"][0]["content"]["dataset_id"]
                 result_dict[ds_id].append(gmeta["entries"][0]["content"])
 
+            self.marker = self.next_marker
             yield list(result_dict.values())
