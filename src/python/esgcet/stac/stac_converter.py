@@ -49,7 +49,7 @@ class ESGSTACItem:
             "href": url,
             "type": f"application/{aggtype}",
             "role": ["data", "virtual"],
-            "description": "TEST",
+            "description": "Kerchunk reference file for virtual aggregation",
             "alternate:name": site,
             "created": now,
             "updated": now,
