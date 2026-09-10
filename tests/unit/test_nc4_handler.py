@@ -57,7 +57,7 @@ def test_nc4_handler_with_cordex_cmip6(data_dir, test_map_cordex_cmip6):
 def test_nc4_handler_with_cmip6(data_dir, test_map_cmip6):
     """Test NC4 handler can scan CMIP6 data with --no-xarray."""
     pub_args = PublisherArgs()
-    test_argv = ["prog", "--map", str(test_map_cmip6), "--no-xarray"]
+    test_argv = ["prog", "--map", str(test_map_cmip6), "--no-xarray", "--project", "CMIP6"]
 
     with patch("sys.argv", test_argv):
         argdict = pub_args.get_dict('CMIP6')
@@ -71,6 +71,7 @@ def test_nc4_handler_with_cmip6(data_dir, test_map_cmip6):
     argdict['data_roots'] = {str(data_dir): 'test_esg_dataroot'}
     argdict['data_node'] = 'test.data.node'
     argdict['index_node'] = 'test.index.node'
+    argdict['proj'] = 'CMIP6'  # Ensure project is set
 
     # Create publisher with NC4 handler (via skipxr)
     generic_pub = GenericPublisher(argdict)
