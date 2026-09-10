@@ -101,8 +101,14 @@ The config file will contain the following settings, most required settings are 
  * https_url
     * Optional. (Require for sites that don't run a standard Nginx http server container, eg. use of Globus).  For Globus-enabled sites, this is a template in the form: https://<hostname>.data.globus.org/{}/{}|application/netcdf|HTTPServer.  Get your <hostname> from your site/data node administrator.  The software will populate the ``{}`` fields, leave as is. 
  * stac_config
-    * Reuqired for publishing to ESGF Stac catalogs. see :ref:`esglogin` for more information
-      
+    * Required for publishing to ESGF STAC catalogs. This is a dictionary containing authentication and API configuration. See :ref:`esglogin` for more information. The ``stac_api`` URL within this config specifies the STAC Discovery API endpoint.
+ * skipxr
+    * Optional boolean. Set to **true** to enable fast, metadata-only NetCDF4 scanning that bypasses Xarray. Useful for large datasets when only metadata is needed. Default is False. Can be overridden with ``--no-xarray`` CLI flag.
+ * dry_run
+    * Optional boolean. Set to **true** to perform a dry run that scans data and generates metadata without publishing to any index APIs. Useful for testing and validation. Default is False. Can be overridden with ``--dry-run`` CLI flag.
+ * save_stac
+    * Optional boolean. Set to **true** to save generated STAC items as JSON files (named ``<dataset-id>.json``) in the current working directory. Useful for debugging and validation. Default is False. Can be overridden with ``--save-stac`` CLI flag.
+
 
 Fill out the necessary variables, and either leave or override the optional configurations.
 Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.yaml`` when you install ``esgcet``.

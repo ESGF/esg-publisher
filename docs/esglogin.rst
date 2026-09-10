@@ -5,43 +5,42 @@ esglogin
 
 Publishing to the ESGF STAC catalog requires login credentials from an OAuth provider.  We have two Auth domains for ESGF:  Globus (West publishing) and EGI check-in (EAST).  Please select one of the configurations below
 Paste one of the following config into your ``.yaml`` configuraion depending on which ESGF region you intend to publish:
+See 
 
-
-Globus Auth config
-------------------
-
-.. code-block:: yaml
-
-    stac_config:
-        stac_client:
-            client_id:  ec5f07c0-7ed8-4f2b-94f2-ddb6f8fc91a3
-            redirect_uri:  https://auth.globus.org/v2/web/auth-code
-        token_storage_file: ~/.esgf2-publisher.json
-        stac_transaction_api:
-            client_id: 6fa3b827-5484-42b9-84db-f00c7a183a6a
-            access_control_policy: https://esgf2.s3.amazonaws.com/access_control_policy.json
-        #    scope_string: https://auth.globus.org/scopes/ec5f07c0-7ed8-4f2b-94f2-ddb6f8fc91a3/ingest
-            scope_string: https://auth.globus.org/scopes/6fa3b827-5484-42b9-84db-f00c7a183a6a/ingest    
-            base_url: https://client-integration-transaction.api.stac.esgf-west.org
-        stac_api: https://api.stac.esgf-west.org
-
-
-
-
-EGI check-in config
--------------------
+West / Globus Auth config (production)
+------------------------------- 
 
 .. code-block:: yaml
 
-    stac_config:
-        token_storage_file: ~/.esgf2-publisher-egi.json
-        stac_transaction_api:
-            client_id: 3da9c21e-2bb9-4576-9054-af420514cb7b
-            device_endpoint: https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device
-            token_endpoint: https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token
-            scope: 'offline_access entitlements'
-            base_url: https://api.stac.esgf.ceda.ac.uk
-        stac_api: https://api.stac.esgf.ceda.ac.uk
+stac_config:
+  stac_client:
+    client_id: 40ef1be1-5d35-4a69-a571-8ca8bec8f211
+    redirect_uri: https://auth.globus.org/v2/web/auth-code
+  token_storage_file: ~/.esgf-publisher.json
+  stac_transaction_api:
+    client_id: 66ae998e-9e67-4eea-bf9d-7d0e1eb0946f
+    access_control_policy: https://esgf2.s3.amazonaws.com/access_control_policy.json
+    scope_string: https://auth.globus.org/scopes/66ae998e-9e67-4eea-bf9d-7d0e1eb0946f/transaction
+    base_url: https://transaction.west.esgf.io
+  stac_api: https://discovery.west.esgf.io
+
+
+
+East / EGI check-in config (production)
+---------------------------------------
+
+.. code-block:: yaml
+
+stac_config:
+  token_storage_file: ~/.esgf-publisher.json
+  stac_transaction_api:
+    client_id: 3da9c21e-2bb9-4576-9054-af420514cb7b
+    device_endpoint: https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/auth/device
+    token_endpoint: https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token
+    base_url: https://transaction.east.esgf.io
+  stac_api: https://discovery.east.esgf.io
+
+
 
 Command Usage
 -------------

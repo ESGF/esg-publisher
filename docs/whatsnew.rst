@@ -1,6 +1,42 @@
 Release Notes
 =============
 
+v5.5.2
+------
+
+* **Performance Enhancement**: Implemented fast, metadata-only NetCDF4 dataset scanning
+
+  * New ``--no-xarray`` flag bypasses Xarray for faster scanning when full data access is not needed
+  * Directly reads NetCDF4 attributes and coordinates using ``netCDF4`` library
+  * Significantly reduces scan time for large datasets by avoiding Dask graph construction
+  * Accessible via ``ESGPubNC4Handler`` in ``esgcet.scan.mk_dataset_nc4``
+  * See :ref:`no_xarray_option` for usage details
+
+* **CLI Enhancements**:
+
+  * **--save-stac**: Save generated STAC items to disk as ``<dataset-id>.json`` files
+
+    * Useful for validating STAC items before publishing
+    * Enables debugging of STAC conversion errors
+    * Items are saved to current working directory
+    * See :ref:`save_stac_option` for usage details
+
+  * **--dry-run**: Perform dry run of publishing workflow
+
+    * Scans data and generates metadata records without publishing to index APIs
+    * Validates data structure and metadata extraction
+    * Safe for testing publication workflows
+    * See :ref:`dry_run_option` for usage details
+
+* **Testing**: Added comprehensive test coverage for STAC client functionality (``test_stac_client.py``)
+
+* **Migration Enhancements**:
+
+  * Added kerchunk reference generation during CMIP6/Plus dataset migration to STAC
+  * Added ``init_marker`` for resuming large Globus scroll queries from checkpoint
+  * Fixed ``with_suffix()`` bug that incorrectly replaced file extensions
+  * Updated migration workflow argument handling and protocol support
+
 v5.5.1
 ------
 

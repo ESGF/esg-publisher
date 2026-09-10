@@ -11,49 +11,41 @@ Usage
 
         esgpublish --map <mapfile>
 
-The mapfile (``--map``) is the only truly *required* argumement, as other are typically supplied through the config file.
-You can also use ``--help`` to see::
+The mapfile (``--map``) is the only truly *required* argument, as others are typically supplied through the config file.
+You can also use ``--help`` to see all available options::
 
         $ esgpublish --help
-            usage: esgpublish [-h] [--test] [--set-replica] [--no-replica] [--esgmigrate]
+            usage: esgpublish [-h] [--test] [--set-replica] [--no-replica]
                            [--json JSON] [--data-node DATA_NODE]
                            [--index-node INDEX_NODE] [--certificate CERT]
                            [--project PROJ] [--cmor-tables CMOR_PATH]
                            [--autocurator AUTOCURATOR_PATH] --map MAP [MAP ...]
-                           [--config CFG] [--silent] [--verbose] [--no-auth] [--verify]
-                           [--version] [--xarray]
+                           [--config CFG] [--silent] [--verbose] [--verify]
+                           [--version] [--xarray] [--stac-api STAC_API]
+                           [--no-xarray] [--dry-run] [--save-stac]
 
             Publish data sets to ESGF databases.
 
-            options:
-
-
-        Publish data sets to ESGF databases.
-
-        optional arguments:
-          -h, --help            show this help message and exit
-          --test                PID registration will run in 'test' mode. Use this mode unless you are performing 'production' publications.
+        Key arguments:
+          --map MAP             Required. Mapfile, file containing list of mapfiles, or directory.
+          --project PROJ        Set/override the project for DRS and feature selection.
+          --config CFG          Path to yaml config file (default: ~/.esg/esg.yaml or $ESG_CONFIG_FILE).
+          --xarray              Use Xarray to extract metadata (default, overrides autocurator).
+          --no-xarray           Bypass Xarray for fast metadata-only scanning (see below).
+          --dry-run             Scan and validate without publishing to index APIs (see below).
+          --save-stac           Save STAC items as JSON files in current directory (see below).
+          --stac-api STAC_API   Override STAC API endpoint (typically set in config file stac_config).
+          --test                PID registration test mode (recommended unless doing production).
           --set-replica         Enable replica publication.
-          --no-replica          Disable replica publication.
-          --json JSON           Load attributes from a JSON file in .json form. The attributes will override any found in the DRS structure or global attributes.
-          --data-node DATA_NODE
-                                Specify data node.
-          --index-node INDEX_NODE
-                                Specify index node.
-          --certificate CERT, -c CERT
-                                Use the following certificate file in .pem form for publishing (use a myproxy login to generate).
-          --project PROJ        Set/overide the project for the given mapfile, for use with selecting the DRS or specific features, e.g. PrePARE, PID.
-          --cmor-tables CMOR_PATH
-                        Path to CMIP6 CMOR tables for PrePARE. Required for CMIP6 only.
-          --autocurator AUTOCURATOR_PATH
-                                Path to autocurator repository folder.
-          --map MAP             Required.  mapfile or file containing a list of mapfiles.
-          --ini CFG, -i CFG     Path to config file.
+          --data-node DATA_NODE Specify data node.
+          --index-node INDEX_NODE  Specify index node (legacy Solr).
+          --certificate CERT    Certificate file in .pem form for authentication.
           --silent              Enable silent mode.
-          --verbose             Enable verbose mode.
-          --no-auth             Run publisher without certificate, only works on certain index nodes.
-          --verify              Toggle verification for publishing, default is off.
-          --xarray              Use Xarray to extract metadata even if Autocurator is configured.
+          --verbose             Enable verbose (debug) mode.
+          --verify              Toggle certificate verification (default: off for self-signed support).
+
+.. note::
+    The ``--stac-api`` flag is primarily for testing or quick overrides. For production use, configure the STAC API endpoint in the ``stac_config`` section of your ``esg.yaml`` configuration file. See :ref:`esglogin` and the installation documentation for proper STAC configuration.
 
 This command can handle a singular mapfile passed to it, a file containing a list of mapfiles (with full paths), a directory of mapfiles, or a directory of lists of mapfiles.
 You do not need to specify how you are passing mapfiles, but all of them must be for the same project in order for them to be published with the correct metadata.
@@ -69,6 +61,59 @@ If you do not run this and are not using the conda installed ``autocurator``, th
 
 .. warning::
     Please do not attempt to run `esg-publisher` commands with a legacy esg.ini file using the ``-i`` argumement.   You will need to migrate the config using :ref:`migrate`.
+
+.. _no_xarray_option:
+
+Fast Metadata-Only Scanning
+----------------------------
+
+The ``--no-xarray`` flag enables fast, metadata-only NetCDF4 dataset scanning that bypasses Xarray. This is useful when:
+
+* You have large datasets and only need metadata (no data variable inspection)
+* Faster scan times are critical
+* Full Xarray/Dask graph construction is unnecessary
+
+Usage::
+
+    esgpublish --map <mapfile> --no-xarray
+
+This mode uses ``netCDF4`` library directly to read only global attributes and coordinate variables, avoiding the overhead of constructing a complete Dask graph. Note that some metadata fields may be incomplete compared to full Xarray scanning.
+
+.. _dry_run_option:
+
+Dry Run Mode
+------------
+
+The ``--dry-run`` flag performs a complete scan and metadata extraction without actually publishing to any index APIs. This is useful for:
+
+* Testing publication workflows
+* Validating data structure and DRS compliance
+* Debugging metadata extraction issues
+* Previewing what would be published
+
+Usage::
+
+    esgpublish --map <mapfile> --dry-run
+
+In dry run mode, all scanning and record generation occurs normally, but no records are sent to STAC, Solr, or Globus indexes.
+
+.. _save_stac_option:
+
+Saving STAC Items
+-----------------
+
+The ``--save-stac`` flag saves generated STAC items to the current working directory as JSON files named ``<dataset-id>.json``. This is useful for:
+
+* Validating STAC item structure before publishing
+* Debugging STAC conversion errors
+* Archiving STAC items for external use
+* Testing STAC item generation
+
+Usage::
+
+    esgpublish --map <mapfile> --save-stac
+
+Each dataset will produce a corresponding ``<dataset-id>.json`` file containing the complete STAC item that would be (or was) published to the STAC API.
 
 .. _arch_info:
 
