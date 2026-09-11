@@ -19,8 +19,8 @@ def test_nc4_handler_with_cordex_cmip6(data_dir, test_map_cordex_cmip6):
 
     # Setup publisher args
     argdict['fullmap'] = str(test_map_cordex_cmip6)
-    argdict['mountpoints'] = {}
-    argdict['data_roots'] = {str(data_dir / "CORDEX-CMIP6"): 'test_esg_dataroot'}
+    argdict['mountpoints'] = {"$TEST_DATA": str(data_dir)}
+    argdict['data_roots'] = {str(data_dir): 'test_esg_dataroot'}
     argdict['data_node'] = 'test.data.node'
     argdict['index_node'] = 'test.index.node'
 
@@ -164,8 +164,8 @@ def test_nc4_handler_extracts_same_bounds_as_xarray(data_dir, test_map_cordex_cm
         argdict_xr = pub_args.get_dict('CORDEX-CMIP6')
 
     argdict_xr['fullmap'] = str(test_map_cordex_cmip6)
-    argdict_xr['mountpoints'] = {}
-    argdict_xr['data_roots'] = {str(data_dir / "CORDEX-CMIP6"): 'test_esg_dataroot'}
+    argdict_xr['mountpoints'] = {"$TEST_DATA": str(data_dir)}
+    argdict_xr['data_roots'] = {str(data_dir): 'test_esg_dataroot'}
     argdict_xr['data_node'] = 'test.data.node'
     argdict_xr['index_node'] = 'test.index.node'
 
@@ -182,8 +182,8 @@ def test_nc4_handler_extracts_same_bounds_as_xarray(data_dir, test_map_cordex_cm
         argdict_nc4 = pub_args.get_dict('CORDEX-CMIP6')
 
     argdict_nc4['fullmap'] = str(test_map_cordex_cmip6)
-    argdict_nc4['mountpoints'] = {}
-    argdict_nc4['data_roots'] = {str(data_dir / "CORDEX-CMIP6"): 'test_esg_dataroot'}
+    argdict_nc4['mountpoints'] = {"$TEST_DATA": str(data_dir)}
+    argdict_nc4['data_roots'] = {str(data_dir): 'test_esg_dataroot'}
     argdict_nc4['data_node'] = 'test.data.node'
     argdict_nc4['index_node'] = 'test.index.node'
 

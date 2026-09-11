@@ -22,8 +22,8 @@ def test_cordex_cmip6_netcdf_to_stac_integration(data_dir):
         argdict = PublisherArgs().get_dict("CORDEX-CMIP6")
 
     argdict['fullmap'] = str(mapfile)
-    argdict['mountpoints'] = {}
-    argdict['data_roots'] = {str(data_dir / "CORDEX-CMIP6"): 'test_esg_dataroot'}
+    argdict['mountpoints'] = {"$TEST_DATA": str(data_dir)}
+    argdict['data_roots'] = {str(data_dir): 'test_esg_dataroot'}
     argdict['data_node'] = 'test.data.node'
     argdict['index_node'] = 'test.index.node'
 
