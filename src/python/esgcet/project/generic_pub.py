@@ -131,11 +131,13 @@ class BasePublisher(object):
             if not tc:
                 raise RuntimeError("Failed to create STAC transaction client")
             sc = ESGSTACConverter(self.argdict.get("stac_config", {}))
+            stac_item = sc.convert2stac(dataset_records)
+
             try:
-                stac_item = sc.convert2stac(dataset_records)
                 rc = tc.publish(stac_item)
             except Exception as ex:
                 self.publog.error(f"Failed to publish to STAC Transaction API: {ex}")
+                self.publog.debug(f"Exception details:", exc_info=True)                
                 rc = False
 
         else:

@@ -79,3 +79,20 @@ def test_map_cmip7(data_dir):
     )
     return test_map
 
+@pytest.fixture
+def test_map_cmip7_single(data_dir):
+    """Single-file CMIP7 mapfile to avoid duplicate tracking_id issues."""
+    test_map = (
+        data_dir
+       / "MIP-DRS7/MIP-DRS7.CMIP7.CMIP.MOHC.UKESM1-0-LL.1pctCO2.r1i1p1f3.glb.mon.tas.tavg-h2m-hxy-u.g99.v20260123.single.map"
+    )
+    return test_map
+
+@pytest.fixture
+def test_map_cordex_cmip6(data_dir):
+    test_map = (
+        data_dir
+        / "CORDEX-CMIP6/CORDEX-CMIP6.DD.NAM-25.CCCma.CanESM5-1.historical.r1i1p1f2.CanRCM5-SN.v1-r2.mon.tas.v20260903.map"
+    )
+    return test_map
+

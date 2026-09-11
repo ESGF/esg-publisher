@@ -255,10 +255,8 @@ class ESGPubMakeDataset:
         self.dataset["data_node"] = self.data_node
         self.dataset["index_node"] = self.index_node
         self.dataset["master_id"] = master_id
-        self.dataset["instance_id"] = master_id + ".v" + version
-        self.dataset["id"] = (
-            self.dataset["instance_id"] + "|" + self.dataset["data_node"]
-        )
+        self.dataset["instance_id"] = f"{master_id}.v{version}"
+        self.dataset["id"] = f"{self.dataset['instance_id']}|{self.dataset['data_node']}"
         if "title" in self.dataset:
             self.dataset["short_description"] = self.dataset["title"]
         self.dataset["title"] = self.dataset["master_id"]
@@ -446,7 +444,7 @@ class ESGPubMakeDataset:
                     and self.project != "cmip5"
                 ):
                     self.publog.error(
-                        "Autocurator data not found for file: " + fullpath
+                        f"Autocurator data not found for file: {fullpath}"
                     )
                     exit(1)
                 continue
