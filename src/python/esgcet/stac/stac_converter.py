@@ -180,6 +180,9 @@ class ESGSTACConverter:
                             checksum_type = doc.get("checksum_type", "SHA256")
                             if checksum_type != "SHA256":
                                 raise RuntimeError(f"{checksum_type} not supported")
+                            checksum = doc.get("checksum", None)
+                            if not checksum:
+                                raise RuntimeError(f"Checksum not found for {doc.get('title')}")
 
                             assets[doc.get("title", f"data{counter:04}")] = {
                                 "href": href,
@@ -188,7 +191,7 @@ class ESGSTACConverter:
                                 "roles": ["data"],
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
-                                "file:checksum": "1220" + doc.get("checksum"),
+                                "file:checksum": f"1220{checksum}",
                                 f"{namespace}:tracking_id": doc.get("tracking_id"),
                                 "created": doc.get("timestamp", now),
                                 "updated": doc.get("timestamp", now),

@@ -53,6 +53,20 @@ v5.5.2
   * Fixed ``with_suffix()`` bug that incorrectly replaced file extensions
   * Updated migration workflow argument handling and protocol support
 
+* **Bug Fixes**:
+
+  * **STAC Converter**: Added validation for missing checksums before creating file:checksum field
+
+    * Raises RuntimeError with helpful message if checksum is missing from file record
+    * Prevents cryptic errors during STAC item generation
+    * Improved error handling for STAC conversion failures
+
+  * **STAC Error Handling**: Moved ``convert2stac`` outside try/except block
+
+    * Ensures STAC conversion errors are not masked
+    * Only network publishing operations are caught
+    * Added debug logging with full exception details
+
 v5.5.1
 ------
 
