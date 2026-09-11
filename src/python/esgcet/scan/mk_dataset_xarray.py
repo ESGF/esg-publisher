@@ -170,10 +170,6 @@ class ESGPubXArrayHandler(ESGPubHandlerBase):
         if stdname != "time":
             var = self._undo_time_broadcast(var)
 
-        # Get the min, max range in the same way both for a 1d coordinate axis
-        # and also for an irregular grid.  With a 1d axis, in fact we only
-        # need to inspect a couple of elements, but the extra work here is not
-        # very expensive, and the code is simpler.
         shape = var.shape
 
         if stdname == "longitude":
