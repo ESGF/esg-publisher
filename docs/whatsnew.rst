@@ -28,9 +28,25 @@ v5.5.2
     * Safe for testing publication workflows
     * See :ref:`dry_run_option` for usage details
 
-* **Testing**: Added comprehensive test coverage for STAC client functionality (``test_stac_client.py``)
+* **Testing Enhancements**:
 
-* **Migration Enhancements**:
+  * Added comprehensive test coverage for STAC client functionality (``test_stac_client.py``)
+  * Added test coverage for new CLI arguments (``--no-xarray``, ``--dry-run``, ``--save-stac``, ``--stac-api``)
+  * Added NC4 handler integration tests with CORDEX-CMIP6, CMIP6, and CMIP7 fixtures
+  * Added CORDEX-CMIP6 end-to-end integration test (NetCDF → STAC conversion)
+  * Established ground truth coordinate validation using actual NetCDF fixtures
+  * All tests pass: 113 passed, 4 skipped, 3 xfailed
+
+* **Coordinate Calculation Improvements** (PR #346):
+
+  * Revised coordinate range calculation to use cell vertices (bounds) instead of cell centers
+  * Provides more accurate spatial extents by including cell boundaries
+  * Uses bounds variables (``vertices_lon``, ``vertices_lat``, ``lat_bnds``, ``lon_bnds``) when available
+  * Implements sophisticated longitude wrapping algorithm to handle datasets crossing the antimeridian
+  * Improved handling of 1D vs 2D coordinate variables for optimal performance
+  * Reduced unnecessary computation for time axis by avoiding full array reads when possible
+
+* **Migration Enhancements** (PR #349):
 
   * Added kerchunk reference generation during CMIP6/Plus dataset migration to STAC
   * Added ``init_marker`` for resuming large Globus scroll queries from checkpoint
