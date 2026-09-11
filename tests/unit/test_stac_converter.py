@@ -321,7 +321,7 @@ class TestESGSTACConverter:
         converter = ESGSTACConverter(stac_config)
         item = converter.convert2stac([dataset, cmip6_file_doc])
 
-        assert item["bbox"] == [-140.0, -90.0, -40.0, 90.0]
+        assert item["bbox"] == [40.0, -90.0, 140.0, 90.0]
 
     def test_convert_default_datetime(self, stac_config, cmip6_file_doc):
         """Test default datetime when start/end not provided."""
