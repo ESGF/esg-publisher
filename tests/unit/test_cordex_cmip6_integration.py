@@ -46,11 +46,12 @@ def test_cordex_cmip6_netcdf_to_stac_integration(data_dir):
 
     # Ground truth: spatial bounds from 5x5 CORDEX-CMIP6 fixture
     # These values come from the actual file's rotated pole coordinates
-    # transformed to WGS84
-    assert dataset_record["west_degrees"] == pytest.approx(-127.579, rel=1e-3)
-    assert dataset_record["south_degrees"] == pytest.approx(12.398, rel=1e-3)
-    assert dataset_record["east_degrees"] == pytest.approx(-126.478, rel=1e-3)
-    assert dataset_record["north_degrees"] == pytest.approx(13.522, rel=1e-3)
+    # transformed to WGS84, using cell vertices (bounds), not cell centers
+    # Verified from vertices_lon/vertices_lat in the NetCDF file
+    assert dataset_record["west_degrees"] == pytest.approx(-127.718, rel=1e-3)
+    assert dataset_record["south_degrees"] == pytest.approx(12.258, rel=1e-3)
+    assert dataset_record["east_degrees"] == pytest.approx(-126.341, rel=1e-3)
+    assert dataset_record["north_degrees"] == pytest.approx(13.663, rel=1e-3)
 
     # Convert to STAC
     stac_config = {"stac_api": "https://esgf-stac.llnl.gov/api"}
