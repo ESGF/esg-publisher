@@ -299,7 +299,7 @@ class PublisherArgs:
         else:
             argdict["index_UUID"] =""
     
-        argdict["dry_run"] = config.get("dry_run", pub.dry_run)
+        argdict["dry_run"] = pub.dry_run if pub.dry_run else config.get("dry_run", False)
         
         if "skip_opendap" in config:
             argdict["skip_opendap"] = config["skip_opendap"]
@@ -315,8 +315,8 @@ class PublisherArgs:
                 publog.warning("STAC API not properly configured. ")
                 argdict["stac_api"] = stac_api
 
-        argdict["skipxr"] = pub.skipxr
-        argdict["save_stac"] = config.get("save_stac",pub.save_stac)
+        argdict["skipxr"] = pub.skipxr if pub.skipxr else config.get("skipxr", False)
+        argdict["save_stac"] = pub.save_stac if pub.save_stac else config.get("save_stac", False)
         
         return argdict
 

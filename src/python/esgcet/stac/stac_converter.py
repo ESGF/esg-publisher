@@ -49,10 +49,11 @@ class ESGSTACItem:
             "href": url,
             "type": f"application/{aggtype}",
             "role": ["data", "virtual"],
-            "description": "TEST",
+            "description": "Kerchunk reference file for virtual aggregation",
             "alternate:name": site,
             "created": now,
             "updated": now,
+            "protocol": "kerchunk",
         }
 
         if "reference_file" in self.stac_item.get("assets", {}):
@@ -179,6 +180,9 @@ class ESGSTACConverter:
                             checksum_type = doc.get("checksum_type", "SHA256")
                             if checksum_type != "SHA256":
                                 raise RuntimeError(f"{checksum_type} not supported")
+                            checksum = doc.get("checksum", None)
+                            if not checksum:
+                                raise RuntimeError(f"Checksum not found for {doc.get('title')}")
 
                             assets[doc.get("title", f"data{counter:04}")] = {
                                 "href": href,
@@ -187,7 +191,7 @@ class ESGSTACConverter:
                                 "roles": ["data"],
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
-                                "file:checksum": "1220" + doc.get("checksum"),
+                                "file:checksum": f"1220{checksum}",
                                 f"{namespace}:tracking_id": doc.get("tracking_id"),
                                 "created": doc.get("timestamp", now),
                                 "updated": doc.get("timestamp", now),
@@ -203,19 +207,35 @@ class ESGSTACConverter:
             self.publog.error(f"No assets found for {item_id}")
             return None
 
-        west_degrees = dataset_doc.get("west_degrees", -180.0)
-        south_degrees = dataset_doc.get("south_degrees", -90.0)
-        east_degrees = dataset_doc.get("east_degrees", 180.0)
-        north_degrees = dataset_doc.get("north_degrees", 90.0)
+        west_degrees = float(dataset_doc.get("west_degrees", -180.0))
+        south_degrees = float(dataset_doc.get("south_degrees", -90.0))
+        east_degrees = float(dataset_doc.get("east_degrees", 180.0))
+        north_degrees = float(dataset_doc.get("north_degrees", 90.0))
 
-        if namespace.startswith("cmip"):
-            west_degrees -= 180
-            east_degrees -= 180
-        # STAC needs longitude in range [-180, 180], but CF might use [0, 360]
-        if west_degrees > 180:
-            west_degrees -= 360
-        if east_degrees > 180:
-            east_degrees -= 360
+        # STAC needs longitude in range [-180, 180], but CF might use [0, 360)
+
+        if abs(east_degrees - west_degrees - 360) < 1e-3:
+            # represent any global range (e.g. 0 to 360 or -180 to 180 in the data)
+            # as -180 to 180
+            west_degrees, east_degrees = -180., 180.
+        else:
+            # otherwise force each value separately to range [-180, 180) (for west)
+            # or (-180, 180] (for east)
+            west_degrees = (west_degrees + 180) % 360 - 180
+            east_degrees = (east_degrees + 180) % 360 - 180
+
+            if east_degrees == -180.:
+                east_degrees = 180.
+
+        if south_degrees < -90.:
+            func = self.publog.info if south_degrees > -90.001 else self.publog.warning
+            func(f"forcing min lat {south_degrees} into range (-90)")
+            south_degrees = -90.
+
+        if north_degrees > 90.:
+            func = self.publog.info if north_degrees < 90.001 else self.publog.warning
+            func(f"forcing max lat {north_degrees} into range (90)")
+            north_degrees = 90.
 
         dt_start = dataset_doc.get("datetime_start", None)
         dt_end = dataset_doc.get("datetime_end", None)
