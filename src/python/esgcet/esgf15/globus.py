@@ -12,6 +12,13 @@ from typing import Any, Literal, Generator
 
 from collections import defaultdict
 
+from esgcet.util import logger
+from pandas.core.dtypes.inference import is_re
+
+
+log = logger.ESGPubLogger()
+publog = log.return_logger(__name__)
+
 class Project(str, Enum):
 
     """read-only projects."""
@@ -57,7 +64,7 @@ class ESGFGlobusIndex:
             self.index_id = self.ESGF_Globus_Index[globus_index_name]
         else:
             raise ValueError("the index is not supported")
- 
+
         self.query_client = SearchClient()
         self.marker = init_marker
         self.next_marker = None
@@ -68,9 +75,9 @@ class ESGFGlobusIndex:
         project: Project,
         fixed_facet: dict[str, Any],
         data_node: str,
-        is_replica: bool = False,
+        is_replica: bool | None= False,
     ) -> dict[str, Any]:
-        
+
         query_dict= {"filters":[]}
         for key, val in fixed_facet.items():
             query_dict["filters"].append({
@@ -103,34 +110,35 @@ class ESGFGlobusIndex:
             }
         )
 
-        query_dict["filters"].append(
-            {
-                "field_name": "replica",
-                "values": [is_replica],
-                "type": "match_all",
-            }
-        )
+        if is_replica is not None:
+            query_dict["filters"].append(
+                {
+                    "field_name": "replica",
+                    "values": [is_replica],
+                    "type": "match_all",
+                }
+            )
 
 
         return query_dict
 
 
     def query_dataset_file(
-        self, 
-        project: Project, 
+        self,
+        project: Project,
         fixed_facet: dict[str, Any],
         data_node: str,
-        is_replica: bool = False,
+        is_replica: bool | None = False,
         dataset_limit: int = 1000,
     ) -> Generator[list[list[dict[str, Any]]], None, None]:
         """query index using project and a fixed_facet"""
 
-        
+
         query_dict_dset = self._generate_query_dict(
-            'Dataset', 
-            project, 
-            fixed_facet, 
-            data_node, 
+            'Dataset',
+            project,
+            fixed_facet,
+            data_node,
             is_replica,
         )
         query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
@@ -138,7 +146,7 @@ class ESGFGlobusIndex:
         if self.marker is not None:
             query_str["marker"] = self.marker
 
-        paginator = self.query_client.paginated.scroll(self.index_id, query_str) 
+        paginator = self.query_client.paginated.scroll(self.index_id, query_str)
 
         query_dict_file = self._generate_query_dict(
             'File',
@@ -158,10 +166,12 @@ class ESGFGlobusIndex:
         for response in paginator:
 
             if response.data['total'] == 0:
-                raise ValueError(
+                #raise ValueError(
+                publog.error(
                     "Cannot find any dataset using the query filter:\n"
                     f"{json.dumps(query_dict_dset)}"
                 )
+                continue
 
             self.next_marker = response.data.get('marker')
 
@@ -180,7 +190,7 @@ class ESGFGlobusIndex:
             )
 
             search_result = self.query_client.post_search(
-                self.index_id, 
+                self.index_id,
                 SearchQueryV1(
                     limit=10000,
                     offset =0,
@@ -198,5 +208,4 @@ class ESGFGlobusIndex:
                 ds_id = gmeta["entries"][0]["content"]["dataset_id"]
                 result_dict[ds_id].append(gmeta["entries"][0]["content"])
 
-            self.marker = self.next_marker
             yield list(result_dict.values())
