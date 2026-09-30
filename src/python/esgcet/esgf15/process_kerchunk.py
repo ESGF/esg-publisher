@@ -113,7 +113,7 @@ def generate_kerchunk_for_entry(
 
         # Extract all local NetCDF files for this dataset
 
-        ncfiles = _extract_local_file_paths(entry)
+        ncfiles = _extract_local_file_paths(type_fixed_docs)
 
         if not ncfiles:
             raise ValueError(
@@ -421,6 +421,17 @@ def _esgf1_5_type_conversion(
         # Convert version to string
         if "version" in type_fixed_doc and type_fixed_doc["version"] is not None:
             type_fixed_doc["version"] = str(type_fixed_doc["version"])
+
+        # change the http to https
+        if "url" in type_fixed_doc:
+             type_fixed_doc["url"] = [
+                 "https://" + url[len("http://"):]
+                 if url.startswith("http://")
+                 else url
+                 for url in type_fixed_doc["url"]
+             ]
+
+        #
 
         type_fixed_docs.append(type_fixed_doc)
 
