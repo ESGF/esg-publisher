@@ -164,6 +164,8 @@ class ESGFGlobusIndex:
         ]
 
         for response in paginator:
+            if self.next_marker is not None:
+                self.marker = self.next_marker
 
             if response.data['total'] == 0:
                 #raise ValueError(
@@ -171,6 +173,10 @@ class ESGFGlobusIndex:
                     "Cannot find any dataset using the query filter:\n"
                     f"{json.dumps(query_dict_dset)}"
                 )
+                continue
+            # the paginator will go to one more page, in some cases
+            # continue is enough as it will trigger the stopiteration
+            if response.data.get('marker') is None:
                 continue
 
             self.next_marker = response.data.get('marker')
