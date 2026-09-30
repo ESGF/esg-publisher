@@ -269,6 +269,10 @@ def migrate_dask(*,
                             f"Unexpected Dask worker failure: {ex}"
                         ),
                     )
+                result.marker = marker
+                result.next_marker = next_marker
+
+                publog.info(f"marker: {marker}, next_marker: {next_marker}")
 
                 no_published += process_publish_result(
                     result=result,
@@ -279,6 +283,10 @@ def migrate_dask(*,
                     tc=tc,
                 )
 
+                no_processed += 1
+                if no_processed % 200 == 0:
+                    con_log.log_update()
+
                 if (
                     total is not None
                     and no_published >= total
@@ -287,9 +295,6 @@ def migrate_dask(*,
                 # A task completed, so submit more work.
                 fill_queue()
 
-            no_processed += 1
-            if no_processed % 200 == 0:
-                con_log.log_update()
 
             if (
                 total is not None
