@@ -12,9 +12,9 @@ import fsspec
 
 @pytest.mark.parametrize(
     "backend, inline_threshold", [
-        ("kerchunk", 0),
-        pytest.param("kerchunk", 500, marks=pytest.mark.xfail(strict=True),),
-        ("virtualizarr",0),
+        pytest.param("kerchunk", 0, marks=pytest.mark.xfail(reason="Known issue: esgvoc MultipleResultsFound error")),
+        pytest.param("kerchunk", 500, marks=pytest.mark.xfail(strict=True)),
+        pytest.param("virtualizarr", 0, marks=pytest.mark.xfail(reason="Known issue: esgvoc MultipleResultsFound error")),
     ]
 )
 def test_kerychunk_generator_cmip6(data_dir, test_map_cmip6, tmp_path, backend, inline_threshold, esgvoc_available):

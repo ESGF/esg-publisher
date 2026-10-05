@@ -21,7 +21,14 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libudunits2-dev
+
     - name: Install dependencies
+      env:
+        UDUNITS2_XML_PATH: /usr/share/xml/udunits/udunits2.xml
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
