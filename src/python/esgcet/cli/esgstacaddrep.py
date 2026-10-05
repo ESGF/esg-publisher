@@ -70,7 +70,7 @@ def get_args():
     )
     parser.add_argument(
         "--agg",
-        help="Add an aggregtion of the specified type [zarr|kerchunk|virtualizarr|icechunk]. --rep-path is the url for the item",
+        help="Add an aggregtion of the specified type [zarr|kerchunk|virtualizarr|icechunk|cfa]. --rep-path is the url for the item",
         default=None,
     )
     parser.add_argument(
