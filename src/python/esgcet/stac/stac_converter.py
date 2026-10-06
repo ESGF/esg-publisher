@@ -48,6 +48,7 @@ class ESGSTACItem:
         value = {
             "href": url,
             "type": f"application/{aggtype}",
+            "roles": ["virtual"],
             "description": "Kerchunk reference file for virtual aggregation",
             "alternate:name": site,
             "created": now,
@@ -86,6 +87,7 @@ class ESGSTACItem:
             replica_asset = {
                 "description": asset.get("description"),
                 "type": asset.get("type"),
+                "roles": asset.get("roles", []),
                 "alternate:name": rep_datanode,
                 "created": asset.get("created"),
                 "updated": now,
@@ -152,6 +154,7 @@ class ESGSTACConverter:
                                     "href": href,
                                     "description": "Globus Web App Link",
                                     "type": "text/html",
+                                    "roles": ["data"],
                                     "alternate:name": dataset_doc.get("data_node"),
                                     "created": doc.get("timestamp", now),
                                     "updated": doc.get("timestamp", now),
@@ -185,6 +188,7 @@ class ESGSTACConverter:
                                 "href": href,
                                 "description": "HTTPServer Link",
                                 "type": "application/netcdf",
+                                "roles": ["data"],
                                 "alternate:name": dataset_doc.get("data_node"),
                                 "file:size": doc.get("size", 0),
                                 "file:checksum": f"1220{checksum}",
