@@ -128,11 +128,11 @@ class ESGFGlobusIndex:
         project: Project,
         fixed_facet: dict[str, Any],
         data_node: str,
+        dataset_file: str | None = None,
         is_replica: bool | None = False,
         dataset_limit: int = 1000,
     ) -> Generator[list[list[dict[str, Any]]], None, None]:
         """query index using project and a fixed_facet"""
-
 
         query_dict_dset = self._generate_query_dict(
             'Dataset',
@@ -141,12 +141,26 @@ class ESGFGlobusIndex:
             data_node,
             is_replica,
         )
-        query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
+        if dataset_file is None:
+            query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
 
-        if self.marker is not None:
-            query_str["marker"] = self.marker
+            if self.marker is not None:
+                query_str["marker"] = self.marker
 
-        paginator = self.query_client.paginated.scroll(self.index_id, query_str)
+            paginator = self.query_client.paginated.scroll(self.index_id, query_str)
+
+        else:
+            if self.marker is not None and isinstance(self.marker, int):
+                dataset_offset = self.marker
+            else:
+                dataset_offset = 0
+
+            paginator = self._dataset_file_globus_paginator(
+                 dataset_file,
+                 query_dict_dset,
+                 dataset_limit,  # consistent with the above code
+                 dataset_offset,
+            )
 
         query_dict_file = self._generate_query_dict(
             'File',
@@ -187,25 +201,25 @@ class ESGFGlobusIndex:
                 dataset_ids.append(g["subject"])
                 result_dict[g["subject"]] = [g["entries"][0]["content"]]
 
-            query_dict_file["filters"].append(
+
+            filters = [
+                *query_dict_file["filters"],
                 {
                     "field_name": "dataset_id",
                     "values": dataset_ids,
                     "type": "match_any",
                 },
-            )
+            ]
 
             search_result = self.query_client.post_search(
                 self.index_id,
                 SearchQueryV1(
                     limit=10000,
                     offset =0,
-                    filters=query_dict_file["filters"],
+                    filters=filters,
                     sort=query_dict_file["sort"]
                 )
             )
-
-            del query_dict_file["filters"][-1]
 
             if search_result["total"] > 10000:
                 raise ValueError("Over Globus post search limit, reduce the limit_dataset")
@@ -215,3 +229,59 @@ class ESGFGlobusIndex:
                 result_dict[ds_id].append(gmeta["entries"][0]["content"])
 
             yield list(result_dict.values())
+
+    def _dataset_file_globus_paginator(
+        self,
+        dataset_file: str,
+        query_dict_dset: dict,
+        dataset_limit: int,  # consistent with the above code
+        dataset_offset: int = 0,
+    ) -> Generator[list[list[dict[str, Any]]], None, None]:
+
+        base_filters = query_dict_dset.get("filters", [])
+
+
+        with open(dataset_file, encoding="utf-8") as f:
+
+        for _ in range(dataset_offset):
+            if not file.readline():
+                break
+
+            while True:
+                dataset_ids = []
+
+                for _ in range(dataset_limit):
+                    line = f.readline()
+                    if not line:
+                        break
+
+                    dataset_id = line.strip()
+                    if dataset_id:
+                        dataset_ids.append(dataset_id)
+
+                if not dataset_ids:
+                    break
+
+                self.marker = self.marker + dataset_limit
+
+                query_dict_copy = {
+                    **query_dict_dset,
+                    "filters": [
+                        *base_filters,
+                        {
+                            "field_name": "id",
+                            "values": dataset_ids,
+                            "type": "match_any",
+                        },
+                    ],
+                }
+
+                query_str = SearchScrollQuery(
+                    limit=dataset_limit,
+                    additional_fields=query_dict_copy
+                )
+
+                yield from self.query_client.paginated.scroll(
+                    self.index_id,
+                    query_str,
+                )

@@ -8,6 +8,7 @@ from typing import Literal
 import duckdb
 from duckdb import DuckDBPyConnection
 from esgcet.esgf15.process_kerchunk import ProcessLog
+import pathlib
 
 app = typer.Typer()
 
@@ -26,6 +27,7 @@ def esgf15(
     institution_id: str = typer.Argument(help="institution id"),
     data_node: Literal["anl", "ornl", "nersc"] = typer.Argument(help="data node name"),
     project: str = typer.Argument(help="project name", callback=_validate_project),
+    dataset_file: str = typer.Option(help="path to the dataset file including the dataset id", default=None),
     is_replica: bool | None= typer.Option(help="is replica?", default=None),
     dataset_limit: int = typer.Option(help="dataset limit for each batch query", default=1000),
     config_file: str | None = typer.Option(
@@ -51,11 +53,22 @@ def esgf15(
     csv_filename = f"{project.value}_{institution_id}_{data_node}_{drs_method}.csv"
     con_log = ProcessLog(csv_filename)
 
+    if pathlib.Path(dataset_file).exists():
+        dataset_file = str(pathlib.Path(dataset_file).resolve())
+        print(
+            f"Dataset will be read from: {dataset_file}. \n"
+            f"{project}, {data_node} {institution_id} just used to verify the datasets"
+        )
+    else:
+        dataset_file = None
+        print ("Normal Query")
+
     if n_workers <= 0:
         esgf_migrate_serial(
             institution_id = institution_id,
             data_node = data_node,
             project = project,
+            dataset_file = dataset_file,
             is_replica = is_replica,
             dataset_limit = dataset_limit,
             config_file = config_file,
@@ -71,6 +84,7 @@ def esgf15(
             institution_id = institution_id,
             data_node = data_node,
             project = project,
+            dataset_file = dataset_file,
             is_replica = is_replica,
             dataset_limit = dataset_limit,
             config_file = config_file,
