@@ -134,10 +134,10 @@ resolution-markers = [
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 dependencies = [
-    { name = "cftime", marker = "python_full_version >= '3.11'" },
-    { name = "jinja2", marker = "python_full_version >= '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "cftime", marker = "python_full_version >= '3.11' and sys_platform != 'emscripten'" },
+    { name = "jinja2", marker = "python_full_version >= '3.11' and sys_platform != 'emscripten'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' and sys_platform != 'emscripten'" },
+    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' and sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/30/27509046e69457605e6eefa4ad7866fcdb6182b1a4f9b9d8404a28e3eb50/cf_units-3.3.1.tar.gz", hash = "sha256:84339f582994ae32ca5c472075c1e603a89f6c6f5a96cc1031bb5da700a14f3a", size = 311647, upload-time = "2026-01-16T15:09:38.423Z" }
 wheels = [
@@ -865,7 +865,7 @@ wheels = [
 
 [[package]]
 name = "esgcet"
-version = "5.5.2"
+version = "5.5.3"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
@@ -1287,7 +1287,7 @@ name = "importlib-metadata"
 version = "9.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp" },
+    { name = "zipp", marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/6f/7e/1e7e8dc30634b93ebb3d58a3dea569ad146e656218d3960ab04f62047b29/importlib_metadata-9.0.1.tar.gz", hash = "sha256:ab830580bc0ef3db61ce8fae716389e5462b67e033018bab6d8f80ef17172f99", size = 59124, upload-time = "2026-08-28T15:30:34.646Z" }
 wheels = [
@@ -3287,7 +3287,7 @@ name = "pyudunits2"
 version = "0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "sympy", marker = "platform_machine != 'ARM64' or sys_platform != 'win32'" },
+    { name = "sympy", marker = "(python_full_version < '3.11' and platform_machine != 'ARM64') or (python_full_version < '3.11' and sys_platform != 'win32') or sys_platform == 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3a/22/8c6c8762af2223672bc701d5e72b607a3be4d000f8776c59b72a13a08044/pyudunits2-0.1.tar.gz", hash = "sha256:791d234d402d8877e55a8baaad4a329c7537a187eda5bfc1b19d33150e0a170a", size = 190383, upload-time = "2025-02-07T08:32:22.462Z" }
 wheels = [
@@ -4111,7 +4111,7 @@ name = "sympy"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mpmath", marker = "platform_machine != 'ARM64' or sys_platform != 'win32'" },
+    { name = "mpmath", marker = "(python_full_version < '3.11' and platform_machine != 'ARM64') or (python_full_version < '3.11' and sys_platform != 'win32') or sys_platform == 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
