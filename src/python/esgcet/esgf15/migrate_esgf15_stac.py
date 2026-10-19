@@ -1,7 +1,7 @@
 import yaml
 from collections import deque
 from pydantic import validate_call, ConfigDict
-from typing import Any, Literal
+from typing import Any, Literal, Generator
 from pathlib import Path
 from platformdirs import PlatformDirs
 from duckdb import DuckDBPyConnection
@@ -29,11 +29,41 @@ from dask.distributed import Client, LocalCluster, Future, as_completed
 log = logger.ESGPubLogger()
 publog = log.return_logger(__name__)
 
+
+def _esgf15_index_generator(
+    *,
+    institution_id: str,
+    data_node: Literal["anl", "ornl", "nersc"],
+    project: Project,
+    init_marker: str | None = None,
+    dataset_file: str | None = None,
+    is_replica: bool | None= False,
+    dataset_limit: int = 1000,
+) -> tuple[
+    ESGFGlobusIndex, Generator[list[list[dict[str, Any]]], None, None]
+]:
+
+    esgf15_index = ESGFGlobusIndex(init_marker=init_marker)
+    esgf15_generator = esgf15_index.query_dataset_file(
+        project = project,
+        fixed_facet = {
+            "institution_id": institution_id,
+            "latest": True,
+            "retracted": False,
+        },
+        data_node = DATA_NODE_MAPPING[data_node],
+        dataset_file = dataset_file,
+        is_replica = is_replica,
+        dataset_limit = dataset_limit,
+    )
+    return esgf15_index, esgf15_generator
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def migrate_serial(*,
     institution_id: str,
     data_node: Literal["anl", "ornl", "nersc"],
     project: Project,
+    dataset_file: str | None = None,
     is_replica: bool | None= False,
     dataset_limit: int = 1000,
     config_file: Path | None,
@@ -47,17 +77,14 @@ def migrate_serial(*,
 
     config = _pre_setting_config(dataset_limit, config_file)
 
-    esgf15_index = ESGFGlobusIndex(init_marker=init_marker)
-    esgf15_generator = esgf15_index.query_dataset_file(
-        project = project,
-        fixed_facet = {
-            "institution_id": institution_id,
-            "latest": True,
-            "retracted": False,
-        },
-        data_node = DATA_NODE_MAPPING[data_node],
-        is_replica = is_replica,
-        dataset_limit = dataset_limit,
+    esgf15_index, esgf15_generator = _esgf15_index_generator(
+         institution_id = institution_id,
+         data_node = data_node,
+         project = project,
+         init_marker = init_marker,
+         dataset_file = dataset_file,
+         is_replica = is_replica,
+         dataset_limit = dataset_limit,
     )
 
     esgf_stac_convert = ESGSTACConverter(config.get('stac_config'))
@@ -80,9 +107,10 @@ def migrate_serial(*,
         for entry in record:
 
             stac_submission = 0
+            dataset_id = entry[0].get("id", "<unknown>")
             kc_result = generate_kerchunk_for_entry(
                 entry,
-                data_node,
+                dataset_id,
                 config,
                 project.value,
                 method,
@@ -91,6 +119,7 @@ def migrate_serial(*,
             kc_result.marker = esgf15_index.marker
             kc_result.next_marker = esgf15_index.next_marker
 
+            no_processed += 1
             no_published += process_publish_result(
                 kc_result,
                 config,
@@ -99,11 +128,10 @@ def migrate_serial(*,
                 esgf_stac_convert,
                 tc,
             )
-            no_processed += 1
-
             if no_processed % 200 == 0:
                 con_log.log_update()
-            if total and no_published >= total:
+
+            if total and no_processed >= total:
                 return
         esgf15_index.marker = esgf15_index.next_marker
 
@@ -113,6 +141,7 @@ def migrate_dask(*,
     institution_id: str,
     data_node: Literal["anl", "ornl", "nersc"],
     project: Project,
+    dataset_file: str | None = None,
     is_replica: bool | None= False,
     dataset_limit: int = 1000,
     config_file: Path | None,
@@ -127,17 +156,14 @@ def migrate_dask(*,
 
     config = _pre_setting_config(dataset_limit, config_file)
 
-    esgf15_index = ESGFGlobusIndex(init_marker=init_marker)
-    esgf15_generator = esgf15_index.query_dataset_file(
-        project = project,
-        fixed_facet = {
-            "institution_id": institution_id,
-            "latest": True,
-            "retracted": False,
-        },
-        data_node = DATA_NODE_MAPPING[data_node],
-        is_replica = is_replica,
-        dataset_limit = dataset_limit,
+    esgf15_index, esgf15_generator = _esgf15_index_generator(
+         institution_id = institution_id,
+         data_node = data_node,
+         project = project,
+         init_marker = init_marker,
+         dataset_file = dataset_file,
+         is_replica = is_replica,
+         dataset_limit = dataset_limit,
     )
 
     """Process ESGF datasets with Dask.
@@ -197,7 +223,7 @@ def migrate_dask(*,
                 future = client.submit(
                     generate_kerchunk_for_entry,
                     entry,
-                    data_node,
+                    dataset_id,
                     config,
                     project.value,
                     method,

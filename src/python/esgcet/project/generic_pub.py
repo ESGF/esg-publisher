@@ -5,7 +5,7 @@ from esgcet.solr.index_pub import ESGPubIndex
 from esgcet.util.mapfile import ESGPubMapConv
 from esgcet.scan.mkd_non_nc import ESGPubMKDNonNC
 from esgcet.stac.stac_client import getTransactionClient
-from esgcet.stac.stac_converter import ESGSTACConverter
+from esgcet.stac.stac_converter import ESGSTACConverter, ESGSTACItem
 from esgcet.globus.update_globus import ESGUpdateGlobus
 from esgcet.solr.update_solr import ESGUpdateSolr
 from esgcet.stac.update_stac import ESGUpdateSTAC
@@ -122,6 +122,10 @@ class BasePublisher(object):
 
         # TODO: support solr and Globus using the globus_index argument
 
+        # Ingest the Kerchunk reference file, if present.
+        last_record = dataset_records[-1] if dataset_records else {}
+        kc_file_url = last_record.pop("reference_file", None)
+
         if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
             TransactionClient = getTransactionClient(
                 self.argdict.get("stac_config", {})
@@ -132,6 +136,21 @@ class BasePublisher(object):
                 raise RuntimeError("Failed to create STAC transaction client")
             sc = ESGSTACConverter(self.argdict.get("stac_config", {}))
             stac_item = sc.convert2stac(dataset_records)
+
+            if kc_file_url is not None:
+                site = next(
+                    iter(
+                        stac_item["assets"].values()
+                    )
+                )["alternate:name"]
+
+                si = ESGSTACItem(stac_item)
+                operation = si.add_aggregate(
+                    "kerchunk",
+                    kc_file_url,
+                    site,
+                )
+                stac_item["assets"]["reference_file"] = operation[0]["value"]
 
             try:
                 rc = tc.publish(stac_item)

@@ -20,6 +20,7 @@ from esgcet.esgf15.data_node_config import (
     NODE_LOCAL_PATH_MAPPINGS
 )
 
+
 log = logger.ESGPubLogger()
 publog = log.return_logger(__name__)
 
@@ -37,10 +38,11 @@ class KerchunkResult(BaseModel):
 # DASK WORKER FUNCTION
 def generate_kerchunk_for_entry(
     entry: list[dict[str,Any]],
-    data_node: Literal["ornl", "anl", "nersc"],
+    dataset_id: str | None,
     config: dict[str, Any],
     project_value: str,
-    drs_method: Literal["drs", "simple"],
+    drs_method: Literal["drs", "simple", "cfg"],
+    type_conversion: bool=True,
 ) -> KerchunkResult:
     """
     Generate a Kerchunk reference for ONE ESGF dataset entry.
@@ -55,8 +57,8 @@ def generate_kerchunk_for_entry(
     entry
         One ESGF 1.5 dataset entry. It may contain several file docs.
 
-    data_node
-        ESGF data-node name used to determine the local/remote path mapping.
+    dataset_id
+        ESGF dataset_id with `|data_node` format
 
     config
         Publisher configuration dictionary.
@@ -76,9 +78,10 @@ def generate_kerchunk_for_entry(
 
     # Get the dataset identifier before doing any expensive work.
 
-    dataset_id = entry[0].get("id")
+    #dataset_id = entry[0].get("id")
+    # from argument instead
 
-    if not dataset_id:
+    if not dataset_id or dataset_id == "<unknown>":
         return KerchunkResult(
             dataset_id="<unknown>",
             success=False,
@@ -89,7 +92,11 @@ def generate_kerchunk_for_entry(
     try:
         # Fix ESGF 1.5 metadata types
         publog.info(f"Starting kerchuck generation for {dataset_id}")
-        type_fixed_docs = _esgf1_5_type_conversion(entry)
+
+        if type_conversion:
+            type_fixed_docs = _esgf1_5_type_conversion(entry)
+        else:
+            type_fixed_docs = entry
 
         if type_fixed_docs is None:
             return KerchunkResult(
@@ -100,9 +107,11 @@ def generate_kerchunk_for_entry(
 
         # Determine local and remote path mapping
 
-        site = DATA_NODE_MAPPING[data_node]
-
-        mapping = NODE_LOCAL_PATH_MAPPINGS.get(site)
+        #site = DATA_NODE_MAPPING[data_node]
+        #mapping = NODE_LOCAL_PATH_MAPPINGS.get(site)
+        site = config.get("data_node")
+        data_roots = config.get("data_roots")
+        mapping = get_mapping(site, data_roots)
 
         if not mapping:
             raise ValueError(
@@ -113,7 +122,7 @@ def generate_kerchunk_for_entry(
 
         # Extract all local NetCDF files for this dataset
 
-        ncfiles = _extract_local_file_paths(type_fixed_docs)
+        ncfiles = _extract_local_file_paths(type_fixed_docs, mapping)
 
         if not ncfiles:
             raise ValueError(
@@ -124,6 +133,20 @@ def generate_kerchunk_for_entry(
         # this ONE Dask task.
         local_dset_path = Path(ncfiles[0]).parent
 
+        kerchunk_config = config.get("kerchunk", None)
+        if kerchunk_config is None:
+            raise ValueError("not kerchunk section in config yaml")
+
+        relative_path = kerchunk_config.get("relative_path", "./")
+
+        relative_path = relative_path.lstrip('/')
+
+
+        if drs_method == "cfg":
+            xdrs_method = kerchunk_config.get("drs_method", "simple")
+        else:
+            xdrs_method = drs_method
+
         # Determine Kerchunk output file
         output_file = _get_output_file(
             local_prefix,
@@ -131,7 +154,8 @@ def generate_kerchunk_for_entry(
             local_dset_path,
             type_fixed_docs,
             project_value,
-            drs_method,
+            xdrs_method,
+            relative_path,
         )
 
         output_file = Path(output_file)
@@ -145,10 +169,6 @@ def generate_kerchunk_for_entry(
 
         # Construct the remote Kerchunk URL
 
-        kerchunk_config = config.get("kerchunk", None)
-
-        if kerchunk_config is None:
-            raise ValueError("not kerchunk section in config yaml")
 
         kc_format = kerchunk_config.get(
             "format",
@@ -189,6 +209,7 @@ def generate_kerchunk_for_entry(
             raise ValueError(
                 f"Unsupported Kerchunk format: {kc_format}"
             )
+
 
         # Create and run the Kerchunk generator
         generator = KerchunkGenerator(
@@ -272,7 +293,9 @@ def process_publish_result(
             )
 
         si = ESGSTACItem(stac_item)
-        site = DATA_NODE_MAPPING[data_node]
+
+        #site = DATA_NODE_MAPPING[data_node]
+        site = config.get("data_node")
 
         operation = si.add_aggregate(
             "kerchunk",
@@ -317,76 +340,98 @@ def _get_output_file(
     entry: list[dict[str, Any]],
     project_value: str,
     method: Literal["drs", "simple"],
+    relative_path: str,
 ) -> str | Path:
 
     dset_id = dataset_id.split('|')[0]
 
-    if method == "simple":
-        variable_id = entry[0].get("variable_id")
-        variable_id = variable_id[0] if isinstance(variable_id, list) else variable_id
-        experiment_id = entry[0].get("experiment_id")
-        experiment_id = experiment_id[0] if isinstance(experiment_id, list) else experiment_id
-        table_id = entry[0].get("table_id")
-        table_id = table_id[0] if isinstance(table_id, list) else table_id
+    try:
+        if method == "simple":
+            variable_id = entry[0].get("variable_id")
+            variable_id = variable_id[0] if isinstance(variable_id, list) else variable_id
+            experiment_id = entry[0].get("experiment_id")
+            experiment_id = experiment_id[0] if isinstance(experiment_id, list) else experiment_id
+            table_id = entry[0].get("table_id")
+            table_id = table_id[0] if isinstance(table_id, list) else table_id
 
-        local_kc_file = (
-            "user_pub_work/Kerchunk/"
-            f"{project_value}/{variable_id}/{experiment_id}/{table_id}/{dset_id}.kerchunk"
-        )
-        new_output_file = Path(local_prefix) / Path(local_kc_file)
+            local_kc_file = (
+                #"user_pub_work/Kerchunk/"
+                f"{relative_path}/"
+                f"{project_value}/{variable_id}/{experiment_id}/{table_id}/{dset_id}.kerchunk"
+            )
+            new_output_file = Path(local_prefix) / Path(local_kc_file)
 
-    elif method == "drs":
-        output_file = local_dset_path / Path(f"{dset_id}.kerchunk")
-        parts = Path(output_file).parts
-        idx = parts.index(project_value)
-        new_output_file = Path(local_prefix, "user_pub_work/Kerchunk", *parts[idx:])
+        elif method == "drs":
+            output_file = local_dset_path / Path(f"{dset_id}.kerchunk")
+            parts = Path(output_file).parts
+            idx = parts.index(project_value)
+            #new_output_file = Path(local_prefix, "user_pub_work/Kerchunk", *parts[idx:])
+            new_output_file = Path(local_prefix, relative_path, *parts[idx:])
 
-    else:
-        raise ValueError(f"Unsupported DRS method: {method}")
+        else:
+            raise ValueError(f"Unsupported DRS method: {method}")
+    except Exception as ex:
+        publog.error(f"Error in generate output file name {ex}")
 
     return new_output_file
 
 def _extract_local_file_paths(
     dataset_doc: list[dict[str, Any]],
+    mapping: tuple[str, str],
 ) -> list[Path]:
 
+    dataset_rec = _extract_dataset_record(dataset_doc)
 
-    temp = dataset_doc[0].get('id').split('|')
+    temp = dataset_rec.get('id').split('|')
     dataset_id = temp[0]
     data_node = temp[1] if len(temp) > 1 else None
 
     # https://esgf-node.ornl.gov/thredds/fileServer/user_pub_work/CMIP6Plus/LESFMIP/MOHC/HadGEM3-GC31-LL/hist-lu/f2023-r11i1p1
-    if "HTTPServer" in dataset_doc[0].get("access"):
-        counter = 0
+    try:
+        if "HTTPServer" in dataset_rec.get("access"):
+            counter = 0
 
-        mapping = NODE_LOCAL_PATH_MAPPINGS.get(data_node)
+            #mapping = NODE_LOCAL_PATH_MAPPINGS.get(data_node)
 
-        local_paths = []
-        if mapping:
-            for doc in dataset_doc:
-                if doc.get("type") != "File":
-                    continue
-
-                urls = doc.get("url")
-                for url in urls:
-                    if not url.endswith("|application/netcdf|HTTPServer"):
+            local_paths = []
+            if mapping:
+                for doc in dataset_doc:
+                    if doc.get("type") != "File":
                         continue
 
-                    url_split = url.split("|")
-                    href = url_split[0]
-                    remote_prefix, local_prefix =  mapping
-                    if href.startswith(remote_prefix):
-                        local_path = href.replace(
-                            remote_prefix,
-                            local_prefix,
-                            1,
-                        )
-                        local_paths.append(local_path)
+                    urls = doc.get("url")
+                    for url in urls:
+                        if not url.endswith("|application/netcdf|HTTPServer"):
+                            continue
+
+                        url_split = url.split("|")
+                        href = url_split[0]
+                        remote_prefix, local_prefix =  mapping
+                        if href.startswith(remote_prefix):
+                            local_path = href.replace(
+                                remote_prefix,
+                                local_prefix,
+                                1,
+                            )
+                            local_paths.append(local_path)
+
+    except (TypeError, ValueError) as ex:
+        publog.error(f"Error in extract local file paths: {ex}")
 
     if len(local_paths) == 0:
         raise ValueError("Cannot figure out local paths of nc files")
 
     return local_paths
+
+def _extract_dataset_record(
+    dataset_doc: list[dict[str, Any]],
+) -> dict[str, Any]:
+
+    for rec in dataset_doc:
+        if rec.get("type") == 'Dataset':
+            return rec
+
+    raise ValueError("cannot find dataset record in the entry")
 
 
 def _esgf1_5_type_conversion(
@@ -478,3 +523,31 @@ class ProcessLog:
         self,
     ) -> None:
         self.con.execute(f"COPY log_table TO '{self.log_file}' (FORMAT CSV, HEADER TRUE)")
+
+
+def get_mapping(
+    data_node: str,
+    data_roots: dict[str, str],
+) -> tuple[str, str]:
+
+    try: 
+        (loc, rel), = data_roots.items()
+
+        local_path = Path(loc)
+        relative_path = Path(rel)
+
+        assert local_path.parts[-len(relative_path.parts):] == relative_path.parts
+
+        parent_path = local_path
+        for _ in relative_path.parts:
+            parent_path = parent_path.parent
+
+
+        local_prefix = str(parent_path)
+        remote_prefix = f"https://{data_node}/thredds/fileServer"
+
+        return remote_prefix, local_prefix
+
+    except Exception as ex:
+        publog.error("error get the mapping, return None")
+        return None
