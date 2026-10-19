@@ -63,3 +63,5 @@ generated/
 
 /htmlcov/
 
+# remote zed, vscode file?
+.zed

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, AnyUrl, model_validator
 from typing import Literal, Any
 from pathlib import Path
-import json, re
+import json, re, os
 from kerchunk.combine import MultiZarrToZarr
 from kerchunk.df import refs_to_dataframe
 from kerchunk.hdf import SingleHdf5ToZarr
@@ -15,6 +15,8 @@ from obspec_utils.registry import ObjectStoreRegistry
 import tempfile
 from urllib.parse import urljoin
 import warnings
+from concurrent.futures import ThreadPoolExecutor
+
 
 class KerchunkGenerator(BaseModel):
     "Kerchunk generation for ESGF"
@@ -60,9 +62,7 @@ class KerchunkGenerator(BaseModel):
     
         refs = Path(ref_dir) if isinstance(ref_dir, str) else ref_dir
     
-        json_list = []
-        for jsn in refs.glob(f"*.json"):
-            json_list.append(jsn)
+        json_list = sorted(refs.glob(f"*.json"))
     
         if len(json_list) > 1:
             # not setting identical_dims shall be safe
@@ -202,10 +202,33 @@ class KerchunkGenerator(BaseModel):
         inline_threshold: int,
     ) -> None:
 
+        max_workers = int(os.getenv("KERCHUNK_MAX_THREADS", "1"))
+        if max_workers < 1:
+            raise ValueError("KERCHUNK_MAX_THREADS must be >= 1")
+
         with tempfile.TemporaryDirectory() as tmpdir:
 
-            for f in self.files:
-                self.build_ref(f, tmpdir, inline_threshold)
+            print(f"===Using thread number {max_workers} over files {len(self.files)}===")
+
+            if max_workers == 1 or len(self.files) == 1:
+                for fn in self.files:
+                    self.build_ref(fn, Path(tmpdir), inline_threshold)
+            else:
+
+                with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                    futures = [
+                        executor.submit(
+                            self.build_ref,
+                            fn,
+                            Path(tmpdir),
+                            inline_threshold,
+                        )
+                        for fn in self.files
+                    ]
+
+                    for future in futures:
+                        future.result()
+
 
             combined = self.combine(ref_dir=tmpdir, ref_format="json")
             if old_uri and new_uri:

@@ -17,7 +17,7 @@ from typing import Any
 from compliance_checker.runner import CheckSuite, ComplianceChecker
 from pathlib import Path
 from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
-from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
+from esgcet.esgf15.process_kerchunk import generate_kerchunk_for_entry
 
 
 
@@ -142,6 +142,7 @@ class GenericPublisher(BasePublisher):
             mf_cat = MapFileCatalog(records=records)
 
             dataset_id = mf_cat.dataset_id
+            version = mf_cat.version
             if "CMIP7" in dataset_id:
                 time_frequency = dataset_id.split(".")[8]
             else:
@@ -165,44 +166,34 @@ class GenericPublisher(BasePublisher):
                         need_process = True
                         break
 
-            if need_process:
 
+            if need_process:
                 self.publog.info(f"kerchunk generation: {self.fullmap}")
 
                 data_roots = self.argdict.get("data_roots")
                 if data_roots is None:
                     raise ValueError("missing data_roots in yaml file")
-                (old_uri, rel_uri), = data_roots.items()
 
                 data_node = self.argdict.get("data_node")
                 if data_node is None:
                     raise ValueError("missing data_node in yaml file")
 
-                new_uri = f"https://{data_node}/thredds/fileServer/{rel_uri}"
+                kc_config = {
+                    "data_node": data_node,
+                    "data_roots": data_roots,
+                    "kerchunk": self.argdict.get("kerchunk"),
+                }
 
-
-                inline_threshold = self.argdict.get("kerchunk").get("inline_threshold", 0)
-
-                data_dir = self.argdict.get("kerchunk").get("data_dir", None)
-
-                parent_dir = Path(mf_cat.ncfiles[0]).parent
-
-                if data_dir is not None:
-                    (output_dir, kerchunk_uri), = data_dir.items()
-                else:
-                    output_dir = parent_dir
-                    kerchunk_uri = str(parent_dir).replace(old_uri, new_uri, 1)
-                output_file = Path(output_dir) / f"{mf_cat.dataset_id}.v{mf_cat.version}.json"
-
-                generator = KerchunkGenerator(
-                    path_url=mf_cat.ncfiles,
-                    backend=self.argdict.get("kerchunk").get("backend", "kerchunk"),
-                    output_file=output_file,
-                    format=self.argdict.get("kerchunk").get("format", "json")
+                kc_result = generate_kerchunk_for_entry(
+                    self.dataset_rec,
+                    f"{dataset_id}.v{str(version)}",
+                    kc_config,
+                    mf_cat.records[0].project,
+                    "cfg",
+                    type_conversion=False,
                 )
-                generator.generate(old_uri, new_uri, inline_threshold)
 
-                return f"{kerchunk_uri}/{output_file.name}"
+                return kc_result.kc_file_url
         except Exception as e:
             self.publog.info(f"kerchunk generation failed: {self.fullmap} with {e}")
 
@@ -272,8 +263,6 @@ class GenericPublisher(BasePublisher):
         if not self.compliance_check(map_json_data):
             return None
 
-        # kerchunk
-        kerchunk_uri = self.kerchunk_generate()
 
         # step two: autocurator
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
@@ -284,6 +273,9 @@ class GenericPublisher(BasePublisher):
         out_json_data = self.mk_dataset(map_json_data)
 
         self.dataset_rec = out_json_data
+
+        # kerchunk
+        kerchunk_uri = self.kerchunk_generate()
 
         if kerchunk_uri:
             out_json_data[-1]["reference_file"] = kerchunk_uri
