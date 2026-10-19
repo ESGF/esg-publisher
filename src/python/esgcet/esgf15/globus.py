@@ -242,46 +242,45 @@ class ESGFGlobusIndex:
 
 
         with open(dataset_file, encoding="utf-8") as f:
-
-        for _ in range(dataset_offset):
-            if not file.readline():
-                break
-
-            while True:
-                dataset_ids = []
-
-                for _ in range(dataset_limit):
-                    line = f.readline()
-                    if not line:
-                        break
-
-                    dataset_id = line.strip()
-                    if dataset_id:
-                        dataset_ids.append(dataset_id)
-
-                if not dataset_ids:
+            for _ in range(dataset_offset):
+                if not file.readline():
                     break
 
-                self.marker = self.marker + dataset_limit
+                while True:
+                    dataset_ids = []
 
-                query_dict_copy = {
-                    **query_dict_dset,
-                    "filters": [
-                        *base_filters,
-                        {
-                            "field_name": "id",
-                            "values": dataset_ids,
-                            "type": "match_any",
-                        },
-                    ],
-                }
+                    for _ in range(dataset_limit):
+                        line = f.readline()
+                        if not line:
+                            break
 
-                query_str = SearchScrollQuery(
-                    limit=dataset_limit,
-                    additional_fields=query_dict_copy
-                )
+                        dataset_id = line.strip()
+                        if dataset_id:
+                            dataset_ids.append(dataset_id)
 
-                yield from self.query_client.paginated.scroll(
-                    self.index_id,
-                    query_str,
-                )
+                    if not dataset_ids:
+                        break
+
+                    self.marker = self.marker + dataset_limit
+
+                    query_dict_copy = {
+                        **query_dict_dset,
+                        "filters": [
+                            *base_filters,
+                            {
+                                "field_name": "id",
+                                "values": dataset_ids,
+                                "type": "match_any",
+                            },
+                        ],
+                    }
+
+                    query_str = SearchScrollQuery(
+                        limit=dataset_limit,
+                        additional_fields=query_dict_copy
+                    )
+
+                    yield from self.query_client.paginated.scroll(
+                        self.index_id,
+                        query_str,
+                    )
