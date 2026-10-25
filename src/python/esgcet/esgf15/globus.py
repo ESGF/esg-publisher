@@ -12,6 +12,13 @@ from typing import Any, Literal, Generator
 
 from collections import defaultdict
 
+from esgcet.util import logger
+from pandas.core.dtypes.inference import is_re
+
+
+log = logger.ESGPubLogger()
+publog = log.return_logger(__name__)
+
 class Project(str, Enum):
 
     """read-only projects."""
@@ -57,7 +64,7 @@ class ESGFGlobusIndex:
             self.index_id = self.ESGF_Globus_Index[globus_index_name]
         else:
             raise ValueError("the index is not supported")
- 
+
         self.query_client = SearchClient()
         self.marker = init_marker
         self.next_marker = None
@@ -68,9 +75,9 @@ class ESGFGlobusIndex:
         project: Project,
         fixed_facet: dict[str, Any],
         data_node: str,
-        is_replica: bool = False,
+        is_replica: bool | None= False,
     ) -> dict[str, Any]:
-        
+
         query_dict= {"filters":[]}
         for key, val in fixed_facet.items():
             query_dict["filters"].append({
@@ -103,42 +110,57 @@ class ESGFGlobusIndex:
             }
         )
 
-        query_dict["filters"].append(
-            {
-                "field_name": "replica",
-                "values": [is_replica],
-                "type": "match_all",
-            }
-        )
+        if is_replica is not None:
+            query_dict["filters"].append(
+                {
+                    "field_name": "replica",
+                    "values": [is_replica],
+                    "type": "match_all",
+                }
+            )
 
 
         return query_dict
 
 
     def query_dataset_file(
-        self, 
-        project: Project, 
+        self,
+        project: Project,
         fixed_facet: dict[str, Any],
         data_node: str,
-        is_replica: bool = False,
+        dataset_file: str | None = None,
+        is_replica: bool | None = False,
         dataset_limit: int = 1000,
     ) -> Generator[list[list[dict[str, Any]]], None, None]:
         """query index using project and a fixed_facet"""
 
-        
         query_dict_dset = self._generate_query_dict(
-            'Dataset', 
-            project, 
-            fixed_facet, 
-            data_node, 
+            'Dataset',
+            project,
+            fixed_facet,
+            data_node,
             is_replica,
         )
-        query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
+        if dataset_file is None:
+            query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
 
-        if self.marker is not None:
-            query_str["marker"] = self.marker
+            if self.marker is not None:
+                query_str["marker"] = self.marker
 
-        paginator = self.query_client.paginated.scroll(self.index_id, query_str) 
+            paginator = self.query_client.paginated.scroll(self.index_id, query_str)
+
+        else:
+            if self.marker is not None and isinstance(self.marker, int):
+                dataset_offset = self.marker
+            else:
+                dataset_offset = 0
+
+            paginator = self._dataset_file_globus_paginator(
+                 dataset_file,
+                 query_dict_dset,
+                 dataset_limit,  # consistent with the above code
+                 dataset_offset,
+            )
 
         query_dict_file = self._generate_query_dict(
             'File',
@@ -156,12 +178,20 @@ class ESGFGlobusIndex:
         ]
 
         for response in paginator:
+            if self.next_marker is not None:
+                self.marker = self.next_marker
 
             if response.data['total'] == 0:
-                raise ValueError(
+                #raise ValueError(
+                publog.error(
                     "Cannot find any dataset using the query filter:\n"
                     f"{json.dumps(query_dict_dset)}"
                 )
+                continue
+            # the paginator will go to one more page, in some cases
+            # continue is enough as it will trigger the stopiteration
+            if response.data.get('marker') is None:
+                continue
 
             self.next_marker = response.data.get('marker')
 
@@ -171,25 +201,25 @@ class ESGFGlobusIndex:
                 dataset_ids.append(g["subject"])
                 result_dict[g["subject"]] = [g["entries"][0]["content"]]
 
-            query_dict_file["filters"].append(
+
+            filters = [
+                *query_dict_file["filters"],
                 {
                     "field_name": "dataset_id",
                     "values": dataset_ids,
                     "type": "match_any",
                 },
-            )
+            ]
 
             search_result = self.query_client.post_search(
-                self.index_id, 
+                self.index_id,
                 SearchQueryV1(
                     limit=10000,
                     offset =0,
-                    filters=query_dict_file["filters"],
+                    filters=filters,
                     sort=query_dict_file["sort"]
                 )
             )
-
-            del query_dict_file["filters"][-1]
 
             if search_result["total"] > 10000:
                 raise ValueError("Over Globus post search limit, reduce the limit_dataset")
@@ -198,5 +228,59 @@ class ESGFGlobusIndex:
                 ds_id = gmeta["entries"][0]["content"]["dataset_id"]
                 result_dict[ds_id].append(gmeta["entries"][0]["content"])
 
-            self.marker = self.next_marker
             yield list(result_dict.values())
+
+    def _dataset_file_globus_paginator(
+        self,
+        dataset_file: str,
+        query_dict_dset: dict,
+        dataset_limit: int,  # consistent with the above code
+        dataset_offset: int = 0,
+    ) -> Generator[list[list[dict[str, Any]]], None, None]:
+
+        base_filters = query_dict_dset.get("filters", [])
+
+
+        with open(dataset_file, encoding="utf-8") as f:
+            for _ in range(dataset_offset):
+                if not file.readline():
+                    break
+
+                while True:
+                    dataset_ids = []
+
+                    for _ in range(dataset_limit):
+                        line = f.readline()
+                        if not line:
+                            break
+
+                        dataset_id = line.strip()
+                        if dataset_id:
+                            dataset_ids.append(dataset_id)
+
+                    if not dataset_ids:
+                        break
+
+                    self.marker = self.marker + dataset_limit
+
+                    query_dict_copy = {
+                        **query_dict_dset,
+                        "filters": [
+                            *base_filters,
+                            {
+                                "field_name": "id",
+                                "values": dataset_ids,
+                                "type": "match_any",
+                            },
+                        ],
+                    }
+
+                    query_str = SearchScrollQuery(
+                        limit=dataset_limit,
+                        additional_fields=query_dict_copy
+                    )
+
+                    yield from self.query_client.paginated.scroll(
+                        self.index_id,
+                        query_str,
+                    )

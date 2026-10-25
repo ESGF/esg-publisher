@@ -1,0 +1,10 @@
+name: netcdf-tools
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - netcdf4
+  - nco  # provides ncks, nccopy, etc.
+  - xarray
+  - dask
+  - h5netcdf
