@@ -186,7 +186,7 @@ class BasePublisher(object):
             disable_cite=self._disable_citation,
         )
 
-        dsid = self.dataset_rec[-1]["id"]
+        dsid = self.dataset_rec[-1]["instance_id"]
         ds_pid = pid.gen_pid(dsid)
         citurl = pid.citation_url()
 

@@ -279,7 +279,6 @@ class GenericPublisher(BasePublisher):
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
 
-
         # step three: make dataset
         self.publog.info("Making dataset...")
         out_json_data = self.mk_dataset(map_json_data)
@@ -289,8 +288,6 @@ class GenericPublisher(BasePublisher):
         if kerchunk_uri:
             out_json_data[-1]["reference_file"] = kerchunk_uri
         self.pid_cite()
-
-
 
         # step five: publish to database
         self.publog.info("Running index pub...")

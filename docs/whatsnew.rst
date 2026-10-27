@@ -1,6 +1,18 @@
 Release Notes
 =============
 
+v5.5.3
+------
+
+* **Bug Fixes**:
+
+  * **PID Publishing**: Fixed PID registration to use correct STAC-compatible ID format
+    * Ensures PID handles reference the correct dataset identifier based on the STAC item ID as would be the legacy *instance_id*
+
+* **Code Quality**:
+
+  * Removed extraneous blank lines in ``generic_netcdf.py`` for consistency
+
 v5.5.2
 ------
 
