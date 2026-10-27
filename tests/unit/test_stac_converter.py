@@ -441,7 +441,7 @@ class TestESGSTACItem:
         assert op["path"] == "/assets/reference_file"
         assert op["value"]["href"] == url
         assert op["value"]["type"] == "application/zarr"
-        assert "virtual" in op["value"]["role"]
+        assert "virtual" in op["value"]["roles"]
 
     def test_remove_aggregate(self, sample_stac_item):
         """Test removing aggregate asset."""

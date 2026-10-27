@@ -48,7 +48,7 @@ class ESGSTACItem:
         value = {
             "href": url,
             "type": f"application/{aggtype}",
-            "role": ["data", "virtual"],
+            "roles": ["virtual"],
             "description": "Kerchunk reference file for virtual aggregation",
             "alternate:name": site,
             "created": now,
@@ -272,9 +272,7 @@ class ESGSTACConverter:
                 v = dataset_doc.get(k, None)
             else:
                 self.publog.warning(f"{k} not found in dataset")
-            if k == "master_id":
-                nk = "base_id"
-            elif k in STAC_item_properties:
+            if k in STAC_item_properties:
                 nk = k
             elif k in collection_item_properties:
                 nk = f"{namespace}:{k}"
