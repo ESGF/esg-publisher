@@ -110,14 +110,17 @@ class ESGGlobusQuery():
             try:
                 res = json.load(subproc.stdout)
             except Exception as e:
-                log_file = f"{error_log_path}/globus_error.log"
-                print(f"Exception encountered, logging to {log_file}")
+                if error_log_path == "-":
+                    print(f"Exception encountered: {e}") 
+                else:
+                    log_file = f"{error_log_path}/globus_error.log"
+                    print(f"Exception encountered, logging to {log_file}")
 
-                try:
-                    with open(log_file, "w") as f:
-                        print(f"{e}", file=f)
-                except Exception as e2:
-                    print(f"Exception encountered while writing to log file: {e2}")
+                    try:
+                        with open(log_file, "w") as f:
+                            print(f"{e}", file=f)
+                    except Exception as e2:
+                        print(f"Exception encountered while writing to log file: {e2}")
             print("Loaded")
             return res
         
