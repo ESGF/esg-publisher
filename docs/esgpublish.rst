@@ -115,6 +115,31 @@ Usage::
 
 Each dataset will produce a corresponding ``<dataset-id>.json`` file containing the complete STAC item that would be (or was) published to the STAC API.
 
+Dataset Size Considerations
+---------------------------
+
+When publishing datasets, be aware of the following size limitations:
+
+Maximum Recommended File Count
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The publisher will issue a warning if a dataset contains more than **1000 files**. This limit is set by the ``MAX_RECOMMENDED_FILE_COUNT`` constant in ``settings.py``.
+
+**Why this limit exists:**
+
+* **Event payload size limits**: Publishing events sent to backend systems have maximum payload size constraints. Each file in a dataset adds to the event payload.
+* **Backend record size limits**: Index databases and search APIs have practical limits on individual record sizes.
+* **STAC item size**: Each file becomes an asset in the STAC item JSON. Large numbers of assets can create unwieldy STAC items that exceed API and client size limits.
+* **Performance**: Large datasets with many files take longer to process, publish, and query.
+
+**Recommendations for large datasets:**
+
+* **Use aggregation**: Consider using Kerchunk, Zarr, or other aggregation formats to represent multiple files as a single virtual dataset.
+* **Split datasets**: Divide datasets by time periods, variables, or other logical boundaries to keep individual datasets under the recommended limit.
+* **Optimize granularity**: Balance between too many small datasets and too few large datasets. Datasets with 100-500 files are typically optimal for performance.
+
+The warning is informational - publishing will continue, but you may encounter issues with backend systems if the file count is significantly higher than the recommended maximum.
+
 .. _arch_info:
 
 Archiving Info
