@@ -100,7 +100,7 @@ class ESGSTACItem:
                     continue
                 replica_asset["href"] = (
                     f"https://app.globus.org/file-manager?"
-                    f"origin_id={rep_globus}&origin_path={rep_path}"
+                    f"origin_id={rep_globus}&origin_path=/{prefix}/{rep_path}"
                 )
 
             elif asset.get("type") == "application/netcdf":
