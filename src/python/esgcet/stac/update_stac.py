@@ -21,6 +21,8 @@ class ESGUpdateSTAC(ESGUpdateBase):
         self.stacclient = Client.open(config.get("stac_config", {}).get("stac_api"))
         self.dry_run = config.get("dry_run")
         self.trans_client = getTransactionClient(config.get("stac_config", {}))(config)
+        self.publog = log.return_logger("ESGUpdateSTAC", silent=False, verbose=False)
+
 
     def update_file(self, dsetid: str):
         """
@@ -102,7 +104,7 @@ class ESGUpdateSTAC(ESGUpdateBase):
         if resp.matched() < 1:
             return False
         elif resp.matched() > 1:
-            log.warn("Multiple latest {}")
+            self.publog.warning(f"Multiple latest {master_id} found in {self.collection}. Using first match.")
         d = {}
         for it in resp.items_as_dicts():
             d = it
