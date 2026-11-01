@@ -7,7 +7,7 @@ from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
 from typing import Annotated, Literal
 
 from pathlib import Path
-from esgcet.settings import QAQC
+from esgcet.util.settings import QAQC
 
 app = typer.Typer(help=__doc__)
 
@@ -86,11 +86,10 @@ def cc(
                     ["text"]
                 )
                 if errors:
-                    print(f"Checker Errors {errors}")
                     raise RuntimeError(f"Errors from compliance checker {errors}")
 
             except Exception as e:
-                print (f"something is wrong: {e}")
+                raise RuntimeError(f"something is wrong: {e}")
 
 
 

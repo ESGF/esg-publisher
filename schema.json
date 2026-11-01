@@ -1,0 +1,1496 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://esgf.github.io/stac-transaction-api/input4mips/v1.0.0/schema.json#",
+  "title": "INPUT4MIPS Extension",
+  "description": "STAC INPUT4MIPS Extension for STAC Items and STAC Collection Summaries.",
+  "type": "object",
+  "required": [
+    "stac_extensions"
+  ],
+  "properties": {
+    "stac_extensions": {
+      "type": "array",
+      "allOf": [
+        {
+          "contains": {
+            "const": "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
+          }
+        },
+        {
+          "contains": {
+            "const": "https://esgf.github.io/stac-transaction-api/input4mips/v1.0.0/schema.json"
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "$comment": "This is the schema for STAC Items.",
+      "type": "object",
+      "required": [
+        "collection"
+      ],
+      "properties": {
+        "type": {
+          "const": "Feature"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^input4MIPs(\\\\.[A-Za-z0-9-]+){8}\\.v[0-9]{8}$"
+        },
+        "base_id": {
+          "type": "string",
+          "pattern": "^input4MIPs(\\\\.[A-Za-z0-9-]+){8}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d{4}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$"
+        },
+        "collection": {
+          "const": "input4MIPs"
+        },
+        "properties": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/require_item_fields"
+            },
+            {
+              "$ref": "#/definitions/item_fields"
+            }
+          ]
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/require_asset_fields"
+              },
+              {
+                "$ref": "#/definitions/asset_fields"
+              }
+            ]
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/link_fields"
+          }
+        }
+      }
+    },
+    {
+      "$comment": "This is the schema for STAC Collections, or more specifically only Collection Summaries in this case. By default, only checks the existence of the properties, but not the schema of the summaries.",
+      "type": "object",
+      "required": [
+        "type",
+        "summaries"
+      ],
+      "properties": {
+        "type": {
+          "const": "Collection"
+        },
+        "summaries": {
+          "$ref": "#/definitions/require_any"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "require_any": {
+      "$comment": "Only used for Collection summarizes.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "require_item_fields": {
+      "$comment": "Please list all fields here so that we can force the existence of one of them in other parts of the schemas.",
+      "allOf": [
+        {
+          "required": [
+            "created"
+          ]
+        },
+        {
+          "required": [
+            "end_datetime"
+          ]
+        },
+        {
+          "required": [
+            "latest"
+          ]
+        },
+        {
+          "required": [
+            "retracted"
+          ]
+        },
+        {
+          "required": [
+            "size"
+          ]
+        },
+        {
+          "required": [
+            "start_datetime"
+          ]
+        },
+        {
+          "required": [
+            "updated"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:activity_id"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:contact"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:conventions"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:creation_date"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:dataset_category"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:frequency"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:grid_label"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:institution_id"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:license"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:mip_era"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:nominal_resolution"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:pid"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:product"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:realm"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:source_id"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:target_mip"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:title"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:variable_cf_standard_name"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:variable_id"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:variable_long_name"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:variable_units"
+          ]
+        },
+        {
+          "required": [
+            "input4mips:version"
+          ]
+        }
+      ]
+    },
+    "require_asset_fields": {
+      "$comment": "Please list all fields here so that we can force the existence of one of them in other parts of the schemas.",
+      "allOf": [
+        {
+          "required": [
+            "created"
+          ]
+        },
+        {
+          "required": [
+            "protocol"
+          ]
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "application/netcdf"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "file:size",
+              "file:checksum",
+              "file:local_path"
+            ]
+          }
+        },
+        {
+          "required": [
+            "input4mips:tracking_id"
+          ]
+        }
+      ]
+    },
+    "asset_fields": {
+      "$comment": " Don't require fields here, do that above in the corresponding schema.",
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": [
+            "http",
+            "https",
+            "globus",
+            "gridftp",
+            "kerchunk",
+            "netcdfsubset",
+            "opendap",
+            "wms",
+            "wps",
+            "s3"
+          ]
+        },
+        "input4mips:tracking_id": {
+          "type": "string",
+          "anyOf": [
+            {
+              "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+            },
+            {
+              "pattern": "^hdl:21\\.\\d{5}/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+            }
+          ]
+        }
+      }
+    },
+    "item_fields": {
+      "$comment": " Don't require fields here, do that above in the corresponding schema.",
+      "type": "object",
+      "properties": {
+        "latest": {
+          "type": "boolean"
+        },
+        "retracted": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "input4mips:activity_id": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "input4MIPs"
+            ],
+            "minItems": 1,
+            "type": "string"
+          }
+        },
+        "input4mips:contact": {
+          "type": "string",
+          "pattern": ".*"
+        },
+        "input4mips:conventions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "CF-1.6",
+              "CF-1.7",
+              "CF-1.8",
+              "CMIP-6.2"
+            ],
+            "minItems": 1,
+            "type": "string"
+          }
+        },
+        "input4mips:creation_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "input4mips:dataset_category": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "GHGConcentrations",
+              "SSTsAndSeaIce",
+              "aerosolProperties",
+              "atmosphericState",
+              "emissions",
+              "landState",
+              "ozone",
+              "population",
+              "radiation",
+              "solar",
+              "surfaceAir",
+              "surfaceFluxes"
+            ],
+            "minItems": 1,
+            "type": "string"
+          }
+        },
+        "input4mips:frequency": {
+          "type": "string",
+          "enum": [
+            "1hr",
+            "1hrCM",
+            "1hrPt",
+            "3hr",
+            "3hrPt",
+            "6hr",
+            "6hrPt",
+            "day",
+            "dec",
+            "fx",
+            "mon",
+            "monC",
+            "monPt",
+            "subhrPt",
+            "yr",
+            "yrPt"
+          ]
+        },
+        "input4mips:grid_label": {
+          "type": "string",
+          "enum": [
+            "gm",
+            "gn",
+            "gna",
+            "gng",
+            "gnz",
+            "gr",
+            "gr1",
+            "gr1a",
+            "gr1g",
+            "gr1z",
+            "gr2",
+            "gr2a",
+            "gr2g",
+            "gr2z",
+            "gr3",
+            "gr3a",
+            "gr3g",
+            "gr3z",
+            "gr4",
+            "gr4a",
+            "gr4g",
+            "gr4z",
+            "gr5",
+            "gr5a",
+            "gr5g",
+            "gr5z",
+            "gr6",
+            "gr6a",
+            "gr6g",
+            "gr6z",
+            "gr7",
+            "gr7a",
+            "gr7g",
+            "gr7z",
+            "gr8",
+            "gr8a",
+            "gr8g",
+            "gr8z",
+            "gr9",
+            "gr9a",
+            "gr9g",
+            "gr9z",
+            "gra",
+            "grg",
+            "grz"
+          ]
+        },
+        "input4mips:institution_id": {
+          "type": "string",
+          "enum": [
+            "CCCma",
+            "CNRM-CERFACS",
+            "IACETH",
+            "IAMC",
+            "IMPERIALCOLLEGE",
+            "MOHC",
+            "MPI-B",
+            "MPI-M",
+            "MRI",
+            "NASA-GSFC",
+            "NCAR",
+            "NCAS",
+            "PCMDI",
+            "PIK",
+            "PNNL-JGCRI",
+            "SOLARIS-HEPPA",
+            "UCI",
+            "UCLA",
+            "UColorado",
+            "UReading",
+            "UoM",
+            "UofMD",
+            "VUA",
+            "uoexeter"
+          ]
+        },
+        "input4mips:license": {
+          "type": "string",
+          "enum": [
+            "CC-BY-4.0"
+          ]
+        },
+        "input4mips:mip_era": {
+          "type": "string",
+          "enum": [
+            "CMIP5",
+            "CMIP6",
+            "CMIP6Plus"
+          ]
+        },
+        "input4mips:nominal_resolution": {
+          "type": "string",
+          "enum": [
+            "0.5 km",
+            "1 km",
+            "10 km",
+            "100 km",
+            "1000 km",
+            "10000 km",
+            "1x1 degree",
+            "2.5 km",
+            "25 km",
+            "250 km",
+            "2500 km",
+            "5 km",
+            "50 km",
+            "500 km",
+            "5000 km"
+          ]
+        },
+        "input4mips:pid": {
+          "type": "string",
+          "anyOf": [
+            {
+              "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+            },
+            {
+              "pattern": "^hdl:21\\.\\d{5}/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+            }
+          ]
+        },
+        "input4mips:product": {
+          "type": "string",
+          "enum": [
+            "derived",
+            "observations",
+            "reanalysis"
+          ]
+        },
+        "input4mips:publication_status": {
+          "type": "string",
+          "enum": [
+            "abandoned",
+            "in_publishing_queue",
+            "never_published",
+            "published",
+            "registered",
+            "retracted"
+          ]
+        },
+        "input4mips:realm": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "GHGConcentrations",
+              "SSTsAndSeaIce",
+              "aerosol",
+              "aerosolProperties",
+              "atmos",
+              "atmosChem",
+              "atmosphericState",
+              "emissions",
+              "land",
+              "landIce",
+              "landState",
+              "ocean",
+              "ocnBgchem",
+              "ozone",
+              "radiation",
+              "seaIce",
+              "solar",
+              "surfaceAir",
+              "surfaceFluxes"
+            ],
+            "minItems": 1,
+            "type": "string"
+          }
+        },
+        "input4mips:region": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "glb",
+              "global_land",
+              "global_ocean"
+            ],
+            "minItems": 1,
+            "type": "string"
+          }
+        },
+        "input4mips:source_id": {
+          "type": "string",
+          "enum": [
+            "CEDS-CMIP-2024-07-08",
+            "CEDS-CMIP-2024-07-08-SUPPLEMENTAL",
+            "CEDS-CMIP-2024-10-21",
+            "CEDS-CMIP-2024-10-21-SUPPLEMENTAL",
+            "CEDS-CMIP-2024-11-25",
+            "CEDS-CMIP-2024-11-25-SUPPLEMENTAL",
+            "CEDS-CMIP-2025-03-18",
+            "CEDS-CMIP-2025-03-18-SUPPLEMENTAL",
+            "CR-CMIP-0-2-0",
+            "CR-CMIP-0-3-0",
+            "CR-CMIP-0-4-0",
+            "CR-CMIP-1-0-0",
+            "DRES-CMIP-BB4CMIP7-1-0",
+            "DRES-CMIP-BB4CMIP7-2-0",
+            "MRI-JRA55-DO-1-6-0",
+            "PCMDI-AMIP-1-1-9",
+            "PCMDI-AMIP-ERSST5-1-0",
+            "PCMDI-AMIP-HAD1P1-1-0",
+            "PCMDI-AMIP-OI2P1-1-0",
+            "SOLARIS-HEPPA-CMIP-4-1",
+            "SOLARIS-HEPPA-CMIP-4-2",
+            "SOLARIS-HEPPA-CMIP-4-3",
+            "SOLARIS-HEPPA-CMIP-4-4",
+            "SOLARIS-HEPPA-CMIP-4-5",
+            "SOLARIS-HEPPA-CMIP-4-6",
+            "UCLA-1-0-1",
+            "UCLA-1-0-1-CONSTANT",
+            "UCLA-1-0-1-DECREASING",
+            "UCLA-1-0-1-INCREASING",
+            "UCLA-1-0-2",
+            "UCLA-1-0-2-CONSTANT",
+            "UCLA-1-0-2-DECREASING",
+            "UCLA-1-0-2-INCREASING",
+            "UOEXETER-CMIP-0-1-0",
+            "UOEXETER-CMIP-1-1-2",
+            "UOEXETER-CMIP-1-1-3",
+            "UOEXETER-CMIP-1-2-0",
+            "UOEXETER-CMIP-1-3-0",
+            "UOEXETER-CMIP-1-3-1",
+            "UOEXETER-CMIP-2-0-0",
+            "UOFMD-LANDSTATE-3-0",
+            "UOFMD-LANDSTATE-3-1",
+            "UOFMD-LANDSTATE-3-1-1"
+          ]
+        },
+        "input4mips:target_mip": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "AerChemMIP",
+              "C4MIP",
+              "CDRMIP",
+              "CFMIP",
+              "CMIP",
+              "CORDEX",
+              "DAMIP",
+              "DCPP",
+              "DynVarMIP",
+              "FAFMIP",
+              "GMMIP",
+              "GeoMIP",
+              "HighResMIP",
+              "ISMIP6",
+              "LESFMIP",
+              "LS3MIP",
+              "LUMIP",
+              "OMIP",
+              "PAMIP",
+              "PMIP",
+              "Prototype",
+              "RFMIP",
+              "SIMIP",
+              "ScenarioMIP",
+              "VIACSAB",
+              "VolMIP"
+            ],
+            "minItems": 1,
+            "type": "string"
+          }
+        },
+        "input4mips:time_range": {
+          "type": "string",
+          "anyOf": [
+            {
+              "pattern": "^\\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])([01]\\d|2[0-3])[0-5]\\d-\\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])([01]\\d|2[0-3])[0-5]\\d$"
+            },
+            {
+              "pattern": "^\\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])-\\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$"
+            },
+            {
+              "pattern": "^\\d{4}(0[1-9]|1[0-2])-\\d{4}(0[1-9]|1[0-2])$"
+            }
+          ]
+        },
+        "input4mips:title": {
+          "type": "string",
+          "pattern": ".*"
+        },
+        "input4mips:variable_cf_standard_name": {
+          "type": "string",
+          "enum": [
+            "air_pressure_at_mean_sea_level",
+            "air_temperature",
+            "cell_area",
+            "eastward_wind",
+            "land_ice_specific_mass_flux_due_to_calving",
+            "mole_concentration_of_sulfur_hexafluoride_in_sea_water",
+            "mole_fraction_of_carbon_dioxide_in_air",
+            "mole_fraction_of_carbon_monoxide_in_air",
+            "mole_fraction_of_cfc113_in_air",
+            "mole_fraction_of_cfc114_in_air",
+            "mole_fraction_of_cfc11_in_air",
+            "mole_fraction_of_cfc12_in_air",
+            "mole_fraction_of_ethane_in_air",
+            "mole_fraction_of_ethanol_in_air",
+            "mole_fraction_of_ethene_in_air",
+            "mole_fraction_of_hcfc22_in_air",
+            "mole_fraction_of_hfc125_in_air",
+            "mole_fraction_of_hfc134a_in_air",
+            "mole_fraction_of_methane_in_air",
+            "mole_fraction_of_methanol_in_air",
+            "mole_fraction_of_molecular_hydrogen_in_air",
+            "mole_fraction_of_nitrous_oxide_in_air",
+            "mole_fraction_of_propane_in_air",
+            "mole_fraction_of_propene_in_air",
+            "mole_fraction_of_sulfur_dioxide_in_air",
+            "northward_wind",
+            "rainfall_flux",
+            "sea_area_fraction",
+            "sea_ice_area_fraction",
+            "sea_surface_salinity",
+            "sea_surface_temperature",
+            "snowfall_flux",
+            "specific_humidity",
+            "surface_downwelling_longwave_flux_in_air",
+            "surface_downwelling_shortwave_flux_in_air",
+            "surface_sea_water_x_velocity",
+            "surface_sea_water_y_velocity",
+            "surface_temperature",
+            "water_flux_into_sea_water_from_rivers"
+          ]
+        },
+        "input4mips:variable_id": {
+          "type": "string",
+          "enum": [
+            "BC",
+            "BC_em_AIR_anthro",
+            "BC_em_SOLID_BIOFUEL_anthro",
+            "BC_em_anthro",
+            "BCpercentageAGRI",
+            "BCpercentageBORF",
+            "BCpercentageDEFO",
+            "BCpercentagePEAT",
+            "BCpercentageSAVA",
+            "BCpercentageTEMF",
+            "BCsmoothed",
+            "BCsmoothedpercentageAGRI",
+            "BCsmoothedpercentageBORF",
+            "BCsmoothedpercentageDEFO",
+            "BCsmoothedpercentagePEAT",
+            "BCsmoothedpercentageSAVA",
+            "BCsmoothedpercentageTEMF",
+            "C10H16",
+            "C10H16percentageAGRI",
+            "C10H16percentageBORF",
+            "C10H16percentageDEFO",
+            "C10H16percentagePEAT",
+            "C10H16percentageSAVA",
+            "C10H16percentageTEMF",
+            "C10H16smoothed",
+            "C10H16smoothedpercentageAGRI",
+            "C10H16smoothedpercentageBORF",
+            "C10H16smoothedpercentageDEFO",
+            "C10H16smoothedpercentagePEAT",
+            "C10H16smoothedpercentageSAVA",
+            "C10H16smoothedpercentageTEMF",
+            "C2H2percentageAGRI",
+            "C2H2percentageBORF",
+            "C2H2percentageDEFO",
+            "C2H2percentagePEAT",
+            "C2H2percentageSAVA",
+            "C2H2percentageTEMF",
+            "C2H2smoothed",
+            "C2H2smoothedpercentageAGRI",
+            "C2H2smoothedpercentageBORF",
+            "C2H2smoothedpercentageDEFO",
+            "C2H2smoothedpercentagePEAT",
+            "C2H2smoothedpercentageSAVA",
+            "C2H2smoothedpercentageTEMF",
+            "C2H4O",
+            "C2H4OpercentageAGRI",
+            "C2H4OpercentageBORF",
+            "C2H4OpercentageDEFO",
+            "C2H4OpercentagePEAT",
+            "C2H4OpercentageSAVA",
+            "C2H4OpercentageTEMF",
+            "C2H4Osmoothed",
+            "C2H4OsmoothedpercentageAGRI",
+            "C2H4OsmoothedpercentageBORF",
+            "C2H4OsmoothedpercentageDEFO",
+            "C2H4OsmoothedpercentagePEAT",
+            "C2H4OsmoothedpercentageSAVA",
+            "C2H4OsmoothedpercentageTEMF",
+            "C2H4percentageAGRI",
+            "C2H4percentageBORF",
+            "C2H4percentageDEFO",
+            "C2H4percentagePEAT",
+            "C2H4percentageSAVA",
+            "C2H4percentageTEMF",
+            "C2H4smoothed",
+            "C2H4smoothedpercentageAGRI",
+            "C2H4smoothedpercentageBORF",
+            "C2H4smoothedpercentageDEFO",
+            "C2H4smoothedpercentagePEAT",
+            "C2H4smoothedpercentageSAVA",
+            "C2H4smoothedpercentageTEMF",
+            "C2H5OHpercentageAGRI",
+            "C2H5OHpercentageBORF",
+            "C2H5OHpercentageDEFO",
+            "C2H5OHpercentagePEAT",
+            "C2H5OHpercentageSAVA",
+            "C2H5OHpercentageTEMF",
+            "C2H5OHsmoothed",
+            "C2H5OHsmoothedpercentageAGRI",
+            "C2H5OHsmoothedpercentageBORF",
+            "C2H5OHsmoothedpercentageDEFO",
+            "C2H5OHsmoothedpercentagePEAT",
+            "C2H5OHsmoothedpercentageSAVA",
+            "C2H5OHsmoothedpercentageTEMF",
+            "C2H6S",
+            "C2H6SpercentageAGRI",
+            "C2H6SpercentageBORF",
+            "C2H6SpercentageDEFO",
+            "C2H6SpercentagePEAT",
+            "C2H6SpercentageSAVA",
+            "C2H6SpercentageTEMF",
+            "C2H6Ssmoothed",
+            "C2H6SsmoothedpercentageAGRI",
+            "C2H6SsmoothedpercentageBORF",
+            "C2H6SsmoothedpercentageDEFO",
+            "C2H6SsmoothedpercentagePEAT",
+            "C2H6SsmoothedpercentageSAVA",
+            "C2H6SsmoothedpercentageTEMF",
+            "C2H6percentageAGRI",
+            "C2H6percentageBORF",
+            "C2H6percentageDEFO",
+            "C2H6percentagePEAT",
+            "C2H6percentageSAVA",
+            "C2H6percentageTEMF",
+            "C2H6smoothed",
+            "C2H6smoothedpercentageAGRI",
+            "C2H6smoothedpercentageBORF",
+            "C2H6smoothedpercentageDEFO",
+            "C2H6smoothedpercentagePEAT",
+            "C2H6smoothedpercentageSAVA",
+            "C2H6smoothedpercentageTEMF",
+            "C3H6O",
+            "C3H6OpercentageAGRI",
+            "C3H6OpercentageBORF",
+            "C3H6OpercentageDEFO",
+            "C3H6OpercentagePEAT",
+            "C3H6OpercentageSAVA",
+            "C3H6OpercentageTEMF",
+            "C3H6Osmoothed",
+            "C3H6OsmoothedpercentageAGRI",
+            "C3H6OsmoothedpercentageBORF",
+            "C3H6OsmoothedpercentageDEFO",
+            "C3H6OsmoothedpercentagePEAT",
+            "C3H6OsmoothedpercentageSAVA",
+            "C3H6OsmoothedpercentageTEMF",
+            "C3H6percentageAGRI",
+            "C3H6percentageBORF",
+            "C3H6percentageDEFO",
+            "C3H6percentagePEAT",
+            "C3H6percentageSAVA",
+            "C3H6percentageTEMF",
+            "C3H6smoothed",
+            "C3H6smoothedpercentageAGRI",
+            "C3H6smoothedpercentageBORF",
+            "C3H6smoothedpercentageDEFO",
+            "C3H6smoothedpercentagePEAT",
+            "C3H6smoothedpercentageSAVA",
+            "C3H6smoothedpercentageTEMF",
+            "C3H8percentageAGRI",
+            "C3H8percentageBORF",
+            "C3H8percentageDEFO",
+            "C3H8percentagePEAT",
+            "C3H8percentageSAVA",
+            "C3H8percentageTEMF",
+            "C3H8smoothed",
+            "C3H8smoothedpercentageAGRI",
+            "C3H8smoothedpercentageBORF",
+            "C3H8smoothedpercentageDEFO",
+            "C3H8smoothedpercentagePEAT",
+            "C3H8smoothedpercentageSAVA",
+            "C3H8smoothedpercentageTEMF",
+            "C5H8",
+            "C5H8percentageAGRI",
+            "C5H8percentageBORF",
+            "C5H8percentageDEFO",
+            "C5H8percentagePEAT",
+            "C5H8percentageSAVA",
+            "C5H8percentageTEMF",
+            "C5H8smoothed",
+            "C5H8smoothedpercentageAGRI",
+            "C5H8smoothedpercentageBORF",
+            "C5H8smoothedpercentageDEFO",
+            "C5H8smoothedpercentagePEAT",
+            "C5H8smoothedpercentageSAVA",
+            "C5H8smoothedpercentageTEMF",
+            "C6H6",
+            "C6H6percentageAGRI",
+            "C6H6percentageBORF",
+            "C6H6percentageDEFO",
+            "C6H6percentagePEAT",
+            "C6H6percentageSAVA",
+            "C6H6percentageTEMF",
+            "C6H6smoothed",
+            "C6H6smoothedpercentageAGRI",
+            "C6H6smoothedpercentageBORF",
+            "C6H6smoothedpercentageDEFO",
+            "C6H6smoothedpercentagePEAT",
+            "C6H6smoothedpercentageSAVA",
+            "C6H6smoothedpercentageTEMF",
+            "C7H8",
+            "C7H8percentageAGRI",
+            "C7H8percentageBORF",
+            "C7H8percentageDEFO",
+            "C7H8percentagePEAT",
+            "C7H8percentageSAVA",
+            "C7H8percentageTEMF",
+            "C7H8smoothed",
+            "C7H8smoothedpercentageAGRI",
+            "C7H8smoothedpercentageBORF",
+            "C7H8smoothedpercentageDEFO",
+            "C7H8smoothedpercentagePEAT",
+            "C7H8smoothedpercentageSAVA",
+            "C7H8smoothedpercentageTEMF",
+            "C8H10",
+            "C8H10percentageAGRI",
+            "C8H10percentageBORF",
+            "C8H10percentageDEFO",
+            "C8H10percentagePEAT",
+            "C8H10percentageSAVA",
+            "C8H10percentageTEMF",
+            "C8H10smoothed",
+            "C8H10smoothedpercentageAGRI",
+            "C8H10smoothedpercentageBORF",
+            "C8H10smoothedpercentageDEFO",
+            "C8H10smoothedpercentagePEAT",
+            "C8H10smoothedpercentageSAVA",
+            "C8H10smoothedpercentageTEMF",
+            "CH2O",
+            "CH2OpercentageAGRI",
+            "CH2OpercentageBORF",
+            "CH2OpercentageDEFO",
+            "CH2OpercentagePEAT",
+            "CH2OpercentageSAVA",
+            "CH2OpercentageTEMF",
+            "CH2Osmoothed",
+            "CH2OsmoothedpercentageAGRI",
+            "CH2OsmoothedpercentageBORF",
+            "CH2OsmoothedpercentageDEFO",
+            "CH2OsmoothedpercentagePEAT",
+            "CH2OsmoothedpercentageSAVA",
+            "CH2OsmoothedpercentageTEMF",
+            "CH3COCHO",
+            "CH3COCHOpercentageAGRI",
+            "CH3COCHOpercentageBORF",
+            "CH3COCHOpercentageDEFO",
+            "CH3COCHOpercentagePEAT",
+            "CH3COCHOpercentageSAVA",
+            "CH3COCHOpercentageTEMF",
+            "CH3COCHOsmoothed",
+            "CH3COCHOsmoothedpercentageAGRI",
+            "CH3COCHOsmoothedpercentageBORF",
+            "CH3COCHOsmoothedpercentageDEFO",
+            "CH3COCHOsmoothedpercentagePEAT",
+            "CH3COCHOsmoothedpercentageSAVA",
+            "CH3COCHOsmoothedpercentageTEMF",
+            "CH3COOH",
+            "CH3COOHpercentageAGRI",
+            "CH3COOHpercentageBORF",
+            "CH3COOHpercentageDEFO",
+            "CH3COOHpercentagePEAT",
+            "CH3COOHpercentageSAVA",
+            "CH3COOHpercentageTEMF",
+            "CH3COOHsmoothed",
+            "CH3COOHsmoothedpercentageAGRI",
+            "CH3COOHsmoothedpercentageBORF",
+            "CH3COOHsmoothedpercentageDEFO",
+            "CH3COOHsmoothedpercentagePEAT",
+            "CH3COOHsmoothedpercentageSAVA",
+            "CH3COOHsmoothedpercentageTEMF",
+            "CH3OHpercentageAGRI",
+            "CH3OHpercentageBORF",
+            "CH3OHpercentageDEFO",
+            "CH3OHpercentagePEAT",
+            "CH3OHpercentageSAVA",
+            "CH3OHpercentageTEMF",
+            "CH3OHsmoothed",
+            "CH3OHsmoothedpercentageAGRI",
+            "CH3OHsmoothedpercentageBORF",
+            "CH3OHsmoothedpercentageDEFO",
+            "CH3OHsmoothedpercentagePEAT",
+            "CH3OHsmoothedpercentageSAVA",
+            "CH3OHsmoothedpercentageTEMF",
+            "CH4_em_AIR_anthro",
+            "CH4_em_SOLID_BIOFUEL_anthro",
+            "CH4_em_anthro",
+            "CH4percentageAGRI",
+            "CH4percentageBORF",
+            "CH4percentageDEFO",
+            "CH4percentagePEAT",
+            "CH4percentageSAVA",
+            "CH4percentageTEMF",
+            "CH4smoothed",
+            "CH4smoothedpercentageAGRI",
+            "CH4smoothedpercentageBORF",
+            "CH4smoothedpercentageDEFO",
+            "CH4smoothedpercentagePEAT",
+            "CH4smoothedpercentageSAVA",
+            "CH4smoothedpercentageTEMF",
+            "CO2_em_AIR_anthro",
+            "CO2_em_SOLID_BIOFUEL_anthro",
+            "CO2_em_anthro",
+            "CO2percentageAGRI",
+            "CO2percentageBORF",
+            "CO2percentageDEFO",
+            "CO2percentagePEAT",
+            "CO2percentageSAVA",
+            "CO2percentageTEMF",
+            "CO2smoothed",
+            "CO2smoothedpercentageAGRI",
+            "CO2smoothedpercentageBORF",
+            "CO2smoothedpercentageDEFO",
+            "CO2smoothedpercentagePEAT",
+            "CO2smoothedpercentageSAVA",
+            "CO2smoothedpercentageTEMF",
+            "CO_em_AIR_anthro",
+            "CO_em_SOLID_BIOFUEL_anthro",
+            "CO_em_anthro",
+            "COpercentageAGRI",
+            "COpercentageBORF",
+            "COpercentageDEFO",
+            "COpercentagePEAT",
+            "COpercentageSAVA",
+            "COpercentageTEMF",
+            "COsmoothed",
+            "COsmoothedpercentageAGRI",
+            "COsmoothedpercentageBORF",
+            "COsmoothedpercentageDEFO",
+            "COsmoothedpercentagePEAT",
+            "COsmoothedpercentageSAVA",
+            "COsmoothedpercentageTEMF",
+            "H2percentageAGRI",
+            "H2percentageBORF",
+            "H2percentageDEFO",
+            "H2percentagePEAT",
+            "H2percentageSAVA",
+            "H2percentageTEMF",
+            "H2smoothed",
+            "H2smoothedpercentageAGRI",
+            "H2smoothedpercentageBORF",
+            "H2smoothedpercentageDEFO",
+            "H2smoothedpercentagePEAT",
+            "H2smoothedpercentageSAVA",
+            "H2smoothedpercentageTEMF",
+            "HCN",
+            "HCNpercentageAGRI",
+            "HCNpercentageBORF",
+            "HCNpercentageDEFO",
+            "HCNpercentagePEAT",
+            "HCNpercentageSAVA",
+            "HCNpercentageTEMF",
+            "HCNsmoothed",
+            "HCNsmoothedpercentageAGRI",
+            "HCNsmoothedpercentageBORF",
+            "HCNsmoothedpercentageDEFO",
+            "HCNsmoothedpercentagePEAT",
+            "HCNsmoothedpercentageSAVA",
+            "HCNsmoothedpercentageTEMF",
+            "HCOOH",
+            "HCOOHpercentageAGRI",
+            "HCOOHpercentageBORF",
+            "HCOOHpercentageDEFO",
+            "HCOOHpercentagePEAT",
+            "HCOOHpercentageSAVA",
+            "HCOOHpercentageTEMF",
+            "HCOOHsmoothed",
+            "HCOOHsmoothedpercentageAGRI",
+            "HCOOHsmoothedpercentageBORF",
+            "HCOOHsmoothedpercentageDEFO",
+            "HCOOHsmoothedpercentagePEAT",
+            "HCOOHsmoothedpercentageSAVA",
+            "HCOOHsmoothedpercentageTEMF",
+            "HOCH2CHO",
+            "HOCH2CHOpercentageAGRI",
+            "HOCH2CHOpercentageBORF",
+            "HOCH2CHOpercentageDEFO",
+            "HOCH2CHOpercentagePEAT",
+            "HOCH2CHOpercentageSAVA",
+            "HOCH2CHOpercentageTEMF",
+            "HOCH2CHOsmoothed",
+            "HOCH2CHOsmoothedpercentageAGRI",
+            "HOCH2CHOsmoothedpercentageBORF",
+            "HOCH2CHOsmoothedpercentageDEFO",
+            "HOCH2CHOsmoothedpercentagePEAT",
+            "HOCH2CHOsmoothedpercentageSAVA",
+            "HOCH2CHOsmoothedpercentageTEMF",
+            "HigherAlkanes",
+            "HigherAlkanespercentageAGRI",
+            "HigherAlkanespercentageBORF",
+            "HigherAlkanespercentageDEFO",
+            "HigherAlkanespercentagePEAT",
+            "HigherAlkanespercentageSAVA",
+            "HigherAlkanespercentageTEMF",
+            "HigherAlkanessmoothed",
+            "HigherAlkanessmoothedpercentageAGRI",
+            "HigherAlkanessmoothedpercentageBORF",
+            "HigherAlkanessmoothedpercentageDEFO",
+            "HigherAlkanessmoothedpercentagePEAT",
+            "HigherAlkanessmoothedpercentageSAVA",
+            "HigherAlkanessmoothedpercentageTEMF",
+            "HigherAlkenes",
+            "HigherAlkenespercentageAGRI",
+            "HigherAlkenespercentageBORF",
+            "HigherAlkenespercentageDEFO",
+            "HigherAlkenespercentagePEAT",
+            "HigherAlkenespercentageSAVA",
+            "HigherAlkenespercentageTEMF",
+            "HigherAlkenessmoothed",
+            "HigherAlkenessmoothedpercentageAGRI",
+            "HigherAlkenessmoothedpercentageBORF",
+            "HigherAlkenessmoothedpercentageDEFO",
+            "HigherAlkenessmoothedpercentagePEAT",
+            "HigherAlkenessmoothedpercentageSAVA",
+            "HigherAlkenessmoothedpercentageTEMF",
+            "MEK",
+            "MEKpercentageAGRI",
+            "MEKpercentageBORF",
+            "MEKpercentageDEFO",
+            "MEKpercentagePEAT",
+            "MEKpercentageSAVA",
+            "MEKpercentageTEMF",
+            "MEKsmoothed",
+            "MEKsmoothedpercentageAGRI",
+            "MEKsmoothedpercentageBORF",
+            "MEKsmoothedpercentageDEFO",
+            "MEKsmoothedpercentagePEAT",
+            "MEKsmoothedpercentageSAVA",
+            "MEKsmoothedpercentageTEMF",
+            "N2O_em_AIR_anthro",
+            "N2O_em_SOLID_BIOFUEL_anthro",
+            "N2O_em_anthro",
+            "N2OpercentageAGRI",
+            "N2OpercentageBORF",
+            "N2OpercentageDEFO",
+            "N2OpercentagePEAT",
+            "N2OpercentageSAVA",
+            "N2OpercentageTEMF",
+            "N2Osmoothed",
+            "N2OsmoothedpercentageAGRI",
+            "N2OsmoothedpercentageBORF",
+            "N2OsmoothedpercentageDEFO",
+            "N2OsmoothedpercentagePEAT",
+            "N2OsmoothedpercentageSAVA",
+            "N2OsmoothedpercentageTEMF",
+            "NH3",
+            "NH3_em_AIR_anthro",
+            "NH3_em_SOLID_BIOFUEL_anthro",
+            "NH3_em_anthro",
+            "NH3percentageAGRI",
+            "NH3percentageBORF",
+            "NH3percentageDEFO",
+            "NH3percentagePEAT",
+            "NH3percentageSAVA",
+            "NH3percentageTEMF",
+            "NH3smoothed",
+            "NH3smoothedpercentageAGRI",
+            "NH3smoothedpercentageBORF",
+            "NH3smoothedpercentageDEFO",
+            "NH3smoothedpercentagePEAT",
+            "NH3smoothedpercentageSAVA",
+            "NH3smoothedpercentageTEMF",
+            "NMVOC_em_AIR_anthro",
+            "NMVOC_em_SOLID_BIOFUEL_anthro",
+            "NMVOC_em_anthro",
+            "NMVOCbulk",
+            "NMVOCbulkpercentageAGRI",
+            "NMVOCbulkpercentageBORF",
+            "NMVOCbulkpercentageDEFO",
+            "NMVOCbulkpercentagePEAT",
+            "NMVOCbulkpercentageSAVA",
+            "NMVOCbulkpercentageTEMF",
+            "NMVOCbulksmoothed",
+            "NMVOCbulksmoothedpercentageAGRI",
+            "NMVOCbulksmoothedpercentageBORF",
+            "NMVOCbulksmoothedpercentageDEFO",
+            "NMVOCbulksmoothedpercentagePEAT",
+            "NMVOCbulksmoothedpercentageSAVA",
+            "NMVOCbulksmoothedpercentageTEMF",
+            "NOx",
+            "NOx_em_AIR_anthro",
+            "NOx_em_SOLID_BIOFUEL_anthro",
+            "NOx_em_anthro",
+            "NOxasNO2",
+            "NOxasNO2percentageAGRI",
+            "NOxasNO2percentageBORF",
+            "NOxasNO2percentageDEFO",
+            "NOxasNO2percentagePEAT",
+            "NOxasNO2percentageSAVA",
+            "NOxasNO2percentageTEMF",
+            "NOxasNO2smoothed",
+            "NOxasNO2smoothedpercentageAGRI",
+            "NOxasNO2smoothedpercentageBORF",
+            "NOxasNO2smoothedpercentageDEFO",
+            "NOxasNO2smoothedpercentagePEAT",
+            "NOxasNO2smoothedpercentageSAVA",
+            "NOxasNO2smoothedpercentageTEMF",
+            "NOxpercentageAGRI",
+            "NOxpercentageBORF",
+            "NOxpercentageDEFO",
+            "NOxpercentagePEAT",
+            "NOxpercentageSAVA",
+            "NOxpercentageTEMF",
+            "NOxsmoothed",
+            "NOxsmoothedpercentageAGRI",
+            "NOxsmoothedpercentageBORF",
+            "NOxsmoothedpercentageDEFO",
+            "NOxsmoothedpercentagePEAT",
+            "NOxsmoothedpercentageSAVA",
+            "NOxsmoothedpercentageTEMF",
+            "OC",
+            "OC_em_AIR_anthro",
+            "OC_em_SOLID_BIOFUEL_anthro",
+            "OC_em_anthro",
+            "OCpercentageAGRI",
+            "OCpercentageBORF",
+            "OCpercentageDEFO",
+            "OCpercentagePEAT",
+            "OCpercentageSAVA",
+            "OCpercentageTEMF",
+            "OCsmoothed",
+            "OCsmoothedpercentageAGRI",
+            "OCsmoothedpercentageBORF",
+            "OCsmoothedpercentageDEFO",
+            "OCsmoothedpercentagePEAT",
+            "OCsmoothedpercentageSAVA",
+            "OCsmoothedpercentageTEMF",
+            "SO2_em_AIR_anthro",
+            "SO2_em_SOLID_BIOFUEL_anthro",
+            "SO2_em_anthro",
+            "SO2percentageAGRI",
+            "SO2percentageBORF",
+            "SO2percentageDEFO",
+            "SO2percentagePEAT",
+            "SO2percentageSAVA",
+            "SO2percentageTEMF",
+            "SO2smoothed",
+            "SO2smoothedpercentageAGRI",
+            "SO2smoothedpercentageBORF",
+            "SO2smoothedpercentageDEFO",
+            "SO2smoothedpercentagePEAT",
+            "SO2smoothedpercentageSAVA",
+            "SO2smoothedpercentageTEMF",
+            "Toluenelump",
+            "ToluenelumppercentageAGRI",
+            "ToluenelumppercentageBORF",
+            "ToluenelumppercentageDEFO",
+            "ToluenelumppercentagePEAT",
+            "ToluenelumppercentageSAVA",
+            "ToluenelumppercentageTEMF",
+            "Toluenelumpsmoothed",
+            "ToluenelumpsmoothedpercentageAGRI",
+            "ToluenelumpsmoothedpercentageBORF",
+            "ToluenelumpsmoothedpercentageDEFO",
+            "ToluenelumpsmoothedpercentagePEAT",
+            "ToluenelumpsmoothedpercentageSAVA",
+            "ToluenelumpsmoothedpercentageTEMF",
+            "VOC01_alcohols_em_speciated_VOC_anthro",
+            "VOC02_ethane_em_speciated_VOC_anthro",
+            "VOC03_propane_em_speciated_VOC_anthro",
+            "VOC04_butanes_em_speciated_VOC_anthro",
+            "VOC05_pentanes_em_speciated_VOC_anthro",
+            "VOC06_hexanes_pl_em_speciated_VOC_anthro",
+            "VOC07_ethene_em_speciated_VOC_anthro",
+            "VOC08_propene_em_speciated_VOC_anthro",
+            "VOC09_ethyne_em_speciated_VOC_anthro",
+            "VOC12_other_alke_em_speciated_VOC_anthro",
+            "VOC13_benzene_em_speciated_VOC_anthro",
+            "VOC14_toluene_em_speciated_VOC_anthro",
+            "VOC15_xylene_em_speciated_VOC_anthro",
+            "VOC16_trimethylb_em_speciated_VOC_anthro",
+            "VOC17_other_arom_em_speciated_VOC_anthro",
+            "VOC18_esters_em_speciated_VOC_anthro",
+            "VOC19_ethers_em_speciated_VOC_anthro",
+            "VOC20_chlorinate_em_speciated_VOC_anthro",
+            "VOC21_methanal_em_speciated_VOC_anthro",
+            "VOC22_other_alka_em_speciated_VOC_anthro",
+            "VOC23_ketones_em_speciated_VOC_anthro",
+            "VOC24_acids_em_speciated_VOC_anthro",
+            "VOC25_other_voc_em_speciated_VOC_anthro",
+            "areacella",
+            "areacello",
+            "asy",
+            "c2f6",
+            "c2h2",
+            "c2h4",
+            "c2h5oh",
+            "c2h6",
+            "c3f8",
+            "c3h6",
+            "c3h8",
+            "c4f10",
+            "c5f12",
+            "c6f14",
+            "c7f16",
+            "c8f18",
+            "cc4f8",
+            "ccl4",
+            "cf4",
+            "cfc11",
+            "cfc113",
+            "cfc114",
+            "cfc115",
+            "cfc11eq",
+            "cfc12",
+            "cfc12eq",
+            "ch2cl2",
+            "ch3br",
+            "ch3ccl3",
+            "ch3cl",
+            "ch3oh",
+            "ch4",
+            "chcl3",
+            "co",
+            "co2",
+            "datasource",
+            "dustscalefactor",
+            "ext",
+            "friver",
+            "gridcellarea",
+            "h2",
+            "halon1211",
+            "halon1301",
+            "halon2402",
+            "hcc140a",
+            "hcfc141b",
+            "hcfc142b",
+            "hcfc22",
+            "hfc125",
+            "hfc134a",
+            "hfc134aeq",
+            "hfc143a",
+            "hfc152a",
+            "hfc227ea",
+            "hfc23",
+            "hfc236fa",
+            "hfc245fa",
+            "hfc32",
+            "hfc365mfc",
+            "hfc4310mee",
+            "huss",
+            "licalvf",
+            "multiple",
+            "multiple-management",
+            "multiple-states",
+            "multiple-static",
+            "multiple-transitions",
+            "n2o",
+            "nd",
+            "nf3",
+            "pfc116",
+            "pfc218",
+            "pfc3110",
+            "pfc318",
+            "pfc4112",
+            "pfc5114",
+            "pfc6116",
+            "pfc7118",
+            "prra",
+            "prsn",
+            "psl",
+            "reff",
+            "rlds",
+            "rsds",
+            "sad",
+            "sf6",
+            "sftof",
+            "siconc",
+            "siconca",
+            "siconcbcs",
+            "so2",
+            "so2f2",
+            "sos",
+            "ssa",
+            "tas",
+            "tos",
+            "tosbcs",
+            "ts",
+            "uas",
+            "uos",
+            "utsvolcemis",
+            "vas",
+            "vd",
+            "vos"
+          ]
+        },
+        "input4mips:variable_long_name": {
+          "type": "string",
+          "enum": [
+            "C2H4 volume mixing ratio",
+            "C2H6 Volume Mixing Ratio",
+            "C3H6 Volume Mixing Ratio",
+            "C3H8 Volume Mixing Ratio",
+            "CO Volume Mixing Ratio",
+            "Daily Minimum Near-Surface Air Temperature",
+            "Eastward Near-Surface Wind",
+            "Ethanol volume mixing ratio",
+            "Global Average Sea Surface Salinity",
+            "Global Mean Mole Fraction of CFC11",
+            "Global Mean Mole Fraction of CFC113",
+            "Global Mean Mole Fraction of CFC12",
+            "Grid-Cell Area for Atmospheric Grid Variables",
+            "Grid-Cell Area for Ocean Variables",
+            "H2 volume mixing ratio",
+            "Land Ice Calving Flux",
+            "Methanol volume mixing ratio",
+            "Mole Concentration of SF6 in Sea Water",
+            "Mole Fraction of CH4",
+            "Mole Fraction of CO2",
+            "Mole Fraction of HCFC22",
+            "Mole Fraction of HFC125",
+            "Mole Fraction of HFC134a",
+            "Mole Fraction of N2O",
+            "Mole Fraction of cfc114",
+            "Near-Surface Specific Humidity",
+            "Northward Near-Surface Wind",
+            "Rainfall Flux",
+            "SO2 Volume Mixing Ratio",
+            "Sea Area Percentage",
+            "Sea Level Pressure",
+            "Sea Surface Temperature",
+            "Sea Water Surface X Velocity",
+            "Sea Water Surface Y Velocity",
+            "Sea-Ice Area Percentage (Atmospheric Grid)",
+            "Sea-Ice Area Percentage (Ocean Grid)",
+            "Snowfall Flux",
+            "Surface Downwelling Longwave Radiation",
+            "Surface Downwelling Shortwave Radiation over Snow",
+            "Surface Temperature",
+            "Water Flux into Sea Water from Rivers"
+          ]
+        },
+        "input4mips:variable_units": {
+          "type": "string",
+          "enum": [
+            "",
+            "1",
+            "1e-3",
+            "K",
+            "Pa",
+            "W m-2",
+            "kg m-2 s-1",
+            "m s-1",
+            "m2",
+            "mol m-3"
+          ]
+        },
+        "input4mips:version": {
+          "type": "string",
+          "pattern": "^v(1\\d{3}|2\\d{3})(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])$"
+        }
+      },
+      "patternProperties": {
+        "^(?!input4mips:)": {}
+      },
+      "additionalProperties": false
+    },
+    "link_fields": {
+      "$comment": "Validation schema for STAC links. See https://github.com/radiantearth/stac-spec/blob/master/commons/links.md",
+      "type": "object",
+      "properties": {
+        "href": {
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

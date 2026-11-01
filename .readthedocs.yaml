@@ -1,22 +1,32 @@
-# .readthedocs.yaml
 # Read the Docs configuration file
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
-# Required
 version: 2
 
-# Set the version of Python and other tools you might need
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.11"   # use 3.11+ and tomllib is built-in, no tomli needed
+    python: "3.12"
 
-# Build documentation in the docs/ directory with Sphinx
+  # Install esgvoc for documentation build
+  jobs:
+    post_install:
+      - esgvoc use universe@latest
+      - esgvoc use cmip6@latest
+
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - dev
+    - requirements: docs/requirements.txt
+
 sphinx:
   configuration: docs/conf.py
+  fail_on_warning: false  # Set to true after fixing all warnings
 
-# We recommend specifying your dependencies to enable reproducible builds:
-# https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
-python:
-   install:
-   - requirements: docs/requirements.txt
+# Build documentation in additional formats
+formats:
+  - pdf
+  - epub

@@ -8,8 +8,8 @@ Pip Install
 
 Use the following command to install ``esgcet`` into a previously created conda environment: ::
 
-    conda activate esgf-pub
-    pip install esgcet. # add --upgrade if existing install 
+    conda activate esgf-pub # or source /path/to/venv/bin/activate 
+    pip install esgcet # add --upgrade if existing install 
     esgpublish --version #  Ensure you have installed/upgraded to latest version
 
 
@@ -22,15 +22,10 @@ To install esgcet by cloning our github repository (useful if you want to modiy 
 
     git clone http://github.com/ESGF/esg-publisher.git 
     cd esg-publisher
-    cd src/python
     pip install -e .  # You can modify the source in place
     esgpublish --version  # Confirm that target version has been installed (defined in pyproject.toml)
 
 Now you will be able to call all commands in this package from any directory.  
-
-
-NOTE: if you are intending to publish CMIP6Plus or CMIP7 data, the publisher will perform several `semantic relationship` checks of the dataset properties to ensure that the model and experiment being publisher were successfully registered with the WCRP Controlled-vocabulary (CV).  To enable this procedure, it is necessary to download CMOR tables before the publisher will successfully run, as those are required input for the checks.
-
 
 
 Config File (esg.yaml)
@@ -44,6 +39,24 @@ Starting with ``v5.2.0`` the ESGF Publisher uses a .yaml file for configuration.
    cp esg.yaml $HOME/.esg
 
 The ``--config`` command-line argument lets you set a configuration file of your choosing other than the default location.
+
+**New in v5.5.0**: You can also set the ``ESG_CONFIG_FILE`` environment variable to specify a configuration file path. This is particularly useful for:
+
+ * Automated testing environments
+ * CI/CD pipelines
+ * Container deployments
+ * Managing multiple configurations
+
+Example usage::
+
+   export ESG_CONFIG_FILE=/path/to/custom/esg.yaml
+   esgpublish --map mydata.map
+
+The priority order for configuration file selection is:
+
+ 1. ``--config`` command-line argument (highest priority)
+ 2. ``ESG_CONFIG_FILE`` environment variable
+ 3. ``$HOME/.esg/esg.yaml`` (default location)
 
 The config file will contain the following settings, most required settings are also available as command line arguments:
 
@@ -88,8 +101,14 @@ The config file will contain the following settings, most required settings are 
  * https_url
     * Optional. (Require for sites that don't run a standard Nginx http server container, eg. use of Globus).  For Globus-enabled sites, this is a template in the form: https://<hostname>.data.globus.org/{}/{}|application/netcdf|HTTPServer.  Get your <hostname> from your site/data node administrator.  The software will populate the ``{}`` fields, leave as is. 
  * stac_config
-    * Reuqired for publishing to ESGF Stac catalogs. see :ref:`esglogin` for more information
-      
+    * Required for publishing to ESGF STAC catalogs. This is a dictionary containing authentication and API configuration. See :ref:`esglogin` for more information. The ``stac_api`` URL within this config specifies the STAC Discovery API endpoint.
+ * skipxr
+    * Optional boolean. Set to **true** to enable fast, metadata-only NetCDF4 scanning that bypasses Xarray. Useful for large datasets when only metadata is needed. Default is False. Can be overridden with ``--no-xarray`` CLI flag.
+ * dry_run
+    * Optional boolean. Set to **true** to perform a dry run that scans data and generates metadata without publishing to any index APIs. Useful for testing and validation. Default is False. Can be overridden with ``--dry-run`` CLI flag.
+ * save_stac
+    * Optional boolean. Set to **true** to save generated STAC items as JSON files (named ``<dataset-id>.json``) in the current working directory. Useful for debugging and validation. Default is False. Can be overridden with ``--save-stac`` CLI flag.
+
 
 Fill out the necessary variables, and either leave or override the optional configurations.
 Example config settings can be found in the default esg.ini config file which will be created at ``$HOME/.esg/esg.yaml`` when you install ``esgcet``.

@@ -1,5 +1,6 @@
 
 from enum import Enum
+import json
 
 from globus_sdk import (
     SearchClient,
@@ -46,8 +47,9 @@ class ESGFGlobusIndex:
     """ class for ESGF Globus Index """
 
     def __init__(
-        self,
-        globus_index_name:str = "ESGF2-US-1.5-Catalog"
+        self,*,
+        globus_index_name:str = "ESGF2-US-1.5-Catalog",
+        init_marker: str | None = None,
 
     ) -> None:
 
@@ -57,17 +59,17 @@ class ESGFGlobusIndex:
             raise ValueError("the index is not supported")
  
         self.query_client = SearchClient()
-        self.marker = None
+        self.marker = init_marker
+        self.next_marker = None
 
     @staticmethod
-    def _generate_query_str(
+    def _generate_query_dict(
         meta_type: Literal['File', 'Dataset'],
         project: Project,
         fixed_facet: dict[str, Any],
         data_node: str,
         is_replica: bool = False,
-        dataset_limit: int = 1000,
-    ) -> SearchScrollQuery:
+    ) -> dict[str, Any]:
         
         query_dict= {"filters":[]}
         for key, val in fixed_facet.items():
@@ -101,26 +103,16 @@ class ESGFGlobusIndex:
             }
         )
 
-        if is_replica:
-            query_dict["filters"].append(
-                {
-                    "field_name": "replica",
-                    "values": [True],
-                    "type": "match_all",
-                }
-            )
-        else:
-            query_dict["filters"].append(
-                {
-                    "field_name": "replica",
-                    "values": [False],
-                    "type": "match_all",
-                }
-            )
+        query_dict["filters"].append(
+            {
+                "field_name": "replica",
+                "values": [is_replica],
+                "type": "match_all",
+            }
+        )
 
-        query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict)
 
-        return query_str
+        return query_dict
 
 
     def query_dataset_file(
@@ -134,52 +126,52 @@ class ESGFGlobusIndex:
         """query index using project and a fixed_facet"""
 
         
-        query_str = self._generate_query_str(
+        query_dict_dset = self._generate_query_dict(
             'Dataset', 
             project, 
             fixed_facet, 
             data_node, 
             is_replica,
-            dataset_limit,
         )
+        query_str = SearchScrollQuery(limit=dataset_limit, additional_fields=query_dict_dset)
+
+        if self.marker is not None:
+            query_str["marker"] = self.marker
+
         paginator = self.query_client.paginated.scroll(self.index_id, query_str) 
 
+        query_dict_file = self._generate_query_dict(
+            'File',
+            project,
+            fixed_facet,
+            data_node,
+            is_replica,
+        )
 
-        query_dict = {
-            "filters": [
-                {
-                    "field_name": "data_node",
-                    "values": [data_node],
-                    "type": "match_any",
-                },
-                {
-                    "field_name": 'type',
-                    "values": ["File"],
-                    "type": "match_all",
-                },
-                {
-                    "field_name": "replica",
-                    "values": [is_replica],
-                    "type": "match_all",
-                },
-            ],
-            "sort": [
-                {
-                    "field_name": "id", 
-                    "order": "asc"
-                }
-            ],
-        }
+        query_dict_file["sort"] = [
+            {
+                "field_name": "id",
+                "order": "asc"
+            }
+        ]
 
         for response in paginator:
-            self.marker = response.data.get('marker')
+
+            if response.data['total'] == 0:
+                raise ValueError(
+                    "Cannot find any dataset using the query filter:\n"
+                    f"{json.dumps(query_dict_dset)}"
+                )
+
+            self.next_marker = response.data.get('marker')
+
             result_dict = defaultdict(list)
             dataset_ids = []
-            for g in response["gmeta"]:
+            for g in response.data["gmeta"]:
                 dataset_ids.append(g["subject"])
                 result_dict[g["subject"]] = [g["entries"][0]["content"]]
 
-            query_dict["filters"].append(
+            query_dict_file["filters"].append(
                 {
                     "field_name": "dataset_id",
                     "values": dataset_ids,
@@ -192,12 +184,12 @@ class ESGFGlobusIndex:
                 SearchQueryV1(
                     limit=10000,
                     offset =0,
-                    filters=query_dict["filters"],
-                    sort=query_dict["sort"]
+                    filters=query_dict_file["filters"],
+                    sort=query_dict_file["sort"]
                 )
             )
 
-            del query_dict["filters"][-1]
+            del query_dict_file["filters"][-1]
 
             if search_result["total"] > 10000:
                 raise ValueError("Over Globus post search limit, reduce the limit_dataset")
@@ -206,4 +198,5 @@ class ESGFGlobusIndex:
                 ds_id = gmeta["entries"][0]["content"]["dataset_id"]
                 result_dict[ds_id].append(gmeta["entries"][0]["content"])
 
+            self.marker = self.next_marker
             yield list(result_dict.values())

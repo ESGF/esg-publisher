@@ -1,6 +1,140 @@
 Release Notes
 =============
 
+v5.5.3
+------
+
+* **Bug Fixes**:
+
+  * **PID Publishing**: Fixed PID registration to use correct STAC-compatible ID format
+    * Ensures PID handles reference the correct dataset identifier based on the STAC item ID as would be the legacy *instance_id*
+
+* **Code Quality**:
+
+  * Removed extraneous blank lines in ``generic_netcdf.py`` for consistency
+
+v5.5.2
+------
+
+* **Performance Enhancement**: Implemented fast, metadata-only NetCDF4 dataset scanning
+
+  * New ``--no-xarray`` flag bypasses Xarray for faster scanning when full data access is not needed
+  * Directly reads NetCDF4 attributes and coordinates using ``netCDF4`` library
+  * Significantly reduces scan time for large datasets by avoiding Dask graph construction
+  * Accessible via ``ESGPubNC4Handler`` in ``esgcet.scan.mk_dataset_nc4``
+  * See :ref:`no_xarray_option` for usage details
+
+* **CLI Enhancements**:
+
+  * **--save-stac**: Save generated STAC items to disk as ``<dataset-id>.json`` files
+
+    * Useful for validating STAC items before publishing
+    * Enables debugging of STAC conversion errors
+    * Items are saved to current working directory
+    * See :ref:`save_stac_option` for usage details
+
+  * **--dry-run**: Perform dry run of publishing workflow
+
+    * Scans data and generates metadata records without publishing to index APIs
+    * Validates data structure and metadata extraction
+    * Safe for testing publication workflows
+    * See :ref:`dry_run_option` for usage details
+
+* **Testing Enhancements**:
+
+  * Added comprehensive test coverage for STAC client functionality (``test_stac_client.py``)
+  * Added test coverage for new CLI arguments (``--no-xarray``, ``--dry-run``, ``--save-stac``, ``--stac-api``)
+  * Added NC4 handler integration tests with CORDEX-CMIP6, CMIP6, and CMIP7 fixtures
+  * Added CORDEX-CMIP6 end-to-end integration test (NetCDF → STAC conversion)
+  * Established ground truth coordinate validation using actual NetCDF fixtures
+  * All tests pass: 113 passed, 4 skipped, 3 xfailed
+
+* **Coordinate Calculation Improvements** (PR #346):
+
+  * Revised coordinate range calculation to use cell vertices (bounds) instead of cell centers
+  * Provides more accurate spatial extents by including cell boundaries
+  * Uses bounds variables (``vertices_lon``, ``vertices_lat``, ``lat_bnds``, ``lon_bnds``) when available
+  * Implements sophisticated longitude wrapping algorithm to handle datasets crossing the antimeridian
+  * Improved handling of 1D vs 2D coordinate variables for optimal performance
+  * Reduced unnecessary computation for time axis by avoiding full array reads when possible
+
+* **Migration Enhancements** (PR #349):
+
+  * Added kerchunk reference generation during CMIP6/Plus dataset migration to STAC
+  * Added ``init_marker`` for resuming large Globus scroll queries from checkpoint
+  * Fixed ``with_suffix()`` bug that incorrectly replaced file extensions
+  * Updated migration workflow argument handling and protocol support
+
+* **Bug Fixes**:
+
+  * **STAC Converter**: Added validation for missing checksums before creating file:checksum field
+
+    * Raises RuntimeError with helpful message if checksum is missing from file record
+    * Prevents cryptic errors during STAC item generation
+    * Improved error handling for STAC conversion failures
+
+  * **STAC Error Handling**: Moved ``convert2stac`` outside try/except block
+
+    * Ensures STAC conversion errors are not masked
+    * Only network publishing operations are caught
+    * Added debug logging with full exception details
+
+v5.5.1
+------
+
+* **Packaging**: Removed ``setup.py`` (no longer supported post-refactor); use ``pip install`` with ``pyproject.toml``
+* **Bug Fixes**:
+
+  * STAC: Fixed ``master_id`` to ``base_id`` mapping logic to prevent incorrect property name assignment
+  * STAC: Changed print statement to proper logging in property mapping warnings
+
+* **CLI Enhancements**:
+
+  * Added help descriptions for all ``esgcet`` subcommands (``kerchunk``, ``qc-check``, ``migrate2stac``)
+  * Migration: Added ``--is-replica`` option to ``migrate2stac esgf15`` command (defaults to ``False``)
+  * Migration: Fixed facet filtering to include ``latest: True`` and ``retracted: False`` by default
+
+* **Dependencies**: Updated ``esgvoc`` lockfile version in ``uv.lock``
+* **Code Quality**: Reduced code duplication and improved logic in Globus migration module
+
+v5.5.0
+------
+**Major Refactoring Release**
+
+* **Code Organization**: Reorganized 55 files from flat structure into logical subdirectories for improved maintainability
+
+  * ``cli/`` - All command-line entry points (10 esg* commands)
+  * ``project/`` - Project-specific handlers (CMIP5, CMIP6, E3SM, etc.)
+  * ``scan/`` - Metadata extraction and dataset scanning
+  * ``solr/`` - Solr backend publishing
+  * ``stac/`` - STAC catalog publishing
+  * ``globus/`` - Globus Search publishing
+  * ``util/`` - Shared utilities and helpers
+
+* **Backward Compatibility**: Maintained 100% backward compatibility with old import paths through module aliasing
+* **Configuration Enhancement**: Added ``ESG_CONFIG_FILE`` environment variable support
+
+  * Allows specifying config file path via environment variable
+  * Useful for CI/CD, testing, containers, and multi-config workflows
+  * Priority: ``--config`` flag > ``ESG_CONFIG_FILE`` env var > default ``~/.esg/esg.yaml``
+
+* **Testing Improvements**:
+
+  * Added 46 comprehensive unit tests (up from ~5)
+  * Backward compatibility tests for all import paths
+  * CLI validation tests for all commands
+  * Utility module tests (mapfile, args)
+  * Test config fixture and environment setup
+
+* **CI/CD**: Added GitHub Actions workflow for automated testing across Python 3.11, 3.12, 3.13
+* **Bug Fixes**:
+
+  * Fixed ``fullmap`` attribute initialization in ``BasePublisher``
+  * Corrected ``Project`` enum usage in esgf15 globus module
+  * Fixed missing config fields in test setup
+
+* **Documentation**: All CLI commands verified working with ``--help`` and ``--version``
+
 v5.4.6
 ------
 * **BUGFIX** Corrected the longitude bounding box fix of 5.4.5.
@@ -14,7 +148,7 @@ v5.4.4
 ------
 * Added CORDEX-CMIP6 "compliance-check" enforcement per project specification
 * Add removal of aggregates to `esgadd`
-* Update `esgcet` kerchunk generator CLI to include dataset argument.  Mapfiles are no longer required for kerchunk generation. 
+* Update `esgcet` kerchunk generator CLI to include dataset argument.  Mapfiles are no longer required for kerchunk generation.
 * Corrected East/West bounds for CORDEX-CMIP6 datasets.
 
 v5.4.3
