@@ -339,6 +339,7 @@ STAC_API = "https://api.stac.esgf-west.org"
 
 
 VARIABLE_LIMIT = 75
+MAX_RECOMMENDED_FILE_COUNT = 1000  # Recommended maximum files per dataset
 
 VARIABLE_EXCLUDES = ["lat_bounds", "lon_bounds", "time_bounds"]
 
