@@ -8,7 +8,7 @@ v5.5.4
 
   * **Kerchunk/VirtualiZarr Documentation**: Added comprehensive documentation for automatic aggregation reference file generation during publishing. See :ref:`kerchunk_generation` for configuration and usage details. This feature has been available since v5.4.1 but was not well documented.
 
-  * **Dataset File Count Limits**: Added warning when datasets exceed 1000 files (configurable via ``MAX_RECOMMENDED_FILE_COUNT``). Helps prevent issues with event payload size limits, backend record constraints, and STAC item size. See :ref:`esgpublish` Dataset Size Considerations section.
+  * **Dataset File Count Limits**: Added warning when datasets exceed 1000 files (configurable via ``MAX_RECOMMENDED_FILE_COUNT``). Helps prevent issues with event payload size limits, backend record constraints, and STAC item size. See ``esgpublish`` documentation Dataset Size Considerations section.
 
   * **Optional unpublish parameters** (PR #371): Made ``index_node`` and ``data_node`` optional in ``esgunpublish`` command. These parameters are no longer required when unpublishing datasets that have them embedded in the dataset ID.
 
