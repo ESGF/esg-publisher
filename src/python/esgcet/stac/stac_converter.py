@@ -8,9 +8,12 @@ from esgcet.util.settings import (
     STAC_list_properties,
     STAC_proj_item_properties,
     STAC_schema_versions,
+    ASSET_AGG_DESCRIPTIONS,
+    ASSET_AGG_TYPES
 )
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
+from esgcet.util.get_size_remote_file import get_size
 
 
 log = logger.ESGPubLogger()
@@ -27,47 +30,73 @@ class ESGSTACItem:
         # Callers should check si before creating ESGSTACItem
         self.stac_item = si
         
-    def remove_aggregate(self, site):
-        operations = []
-        if "reference_file" in self.stac_item.get("assets", {}) and site in self.stac_item["assets"]["reference_file"].get("alternate", {}):
-            path = f"/assets/reference_file/alternate/{site}"
-            operations.append({
-                    "op": "remove",
-                    "path": path
-                    })
-        elif "reference_file" in self.stac_item.get("assets", {}) and self.stac_item["assets"]["reference_file"]["alternate:name"] == site:
-            path = f"/assets/reference_file"
-            operations.append({
-                    "op": "remove",
-                    "path": path
-                    })
-        return operations
+    def remove_aggregate(self, site: str, aggprotocols: str | None = None) -> list:
 
-    def add_aggregate(self, aggtype, url, site):
+        if aggprotocols is not None:
+            aggprotocols = [aggprotocols]
+        else:
+            aggprotocols = list(ASSET_AGG_DESCRIPTIONS.keys())
+
+        path = None
+
+        located = False
+        for aggprotocol in aggprotocols:
+            if aggprotocol not in self.stac_item.get("assets", {}):
+                continue
+
+            if located:
+                raise ValueError(
+                    'Unable to remove unspecified aggregation assets where '
+                    'multiple assets are present.'
+                )
+            
+            located = True
+            if site in self.stac_item["assets"][aggprotocol].get("alternate", {}):
+                path = f"/assets/{aggprotocol}/alternate/{site}"
+            else:
+                path = f"/assets/{aggprotocol}"
+
+        if path is not None:
+            return [{
+                "op": "remove",
+                "path": path
+            }]
+        return []
+
+    def add_aggregate(self, aggprotocol: str, url: str, site: str) -> list:
+
+        description = ASSET_AGG_DESCRIPTIONS.get(
+            aggprotocol,"Kerchunk reference file for virtual aggregation")
+
+        aggtype = ASSET_AGG_TYPES.get(
+            aggprotocol,'kerchunk')
+
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
             "href": url,
             "type": f"application/{aggtype}",
-            "role": ["data", "virtual"],
-            "description": "Kerchunk reference file for virtual aggregation",
+            "roles": ["virtual"],
+            "description": description,
             "alternate:name": site,
             "created": now,
             "updated": now,
-            "protocol": "kerchunk",
+            "protocol": aggprotocol,
         }
 
-        if "reference_file" in self.stac_item.get("assets", {}):
-            path = f"/assets/reference_file/alternate/{site}"
+        if aggprotocol in self.stac_item.get("assets", {}):
+            path = f"/assets/{aggprotocol}/alternate/{site}"
         else:
-            path = f"/assets/reference_file"
-        #    value["file:size"] =
-        operations = [{
-                    "op": "add",
-                    "path": path,
-                    "value": value
-                    }]
+            path = f"/assets/{aggprotocol}"
 
-        return operations
+        size = get_size(url)
+        if size is not None:
+            value["file:size"] = size
+
+        return [{
+            "op": "add",
+            "path": path,
+            "value": value
+        }]
 
     def add_replica(self, rep_datanode, template, prefix, rep_globus=""):
         assets = self.stac_item.get("assets", {})
