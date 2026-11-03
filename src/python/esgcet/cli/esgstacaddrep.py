@@ -12,7 +12,7 @@ from esgcet.stac.stac_converter import ESGSTACConverter, ESGSTACItem
 from esgcet.solr.search_check import ESGSearchCheck
 
 log = logger.ESGPubLogger()
-publog = log.return_logger("esgstacpub")
+publog = log.return_logger("esgstacpub", verbose=True)
 
 
 def get_args():

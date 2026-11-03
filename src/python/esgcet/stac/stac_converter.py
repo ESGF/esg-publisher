@@ -30,18 +30,19 @@ class ESGSTACItem:
         # Callers should check si before creating ESGSTACItem
         self.stac_item = si
         
-    def remove_aggregate(self, site: str, aggprotocols: str | None = None) -> list:
+    def remove_aggregate(self, aggtypes: str | list | None = None, site: str | None = None) -> list:
 
-        if aggprotocols is not None:
-            aggprotocols = [aggprotocols]
-        else:
-            aggprotocols = list(ASSET_AGG_DESCRIPTIONS.keys())
+        if aggtypes is None:
+            aggtypes = list(ASSET_AGG_DESCRIPTIONS.keys())
+
+        if not isinstance(aggtypes, list):
+            aggtypes = [aggtypes]
 
         path = None
 
         located = False
-        for aggprotocol in aggprotocols:
-            if aggprotocol not in self.stac_item.get("assets", {}):
+        for aggtype in aggtypes:
+            if aggtype not in self.stac_item.get("assets", {}):
                 continue
 
             if located:
@@ -51,10 +52,10 @@ class ESGSTACItem:
                 )
             
             located = True
-            if site in self.stac_item["assets"][aggprotocol].get("alternate", {}):
-                path = f"/assets/{aggprotocol}/alternate/{site}"
+            if site in self.stac_item["assets"][aggtype].get("alternate", {}):
+                path = f"/assets/{aggtype}/alternate/{site}"
             else:
-                path = f"/assets/{aggprotocol}"
+                path = f"/assets/{aggtype}"
 
         if path is not None:
             return [{
@@ -63,30 +64,43 @@ class ESGSTACItem:
             }]
         return []
 
-    def add_aggregate(self, aggprotocol: str, url: str, site: str) -> list:
+    def add_aggregate(self, aggtype: str, url: str, site: str) -> list:
+
+        existing_template = self.stac_item.get('assets',{}).get(aggtype,{})
 
         description = ASSET_AGG_DESCRIPTIONS.get(
-            aggprotocol,"Kerchunk reference file for virtual aggregation")
+            aggtype,"Kerchunk reference file for virtual aggregation")
 
-        aggtype = ASSET_AGG_TYPES.get(
-            aggprotocol,'kerchunk')
+        aggmime = ASSET_AGG_TYPES.get(
+            aggtype,'kerchunk')
+
+
+        # Sets the protocol to use for the url
+        for protocol in ['https','http','s3']:
+            if protocol in url:
+                break
+
+        # Override for kerchunk parquet stores
+        if aggtype == 'kerchunk' and 'parq' in url:
+            protocol = 'kerchunk'
 
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
             "href": url,
-            "type": f"application/{aggtype}",
+            "type": f"application/{aggmime}",
             "roles": ["virtual"],
             "description": description,
             "alternate:name": site,
-            "created": now,
+            "created": existing_template.get('created',None) or now,
             "updated": now,
-            "protocol": aggprotocol,
+            "protocol": protocol,
         }
 
-        if aggprotocol in self.stac_item.get("assets", {}):
-            path = f"/assets/{aggprotocol}/alternate/{site}"
-        else:
-            path = f"/assets/{aggprotocol}"
+        # if aggtype in self.stac_item.get("assets", {}):
+        #     path = f"/assets/{aggtype}/alternate/{site}"
+        # else:
+        #     path = f"/assets/{aggtype}"
+        path = f"/assets/{aggtype}"
 
         size = get_size(url)
         if size is not None:
