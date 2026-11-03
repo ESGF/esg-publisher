@@ -30,18 +30,18 @@ class ESGSTACItem:
         # Callers should check si before creating ESGSTACItem
         self.stac_item = si
         
-    def remove_aggregate(self, site: str, agg_protocols: str | None = None) -> list:
+    def remove_aggregate(self, site: str, aggprotocols: str | None = None) -> list:
 
-        if agg_protocols is not None:
-            agg_protocols = [agg_protocols]
+        if aggprotocols is not None:
+            aggprotocols = [aggprotocols]
         else:
-            agg_protocols = list(ASSET_AGG_DESCRIPTIONS.keys())
+            aggprotocols = list(ASSET_AGG_DESCRIPTIONS.keys())
 
         path = None
 
         located = False
-        for agg_protocol in agg_protocols:
-            if agg_protocol not in self.stac_item.get("assets", {}):
+        for aggprotocol in aggprotocols:
+            if aggprotocol not in self.stac_item.get("assets", {}):
                 continue
 
             if located:
@@ -51,10 +51,10 @@ class ESGSTACItem:
                 )
             
             located = True
-            if site in self.stac_item["assets"]["reference_file"].get("alternate", {}):
-                path = f"/assets/{agg_protocol}/alternate/{site}"
+            if site in self.stac_item["assets"][aggprotocol].get("alternate", {}):
+                path = f"/assets/{aggprotocol}/alternate/{site}"
             else:
-                path = f"/assets/{agg_protocol}"
+                path = f"/assets/{aggprotocol}"
 
         if path is not None:
             return [{
@@ -75,7 +75,7 @@ class ESGSTACItem:
         value = {
             "href": url,
             "type": f"application/{aggtype}",
-            "role": ["data", "virtual"],
+            "roles": ["virtual"],
             "description": description,
             "alternate:name": site,
             "created": now,
