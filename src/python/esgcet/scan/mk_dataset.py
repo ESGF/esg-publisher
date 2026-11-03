@@ -450,15 +450,11 @@ class ESGPubMakeDataset:
                 continue
             scanrec = scandata[fullpath]
             file_rec = self.get_file(maprec, scanrec)
+            file_rec["url"] = [unquote(x) for x in file_rec["url"] if x]
             last_file = file_rec
             sz += file_rec["size"]
             ret.append(file_rec)
 
-        lst = []
-        for x in last_file["url"]:
-            if x:
-                lst.append(unquote(x))
-        last_file["url"] = lst
         access = [x.split("|")[2] for x in last_file["url"]]
 
         return ret, sz, access
@@ -476,6 +472,17 @@ class ESGPubMakeDataset:
         self.get_dataset(mapobj[0][0], scanobj)
         self.update_metadata(self.dataset, scanobj)
         self.dataset["number_of_files"] = len(mapobj)  # place this better
+
+        # Check against recommended maximum file count
+        file_count = len(mapobj)
+        if file_count > MAX_RECOMMENDED_FILE_COUNT:
+            self.publog.warning(
+                f"Dataset contains {file_count} files, which exceeds the "
+                f"recommended maximum of {MAX_RECOMMENDED_FILE_COUNT}. "
+                f"Large file counts may exceed event payload size limits and backend "
+                f"record size constraints. Consider aggregating files or splitting the dataset."
+            )
+
         project = self.dataset["project"]
 
         self.publog.debug(

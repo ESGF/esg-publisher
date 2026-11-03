@@ -1,4 +1,3 @@
-from pandas.compat.pyarrow import pa_version_under14p0
 from pydantic import validate_call, ConfigDict
 from typing import Literal
 from pathlib import Path

@@ -548,5 +548,5 @@ class TestESGSTACItem:
         assert len(globus_ops) == 1
         assert globus_ops[0]["value"]["href"] == (
             "https://app.globus.org/file-manager?"
-            "origin_id=replica-endpoint&origin_path=test/path"
+            "origin_id=replica-endpoint&origin_path=/data/test/path"
         )

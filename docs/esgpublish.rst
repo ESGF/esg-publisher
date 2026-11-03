@@ -115,6 +115,135 @@ Usage::
 
 Each dataset will produce a corresponding ``<dataset-id>.json`` file containing the complete STAC item that would be (or was) published to the STAC API.
 
+Dataset Size Considerations
+---------------------------
+
+When publishing datasets, be aware of the following size limitations:
+
+Maximum Recommended File Count
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The publisher will issue a warning if a dataset contains more than **1000 files**. This limit is set by the ``MAX_RECOMMENDED_FILE_COUNT`` constant in ``settings.py``.
+
+**Why this limit exists:**
+
+* **Event payload size limits**: Publishing events sent to backend systems have maximum payload size constraints. Each file in a dataset adds to the event payload.
+* **Backend record size limits**: Index databases and search APIs have practical limits on individual record sizes.
+* **STAC item size**: Each file becomes an asset in the STAC item JSON. Large numbers of assets can create unwieldy STAC items that exceed API and client size limits.
+* **Performance**: Large datasets with many files take longer to process, publish, and query.
+
+**Recommendations for large datasets:**
+
+* **Use aggregation**: Consider using Kerchunk, Zarr, or other aggregation formats to represent multiple files as a single virtual dataset.
+* **Split datasets**: Divide datasets by time periods, variables, or other logical boundaries to keep individual datasets under the recommended limit.
+* **Optimize granularity**: Balance between too many small datasets and too few large datasets. Datasets with 100-500 files are typically optimal for performance.
+
+The warning is informational - publishing will continue, but you may encounter issues with backend systems if the file count is significantly higher than the recommended maximum.
+
+.. _kerchunk_generation:
+
+Kerchunk and VirtualiZarr Aggregation Generation
+-------------------------------------------------
+
+The ``esgpublish`` command can automatically generate Kerchunk or VirtualiZarr reference files during the publishing process. These aggregation files allow efficient access to NetCDF datasets without data duplication by creating virtual datasets from reference metadata.
+
+What are Kerchunk and VirtualiZarr?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* **Kerchunk**: Creates JSON reference files that map chunk locations in NetCDF files, enabling cloud-optimized access to existing NetCDF data through Zarr-compatible readers
+* **VirtualiZarr**: A newer approach that creates similar reference structures with improved performance and additional features
+
+Both allow you to:
+
+* Access multiple NetCDF files as a single virtual dataset
+* Enable cloud-optimized data access without data migration
+* Reduce storage requirements (reference files are small compared to actual data)
+* Improve performance for analysis workflows
+
+Configuration
+^^^^^^^^^^^^^
+
+To enable automatic Kerchunk/VirtualiZarr generation, add a ``kerchunk`` section to your ``esg.yaml`` configuration file:
+
+.. code-block:: yaml
+
+    kerchunk:
+      generation: true                    # Enable generation
+      backend: "kerchunk"                 # or "virtualizarr"
+      inline_threshold: 0                 # Threshold for inlining small chunks (bytes)
+      filter_frequency: "mon"             # Only process monthly and coarser frequencies
+      data_dir:
+        /path/to/output: "https://example.com/kerchunk"  # Local dir: public URL
+
+**Configuration Options:**
+
+* ``generation`` (boolean, required): Set to ``true`` to enable reference file generation
+* ``backend`` (string, required): Choose ``"kerchunk"`` or ``"virtualizarr"``
+* ``inline_threshold`` (integer, optional): Size threshold in bytes for inlining chunk data directly in the reference file (default: 0). Set to 0 to store all data as references
+* ``filter_frequency`` (string, optional): Only generate references for datasets at or coarser than this temporal frequency. Valid values: ``"subhr"``, ``"1hr"``, ``"3hr"``, ``"6hr"``, ``"day"``, ``"mon"`` (default), ``"yr"``, ``"dec"``, ``"fx"``. If not specified, defaults to ``"mon"`` (monthly and coarser)
+* ``data_dir`` (mapping, required): Maps local output directory to the public URL where reference files will be accessible
+
+  * Key: Absolute path where reference files should be written
+  * Value: Public HTTPS URL where these files will be served
+
+**Required Configuration:**
+
+The following must also be set in your config file for kerchunk generation to work:
+
+* ``data_roots``: Maps local data paths to URL path components (used for constructing file URLs in references)
+* ``data_node``: Your data node hostname (used to build HTTPS URLs to NetCDF files)
+
+Example Configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+Complete example showing all required and optional settings:
+
+.. code-block:: yaml
+
+    data_node: esgf-node.example.org
+    data_roots:
+      /data/archive/: "esgf_dataroot"   # Local path prefix: URL path component
+
+    kerchunk:
+      generation: true
+      backend: "virtualizarr"            # Use VirtualiZarr
+      inline_threshold: 100              # Inline chunks < 100 bytes
+      filter_frequency: "day"            # Process daily and coarser
+      data_dir:
+        /data/kerchunk: "https://esgf-node.example.org/kerchunk"
+
+Usage
+^^^^^
+
+Once configured, kerchunk generation happens automatically during normal publishing:
+
+.. code-block:: bash
+
+    esgpublish --map dataset.map --config ~/.esg/esg.yaml
+
+The publisher will:
+
+1. Process each dataset in the mapfile
+2. Check if the dataset's temporal frequency meets the filter criteria
+3. Generate reference files using the specified backend
+4. Save reference files to the configured ``data_dir`` location
+5. Include reference file URLs in the published STAC metadata as aggregation assets
+
+Output files are named: ``<dataset-id>.v<version>.json.<backend>``
+
+Adding Pre-Generated References
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you've already generated reference files outside the publishing workflow, you can add them to existing datasets using :ref:`esgdd`:
+
+.. code-block:: bash
+
+    esgadd --dataset-id <dataset-id> --agg kerchunk --agg-url https://example.com/refs.json
+    # or
+    esgadd --dataset-id <dataset-id> --agg virtualizarr --agg-url https://example.com/refs.json
+
+For more information: `Kerchunk <https://fsspec.github.io/kerchunk/>`_, `VirtualiZarr <https://virtualizarr.readthedocs.io/>`_, `Zarr <https://zarr.readthedocs.io/>`_
+
 .. _arch_info:
 
 Archiving Info
