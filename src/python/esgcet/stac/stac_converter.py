@@ -15,7 +15,6 @@ from esgcet.util import logger
 
 log = logger.ESGPubLogger()
 
-log = ESGPubLogger()
 
 class ESGSTACItem:
     """
