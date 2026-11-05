@@ -227,6 +227,78 @@ class TestESGSTACConverter:
         assert "origin_id=1234abcd-5678-90ef-ghij-klmnopqrstuv" in globus_asset["href"]
         assert globus_asset["protocol"] == "globus"
 
+    def test_convert_cmip6_variable_remapping(self, cmip6_dataset_doc, cmip6_file_doc, monkeypatch):
+        """Test CMIP6 variable metadata remapping via esgvoc."""
+        # Mock the esgvoc API call
+        class MockTerm:
+            def __init__(self):
+                self.units = "Pa"
+                self.standard_name = "air_pressure_at_mean_sea_level"
+
+        def mock_get_term(project_id, collection_id, term_id):
+            if term_id == "psl":
+                return MockTerm()
+            return None
+
+        # Patch the esgvoc.api.get_term_in_collection function
+        import esgvoc.api as ev
+        monkeypatch.setattr(ev, "get_term_in_collection", mock_get_term)
+
+        # Enable remapping in config
+        config_with_remap = {
+            "stac_api": "https://esgf-stac.llnl.gov/api",
+            "cmip6_variable_remap": True
+        }
+
+        converter = ESGSTACConverter(config_with_remap)
+        json_data = [cmip6_dataset_doc, cmip6_file_doc]
+
+        item = converter.convert2stac(json_data)
+        properties = item["properties"]
+
+        # Check that remapped properties were added
+        assert "cmip6:variable_units" in properties
+        assert properties["cmip6:variable_units"] == "Pa"
+        assert "cmip6:cf_standard_name" in properties
+        assert properties["cmip6:cf_standard_name"] == "air_pressure_at_mean_sea_level"
+
+    def test_convert_cmip6_variable_remapping_disabled(self, stac_config, cmip6_dataset_doc, cmip6_file_doc):
+        """Test that remapping is disabled by default."""
+        converter = ESGSTACConverter(stac_config)
+        json_data = [cmip6_dataset_doc, cmip6_file_doc]
+
+        item = converter.convert2stac(json_data)
+        properties = item["properties"]
+
+        # Check that remapped properties were NOT added
+        assert "cmip6:variable_units" not in properties
+        assert "cmip6:cf_standard_name" not in properties
+
+    def test_convert_cmip6_variable_remapping_not_found(self, cmip6_dataset_doc, cmip6_file_doc, monkeypatch):
+        """Test handling when variable is not found in esgvoc."""
+        # Mock the esgvoc API to return None
+        def mock_get_term(project_id, collection_id, term_id):
+            return None
+
+        import esgvoc.api as ev
+        monkeypatch.setattr(ev, "get_term_in_collection", mock_get_term)
+
+        config_with_remap = {
+            "stac_api": "https://esgf-stac.llnl.gov/api",
+            "cmip6_variable_remap": True
+        }
+
+        converter = ESGSTACConverter(config_with_remap)
+        json_data = [cmip6_dataset_doc, cmip6_file_doc]
+
+        # Should not raise an error, just skip remapping
+        item = converter.convert2stac(json_data)
+        properties = item["properties"]
+
+        # Properties should not be added when variable not found
+        assert "cmip6:variable_units" not in properties
+        assert "cmip6:cf_standard_name" not in properties
+
     def test_convert_mip_drs7_to_cmip7(self, stac_config, mip_drs7_dataset_doc):
         """Test MIP-DRS7 project is converted to cmip7 collection."""
         # Add a file doc
