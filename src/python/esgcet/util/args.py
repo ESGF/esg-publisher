@@ -317,6 +317,7 @@ class PublisherArgs:
 
         argdict["skipxr"] = pub.skipxr if pub.skipxr else config.get("skipxr", False)
         argdict["save_stac"] = pub.save_stac if pub.save_stac else config.get("save_stac", False)
+        argdict["cmip6_variable_remap"] = config.get("cmip6_variable_remap", False)
         
         return argdict
 

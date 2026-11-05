@@ -12,10 +12,26 @@ from esgcet.util.settings import (
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
 
+import esgvoc.api as ev
+
+def get_cmip6_variable(variable_id: str) -> dict[str, str | None]:
+    """Return units and CF standard name for a CMIP6 variable."""
+    term = ev.get_term_in_collection(
+        project_id="cmip6",
+        collection_id="variable_id",
+        term_id=variable_id.strip().lower(),
+    )
+
+    # If the term is not found, return an empty dictionary instead of raising an error.
+    if term is None:
+        return {}
+    
+    return {
+        "units": term.units,
+        "cf_standard_name": term.standard_name,
+    }
 
 log = logger.ESGPubLogger()
-
-log = ESGPubLogger()
 
 class ESGSTACItem:
     """
@@ -117,7 +133,9 @@ class ESGSTACItem:
 class ESGSTACConverter:
     def __init__(self, stac_config):
         self.stac_api = stac_config.get("stac_api", "")
+        self.remap = stac_config.get("cmip6_variable_remap", False)
         self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
+
 
     def citation_link_d(self, url):
 
@@ -260,6 +278,7 @@ class ESGSTACConverter:
         )
         property_keys = STAC_item_properties + collection_item_properties
 
+
         for k in property_keys:
             v = None
             if (
@@ -293,6 +312,22 @@ class ESGSTACConverter:
                     properties[nk] = v[0]
             elif v is not None:
                 properties[nk] = v
+
+        if self.remap and namespace == "cmip6":
+            variable_id = dataset_doc.get("variable_id")
+            if variable_id:
+                cmip6_variable_info = get_cmip6_variable(variable_id)
+                if cmip6_variable_info:
+                    # Only add properties if values are not None
+                    units = cmip6_variable_info.get("units")
+                    cf_name = cmip6_variable_info.get("cf_standard_name")
+                    if units:
+                        properties["cmip6:variable_units"] = units
+                    if cf_name:
+                        properties["cmip6:cf_standard_name"] = cf_name
+                    self.publog.debug(f"Remapped CMIP6 variable metadata for {variable_id}")
+                else:
+                    self.publog.warning(f"CMIP6 variable {variable_id} not found in esgvoc")
         try:
             esgvoc_version = jsg.get_schema_version(namespace)
         except AttributeError:
