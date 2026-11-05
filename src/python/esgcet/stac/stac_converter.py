@@ -8,9 +8,12 @@ from esgcet.util.settings import (
     STAC_list_properties,
     STAC_proj_item_properties,
     STAC_schema_versions,
+    ASSET_AGG_DESCRIPTIONS,
+    ASSET_AGG_TYPES
 )
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
+from esgcet.util.get_size_remote_file import get_size
 
 
 log = logger.ESGPubLogger()
@@ -26,47 +29,87 @@ class ESGSTACItem:
         # Callers should check si before creating ESGSTACItem
         self.stac_item = si
         
-    def remove_aggregate(self, site):
-        operations = []
-        if "reference_file" in self.stac_item.get("assets", {}) and site in self.stac_item["assets"]["reference_file"].get("alternate", {}):
-            path = f"/assets/reference_file/alternate/{site}"
-            operations.append({
-                    "op": "remove",
-                    "path": path
-                    })
-        elif "reference_file" in self.stac_item.get("assets", {}) and self.stac_item["assets"]["reference_file"]["alternate:name"] == site:
-            path = f"/assets/reference_file"
-            operations.append({
-                    "op": "remove",
-                    "path": path
-                    })
-        return operations
+    def remove_aggregate(self, aggtypes: str | list | None = None, site: str | None = None) -> list:
 
-    def add_aggregate(self, aggtype, url, site):
+        if aggtypes is None:
+            aggtypes = list(ASSET_AGG_DESCRIPTIONS.keys())
+
+        if not isinstance(aggtypes, list):
+            aggtypes = [aggtypes]
+
+        path = None
+
+        located = False
+        for aggtype in aggtypes:
+            if aggtype not in self.stac_item.get("assets", {}):
+                continue
+
+            if located:
+                raise ValueError(
+                    'Unable to remove unspecified aggregation assets where '
+                    'multiple assets are present.'
+                )
+            
+            located = True
+            if site in self.stac_item["assets"][aggtype].get("alternate", {}):
+                path = f"/assets/{aggtype}/alternate/{site}"
+            else:
+                path = f"/assets/{aggtype}"
+
+        if path is not None:
+            return [{
+                "op": "remove",
+                "path": path
+            }]
+        return []
+
+    def add_aggregate(self, aggtype: str, url: str, site: str) -> list:
+
+        existing_template = self.stac_item.get('assets',{}).get(aggtype,{})
+
+        description = ASSET_AGG_DESCRIPTIONS.get(
+            aggtype,"Kerchunk reference file for virtual aggregation")
+
+        aggmime = ASSET_AGG_TYPES.get(
+            aggtype,'kerchunk')
+
+
+        # Sets the protocol to use for the url
+        for protocol in ['https','http','s3']:
+            if protocol in url:
+                break
+
+        # Override for kerchunk parquet stores
+        if aggtype == 'kerchunk' and 'parq' in url:
+            protocol = 'kerchunk'
+
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
             "href": url,
-            "type": f"application/{aggtype}",
-            "role": ["data", "virtual"],
-            "description": "Kerchunk reference file for virtual aggregation",
+            "type": f"application/{aggmime}",
+            "roles": ["virtual"],
+            "description": description,
             "alternate:name": site,
-            "created": now,
+            "created": existing_template.get('created',None) or now,
             "updated": now,
-            "protocol": "kerchunk",
+            "protocol": protocol,
         }
 
-        if "reference_file" in self.stac_item.get("assets", {}):
-            path = f"/assets/reference_file/alternate/{site}"
-        else:
-            path = f"/assets/reference_file"
-        #    value["file:size"] =
-        operations = [{
-                    "op": "add",
-                    "path": path,
-                    "value": value
-                    }]
+        # if aggtype in self.stac_item.get("assets", {}):
+        #     path = f"/assets/{aggtype}/alternate/{site}"
+        # else:
+        #     path = f"/assets/{aggtype}"
+        path = f"/assets/{aggtype}"
 
-        return operations
+        size = get_size(url)
+        if size is not None:
+            value["file:size"] = size
+
+        return [{
+            "op": "add",
+            "path": path,
+            "value": value
+        }]
 
     def add_replica(self, rep_datanode, template, prefix, rep_globus=""):
         assets = self.stac_item.get("assets", {})

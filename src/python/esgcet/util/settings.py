@@ -10,6 +10,22 @@ AUTOC_PATH = None
 # TODO: DRS and GA should be managed by a remote project service.
 #    Then, set by the workflow at reasonable intervals
 
+# Asset Settings
+
+ASSET_AGG_DESCRIPTIONS = {
+    'kerchunk': "Kerchunk virtual aggregation reference file.",
+    'CFA': "CF-Compliant NetCDF virtual aggregation file.",
+    'zarr': "Cloud-native Zarr aggregation store.",
+    'icechunk': "Transactional tensor storage engine for cloud-native dataset."
+}
+
+ASSET_AGG_TYPES = {
+    'reference_file': "vnd.zarr+kerchunk",
+    'CFA': "netcdf",
+    'zarr': "vnd.zarr",
+    'icechunk': "vnd.icechunk"
+}
+
 # For each project these become the . delimited components of the dataset_id
 DRS = {
     "cmip6": [
