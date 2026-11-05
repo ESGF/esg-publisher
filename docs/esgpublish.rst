@@ -244,6 +244,75 @@ If you've already generated reference files outside the publishing workflow, you
 
 For more information: `Kerchunk <https://fsspec.github.io/kerchunk/>`_, `VirtualiZarr <https://virtualizarr.readthedocs.io/>`_, `Zarr <https://zarr.readthedocs.io/>`_
 
+CMIP6 Variable Metadata Remapping
+----------------------------------
+
+The publisher can optionally enrich STAC items with standardized CMIP6 variable metadata from the esgvoc vocabulary service. This is useful when NetCDF file metadata is incomplete or needs to be validated against the official CMIP6 controlled vocabulary.
+
+What Gets Added
+^^^^^^^^^^^^^^^
+
+When enabled, the following properties are added to STAC items for CMIP6 datasets:
+
+* ``cmip6:variable_units`` - Physical units from the CMIP6 vocabulary (e.g., "Pa", "K", "kg m-2 s-1")
+* ``cmip6:cf_standard_name`` - CF standard name from the CMIP6 vocabulary (e.g., "air_pressure_at_mean_sea_level")
+
+These properties are only added when values are available in the vocabulary. If a variable is not found or has no units/standard_name, the properties are omitted.
+
+Configuration
+^^^^^^^^^^^^^
+
+Add to the ``stac_config`` section of your ``esg.yaml`` configuration file:
+
+.. code-block:: yaml
+
+    stac_config:
+      stac_api: https://discovery.west.esgf.io
+      cmip6_variable_remap: true  # Enable variable metadata remapping (default: false)
+
+The feature is **disabled by default** to avoid adding overhead when not needed.
+
+Usage
+^^^^^
+
+Once configured, remapping happens automatically during normal publishing:
+
+.. code-block:: bash
+
+    esgpublish --map dataset.map --config ~/.esg/esg.yaml
+
+The publisher will:
+
+1. Process CMIP6 datasets normally
+2. For each dataset, query the esgvoc API for the variable metadata
+3. Add the standardized properties to the STAC item if found
+4. Log a debug message on success or warning if variable not found
+
+Example STAC Output
+^^^^^^^^^^^^^^^^^^^
+
+With remapping enabled, a CMIP6 STAC item will include:
+
+.. code-block:: json
+
+    {
+      "properties": {
+        "cmip6:variable_id": "psl",
+        "cmip6:variable_units": "Pa",
+        "cmip6:cf_standard_name": "air_pressure_at_mean_sea_level"
+      }
+    }
+
+Use Cases
+^^^^^^^^^
+
+* **Quality Control**: Validate that NetCDF file metadata matches the official vocabulary
+* **Metadata Completion**: Fill in missing units or standard names
+* **Standardization**: Ensure consistent metadata across datasets from different institutions
+* **Discovery**: Improve search and filtering by standard names and units
+
+The feature queries the esgvoc vocabulary service which maintains the authoritative CMIP6 controlled vocabulary. For more information about esgvoc, see: https://github.com/ESGF/esgf-vocab
+
 .. _arch_info:
 
 Archiving Info
