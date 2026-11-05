@@ -33,8 +33,6 @@ class ESGUnpublishGlobus:
         data_node = args["data_node"]
         verbose = args["verbose"]    
         silent = args["silent"]
-        auth = args["auth"]
-        cert_fn = args["cert"]
         do_delete = args["delete"]
     
         pub_log = log.return_logger('Unpublish', args["silent"], args["verbose"])
@@ -53,8 +51,6 @@ class ESGUnpublishGlobus:
         hostname = args["index_node"]
         do_delete = args["delete"]
         data_node = args["data_node"]
-        cert_fn = args["cert"]
-        auth = args["auth"]
         self.UUID = args["index_UUID"]
         second_split = []
         if '|' in dset_id:

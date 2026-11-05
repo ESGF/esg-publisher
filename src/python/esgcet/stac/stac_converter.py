@@ -324,7 +324,7 @@ class ESGSTACConverter:
                     if units:
                         properties["cmip6:variable_units"] = units
                     if cf_name:
-                        properties["cmip6:cf_standard_name"] = cf_name
+                        properties["cmip6:variable_cf_standard_name"] = cf_name
                     self.publog.debug(f"Remapped CMIP6 variable metadata for {variable_id}")
                 else:
                     self.publog.warning(f"CMIP6 variable {variable_id} not found in esgvoc")
