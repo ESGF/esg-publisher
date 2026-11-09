@@ -14,23 +14,6 @@ from esgcet.util import logger
 
 import esgvoc.api as ev
 
-def get_cmip6_variable(variable_id: str) -> dict[str, str | None]:
-    """Return units and CF standard name for a CMIP6 variable."""
-    term = ev.get_term_in_collection(
-        project_id="cmip6",
-        collection_id="variable_id",
-        term_id=variable_id.strip().lower(),
-    )
-
-    # If the term is not found, return an empty dictionary instead of raising an error.
-    if term is None:
-        return {}
-    
-    return {
-        "units": term.units,
-        "cf_standard_name": term.standard_name,
-    }
-
 log = logger.ESGPubLogger()
 
 class ESGSTACItem:
@@ -131,12 +114,31 @@ class ESGSTACItem:
         return operations
 
 class ESGSTACConverter:
-    def __init__(self, stac_config):
+    def __init__(self, stac_config, silent=False, verbose=False):
         self.stac_api = stac_config.get("stac_api", "")
         self.remap = stac_config.get("cmip6_variable_remap", False)
-        self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
+        self.publog = log.return_logger("ESGSTACConverter", silent, verbose)
 
 
+    def get_cmip6_variable(self, variable_id: str) -> dict[str, str | None]:
+        """Return units and CF standard name for a CMIP6 variable."""
+        term = ev.get_term_in_collection(
+        project_id="cmip6",
+        collection_id="variable_id",
+        term_id=variable_id.strip().lower(),
+            )
+        
+        # If the term is not found, return an empty dictionary instead of raising an error.
+        if term is None:
+            return {}
+    
+        return {
+            "units": term.units,
+            "cf_standard_name": term.standard_name,
+        }
+
+
+        
     def citation_link_d(self, url):
 
         return {"rel": "cite-as", "type": "application/json", "href": url}
@@ -316,7 +318,7 @@ class ESGSTACConverter:
         if self.remap and namespace == "cmip6":
             variable_id = dataset_doc.get("variable_id")
             if variable_id:
-                cmip6_variable_info = get_cmip6_variable(variable_id)
+                cmip6_variable_info = self.get_cmip6_variable(variable_id)
                 if cmip6_variable_info:
                     # Only add properties if values are not None
                     units = cmip6_variable_info.get("units")
@@ -325,9 +327,12 @@ class ESGSTACConverter:
                         properties["cmip6:variable_units"] = units
                     if cf_name:
                         properties["cmip6:variable_cf_standard_name"] = cf_name
-                    self.publog.debug(f"Remapped CMIP6 variable metadata for {variable_id}")
+                    self.publog.debug(f"Remapped CMIP6 variable metadata for {variable_id}  {cmip6_variable_info}")
                 else:
                     self.publog.warning(f"CMIP6 variable {variable_id} not found in esgvoc")
+            else:
+                self.publog.warning("No variable ID")
+
         try:
             esgvoc_version = jsg.get_schema_version(namespace)
         except AttributeError:
@@ -404,7 +409,7 @@ class ESGSTACConverter:
         if "citation_url" in dataset_doc:
             item["links"].append(self.citation_link_d(dataset_doc["citation_url"]))
         else:
-            print("WARNING no Citation url")
+            self.publog.warning("No Citation url")
 
         if "reference_file" in dataset_doc:
             item["assets"]["reference_file"] = dataset_doc["reference_file"]
