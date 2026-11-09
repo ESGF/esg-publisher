@@ -259,8 +259,8 @@ class TestESGSTACConverter:
         # Check that remapped properties were added
         assert "cmip6:variable_units" in properties
         assert properties["cmip6:variable_units"] == "Pa"
-        assert "cmip6:cf_standard_name" in properties
-        assert properties["cmip6:cf_standard_name"] == "air_pressure_at_mean_sea_level"
+        assert "cmip6:variable_cf_standard_name" in properties
+        assert properties["cmip6:variable_cf_standard_name"] == "air_pressure_at_mean_sea_level"
 
     def test_convert_cmip6_variable_remapping_disabled(self, stac_config, cmip6_dataset_doc, cmip6_file_doc):
         """Test that remapping is disabled by default."""
@@ -272,7 +272,7 @@ class TestESGSTACConverter:
 
         # Check that remapped properties were NOT added
         assert "cmip6:variable_units" not in properties
-        assert "cmip6:cf_standard_name" not in properties
+        assert "cmip6:variable_cf_standard_name" not in properties
 
     def test_convert_cmip6_variable_remapping_not_found(self, cmip6_dataset_doc, cmip6_file_doc, monkeypatch):
         """Test handling when variable is not found in esgvoc."""
@@ -297,7 +297,7 @@ class TestESGSTACConverter:
 
         # Properties should not be added when variable not found
         assert "cmip6:variable_units" not in properties
-        assert "cmip6:cf_standard_name" not in properties
+        assert "cmip6:variable_cf_standard_name" not in properties
 
     def test_convert_mip_drs7_to_cmip7(self, stac_config, mip_drs7_dataset_doc):
         """Test MIP-DRS7 project is converted to cmip7 collection."""

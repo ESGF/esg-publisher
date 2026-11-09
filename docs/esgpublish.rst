@@ -255,7 +255,7 @@ What Gets Added
 When enabled, the following properties are added to STAC items for CMIP6 datasets:
 
 * ``cmip6:variable_units`` - Physical units from the CMIP6 vocabulary (e.g., "Pa", "K", "kg m-2 s-1")
-* ``cmip6:cf_standard_name`` - CF standard name from the CMIP6 vocabulary (e.g., "air_pressure_at_mean_sea_level")
+* ``cmip6:variable_cf_standard_name`` - CF standard name from the CMIP6 vocabulary (e.g., "air_pressure_at_mean_sea_level")
 
 These properties are only added when values are available in the vocabulary. If a variable is not found or has no units/standard_name, the properties are omitted.
 
@@ -299,7 +299,7 @@ With remapping enabled, a CMIP6 STAC item will include:
       "properties": {
         "cmip6:variable_id": "psl",
         "cmip6:variable_units": "Pa",
-        "cmip6:cf_standard_name": "air_pressure_at_mean_sea_level"
+        "cmip6:variable_cf_standard_name": "air_pressure_at_mean_sea_level"
       }
     }
 
