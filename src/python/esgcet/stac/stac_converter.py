@@ -8,12 +8,17 @@ from esgcet.util.settings import (
     STAC_list_properties,
     STAC_proj_item_properties,
     STAC_schema_versions,
-    ASSET_AGG_DESCRIPTIONS,
-    ASSET_AGG_TYPES
 )
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
 from esgcet.util.get_size_remote_file import get_size
+
+from esgf_core_utils.models.aggregated_assets import (
+    ASSET_AGG_DESCRIPTIONS,
+    ASSET_AGG_MIMETYPES,
+    ASSET_AGG_PROTOCOLS,
+    AGGREGATED_ASSETS
+)
 
 
 log = logger.ESGPubLogger()
@@ -68,15 +73,21 @@ class ESGSTACItem:
 
         existing_template = self.stac_item.get('assets',{}).get(aggtype,{})
 
+        if aggtype not in AGGREGATED_ASSETS:
+            raise ValueError(
+                f'Asset label "{aggtype}" not supported - must be one of: '
+                f'{", ".join(AGGREGATED_ASSETS)}'
+            )
+
         description = ASSET_AGG_DESCRIPTIONS.get(
             aggtype,"Kerchunk reference file for virtual aggregation")
 
-        aggmime = ASSET_AGG_TYPES.get(
+        aggmime = ASSET_AGG_MIMETYPES.get(
             aggtype,'kerchunk')
 
 
         # Sets the protocol to use for the url
-        for protocol in ['https','http','s3']:
+        for protocol in ASSET_AGG_PROTOCOLS:
             if protocol in url:
                 break
 
@@ -87,7 +98,7 @@ class ESGSTACItem:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         value = {
             "href": url,
-            "type": f"application/{aggmime}",
+            "type": aggmime,
             "roles": ["virtual"],
             "description": description,
             "alternate:name": site,
@@ -118,7 +129,7 @@ class ESGSTACItem:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
         for name, asset in assets.items():
 
-            if name == "reference_file":
+            if name == "reference_file" or name in AGGREGATED_ASSETS:
                 continue
 
             if asset.get("alternate:name") == rep_datanode:

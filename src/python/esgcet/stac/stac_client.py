@@ -198,7 +198,7 @@ class EGITransactionClient:
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
         stac_api_overr = args.get("stac_api", None)
-        if stac_api_overr and False:
+        if stac_api_overr:
             self.stac_api = stac_api_overr
             self.egi_conf = EGIConf(verify=False)
             self.auth = None
