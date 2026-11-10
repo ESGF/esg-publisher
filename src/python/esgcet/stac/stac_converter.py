@@ -107,6 +107,8 @@ class ESGSTACItem:
             "protocol": protocol,
         }
 
+        # Determine what to do about alternate assets if the asset is already there?
+        
         # if aggtype in self.stac_item.get("assets", {}):
         #     path = f"/assets/{aggtype}/alternate/{site}"
         # else:
