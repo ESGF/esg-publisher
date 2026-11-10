@@ -38,7 +38,6 @@ class ESGSTACItem:
         # Callers should check si before creating ESGSTACItem
         self.stac_item = si
         
-<<<<<<< HEAD
     def remove_aggregate(self, site):
         operations = []
         if "reference_file" in self.stac_item.get("assets", {}) and site in self.stac_item["assets"]["reference_file"].get("alternate", {}):
@@ -54,61 +53,6 @@ class ESGSTACItem:
                     "path": path
                     })
         return operations
-=======
-    def remove_aggregate(self, aggtypes: str | list | None = None, site: str | None = None) -> list:
-
-        if aggtypes is None:
-            aggtypes = list(ASSET_AGG_DESCRIPTIONS.keys())
-
-        if not isinstance(aggtypes, list):
-            aggtypes = [aggtypes]
-
-        path = None
-
-        located = False
-        for aggtype in aggtypes:
-            if aggtype not in self.stac_item.get("assets", {}):
-                continue
-
-            if located:
-                raise ValueError(
-                    'Unable to remove unspecified aggregation assets where '
-                    'multiple assets are present.'
-                )
-            
-            located = True
-            if site in self.stac_item["assets"][aggtype].get("alternate", {}):
-                path = f"/assets/{aggtype}/alternate/{site}"
-            else:
-                path = f"/assets/{aggtype}"
-
-        if path is not None:
-            return [{
-                "op": "remove",
-                "path": path
-            }]
-        return []
-
-    def add_aggregate(self, aggtype: str, url: str, site: str) -> list:
-
-        existing_template = self.stac_item.get('assets',{}).get(aggtype,{})
-
-        description = ASSET_AGG_DESCRIPTIONS.get(
-            aggtype,"Kerchunk reference file for virtual aggregation")
-
-        aggmime = ASSET_AGG_MIMETYPES.get(
-            aggtype,'kerchunk')
-
-
-        # Sets the protocol to use for the url
-        for protocol in ['https','http','s3']:
-            if protocol in url:
-                break
-
-        # Override for kerchunk parquet stores
-        if aggtype == 'kerchunk' and 'parq' in url:
-            protocol = 'kerchunk'
->>>>>>> 79fafb9 (Updated for use of esgvoc for new projects)
 
     def add_aggregate(self, aggtype, url, site):
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -123,7 +67,6 @@ class ESGSTACItem:
             "protocol": "kerchunk",
         }
 
-<<<<<<< HEAD
         if "reference_file" in self.stac_item.get("assets", {}):
             path = f"/assets/reference_file/alternate/{site}"
         else:
@@ -134,12 +77,6 @@ class ESGSTACItem:
                     "path": path,
                     "value": value
                     }]
-=======
-        if aggtype in self.stac_item.get("assets", {}):
-            path = f"/assets/{aggtype}/alternate/{site}"
-        else:
-            path = f"/assets/{aggtype}"
->>>>>>> 79fafb9 (Updated for use of esgvoc for new projects)
 
         return operations
 
