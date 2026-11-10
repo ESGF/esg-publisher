@@ -226,6 +226,16 @@ class EGITransactionClient:
                 refresh_file=os.path.expanduser(token_storage_file),
             )
 
+    def _log_http_error(self, action, error):
+        """Log the status and response body returned by the STAC API."""
+        response = error.response
+        self.publog.error(
+            "Failed to %s: HTTP %s; response=%s",
+            action,
+            response.status_code if response is not None else "unknown",
+            response.text if response is not None else str(error),
+        )
+
     def publish(self, entry: dict[str, Any]) -> None:
         """Publish an item to the EGI authenticated STAC endpoint.
 
@@ -267,7 +277,10 @@ class EGITransactionClient:
                     return True
 
         except requests.exceptions.HTTPError as err:
-            self.publog.error("Failed to publish: Error %s", err.response.status_code)
+            self._log_http_error("publish", err)
+            return False
+        except requests.exceptions.RequestException as err:
+            self.publog.error("Failed to publish: %s", err)
             return False
         return True
 
@@ -305,7 +318,11 @@ class EGITransactionClient:
                     return True
 
         except requests.exceptions.HTTPError as err:
-            self.publog.error("Failed to update: Error %s", err.response.status_code)
+            self._log_http_error("update", err)
+            return False
+        except requests.exceptions.RequestException as err:
+            self.publog.error("Failed to update: %s", err)
+            return False
 
 
 def getTransactionClient(stac_config):
