@@ -1,3 +1,5 @@
+import esgvoc.api as ev
+
 DEBUG = False
 
 DATA_NODE = None
@@ -9,6 +11,8 @@ AUTOC_PATH = None
 # Project-specific settings
 # TODO: DRS and GA should be managed by a remote project service.
 #    Then, set by the workflow at reasonable intervals
+
+# Asset Settings
 
 # For each project these become the . delimited components of the dataset_id
 DRS = {
@@ -110,6 +114,7 @@ DRS = {
         "frequency",
         "variable_id",
         "grid_label",
+        "version"
     ],
     "mip-drs7": [
         "drs_specs",
@@ -284,6 +289,7 @@ PID_PREFIX = {
     "input4mips" : "21:14100",
     "cordex-cmip6" : "21.14103" ,
     "mip-drs7" : "21.14107" ,
+    "obs4mips" : "21.14100"
     # for testing use CMIP6,  need to be project-specific
 }
     
@@ -370,101 +376,119 @@ MAP_properties = {
     },
     "CORDEX-CMIP6" : {    "variable_cf_standard_name" : "cf_standard_name" } }
 
+SOURCE_properties = {
+    proj:  # TEMPORARY DEBUG
+        {
+            getattr(f, 'catalog_field_name') or f.source_collection : 
+            (f.source_collection, f.is_required)
+        for f in ev.projects.get_project(
+            proj).catalog_specs.dataset_properties}
+    for proj in ev.projects.get_all_projects()
+}
 
 STAC_proj_item_properties = {
-    "CMIP7": [
-        "activity_id",
-        "area_label",
-        "region",
-        "variable_cf_standard_name",
-        "data_specs_version",
-        "drs_specs",
-        "experiment_id",
-        "frequency",
-        "grid_label",
-        "institution_id",
-        "nominal_resolution",
-        "product",
-        "realm",
-        "source_id",
-        # "source_type",
-        "variable_id",
-        "variable_long_name",
-        "variable_units",
-        "variant_label",
-        "variable_branding_suffix",
-        "Conventions",
-        "license_id",
-        "mip_era",
-        "variable_branded_name",
-        "variable_cf_standard_name",
-        "temporal_label",
-        "vertical_label",
-        "forcing_index",
-        "initialization_index",
-        "realization_index",
-        "physics_index",
-        "pid",
-        "parent_activity_id",
-        "parent_experiment_id",
-        "parent_mip_era",
-        "parent_source_id",
-        "parent_time_units",
-        "parent_variant_label",
-        "horizontal_label"        
-    ],
-    "CMIP6": [
-        "activity_id",
-        "data_specs_version",
-        "experiment_id",
-        "experiment",
-        "frequency",
-        "grid_label",
-        "institution_id",
-        "member_id",
-        "mip_era",
-        "nominal_resolution",
-        "pid",
-        "product",
-        "realm",
-        "source_id",
-        "source_type",
-        "experiment",
-        "variable_cf_standard_name",
-        "sub_experiment_id",
-        "table_id",
-        "variable_id",
-        "variable_long_name",
-        "variable_units",
-        "variant_label",
-    ],
-    "CORDEX-CMIP6"  :  ["activity_id",
-                        "domain_id",
-                        "domain",
-                        "institution_id",
-                        "driving_source_id",
-                        "driving_experiment_id",
-                        "driving_institution_id",
-                        "driving_variant_label",
-                        "source_id",
-                        "version_realization",
-                        "frequency",
-                        "grid",
-                        "license",
-                        "product",
-                        "Conventions",
-                        "project_id",
-                        "source_type",
-                        "variable_cf_standard_name",
-                        "variable_id",
-                        "variable_long_name",
-                        "variable_units",
-                        "version",
-                        "version_realization_info",
-                        "mip_era",
-			            "pid"
-                       ]
+    proj: [
+        getattr(f, 'catalog_field_name') or f.source_collection
+        for f in ev.projects.get_project(
+            proj).catalog_specs.dataset_properties]
+    for proj in ev.projects.get_all_projects()
 }
+
+
+# STAC_proj_item_properties = {
+#     "CMIP7": [
+#         "activity_id",
+#         "area_label",
+#         "region",
+#         "variable_cf_standard_name",
+#         "data_specs_version",
+#         "drs_specs",
+#         "experiment_id",
+#         "frequency",
+#         "grid_label",
+#         "institution_id",
+#         "nominal_resolution",
+#         "product",
+#         "realm",
+#         "source_id",
+#         # "source_type",
+#         "variable_id",
+#         "variable_long_name",
+#         "variable_units",
+#         "variant_label",
+#         "variable_branding_suffix",
+#         "Conventions",
+#         "license_id",
+#         "mip_era",
+#         "variable_branded_name",
+#         "variable_cf_standard_name",
+#         "temporal_label",
+#         "vertical_label",
+#         "forcing_index",
+#         "initialization_index",
+#         "realization_index",
+#         "physics_index",
+#         "pid",
+#         "parent_activity_id",
+#         "parent_experiment_id",
+#         "parent_mip_era",
+#         "parent_source_id",
+#         "parent_time_units",
+#         "parent_variant_label",
+#         "horizontal_label"        
+#     ],
+#     "CMIP6": [
+#         "activity_id",
+#         "data_specs_version",
+#         "experiment_id",
+#         "experiment",
+#         "frequency",
+#         "grid_label",
+#         "institution_id",
+#         "member_id",
+#         "mip_era",
+#         "nominal_resolution",
+#         "pid",
+#         "product",
+#         "realm",
+#         "source_id",
+#         "source_type",
+#         "experiment",
+#         "variable_cf_standard_name",
+#         "sub_experiment_id",
+#         "table_id",
+#         "variable_id",
+#         "variable_long_name",
+#         "variable_units",
+#         "variant_label",
+#     ],
+#     "CORDEX-CMIP6"  :  ["activity_id",
+#                         "domain_id",
+#                         "domain",
+#                         "institution_id",
+#                         "driving_source_id",
+#                         "driving_experiment_id",
+#                         "driving_institution_id",
+#                         "driving_variant_label",
+#                         "source_id",
+#                         "version_realization",
+#                         "frequency",
+#                         "grid",
+#                         "license",
+#                         "product",
+#                         "Conventions",
+#                         "project_id",
+#                         "source_type",
+#                         "variable_cf_standard_name",
+#                         "variable_id",
+#                         "variable_long_name",
+#                         "variable_units",
+#                         "version",
+#                         "version_realization_info",
+#                         "mip_era",
+# 			            "pid"
+#                        ]
+# }
 
 STAC_list_properties = {
     "ALL": [

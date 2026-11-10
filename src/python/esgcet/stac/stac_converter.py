@@ -2,12 +2,23 @@ import re
 from datetime import datetime, timezone
 from esgcet.util.logger import ESGPubLogger
 
+from esgf_core_utils.models.aggregation_assets import (
+    ASSET_AGG_DESCRIPTIONS,
+    ASSET_AGG_MIMETYPES,
+    AGGREGATED_ASSETS
+)
+
 from esgcet.util.settings import (
     MAP_properties,
+    SOURCE_properties,
     STAC_item_properties,
     STAC_list_properties,
     STAC_proj_item_properties,
+<<<<<<< HEAD
     STAC_schema_versions,
+=======
+    STAC_schema_versions
+>>>>>>> 79fafb9 (Updated for use of esgvoc for new projects)
 )
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
@@ -74,7 +85,7 @@ class ESGSTACItem:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
         for name, asset in assets.items():
 
-            if name == "reference_file":
+            if name in AGGREGATED_ASSETS:
                 continue
 
             if asset.get("alternate:name") == rep_datanode:
@@ -255,22 +266,33 @@ class ESGSTACConverter:
             collection_key_name = collection
 
         collection_item_properties = STAC_proj_item_properties.get(
-            collection_key_name, []
+            collection_key_name.lower(), []
         )
-        property_keys = STAC_item_properties + collection_item_properties
+        stac_keys = STAC_item_properties + collection_item_properties
 
-        for k in property_keys:
+        # STAC keys are the end result keys, now just define how to get them.
+        for k in stac_keys:
             v = None
-            if (
-                collection_key_name in MAP_properties
-                and k in MAP_properties[collection_key_name]
-            ):
-                mapped_k = MAP_properties[collection_key_name][k]
+
+            # if using map_properties legacy, map to legacy properties
+
+            LEGACY_properties = MAP_properties
+            sp = SOURCE_properties.get(collection_key_name.lower(),{})
+
+            if k in LEGACY_properties.get(collection_key_name,{}):
+                mapped_k = LEGACY_properties[collection_key_name][k]
                 v = dataset_doc.get(mapped_k, None)
-            elif k in dataset_doc:
-                v = dataset_doc.get(k, None)
+
+            # Use esgvoc to construct source mappings
+            elif k in sp:
+                sourced_k, required = SOURCE_properties[collection_key_name.lower()][k]
+                v = dataset_doc.get(sourced_k,None)
+
+                if v is None and required:
+                    self.publog.error(f'Property "{sourced_k}" is required in source.')
             else:
                 self.publog.warning(f"{k} not found in dataset")
+
             if k == "master_id":
                 nk = "base_id"
             elif k in STAC_item_properties:
@@ -370,7 +392,11 @@ class ESGSTACConverter:
         else:
             print("WARNING no Citation url")
 
-        if "reference_file" in dataset_doc:
-            item["assets"]["reference_file"] = dataset_doc["reference_file"]
+        # Pulled directly from dataset_doc
+        for aggregation_type in AGGREGATED_ASSETS:
+            if aggregation_type in dataset_doc:
+                item["assets"][aggregation_type] = dataset_doc[aggregation_type]
+
+                # Separately configure for adding aggregated_assets schema.
 
         return item
