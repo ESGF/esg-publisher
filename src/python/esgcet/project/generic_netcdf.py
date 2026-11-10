@@ -16,8 +16,8 @@ from typing import Any
 
 from compliance_checker.runner import CheckSuite, ComplianceChecker
 from pathlib import Path
-from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
-from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
+from esgcet.kerchunk_process.mapfile_model import MapFileRecord, MapFileCatalog
+from esgcet.kerchunk_process.kerchunk_generator import KerchunkGenerator
 
 
 
@@ -286,7 +286,7 @@ class GenericPublisher(BasePublisher):
         self.dataset_rec = out_json_data
 
         if kerchunk_uri:
-            out_json_data[-1]["reference_file"] = kerchunk_uri
+            out_json_data[-1]["kerchunk"] = kerchunk_uri
         self.pid_cite()
 
         # step five: publish to database
