@@ -123,22 +123,20 @@ class ESGSTACConverter:
     def get_cmip6_variable(self, variable_id: str) -> dict[str, str | None]:
         """Return units and CF standard name for a CMIP6 variable."""
         term = ev.get_term_in_collection(
-        project_id="cmip6",
-        collection_id="variable_id",
-        term_id=variable_id.strip().lower(),
-            )
-        
+            project_id="cmip6",
+            collection_id="variable_id",
+            term_id=variable_id.strip().lower(),
+        )
+
         # If the term is not found, return an empty dictionary instead of raising an error.
         if term is None:
             return {}
-    
+
         return {
             "units": term.units,
             "cf_standard_name": term.standard_name,
         }
 
-
-        
     def citation_link_d(self, url):
 
         return {"rel": "cite-as", "type": "application/json", "href": url}
@@ -230,7 +228,7 @@ class ESGSTACConverter:
         if not assets:
             self.publog.error(f"No assets found for {item_id}")
             return None
-        properties["access"] = access_vals
+
         west_degrees = float(dataset_doc.get("west_degrees", -180.0))
         south_degrees = float(dataset_doc.get("south_degrees", -90.0))
         east_degrees = float(dataset_doc.get("east_degrees", 180.0))
@@ -263,7 +261,8 @@ class ESGSTACConverter:
 
         dt_start = dataset_doc.get("datetime_start", None)
         dt_end = dataset_doc.get("datetime_end", None)
-        properties = {"size": size, "created": now, "updated": now, "retracted": False}}
+        dataset_doc["access"] = access_vals
+        properties = {"size": size, "created": now, "updated": now, "retracted": False}
         if dt_start and dt_end:
             properties["datetime"] = None
             properties["start_datetime"] = dt_start
