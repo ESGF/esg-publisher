@@ -5,19 +5,18 @@ from typing import Any
 import esgcet.util.logger as logger
 import requests
 from esgcet import __version__
+from esgcet.util.egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 from esgcet.util.settings import *
 from globus_sdk import (
     BaseClient,
+    GlobusError,
     GroupsClient,
     NativeAppAuthClient,
-    RefreshTokenAuthorizer,
-    GlobusError,
     NetworkError,
+    RefreshTokenAuthorizer,
 )
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk.token_storage import JSONTokenStorage
-
-from esgcet.util.egi_oauth2_device_flow import EGIConf, OAuthDeviceFlowPKCE
 
 log = logger.ESGPubLogger()
 
@@ -81,12 +80,8 @@ class GlobusTransactionClient:
             response = self._do_login_flow()
             token_storage.store_token_response(response)
 
-        self.groups_tokens = token_storage.get_token_data(
-            GroupsClient.resource_server
-        )
-        self.transaction_tokens = token_storage.get_token_data(
-            self.trans_client_id
-        )
+        self.groups_tokens = token_storage.get_token_data(GroupsClient.resource_server)
+        self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         if not self.groups_tokens or not self.transaction_tokens:
             response = self._do_login_flow()
@@ -94,9 +89,7 @@ class GlobusTransactionClient:
             self.groups_tokens = token_storage.get_token_data(
                 GroupsClient.resource_server
             )
-            self.transaction_tokens = token_storage.get_token_data(
-                self.trans_client_id
-            )
+            self.transaction_tokens = token_storage.get_token_data(self.trans_client_id)
 
         groups_authorizer = RefreshTokenAuthorizer(
             self.groups_tokens.refresh_token,
@@ -172,7 +165,9 @@ class GlobusTransactionClient:
             return
         try:
             resp = self.transaction_client.patch(
-                f"/collections/{collection}/items/{item_id}", headers=headers, data=entry
+                f"/collections/{collection}/items/{item_id}",
+                headers=headers,
+                data=entry,
             )
             self.publog.info(f"STAC Transaction API: {resp.text}")
         except NetworkError as e:
@@ -222,7 +217,7 @@ class EGITransactionClient:
                 device_endpoint=self.egi_conf.device_endpoint,
                 token_endpoint=self.egi_conf.token_endpoint,
                 scope_endpoint=self.egi_conf.scope_endpoint,
-                resource=self.stac_api,
+                data_node=args.get("data_node"),
                 refresh_file=os.path.expanduser(token_storage_file),
             )
 
