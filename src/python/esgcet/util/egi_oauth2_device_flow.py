@@ -54,7 +54,7 @@ class OAuthDeviceFlowPKCE:
         **kwargs,
     ) -> None:
         """
-        Initializes the OAuth handler.
+        Initializes the OAuth Device Code Flow handler.
 
         Args:
             client_id (str): OAuth client ID.
@@ -85,11 +85,12 @@ class OAuthDeviceFlowPKCE:
 
     def _create_token_file(self) -> None:
         """
-        Create a file that is read/writeable only by the user.
+        Creates a blank file with permissions 0o600 if it does not already exist.
         """
         try:
             fd = os.open(self.refresh_file, flags=os.O_CREAT | os.O_EXCL, mode=0o600)
             os.close(fd)
+
         except FileExistsError:
             pass
 
