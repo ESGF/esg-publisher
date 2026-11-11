@@ -1,6 +1,6 @@
 import pytest
 
-from esgcet.kerchunk.mapfile_model import MapFileRecord
+from esgcet.kerchunk_process.mapfile_model import MapFileRecord
 
 
 MAPFILE_RECORD = (

@@ -43,6 +43,7 @@ dependencies = [
     "scipy>=1.15.3",
     "fastparquet>=2026.5.0",
     "duckdb>=1.5.5",
+    "esgf-core-utils>=1.0.6",
 ]
 
 
