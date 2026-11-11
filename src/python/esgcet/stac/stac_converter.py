@@ -12,10 +12,9 @@ from esgcet.util.settings import (
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
 
+import esgvoc.api as ev
 
 log = logger.ESGPubLogger()
-
-log = ESGPubLogger()
 
 class ESGSTACItem:
     """
@@ -115,9 +114,28 @@ class ESGSTACItem:
         return operations
 
 class ESGSTACConverter:
-    def __init__(self, stac_config):
+    def __init__(self, stac_config, silent=False, verbose=False):
         self.stac_api = stac_config.get("stac_api", "")
-        self.publog = log.return_logger("ESGSTACConverter", silent=False, verbose=False)
+        self.remap = stac_config.get("cmip6_variable_remap", False)
+        self.publog = log.return_logger("ESGSTACConverter", silent, verbose)
+
+
+    def get_cmip6_variable(self, variable_id: str) -> dict[str, str | None]:
+        """Return units and CF standard name for a CMIP6 variable."""
+        term = ev.get_term_in_collection(
+            project_id="cmip6",
+            collection_id="variable_id",
+            term_id=variable_id.strip().lower(),
+        )
+
+        # If the term is not found, return an empty dictionary instead of raising an error.
+        if term is None:
+            return {}
+
+        return {
+            "units": term.units,
+            "cf_standard_name": term.standard_name,
+        }
 
     def citation_link_d(self, url):
 
@@ -140,6 +158,8 @@ class ESGSTACConverter:
             collection = "cmip7"
 
         namespace = collection.lower()
+
+        access_vals = []
 
         if "Globus" in dataset_doc.get("access"):
             for doc in json_data:
@@ -165,9 +185,11 @@ class ESGSTACConverter:
                                 }
                             }
                     break
-
+            access_vals.append("Globus")
+                
         size = 0
         if "HTTPServer" in dataset_doc.get("access"):
+            access_vals.append("HTTPServer")
             counter = 0
 
             for doc in json_data:
@@ -239,6 +261,7 @@ class ESGSTACConverter:
 
         dt_start = dataset_doc.get("datetime_start", None)
         dt_end = dataset_doc.get("datetime_end", None)
+        dataset_doc["access"] = access_vals
         properties = {"size": size, "created": now, "updated": now, "retracted": False}
         if dt_start and dt_end:
             properties["datetime"] = None
@@ -259,6 +282,7 @@ class ESGSTACConverter:
             collection_key_name, []
         )
         property_keys = STAC_item_properties + collection_item_properties
+
 
         for k in property_keys:
             v = None
@@ -293,6 +317,25 @@ class ESGSTACConverter:
                     properties[nk] = v[0]
             elif v is not None:
                 properties[nk] = v
+
+        if self.remap and namespace == "cmip6":
+            variable_id = dataset_doc.get("variable_id")
+            if variable_id:
+                cmip6_variable_info = self.get_cmip6_variable(variable_id)
+                if cmip6_variable_info:
+                    # Only add properties if values are not None
+                    units = cmip6_variable_info.get("units")
+                    cf_name = cmip6_variable_info.get("cf_standard_name")
+                    if units:
+                        properties["cmip6:variable_units"] = units
+                    if cf_name:
+                        properties["cmip6:variable_cf_standard_name"] = cf_name
+                    self.publog.debug(f"Remapped CMIP6 variable metadata for {variable_id}  {cmip6_variable_info}")
+                else:
+                    self.publog.warning(f"CMIP6 variable {variable_id} not found in esgvoc")
+            else:
+                self.publog.warning("No variable ID")
+
         try:
             esgvoc_version = jsg.get_schema_version(namespace)
         except AttributeError:
@@ -369,7 +412,7 @@ class ESGSTACConverter:
         if "citation_url" in dataset_doc:
             item["links"].append(self.citation_link_d(dataset_doc["citation_url"]))
         else:
-            print("WARNING no Citation url")
+            self.publog.warning("No Citation url")
 
         if "reference_file" in dataset_doc:
             item["assets"]["reference_file"] = dataset_doc["reference_file"]

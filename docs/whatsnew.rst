@@ -20,6 +20,8 @@ v5.5.4
 
   * **ESGUpdateSTAC Logging**: Fixed missing logger initialization that caused ``AttributeError`` when logging warnings. Added proper ``self.publog`` initialization (PR #368).
 
+  * **STAC Access Property**: Fixed access property in STAC items to only include currently supported access methods (Globus, HTTPServer). Addresses migration issue where legacy dataset records contained unsupported methods (GridFTP, OPENDAP) that should not appear in generated STAC items (PR #376).
+
   * **Test Suite Stability**: Marked known failing tests as ``xfail`` to prevent CI failures while preserving the tests for future fixes. Tests now pass: 106 passed, 4 skipped, 3 xfailed, 7 xpassed (PR #368).
 
 * **Improvements**:

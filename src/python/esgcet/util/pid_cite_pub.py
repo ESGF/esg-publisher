@@ -40,7 +40,9 @@ class ESGPubPidCite(object):
         Generates a PID using a deterministic UUID derived from the dataset ID
         """
         ds_uuid = uuid.uuid3(uuid.NAMESPACE_URL, dataset_id)
-        prefix = self.pid_prefix[self.project_family]
+        prefix = self.pid_prefix.get (self.project_family,None)
+        if not prefix:
+            return ""
         dataset_pid = f'hdl:{prefix}/{str(ds_uuid)}'
         return dataset_pid
 
