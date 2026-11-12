@@ -192,34 +192,29 @@ class EGITransactionClient:
         silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        stac_api_overr = args.get("stac_api", None)
-        if stac_api_overr:
-            self.stac_api = stac_api_overr
-            self.egi_conf = EGIConf(verify=False)
-            self.auth = None
-        else:
-            self.stac_config = args.get("stac_config", None)
-            if not self.stac_config:
-                self.publog.exception("STAC client not configured")
-                exit(1)
+        self.stac_api = args.get("stac_api", None)
+        self.stac_config = args.get("stac_config", None)
 
-            transaction_api = self.stac_config.get("stac_transaction_api", {})
-            self.egi_conf = EGIConf(**transaction_api)
-            self.stac_api = self.egi_conf.base_url
+        if not self.stac_config:
+            self.publog.exception("STAC client not configured")
+            exit(1)
 
-            token_storage_file = self.stac_config.get(
-                "token_storage_file", TOKEN_STORAGE_FILE
-            )
+        transaction_api = self.stac_config.get("stac_transaction_api", {})
+        self.egi_conf = EGIConf(**transaction_api)
 
-            self.auth = OAuthDeviceFlowPKCE(
-                client_id=self.egi_conf.client_id,
-                client_secret=self.egi_conf.client_secret,
-                device_endpoint=self.egi_conf.device_endpoint,
-                token_endpoint=self.egi_conf.token_endpoint,
-                scope_endpoint=self.egi_conf.scope_endpoint,
-                data_node=args.get("data_node"),
-                refresh_file=os.path.expanduser(token_storage_file),
-            )
+        token_storage_file = self.stac_config.get(
+            "token_storage_file", TOKEN_STORAGE_FILE
+        )
+
+        self.auth = OAuthDeviceFlowPKCE(
+            client_id=self.egi_conf.client_id,
+            client_secret=self.egi_conf.client_secret,
+            device_endpoint=self.egi_conf.device_endpoint,
+            token_endpoint=self.egi_conf.token_endpoint,
+            scope_endpoint=self.egi_conf.scope_endpoint,
+            data_node=args.get("data_node"),
+            refresh_file=os.path.expanduser(token_storage_file),
+        )
 
     def publish(self, entry: dict[str, Any]) -> None:
         """Publish an item to the EGI authenticated STAC endpoint.
