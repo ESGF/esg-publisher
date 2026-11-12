@@ -237,7 +237,7 @@ class EGITransactionClient:
 
         try:
             response = requests.post(
-                f"{self.stac_api}/collections/{collection}/items",
+                f"{self.egi_conf.base_url}/collections/{collection}/items",
                 headers=headers,
                 json=entry,
                 auth=self.auth,
