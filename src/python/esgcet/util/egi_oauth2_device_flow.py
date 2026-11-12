@@ -105,7 +105,7 @@ class OAuthDeviceFlowPKCE:
             str: Scope string.
         """
         response = requests.get(scope_endpoint).json()
-        return response["template"].format(data_node=self.data_node)
+        return response.get("template", "").format(data_node=self.data_node)
 
     def _generate_code_verifier(self) -> str:
         """
