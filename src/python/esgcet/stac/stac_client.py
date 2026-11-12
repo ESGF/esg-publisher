@@ -199,6 +199,8 @@ class EGITransactionClient:
             self.publog.exception("STAC client not configured")
             exit(1)
 
+        self.stac_api = self.stac_config.get("stac_api", self.stac_api)
+
         transaction_api = self.stac_config.get("stac_transaction_api", {})
         self.egi_conf = EGIConf(**transaction_api)
 
@@ -275,7 +277,7 @@ class EGITransactionClient:
 
         try:
             response = requests.patch(
-                f"{self.stac_api}/collections/{collection}/items/{item_id}",
+                f"{self.egi_conf.base_url}/collections/{collection}/items/{item_id}",
                 headers=headers,
                 json=entry,
                 auth=self.auth,
@@ -302,8 +304,6 @@ def getTransactionClient(stac_config):
     sc = stac_config.get("stac_client", {})
 
     if "globus" in sc.get("redirect_uri", ""):
-        auth = "Globus"
-    else:
-        auth = "EGI"
-    res = EGITransactionClient if auth == "EGI" else GlobusTransactionClient
-    return res
+        return GlobusTransactionClient
+
+    return EGITransactionClient
