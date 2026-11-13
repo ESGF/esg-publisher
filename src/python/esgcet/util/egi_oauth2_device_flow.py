@@ -26,7 +26,7 @@ class EGIConf:
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token"
     )
     scope_endpoint: str = "https://transaction.east.esgf.io/scope"
-    base_url: str = "https://search.east.esgf.io"
+    base_url: str = "https://transaction.east.esgf.io"
     verify: bool = True
     timeout: float = 5.0
 

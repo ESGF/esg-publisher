@@ -192,12 +192,11 @@ class EGITransactionClient:
         silent = args.get("silent", False)
         self.publog = log.return_logger("STAC Client", silent, verbose)
 
-        self.stac_api = args.get("stac_api", None)
-        self.stac_config = args.get("stac_config", None)
+        self.stac_api = args.get("stac_api", "https://discovery.east.esgf.io")
+        self.stac_config = args.get("stac_config", {})
 
         if not self.stac_config:
-            self.publog.exception("STAC client not configured")
-            exit(1)
+            self.publog.warning("STAC client not configured using default")
 
         self.stac_api = self.stac_config.get("stac_api", self.stac_api)
 
