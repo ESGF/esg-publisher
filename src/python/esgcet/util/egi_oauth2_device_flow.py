@@ -26,7 +26,7 @@ class EGIConf:
         "https://aai.egi.eu/auth/realms/egi/protocol/openid-connect/token"
     )
     scope_endpoint: str = "https://transaction.east.esgf.io/scope"
-    base_url: str = "https://search.east.esgf.io"
+    base_url: str = "https://transaction.east.esgf.io"
     verify: bool = True
     timeout: float = 5.0
 
@@ -105,7 +105,7 @@ class OAuthDeviceFlowPKCE:
             str: Scope string.
         """
         response = requests.get(scope_endpoint).json()
-        return response["template"].format(data_node=self.data_node)
+        return response.get("template", "").format(data_node=self.data_node)
 
     def _generate_code_verifier(self) -> str:
         """

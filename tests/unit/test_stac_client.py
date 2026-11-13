@@ -16,7 +16,9 @@ def test_egi_save_stac_writes_item_before_dry_run(tmp_path, monkeypatch):
     monkeypatch.setattr(stac_client.requests, "post", unexpected_post)
     client = EGITransactionClient(
         {
-            "stac_api": "https://stac.example.test",
+            "stac_config": {
+                "stac_api": "https://stac.example.test",
+            },
             "save_stac": True,
             "dry_run": True,
         }
@@ -36,7 +38,9 @@ def test_egi_does_not_save_stac_by_default(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     client = EGITransactionClient(
         {
-            "stac_api": "https://stac.example.test",
+            "stac_config": {
+                "stac_api": "https://stac.example.test",
+            },
             "dry_run": True,
         }
     )
