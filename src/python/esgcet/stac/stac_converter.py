@@ -106,11 +106,21 @@ class ESGSTACItem:
         if size is not None:
             value["file:size"] = size
 
-        return [{
+        ops = [{
             "op": "add",
             "path": path,
             "value": value
         }]
+
+        if not any('aggregated_assets' in ext
+            for ext in self.stac_item.get('stac_extensions',[])):
+            ops.append({
+                "op":"add",
+                "path":"/stac_extensions/-",
+                "value":"https://esgf.github.io/stac-transaction-api/aggregated_assets/v1.0.0/schema.json"
+            })
+
+        return ops
 
     def add_replica(self, rep_datanode, template, prefix, rep_globus=""):
         assets = self.stac_item.get("assets", {})
