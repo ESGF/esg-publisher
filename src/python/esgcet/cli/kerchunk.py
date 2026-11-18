@@ -5,8 +5,8 @@ from pathlib import Path
 
 from typing import Annotated, Literal
 
-from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
-from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
+from esgcet.kerchunk_process.kerchunk_generator import KerchunkGenerator
+from esgcet.kerchunk_process.mapfile_model import MapFileRecord, MapFileCatalog
 
 from pydantic import AnyUrl, ValidationError
 

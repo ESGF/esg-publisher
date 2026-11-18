@@ -10,6 +10,8 @@ AUTOC_PATH = None
 # TODO: DRS and GA should be managed by a remote project service.
 #    Then, set by the workflow at reasonable intervals
 
+# Asset Settings
+
 # For each project these become the . delimited components of the dataset_id
 DRS = {
     "cmip6": [

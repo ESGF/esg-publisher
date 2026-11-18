@@ -10,7 +10,7 @@ from esgcet.stac.stac_converter import ESGSTACConverter, ESGSTACItem
 from esgcet.stac.stac_client import getTransactionClient
 
 from esgcet.util import logger
-from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
+from esgcet.kerchunk_process.kerchunk_generator import KerchunkGenerator
 
 import duckdb
 from duckdb import DuckDBPyConnection
