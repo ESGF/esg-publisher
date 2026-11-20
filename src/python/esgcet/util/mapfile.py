@@ -7,16 +7,16 @@ log = logger.ESGPubLogger()
 
 class ESGPubMapConv:
 
-    def __init__(self, mapfilename, project=None, silent=False):
+    def __init__(self, mapfilename: str, project: str = None, silent: bool = False):
 
         self.mapfilename = mapfilename
-        self.project = project
+        self.project     = project
         self.map_data_arr = []
-        self.map_json = {}
+        self.map_json     = {}
         self.silent = silent
         self.publog = log.return_logger('Mapfile Conversion', silent=silent)
 
-    def parse_map(self, mountpoints=None):
+    def parse_map(self, mountpoints: dict | None = None):
         """  """
         ret = []
         for line in self.map_data:
@@ -31,10 +31,6 @@ class ESGPubMapConv:
             ret.append(parts)
 
         self.map_data_arr = ret
-        return ret
-
-    def set_map_arr(self, maparr):
-        self.map_data_arr = maparr
 
     def parse_map_arr(self):
         ''' Input: Takes a 2-D array representation of the parsed map.
@@ -68,6 +64,6 @@ class ESGPubMapConv:
     def mapfilerun(self, mountpoints=None):
 
         with open(self.mapfilename) as self.map_data:
-            ret = self.parse_map(mountpoints)
+            self.parse_map(mountpoints)
 
-        return ret
+

@@ -4,7 +4,7 @@ from esgcet.scan.mk_dataset_nc4 import ESGPubNC4Handler
 
 from esgcet.scan.mk_dataset import ESGPubMakeDataset
 
-from esgcet.util.settings import *
+from esgcet.vocab import ESGVocabMapper
 
 import json, os, sys
 import tempfile
@@ -16,8 +16,8 @@ from typing import Any
 
 from compliance_checker.runner import CheckSuite, ComplianceChecker
 from pathlib import Path
-from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
-from esgcet.kerchunk.kerchunk_generator import KerchunkGenerator
+from esgcet.kerchunka.mapfile_model import MapFileRecord, MapFileCatalog
+from esgcet.kerchunka.kerchunk_generator import KerchunkGenerator
 
 
 
@@ -279,25 +279,47 @@ class GenericPublisher(BasePublisher):
         self.publog.info(f"Running Extraction... {str(self.extract_method)}")
         self.extract_method(map_json_data)
 
-        # step three: make dataset
+        # step three: extraction
         self.publog.info("Making dataset...")
+
+        # Should extract:
+        # - project
+        # - source_attrs
+        # - path_0
         out_json_data = self.mk_dataset(map_json_data)
 
-        self.dataset_rec = out_json_data
+        project, source_attrs, path_0 = ...
 
-        if kerchunk_uri:
-            out_json_data[-1]["reference_file"] = kerchunk_uri
-        self.pid_cite()
+        # Separately extract assets by paths individually.
 
-        # step five: publish to database
-        self.publog.info("Running index pub...")
-        rc = self.index_pub(out_json_data)
+        assets = {}
 
-        if rc:
-        # step four: update record if exists
-            self.publog.info("Updating...")
-            self.update(out_json_data)
+        evm = ESGVocabMapper(
+            project,
+            netcdf_source=source_attrs,
+            netcdf_path=path_0)
 
-        self.publog.info("Done. Cleaning up.")
-        self.cleanup()
-        return rc
+        record, exists = self.index_pub(evm, assets)
+
+        if exists:
+            self.update()
+            return
+
+        # self.dataset_rec = out_json_data
+
+        # if kerchunk_uri:
+        #     out_json_data[-1]["reference_file"] = kerchunk_uri
+        # self.pid_cite()
+
+        # # step five: publish to database
+        # self.publog.info("Running index pub...")
+        # rc = self.index_pub(out_json_data)
+
+        # if rc:
+        # # step four: update record if exists
+        #     self.publog.info("Updating...")
+        #     self.update(out_json_data)
+
+        # self.publog.info("Done. Cleaning up.")
+        # self.cleanup()
+        # return rc

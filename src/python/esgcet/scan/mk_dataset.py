@@ -1,9 +1,9 @@
 import json
 from esgcet.util.mapfile import ESGPubMapConv
+from esgcet.util.settings import MAX_RECOMMENDED_FILE_COUNT, URL_Templates, VARIABLE_EXCLUDES, VARIABLE_LIMIT
 import numpy as np
 
 from urllib.parse import unquote
-from esgcet.util.settings import *
 import esgcet.util.logger as logger
 
 log = logger.ESGPubLogger()
@@ -13,49 +13,6 @@ class ESGPubMakeDataset:
     """
     Base class (abstract) to assemble the ESGF index records (dataset and file records).
     """
-
-    def init_project(self, proj):
-        """
-        Intialize the specific project metadata based on a stock or custom configuration
-
-        proj: Name of the project to be process
-        """
-        project = proj
-        self.GA = GA
-
-        if project in DRS:
-            self.DRS = DRS[project]
-            if project in CONST_ATTR:
-                self.CONST_ATTR = CONST_ATTR[project]
-        elif self.user_project and "clone_project" in self.user_project:
-            cloneproj = self.user_project["clone_project"]
-            if cloneproj not in DRS:
-                raise (
-                    RuntimeError(
-                        f"Project {cloneproj} Data Record Syntax (DRS) not defined. Define in esg.ini"
-                    )
-                )
-            self.DRS = DRS[cloneproj]
-            if cloneproj in CONST_ATTR:
-                self.CONST_ATTR = CONST_ATTR[cloneproj]
-            else:
-                self.CONST_ATTR = {}
-            if "CONST_ATTR" in self.user_project[project]:
-                self.CONST_ATTR.update(self.user_project[project]["CONST_ATTR"])
-        elif self.user_project and project in self.user_project:
-            if "DRS" in self.user_project[project]:
-                self.DRS = self.user_project[project]["DRS"]
-            if "CONST_ATTR" in self.user_project[project]:
-                self.CONST_ATTR = self.user_project[project]["CONST_ATTR"]
-            if "GA" in self.user_project[project]:
-                self.GA = {project: self.user_project[project]["GA"]}
-        else:
-            raise (
-                BaseException(
-                    f"Error: Project {project} Data Record Syntax (DRS) not defined. Define in esg.ini"
-                )
-            )
-        self.dataset["project"] = project
 
     def __init__(
         self,
@@ -163,92 +120,6 @@ class ESGPubMakeDataset:
         Base method for handling the extended attributes
         """
         return self.xattr
-
-    def get_dataset(self, mapdata, scanobj):
-
-        if "#" in mapdata:
-            master_id, version = mapdata.split("#")
-
-            parts = master_id.split(".")
-        else:
-            parts = mapdata.split(".")
-            version = parts[-1][1:]
-            if parts[-1][0] != "v" or (not version.isdigit()):
-                raise ValueError(f"Error {parts[-1]}: not a valid version identifier")
-            parts = parts[:-1]
-            master_id = ".".join(parts)
-
-        projkey = parts[0]
-        self.first_val = projkey
-        scandata = self.handler.get_attrs_dict(scanobj)
-
-        if self.project:
-            projkey = self.project
-        self.init_project(projkey.lower())
-
-        facets = self.DRS  # depends on Init_project to initialize
-
-        if not facets:
-            raise RuntimeError(f"Error DRS not configured for project {projkey}")
-        if "variable" in facets:
-            self.variable_name = "variable"
-
-        assert len(facets) == len(parts) , f"Problem with dataset id. {facets} expected. {parts} found"
-        for i, f in enumerate(facets):
-            if f in scandata:
-                ga_val = scandata[f]
-                if not parts[i] == ga_val:
-                    self.publog.warning("{} does not agree!".format(f))
-            self.dataset[f] = parts[i]
-
-        priorkey = projkey
-        if self.user_project and "clone_project" in self.user_project:
-            projkey = self.user_project["clone_project"]
-        self.global_attributes(projkey, scandata)
-        self.global_attr_mapped(projkey, scandata)
-        self.assign_dset_values(master_id, version)
-        self.const_attr()
-        if not "project" in self.dataset:
-            self.dataset["project"] = priorkey
-        if self._disable_further_info and "further_info_url" in self.dataset:
-            self.publog.debug("Deleting further url field")
-            del self.dataset["further_info_url"]
-
-    def global_attributes(self, proj, scandata):
-        # handle Global attributes if defined for the project
-        projkey = proj.lower()
-
-        if projkey in self.GA:
-            for facetkey in self.GA[projkey]:
-                facetval = None
-
-                # did we find a GA in the data by the the key name
-                if facetkey in scandata:
-                    facetval = scandata[facetkey]
-                    # is this a delimited attribute ?
-                    if projkey in GA_DELIMITED and facetkey in GA_DELIMITED[projkey]:
-                        delimiter = GA_DELIMITED[projkey][facetkey]
-                        self.dataset[facetkey] = facetval.split(delimiter)
-                    elif facetval is not None:
-                        self.dataset[facetkey] = facetval
-
-    def global_attr_mapped(self, proj, scandata):
-        projkey = proj.lower()
-
-        if projkey in GA_MAPPED:
-            for gakey, facetkey in GA_MAPPED[projkey].items():
-                if gakey in scandata:
-                    facetval = scandata[gakey]
-                    self.dataset[facetkey] = facetval
-                else:
-                    self.publog.warning(
-                        "GA to be mapped {} is missing!".format(facetkey)
-                    )
-
-    def const_attr(self):
-        if self.CONST_ATTR:
-            for facetkey in self.CONST_ATTR:
-                self.dataset[facetkey] = self.CONST_ATTR[facetkey]
 
     def assign_dset_values(self, master_id, version):
 
@@ -370,64 +241,8 @@ class ESGPubMakeDataset:
 
         return ret
 
-    def set_variables(self, record, scanobj):
-        variables = self.handler.get_variables(scanobj)
-        # use the correct facet id string to get the variable if pre-specified in the record
-        vid = record[self.variable_name]
-        if vid in variables:
-            var_rec = variables[vid]
-            if "long_name" in var_rec:
-                record["variable_long_name"] = var_rec["long_name"]
-            elif "info" in var_rec:
-                record["variable_long_name"] = var_rec["info"]
-            if "standard_name" in var_rec:
-                record["cf_standard_name"] = var_rec["standard_name"]
-            if "units" in var_rec:
-                record["variable_units"] = var_rec["units"]
-            record[self.variable_name] = vid
-            if self.variable_name == "variable_id":
-                record["variable"] = vid
-        else:
-            var_list = self.handler.get_variable_list(variables)
-            if len(var_list) < VARIABLE_LIMIT:
-                init_lst = [self.variable_name, "variable_long_name"]
-                if "variable_id" in init_lst:
-                    init_lst.append("variable")
-                for kid in init_lst:
-                    record[kid] = []
-                units_list = []
-                cf_list = []
-                for vk in var_list:
-                    if not vk in VARIABLE_EXCLUDES:
-                        var_rec = variables[vk]
-                        if "long_name" in var_rec:
-                            record["variable_long_name"].append(var_rec["long_name"])
-                        elif "info" in var_rec:
-                            record["variable_long_name"].append(var_rec["info"])
-                        if (
-                            "standard_name" in var_rec
-                            and len(var_rec["standard_name"]) > 0
-                        ):
-                            cf_list.append(var_rec["standard_name"])
-                        if (
-                            "units" in var_rec
-                            and var_rec["units"] != "1"
-                            and len(var_rec["units"]) > 0
-                        ):
-                            units_list.append(var_rec["units"])
-                        record["variable"].append(vk)
-
-                if self.variable_name == "variable_id":
-                    record[self.variable_name] = "Multiple"
-                record["variable_units"] = list(set(units_list))
-                record["cf_standard_name"] = list(set(cf_list))
-
-            if self.variable_name == "variable_id":
-                record["variable"] = "Multiple"
-
     def update_metadata(self, record, scanobj):
 
-        self.set_variables(record, scanobj)
         self.handler.set_bounds(record, scanobj)
 
     def iterate_files(self, mapdata, scandata):
@@ -469,9 +284,7 @@ class ESGPubMakeDataset:
         else:
             mapobj = mapdata
 
-        self.get_dataset(mapobj[0][0], scanobj)
-        self.update_metadata(self.dataset, scanobj)
-        self.dataset["number_of_files"] = len(mapobj)  # place this better
+        attrs = self.handler.get_attrs_dict(scanobj)
 
         # Check against recommended maximum file count
         file_count = len(mapobj)
@@ -483,32 +296,18 @@ class ESGPubMakeDataset:
                 f"record size constraints. Consider aggregating files or splitting the dataset."
             )
 
-        project = self.dataset["project"]
-
-        self.publog.debug(
-            "Record:\n"
-            + json.dumps(
-                self.dataset,
-                indent=4,
-                default=lambda o: o.item() if isinstance(o, np.generic) else str(o),
-            )
-        )
-
-        self.mapconv.set_map_arr(mapobj)
-        mapdict = self.mapconv.parse_map_arr()
+        #self.mapconv.set_map_arr(mapobj)
+        #mapdict = self.mapconv.parse_map_arr()
 
         # self.publog.debug('Mapfile dictionary:\n' + json.dumps(mapdict, indent=1)) # Superverbose
 
-        scandict = self.handler.get_scanfile_dict(scanobj, mapdict)
+        #scandict = self.handler.get_scanfile_dict(scanobj, mapdict)
         # self.publog.debug('Autocurator Scanfile dictionary:\n' + json.dumps(scandict, indent=1))  # Superverbose
 
         ret, sz, access = self.iterate_files(mapdict, scandict)
         self.dataset["size"] = sz
         self.dataset["access"] = access
 
-        self.dataset["globus_url"] = DATASET_GLOBUS_URL_TEMPLATE.format(
-            self.globus, self.parse_path()
-        )
         self.proc_xattr(xattrfn)
 
         ret.append(self.dataset)

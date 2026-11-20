@@ -14,12 +14,9 @@ from esgcet.util.settings import (
     STAC_item_properties,
     STAC_list_properties,
     STAC_proj_item_properties,
-<<<<<<< HEAD
-    STAC_schema_versions,
-=======
     STAC_schema_versions
->>>>>>> 79fafb9 (Updated for use of esgvoc for new projects)
 )
+
 from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
 

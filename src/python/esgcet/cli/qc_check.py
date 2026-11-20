@@ -2,7 +2,7 @@ import typer
 
 from compliance_checker.runner import CheckSuite, ComplianceChecker
 
-from esgcet.kerchunk.mapfile_model import MapFileRecord, MapFileCatalog
+from esgcet.kerchunka.mapfile_model import MapFileRecord, MapFileCatalog
 
 from typing import Annotated, Literal
 
