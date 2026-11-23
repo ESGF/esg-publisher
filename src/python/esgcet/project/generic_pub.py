@@ -191,7 +191,8 @@ class BasePublisher(object):
         citurl = pid.citation_url()
 
         for rec in self.dataset_rec:
-            rec["pid"] = ds_pid
+            if ds_pid:
+                rec["pid"] = ds_pid
             if citurl:
                 rec["citation_url"] = citurl
 
