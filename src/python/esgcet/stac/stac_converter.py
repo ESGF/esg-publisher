@@ -120,10 +120,12 @@ class ESGSTACConverter:
         self.publog = log.return_logger("ESGSTACConverter", silent, verbose)
 
 
-    def get_cmip6_variable(self, variable_id: str) -> dict[str, str | None]:
+    def get_cmip6_variable(self, variable_id: str, plus=False) -> dict[str, str | None]:
         """Return units and CF standard name for a CMIP6 variable."""
+        plustr = "plus" if plus else ""
         term = ev.get_term_in_collection(
-            project_id="cmip6",
+
+            project_id=f"cmip6{plustr}",
             collection_id="variable_id",
             term_id=variable_id.strip().lower(),
         )
@@ -318,10 +320,10 @@ class ESGSTACConverter:
             elif v is not None:
                 properties[nk] = v
 
-        if self.remap and namespace == "cmip6":
+        if self.remap and "cmip6" in namespace:
             variable_id = dataset_doc.get("variable_id")
             if variable_id:
-                cmip6_variable_info = self.get_cmip6_variable(variable_id)
+                cmip6_variable_info = self.get_cmip6_variable(variable_id, plus="plus" in namespace)
                 if cmip6_variable_info:
                     # Only add properties if values are not None
                     units = cmip6_variable_info.get("units")
