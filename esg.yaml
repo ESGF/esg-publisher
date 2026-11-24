@@ -2,6 +2,7 @@ data_node: ceda.ac.uk
 stac_api: https://search-int.east.esgf.io
 data_roots:
   /badc/cmip7/data: /data/esg_cmip7
+  /home/users/dwest77/cedadev/FUTURA/CV_testing/esg-publisher/local/data: /data/esg_obs4mips
 mountpoints:
 verbose: true
 silent: false
