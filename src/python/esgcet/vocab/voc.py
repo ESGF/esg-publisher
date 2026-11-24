@@ -576,7 +576,7 @@ class ESGNetcdfAssembler:
             if root in file:
                 file = file.replace(root, rep)
 
-        return self.access['root'] + self.data_node + file
+        return self.access['root'] + f'esgf.{self.data_node}' + file
 
     def file_to_local(self, file: str) -> str:
         """
