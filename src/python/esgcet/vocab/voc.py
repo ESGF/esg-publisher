@@ -3,7 +3,7 @@ from xnetcdf import Dataset
 from esgcet.util.mapfile import ESGPubMapConv
 from esgcet.stac.stac_client import EGITransactionClient
 from datetime import datetime
-import os
+import json
 import yaml
 import requests
 import re
@@ -98,7 +98,9 @@ class ESGVocabMapper:
             project: str, 
             netcdf_source: dict,
             netcdf_path: str,
-            log_kwargs: dict | None = None):
+            log_kwargs: dict | None = None,
+            overrides: dict | None = None,
+            exclusions: list | None = None):
         """
         Assemble vocabulary mappings based on the given project.
 
@@ -115,6 +117,9 @@ class ESGVocabMapper:
         self.publog.info("Assembling mappings from esgvoc...")
 
         self.cv_mappings = self._extract_esgvoc()
+
+        self.overrides = overrides
+        self.exclusions = exclusions or []
 
         self.publog.info("Assembling mappings from file/dir structure...")
         self.netcdf_dir_map, self.netcdf_file_map = self._extract_netcdf()
@@ -280,16 +285,25 @@ class ESGVocabMapper:
         if source.startswith('.'):
             return term
 
+        if term is None:
+            self.publog.debug(
+                f'Skip validating "{term}" for collection "{source}" '
+                f'within project "{project}"'
+                f' - sourced from {extract}'
+            )
+            return term
+
         if not ev.valid_term_in_collection(
             value=term, 
             project_id=project, 
             collection_id=source):
 
-            self.publog.error(
+            self.publog.warning(
                 f'Term "{term}" for collection "{source}" '
                 f'not valid within project "{project}"'
                 f' - sourced from {extract}'
             )
+            return None
         else:
             self.publog.debug(
                 'VALID: '
@@ -343,11 +357,17 @@ class ESGVocabMapper:
         for valuelabel in self.cv_mappings.values():
 
             param = None
+            value = None
             netcdf_extract = valuelabel.netcdf_field_names
             if len(netcdf_extract) == 1:
                 param = self._extract_from_netcdf(netcdf_extract, valuelabel.source_collection)
             
             for catalog_field in valuelabel.catalog_fields:
+
+                if catalog_field.catalog_field_name in self.exclusions and not catalog_field.required:
+                    self.publog.warning(
+                        f'Skipping property "{catalog_field.catalog_field_name}"')
+                    continue
 
                 # NetCDF attributes using the same source collection
                 # Catalog fields extracted by matching names.
@@ -358,19 +378,25 @@ class ESGVocabMapper:
                         f'Catalog field "{catalog_field.catalog_field_name}" '
                         f'extracted value "{param}" from netcdf')
 
-                if catalog_field.key is None:
-                    if param is None:
-                        param = self._extract_from_fp(catalog_field.catalog_field_name)
-                        self.publog.debug(
-                            f'Catalog field "{catalog_field.catalog_field_name}" '
-                            f'extracted value "{param}" from file/dir')
+                if param is None:
+                    fp_extract = catalog_field.catalog_field_name
+                    if catalog_field.key is not None:
+                        fp_extract = valuelabel.source_collection
 
+                    param = self._extract_from_fp(fp_extract)
+                    self.publog.debug(
+                        f'Catalog field "{fp_extract}" '
+                        f'extracted value "{param}" from file/dir')
+
+                if param is None:
+                    value = None
+                elif catalog_field.key is None:
                     value = param
                 else:
                     term = ev.get_term_in_collection(
                         project_id=self.project,
                         collection_id=valuelabel.source_collection,
-                        term_id=param
+                        term_id=param.lower()
                     )
                     if term:
                         value = getattr(term, catalog_field.key, None)
@@ -380,11 +406,20 @@ class ESGVocabMapper:
 
                 if value is None:
                     if catalog_field.required:
-                        value = 'MISSING'
-                        self.publog.error(
-                            f'Property {catalog_field.catalog_field_name} could not be sourced'
-                            ' where it is required.'
-                        )
+
+                        if catalog_field.catalog_field_name in self.overrides:
+                            value = self.overrides.get(catalog_field.catalog_field_name)
+                            self.publog.warning(
+                                f'Using user-provided override value "{value}" '
+                                f'for property "{catalog_field.catalog_field_name}"'
+                            )
+                        else:
+
+                            value = 'MISSING'
+                            self.publog.error(
+                                f'Property {catalog_field.catalog_field_name} could not be sourced'
+                                ' where it is required.'
+                            )
 
                 if value is None:
                     continue
@@ -439,16 +474,26 @@ class ESGNetcdfAssembler:
 
     def __init__(
             self, 
-            collection: str,
             mapfile: str, 
             stac_config_file: str,
+            collection: str | None = None,
             project: str | None = None,
-            link_info: dict | None = None):
+            link_info: dict | None = None,
+            save_stac: bool = False,
+            dry_run: bool = False,
+            verbose: bool = False,
+            silent: bool = False):
         """
         Initialise Assembly from a map file
         """
 
         self.config = self._load_cfg_file(stac_config_file)
+
+        self.save_stac = save_stac
+        self.dry_run = dry_run
+
+        self.config['verbose'] = verbose or self.config.get('verbose')
+        self.config['silent'] = silent or self.config.get('silent')
 
         self.publog = log.return_logger("ESGNetcdfAssembler", 
             **{
@@ -470,10 +515,12 @@ class ESGNetcdfAssembler:
         self.stac_api  = self.config.get('stac_api')
         self.data_node = self.config.get('data_node')
 
-        self.collection = collection
-        self.project    = project or collection.lower()
+        self.collection = collection or self.config.get('collection')
+        self.project    = project or self.collection.lower()
 
         self.link_info  = link_info or {}
+        self.overrides  = self.config.get('overrides') or {}
+        self.exclusions = self.config.get('exclusions') or []
 
         self.geo = {}
 
@@ -500,7 +547,7 @@ class ESGNetcdfAssembler:
         """
         Gets the set of STAC collections known to the API
         """
-        return ['CMIP7'] #[c['id'] for c in requests.get(f'{self.stac_api}/collections').json()['collections']]
+        return ['CMIP7','obs4MIPs'] #[c['id'] for c in requests.get(f'{self.stac_api}/collections').json()['collections']]
 
     def _load_cfg_file(self, cfg_file: str) -> dict:
         """
@@ -719,7 +766,9 @@ class ESGNetcdfAssembler:
             log_kwargs={
                 'verbose': self.config.get('verbose'),
                 'silent': self.config.get('silent')
-            })
+            },
+            overrides=self.overrides,
+            exclusions=self.exclusions)
 
         dataset_id = evm.get_dataset_id()
         properties = evm.get_stac_properties()
@@ -827,16 +876,27 @@ class ESGNetcdfAssembler:
 
         rec = self.get_stac_record()
 
-        print(tc.publish(rec))
+        if self.save_stac:
+            with open(f"local/{rec['id']}.json",'w') as f:
+                f.write(json.dumps(rec))
+            self.publog.info(f"Saved STAC item to local/{rec['id']}.json")
+
+        if not self.dry_run:
+            success = tc.publish(rec, publisher_label='esgvoc_publisher')
+            if success:
+                self.publog.info("Successful publication - item update queued")
+            else:
+                self.publog.info('Publication unsuccessful')
 
 if __name__ == '__main__':
 
-    mapfile = 'local/cmip7_example.map'
+    #mapfile = 'local/cmip7_example.map'
+    mapfile = '/home/users/dwest77/cedadev/FUTURA/esg-publisher/mapfiles/obs4MIPs.CNES.AVISO-1-0.mon.zos.gn.20180305.v20180305.map'
     config = '/home/users/dwest77/cedadev/FUTURA/CV_testing/esg-publisher/esg.yaml'
 
     import json
     ea = ESGNetcdfAssembler(
-        'CMIP7',
+        'obs4MIPs',
         mapfile,
         config
     )

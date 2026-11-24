@@ -1,2 +1,2 @@
 # Vocabularies integration via esgvoc
-from .voc import ESGVocabMapper
+from .voc import ESGNetcdfAssembler
