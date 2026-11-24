@@ -1,15 +1,23 @@
-data_node: esgf.ceda.ac.uk
+data_node: ceda.ac.uk
 stac_api: https://search-int.east.esgf.io
 data_roots:
   /badc/cmip7/data: /data/esg_cmip7
 mountpoints:
-verbose: false
+verbose: true
 silent: false
 test: true
-project: cmip7
+exclusions:
+  - variant_info
+overrides:
+  license: "Creative Commons Attribution 4.0 International License"
+  nominal_resolution: "site-collection"
+  processing_code_location: "undefined"
+project: obs4mips
+collection: obs4MIPs
 access: HTTPS
 stac_config:
   stac_transaction_api: 
-    base_url: https://search-int.east.esgf.io
+    base_url: https://transaction-int.east.esgf.io
     scope_endpoint: https://transaction-int.east.esgf.io/scope
+    timeout: 60
   token_storage_file: 'local/token.json'
