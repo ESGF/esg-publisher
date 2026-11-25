@@ -226,7 +226,9 @@ class EGITransactionClient:
                 refresh_file=os.path.expanduser(token_storage_file),
             )
 
-    def publish(self, entry: dict[str, Any]) -> None:
+    def publish(self, 
+                entry: dict[str, Any],
+                publisher_label: str = 'esg_publisher') -> None:
         """Publish an item to the EGI authenticated STAC endpoint.
 
         Args:
@@ -234,7 +236,7 @@ class EGITransactionClient:
         """
         collection = entry.get("collection")
         headers = {
-            "User-Agent": f"esgf_publisher/{__version__}",
+            "User-Agent": f"{publisher_label}/{__version__}",
         }
 
         if self.save_stac:
@@ -268,6 +270,7 @@ class EGITransactionClient:
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to publish: Error %s", err.response.status_code)
+            self.publog.debug(f'Error response: {err.response.content}')
             return False
         return True
 

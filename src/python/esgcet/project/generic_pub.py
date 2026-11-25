@@ -1,4 +1,5 @@
 import sys
+import os
 
 import esgcet.util.logger as logger
 from esgcet.solr.index_pub import ESGPubIndex
@@ -123,22 +124,42 @@ class BasePublisher(object):
         # TODO: support solr and Globus using the globus_index argument
 
         if self.argdict.get("stac_config") or self.argdict.get("stac_api"):
-            TransactionClient = getTransactionClient(
-                self.argdict.get("stac_config", {})
-            )
-            self.publog.debug(f"{type(TransactionClient)}")
-            tc = TransactionClient(self.argdict)
-            if not tc:
-                raise RuntimeError("Failed to create STAC transaction client")
-            sc = ESGSTACConverter(self.argdict.get("stac_config", {}))
+            stac_config = self.argdict.get("stac_config")
+
+            # Set up transaction client for non-dryrun use.
+            if not self.dry_run:
+                TransactionClient = getTransactionClient(
+                    stac_config
+                )
+                self.publog.debug(f"{type(TransactionClient)}")
+                tc = TransactionClient(self.argdict)
+                if not tc:
+                    raise RuntimeError("Failed to create STAC transaction client")
+                
+            sc = ESGSTACConverter(stac_config)
             stac_item = sc.convert2stac(dataset_records)
 
-            try:
-                rc = tc.publish(stac_item)
-            except Exception as ex:
-                self.publog.error(f"Failed to publish to STAC Transaction API: {ex}")
-                self.publog.debug(f"Exception details:", exc_info=True)                
-                rc = False
+            # Dryrun and save_stac push to local filepath
+            if self.argdict.get('save_stac',False):
+                localdir = self.argdict.get('stac_local','stac_local')
+                if not os.path.isdir(localdir):
+                    os.makedirs(localdir)
+
+                with open(f'{localdir}/{stac_item["id"]}.json','w') as f:
+                    f.write(json.dumps(stac_item))
+
+                self.publog.info(f'DRYRUN: Output to {localdir}/{stac_item["id"]}.json')
+
+            if tc:
+                try:
+                    rc = tc.publish(stac_item)
+                except Exception as ex:
+                    self.publog.error(f"Failed to publish to STAC Transaction API: {ex}")
+                    self.publog.debug(f"Exception details:", exc_info=True)                
+                    rc = False
+            else:
+                self.publog.info('Skipped publishing - no API config provided')
+                exit(1)
 
         else:
             globuspub = self.argdict.get("globus_index", False)

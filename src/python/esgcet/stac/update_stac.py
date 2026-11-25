@@ -35,7 +35,7 @@ class ESGUpdateSTAC(ESGUpdateBase):
         site = asset_info["site"]
         op = {
             "op": "add",
-            "path": "/assets/reference_file/alternate",
+            "path": "/assets/kerchunk/alternate",
             "value": {
                 site: {
                     "href": asset_info["href"],
