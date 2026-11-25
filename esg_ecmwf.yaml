@@ -3,8 +3,10 @@ stac_api: https://search-int.east.esgf.io
 data_roots:
   /neodc/obs4MIPs: /data/esg_obs4mips
 mountpoints:
-verbose: true
+verbose: false
 silent: false
+overrides:
+  processing_code_location: 'undefined'
 test: true
 project: obs4mips
 collection: obs4MIPs
