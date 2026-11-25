@@ -4,7 +4,7 @@ Test dataset-id auto-generation from path for kerchunk CLI.
 """
 
 from pathlib import Path
-from esgcet.cli.kerchunk import generate_dataset_id_from_path, normalize_backend
+from esgcet.cli.kerchunkcli import generate_dataset_id_from_path, normalize_backend
 
 def test_backend_normalization():
     """Test backend name normalization."""

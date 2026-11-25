@@ -100,7 +100,8 @@ class ESGVocabMapper:
             netcdf_path: str,
             log_kwargs: dict | None = None,
             overrides: dict | None = None,
-            exclusions: list | None = None):
+            exclusions: list | None = None,
+            json_map: dict | None = None):
         """
         Assemble vocabulary mappings based on the given project.
 
@@ -112,6 +113,7 @@ class ESGVocabMapper:
 
         self.project       = project
         self.netcdf_source = netcdf_source
+        self.json_source   = json_map
         self.netcdf_path   = netcdf_path
 
         self.publog.info("Assembling mappings from esgvoc...")
@@ -237,7 +239,39 @@ class ESGVocabMapper:
 
         return mappings
 
-    def _extract_from_netcdf(self, extractors: list, source: str) -> str:
+    def _extract_from_source(
+            self, 
+            extract_label: str | list, 
+            source_cv: str,
+            source_type: str,
+            is_array: bool = False):
+        """
+        Override with json source if present.
+        """
+
+        if self.json_source:
+            for label in extract_label:
+                if label in self.json_source:
+                    self.publog.debug(
+                        f'Extracting "{label}" from user-provided JSON'
+                    )
+                    return self.validate_term(
+                        self.project,
+                        source_cv,
+                        self.json_source.get(label),
+                        source_type,
+                        is_array=is_array
+                    )
+
+        if source_type == 'NetCDF Attributes':
+            return self._extract_from_netcdf(extract_label, source_cv, is_array=is_array)
+        else:
+            return self._extract_from_fp(extract_label[0], is_array=is_array)
+
+    def _extract_from_netcdf(self, extractors: list, source: str, is_array: bool = False) -> str:
+        """
+        Extract attribute from netcdf source
+        """
 
         sourced = False
         extract = 0
@@ -256,9 +290,10 @@ class ESGVocabMapper:
             self.project,
             source,
             param,
-            'NetCDF Attributes')
+            'NetCDF Attributes',
+            is_array=is_array)
 
-    def _extract_from_fp(self, f_label: str) -> str | None:
+    def _extract_from_fp(self, f_label: str, is_array: bool = False) -> str | None:
         """
         Extract a facet from the netcdf directory/file maps
         """
@@ -268,22 +303,116 @@ class ESGVocabMapper:
                 self.project,
                 f_label,
                 self.netcdf_dir_map[f_label],
-                'Dir Structure')
+                'Dir Structure',
+                is_array=is_array)
         if f_label in self.netcdf_file_map:
             return self.validate_term(
                 self.project,
                 f_label,
                 self.netcdf_file_map[f_label],
-                'File Structure')
+                'File Structure',
+                is_array=is_array)
         return None
 
-    def validate_term(self, project: str, source: str, term: str, extract: str) -> str:
+    def _extract_array(self, value: str) -> list:
+
+        if ' ' not in value and ';' not in value:
+            return [value]
+
+        value = [v for v in value.replace(';',' ').split(' ') if v]
+        return value
+
+    def _assemble_stac_property(
+            self,
+            netcdf_extract: list,
+            catalog_field: ESGCatalogProperty,
+            valuelabel: ESGVocabValue,
+            param: str | None = None):
+
+        value = None
+        is_array = (catalog_field.value_type == 'string_array')
+
+        # NetCDF attributes using the same source collection
+        # Catalog fields extracted by matching names.
+        if len(netcdf_extract) > 1:
+            ext = [e for e in netcdf_extract if e == catalog_field.catalog_field_name]
+            param = self._extract_from_source(ext, valuelabel.source_collection, "NetCDF Attributes", is_array=is_array)
+            self.publog.debug(
+                f'Catalog field "{catalog_field.catalog_field_name}" '
+                f'extracted value "{param}" from netcdf')
+
+        if param is None:
+            fp_extract = catalog_field.catalog_field_name
+            if catalog_field.key is not None:
+                fp_extract = valuelabel.source_collection
+
+            param = self._extract_from_source([fp_extract], fp_extract, "File/Dir Structure", is_array=is_array)
+            self.publog.debug(
+                f'Catalog field "{fp_extract}" '
+                f'extracted value "{param}" from file/dir')
+
+        if param is None:
+            value = None
+        elif catalog_field.key is None:
+            value = param
+        else:
+            term = ev.get_term_in_collection(
+                project_id=self.project,
+                collection_id=valuelabel.source_collection,
+                term_id=param.lower()
+            )
+            if term:
+                value = getattr(term, catalog_field.key, None)
+                self.publog.debug(
+                    f'Catalog field "{catalog_field.catalog_field_name}" '
+                    f'extracted value "{value}" from CV {catalog_field.key}')
+
+        if value is None:
+            if catalog_field.required:
+
+                if catalog_field.catalog_field_name in self.overrides:
+                    value = self.overrides.get(catalog_field.catalog_field_name)
+                    self.publog.warning(
+                        f'Using user-provided override value "{value}" '
+                        f'for property "{catalog_field.catalog_field_name}"'
+                    )
+                else:
+
+                    value = 'MISSING'
+                    self.publog.error(
+                        f'Property {catalog_field.catalog_field_name} could not be sourced'
+                        ' where it is required.'
+                    )
+
+        if value is None:
+            return None
+
+        # Handle arrayed/non-arrayed properties
+        if 'array' not in catalog_field.value_type and isinstance(value, list):
+            if len(value) > 1:
+                self.publog.error(
+                    f'Non-array property "{catalog_field.catalog_field_name}"'
+                    f' given value "{value}"'
+                )
+                value = "TOO_MANY_VALUES"
+            value = value[0]
+
+        return {f'{self.project}:{catalog_field.catalog_field_name}':value}
+
+    def validate_term(self, project: str, source: str, term: str, extract: str, is_array: bool = False) -> str:
         """
         Use ESGVOC to validate an extracted term.
         """
 
         if source.startswith('.'):
             return term
+
+        # Handle validating array-based terms
+        if is_array:
+            value = self._extract_array(term)
+            for v in value:
+                self.validate_term(project, source, v, extract, is_array=False)
+            return value
 
         if term is None:
             self.publog.debug(
@@ -328,7 +457,7 @@ class ESGVocabMapper:
             f_label = str(f)
             self.publog.debug(f'Identifying "{f_label}" source')
 
-            param = self._extract_from_fp(f_label)
+            param = self._extract_from_source([f_label], f_label, "File/Dir Structure")
             
             if param is None and f_label not in self.cv_mappings:
                 raise ValueError(
@@ -337,7 +466,7 @@ class ESGVocabMapper:
 
             if param is None:
                 netcdf_extract = self.cv_mappings[f_label].netcdf_field_names
-                param = self._extract_from_netcdf(netcdf_extract, f_label)
+                param = self._extract_from_source(netcdf_extract, f_label, "NetCDF Attributes")
                 self.publog.debug(f'Sourced "{f_label}" from netcdf')
             else:
                 self.publog.debug(f'Sourced "{f_label}" from file/dir')
@@ -357,10 +486,10 @@ class ESGVocabMapper:
         for valuelabel in self.cv_mappings.values():
 
             param = None
-            value = None
             netcdf_extract = valuelabel.netcdf_field_names
             if len(netcdf_extract) == 1:
-                param = self._extract_from_netcdf(netcdf_extract, valuelabel.source_collection)
+                is_array = (valuelabel.catalog_fields[0].value_type == 'string_array')
+                param = self._extract_from_source(netcdf_extract, valuelabel.source_collection, "NetCDF Attributes", is_array=is_array)
             
             for catalog_field in valuelabel.catalog_fields:
 
@@ -369,77 +498,18 @@ class ESGVocabMapper:
                         f'Skipping property "{catalog_field.catalog_field_name}"')
                     continue
 
-                # NetCDF attributes using the same source collection
-                # Catalog fields extracted by matching names.
-                if len(netcdf_extract) > 1:
-                    ext = [e for e in netcdf_extract if e == catalog_field.catalog_field_name]
-                    param = self._extract_from_netcdf(ext, valuelabel.source_collection)
-                    self.publog.debug(
-                        f'Catalog field "{catalog_field.catalog_field_name}" '
-                        f'extracted value "{param}" from netcdf')
-
-                if param is None:
-                    fp_extract = catalog_field.catalog_field_name
-                    if catalog_field.key is not None:
-                        fp_extract = valuelabel.source_collection
-
-                    param = self._extract_from_fp(fp_extract)
-                    self.publog.debug(
-                        f'Catalog field "{fp_extract}" '
-                        f'extracted value "{param}" from file/dir')
-
-                if param is None:
-                    value = None
-                elif catalog_field.key is None:
-                    value = param
-                else:
-                    term = ev.get_term_in_collection(
-                        project_id=self.project,
-                        collection_id=valuelabel.source_collection,
-                        term_id=param.lower()
-                    )
-                    if term:
-                        value = getattr(term, catalog_field.key, None)
-                        self.publog.debug(
-                            f'Catalog field "{catalog_field.catalog_field_name}" '
-                            f'extracted value "{value}" from CV {catalog_field.key}')
-
-                if value is None:
-                    if catalog_field.required:
-
-                        if catalog_field.catalog_field_name in self.overrides:
-                            value = self.overrides.get(catalog_field.catalog_field_name)
-                            self.publog.warning(
-                                f'Using user-provided override value "{value}" '
-                                f'for property "{catalog_field.catalog_field_name}"'
-                            )
-                        else:
-
-                            value = 'MISSING'
-                            self.publog.error(
-                                f'Property {catalog_field.catalog_field_name} could not be sourced'
-                                ' where it is required.'
-                            )
-
-                if value is None:
-                    continue
-
-                # Handle arrayed/non-arrayed properties
-                if 'array' in catalog_field.value_type:
-                    value = [value]
-                if 'array' not in catalog_field.value_type and isinstance(value, list):
-                    if len(value) > 1:
-                        self.publog.error(
-                            f'Non-array property "{catalog_field.catalog_field_name}"'
-                            f' given value "{value}"'
-                        )
-                        value = "TOO_MANY_VALUES"
-                    value = value[0]
-
-                properties[f'{self.project}:{catalog_field.catalog_field_name}'] = value
+                property = self._assemble_stac_property(netcdf_extract, catalog_field, valuelabel, param=param)
+                if property:
+                    properties.update(property)
 
         return properties
-                
+
+    def get_directory_structure(self):
+        """
+        Get the directory structure from the given parts"""
+
+        return '/'.join(list(self.netcdf_dir_map.values()))
+
     def display_mappings(self):
         """
         Helpful display of mapped properties"""
@@ -482,12 +552,22 @@ class ESGNetcdfAssembler:
             save_stac: bool = False,
             dry_run: bool = False,
             verbose: bool = False,
-            silent: bool = False):
+            silent: bool = False,
+            jsonfile: str | dict | None = None):
         """
         Initialise Assembly from a map file
         """
 
         self.config = self._load_cfg_file(stac_config_file)
+
+        # Handle JSON provided mappings
+        if isinstance(jsonfile, str):
+            with open(jsonfile) as f:
+                self.json_map = json.load(f)
+        elif isinstance(jsonfile, dict):
+            self.json_map = jsonfile
+        else:
+            self.json_map = None
 
         self.save_stac = save_stac
         self.dry_run = dry_run
@@ -578,14 +658,11 @@ class ESGNetcdfAssembler:
 
         return self.access['root'] + f'esgf.{self.data_node}' + file
 
-    def file_to_local(self, file: str) -> str:
+    def file_to_local(self, file: str, dir_struct: str) -> str:
         """
         Map local file to expected filepath segment"""
-        for root in self.config['data_roots'].keys():
-            if root in file:
-                file = file.replace(root, '')
 
-        return file[1:] # Remove / at start
+        return f'{dir_struct}/{file.split("/")[-1]}'
 
     def geo_info_for_file(self, file):
 
@@ -768,10 +845,13 @@ class ESGNetcdfAssembler:
                 'silent': self.config.get('silent')
             },
             overrides=self.overrides,
-            exclusions=self.exclusions)
+            exclusions=self.exclusions,
+            json_map=self.json_map)
 
         dataset_id = evm.get_dataset_id()
         properties = evm.get_stac_properties()
+
+        dir_struct = evm.get_directory_structure()
 
         dataset_title = self.match_title(dataset_id)
 
@@ -791,7 +871,7 @@ class ESGNetcdfAssembler:
                 "created": now,
                 "updated": now,
                 "protocol": self.access['protocol'],
-                "file:local_path": self.file_to_local(mapf['file']),
+                "file:local_path": self.file_to_local(mapf['file'], dir_struct),
                 **file_props
             }
 
@@ -866,14 +946,6 @@ class ESGNetcdfAssembler:
 
     def publish_stac_record(self):
 
-        tc = EGITransactionClient({
-            'stac_config':self.config['stac_config'],
-            'verbose': self.config.get('verbose'),
-            'silent':  self.config.get('silent'),
-            'dryrun': None,
-            'save-stac': None
-        })
-
         rec = self.get_stac_record()
 
         if self.save_stac:
@@ -882,9 +954,17 @@ class ESGNetcdfAssembler:
             self.publog.info(f"Saved STAC item to local/{rec['id']}.json")
 
         if not self.dry_run:
+
+            tc = EGITransactionClient({
+                'stac_config':self.config['stac_config'],
+                'verbose': self.config.get('verbose'),
+                'silent':  self.config.get('silent'),
+                'dryrun': None,
+                'save-stac': None
+            })
             success = tc.publish(rec, publisher_label='esgvoc_publisher')
             if success:
-                self.publog.info("Successful publication - item update queued")
+                self.publog.info(f"Successful publication - {rec['id']}")
             else:
                 self.publog.info('Publication unsuccessful')
 
@@ -893,6 +973,7 @@ if __name__ == '__main__':
     #mapfile = 'local/cmip7_example.map'
     mapfile = '/home/users/dwest77/cedadev/FUTURA/esg-publisher/mapfiles/obs4MIPs.CNES.AVISO-1-0.mon.zos.gn.20180305.v20180305.map'
     config = '/home/users/dwest77/cedadev/FUTURA/CV_testing/esg-publisher/esg.yaml'
+    jsonext = '/home/users/dwest77/cedadev/FUTURA/CV_testing/esg-publisher/local/configs/HadISSTv1.1.json'
 
     import json
     ea = ESGNetcdfAssembler(

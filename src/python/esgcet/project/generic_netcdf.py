@@ -4,8 +4,6 @@ from esgcet.scan.mk_dataset_nc4 import ESGPubNC4Handler
 
 from esgcet.scan.mk_dataset import ESGPubMakeDataset
 
-from esgcet.vocab import ESGVocabMapper
-
 import json, os, sys
 import tempfile
 from esgcet.project.generic_pub import BasePublisher
