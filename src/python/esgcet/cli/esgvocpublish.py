@@ -29,7 +29,8 @@ def main():
             save_stac=pub.save_stac,
             dry_run=pub.dry_run,
             verbose=pub.verbose,
-            silent=pub.silent)
+            silent=pub.silent,
+            jsonfile=pub.json)
             
         #     {
         #         'license':'Creative Commons Attribution 4.0 International License',
