@@ -21,7 +21,7 @@ from esgvoc.apps.jsg import json_schema_generator as jsg
 from esgcet.util import logger
 from esgcet.util.get_size_remote_file import get_size
 
-from esgf_core_utils.models.aggregated_assets import (
+from esgf_core_utils.models.aggregation_assets import (
     ASSET_AGG_DESCRIPTIONS,
     ASSET_AGG_MIMETYPES,
     ASSET_AGG_PROTOCOLS,
@@ -149,11 +149,7 @@ class ESGSTACItem:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")        
         for name, asset in assets.items():
 
-<<<<<<< HEAD
             if name == "reference_file" or name in AGGREGATED_ASSETS:
-=======
-            if name in AGGREGATED_ASSETS:
->>>>>>> esgvoc_publisher
                 continue
 
             if asset.get("alternate:name") == rep_datanode:

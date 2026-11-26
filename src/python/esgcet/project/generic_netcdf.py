@@ -284,30 +284,26 @@ class GenericPublisher(BasePublisher):
         # - project
         # - source_attrs
         # - path_0
-        out_json_data = self.mk_dataset(map_json_data)
+        # out_json_data = self.mk_dataset(map_json_data)
 
-        project, source_attrs, path_0 = ...
+        # project, source_attrs, path_0 = ...
 
-<<<<<<< HEAD
-        if kerchunk_uri:
-            out_json_data[-1]["kerchunk"] = kerchunk_uri
-        self.pid_cite()
-=======
-        # Separately extract assets by paths individually.
->>>>>>> esgvoc_publisher
+        # if kerchunk_uri:
+        #     out_json_data[-1]["kerchunk"] = kerchunk_uri
+        # self.pid_cite()
 
-        assets = {}
+        # assets = {}
 
-        evm = ESGVocabMapper(
-            project,
-            netcdf_source=source_attrs,
-            netcdf_path=path_0)
+        # evm = ESGVocabMapper(
+        #     project,
+        #     netcdf_source=source_attrs,
+        #     netcdf_path=path_0)
 
-        record, exists = self.index_pub(evm, assets)
+        # record, exists = self.index_pub(evm, assets)
 
-        if exists:
-            self.update()
-            return
+        # if exists:
+        #     self.update()
+        #     return
 
         # self.dataset_rec = out_json_data
 

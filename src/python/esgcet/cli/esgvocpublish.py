@@ -31,16 +31,6 @@ def main():
             verbose=pub.verbose,
             silent=pub.silent,
             jsonfile=pub.json)
-            
-        #     {
-        #         'license':'Creative Commons Attribution 4.0 International License',
-        #         'nominal_resolution':'site-collection',
-        #         'processing_code_location':'undefined'
-        #     },
-        #     exclusions = [
-        #         'variant_info'
-        #     ]
-        # )
 
         ea.publish_stac_record()
 
