@@ -8,6 +8,10 @@ The new publisher module is built using some of the existing `esg-publisher` com
 
 It is advised to first create STAC records locally with `--save-stac` and `--dry-run` on the publish command to double check everything looks correct. The publisher will also generate warnings and errors on invalid data. It is also important to check that the remote hrefs generated for the assets are correct. Report any problems by creating an issue to this repo.
 
+## Setup - Permissions
+
+To apply for permissions for your account on EGI to use the publisher, use https://aai.egi.eu/auth/realms/id/account/#/enroll?groupPath=/esgf.vo.egi.eu/project/obs4MIPs, sign into your EGI account and request the obs4MIPs project 'CREATE' and 'UPDATE' permissions.
+
 ## Setup - Mapfiles
 The publisher still uses map files produced by the `esgprep` package, see the documentation at https://esgf.github.io/esgf-prepare/getting_started.html#step-5-generate-mapfiles on how to generate map files.
 
@@ -40,6 +44,10 @@ stac_config:
 The STAC configuration element handles EGI-check-in for user sign-in and generation of a local token file (valid for 30 days or less). The base-url and scope should be set to the correct transaction API (east/west and '-int' for staging):
 - The records will be pushed to `transaction.<node>.esgf.io`
 - The records will end up on `search.<node>.esgf.io`
+
+## Special cases for config parameters
+
+If the `data_node` does not resolve properly through the publisher (i.e there's some mistake with using esgf.<node>), you can override this by setting the value as `OVERRIDE:<your_service_path>` (E.g CEDA obs4MIPs data will use `dap.ceda.ac.uk` not `esgf.ceda.ac.uk`)
 
 ## Run the publisher
 
