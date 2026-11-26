@@ -800,7 +800,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.5.5" },
     { name = "esgf-core-utils", specifier = ">=1.0.6" },
     { name = "esgfpid" },
-    { name = "esgvoc", specifier = ">=5.0.1" },
+    { name = "esgvoc", specifier = ">=7.3.0" },
     { name = "fastparquet", specifier = ">=2026.5.0" },
     { name = "globus-cli" },
     { name = "globus-sdk", specifier = ">=4.3.0" },
@@ -882,7 +882,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/e5/da/f139dcda5a2d74b56
 
 [[package]]
 name = "esgvoc"
-version = "7.2.0"
+version = "7.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "idna" },
@@ -897,9 +897,9 @@ dependencies = [
     { name = "toml" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f6/df/71446991ea310edd81917ebaf2dfa96c2df24539f9d4c5d6d6017fc060ce/esgvoc-7.2.0.tar.gz", hash = "sha256:70f68debed11ff1620e6b812eecb07e49c12132ad1ef0e1bb0816267f4855b97", size = 5710446, upload-time = "2026-10-21T11:51:48.604Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/21/8002147da4578b8aa9183f71933bcd72e80cab5d195187f7fe71634d82a7/esgvoc-7.3.0.tar.gz", hash = "sha256:89c99d77f25c709f1b9984a8f100addb155b03f92201571dca4c3adae66ca887", size = 5713471, upload-time = "2026-11-17T10:05:22.323Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/b8/849859b31b1e68baa6bcfb71457c937ba0aadbdf4183e488f65a572708c8/esgvoc-7.2.0-py3-none-any.whl", hash = "sha256:9e233a60ab77787785719514970a794b20660565ef577777d69ca9d8ffdd4033", size = 259498, upload-time = "2026-10-21T11:51:46.711Z" },
+    { url = "https://files.pythonhosted.org/packages/98/54/f56f5db9559472f4da142c1acf3f8867d1cf5480a514493773919fd45535/esgvoc-7.3.0-py3-none-any.whl", hash = "sha256:d707e6249970ba6a13c77c0bda35389d58838702a30f9450c4265ff1ad97a579", size = 259648, upload-time = "2026-11-17T10:05:20.936Z" },
 ]
 
 [[package]]

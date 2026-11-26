@@ -33,7 +33,6 @@ dependencies = [
     "pystac_client",
     "kerchunk",
     "virtualizarr",
-    "esgvoc>=5.0.1",
     "pydantic",
     "typer",
     "attrs",
@@ -45,6 +44,7 @@ dependencies = [
     "duckdb>=1.5.5",
     "xnetcdf>=0.3.0",
     "esgf-core-utils>=1.0.6",
+    "esgvoc>=7.3.0",
 ]
 
 
