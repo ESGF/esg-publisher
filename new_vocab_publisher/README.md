@@ -8,6 +8,15 @@ The new publisher module is built using some of the existing `esg-publisher` com
 
 It is advised to first create STAC records locally with `--save-stac` and `--dry-run` on the publish command to double check everything looks correct. The publisher will also generate warnings and errors on invalid data. It is also important to check that the remote hrefs generated for the assets are correct. Report any problems by creating an issue to this repo.
 
+## Setup - Esgvoc
+
+This package uses `esgvoc` to handle CV management. This is installed with the dependencies, but also needs you to `use` the project and version as required. The example below uses the `latest` version of `obs4mips` - which is also the same label as is used in the config file under `project`.
+
+```
+esgvoc use obs4mips@latest
+```
+
+
 ## Setup - Permissions
 
 To apply for permissions for your account on EGI to use the publisher, use https://aai.egi.eu/auth/realms/id/account/#/enroll?groupPath=/esgf.vo.egi.eu/project/obs4MIPs, sign into your EGI account and request the obs4MIPs project 'CREATE' and 'UPDATE' permissions.
