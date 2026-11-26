@@ -1,0 +1,16 @@
+data_node: OVERRIDE:dap.ceda.ac.uk
+stac_api: https://search-int.east.esgf.io
+data_roots:
+mountpoints:
+verbose: false
+silent: false
+test: true
+project: obs4mips
+collection: obs4MIPs
+access: HTTPS
+stac_config:
+  stac_transaction_api: 
+    base_url: https://transaction-int.east.esgf.io
+    scope_endpoint: https://transaction-int.east.esgf.io/scope
+    timeout: 60
+  token_storage_file: 'local/token.json'
