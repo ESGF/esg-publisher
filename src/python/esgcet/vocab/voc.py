@@ -7,6 +7,7 @@ import json
 import yaml
 import requests
 import re
+from urllib.parse import urljoin
 
 from esgcet.util import logger
 from esgcet.vocab.extractors import get_geo
@@ -656,7 +657,11 @@ class ESGNetcdfAssembler:
             if root in file:
                 file = file.replace(root, rep)
 
-        return self.access['root'] + f'esgf.{self.data_node}' + file
+        data_node = f'esgf.{self.data_node}'
+        if 'OVERRIDE' in self.data_node:
+            data_node = self.data_node.split(':')[1]
+
+        return self.access['root'] + urljoin(data_node,file)
 
     def file_to_local(self, file: str, dir_struct: str) -> str:
         """
