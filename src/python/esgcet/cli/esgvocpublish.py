@@ -3,6 +3,7 @@ import os
 import sys
 import esgcet.util.logger as logger
 from esgcet.vocab import ESGNetcdfAssembler
+import glob
 
 log = logger.ESGPubLogger()
 publog = log.return_logger("Esgvoc-Publisher")
@@ -22,7 +23,25 @@ def main():
     pub_args = PublisherArgs()
     pub = pub_args.get_args()
 
-    for mf in pub.map:
+    map = pub.map
+
+    if isinstance(map, list) and len(map) > 1:
+        maps = map
+    elif os.path.isfile(map[0]):
+        if '.txt' in map[0]:
+            with open(map[0]) as f:
+                maps = [r.strip() for r in f]
+        else:
+            maps = [map[0]]
+    elif os.path.isdir(map[0]):
+        maps = glob.glob(f'{map[0]}/*.map')
+    else:
+        raise ValueError(
+            f'{map[0]} not a valid map input - '
+            'acceptable values are mapfile, text file, directory')
+
+    for mf in maps:
+        print(f'Using map file: {map}')
         ea = ESGNetcdfAssembler(
             mf,
             pub.cfg,

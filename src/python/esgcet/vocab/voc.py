@@ -1,13 +1,13 @@
 import esgvoc.api as ev
 from xnetcdf import Dataset
 from esgcet.util.mapfile import ESGPubMapConv
-from esgcet.stac.stac_client import EGITransactionClient
+from esgcet.vocab.client import EGITransactionClient
 from datetime import datetime
 import json
 import yaml
 import requests
 import re
-from urllib.parse import urljoin
+import uuid
 
 from esgcet.util import logger
 from esgcet.vocab.extractors import get_geo
@@ -596,6 +596,10 @@ class ESGNetcdfAssembler:
         self.stac_api  = self.config.get('stac_api')
         self.data_node = self.config.get('data_node')
 
+        self.pid_prefix = self.config.get('pid_prefix')
+
+        self.remote_url = self.config.get('remote_url_override',None) or f"esgf.{self.data_node}"
+
         self.collection = collection or self.config.get('collection')
         self.project    = project or self.collection.lower()
 
@@ -623,6 +627,14 @@ class ESGNetcdfAssembler:
         self.mapfileinfo = mapconv.parse_map_arr()
 
         self.ncattrs = {}
+
+    def _pid(self, dataset_id: str):
+
+        ds_uuid = uuid.uuid3(uuid.NAMESPACE_URL, dataset_id)
+
+        dataset_pid = 'hdl:'+str(self.pid_prefix)+'/'+str(ds_uuid)
+
+        return dataset_pid
 
     def get_stac_collections(self) -> list:
         """
@@ -653,15 +665,12 @@ class ESGNetcdfAssembler:
         """
         Map local file using remote endpoint config"""
 
-        for root, rep in self.config['data_roots'].items():
-            if root in file:
-                file = file.replace(root, rep)
+        if self.config.get('data_roots'):
+            for root, rep in self.config['data_roots'].items():
+                if root in file:
+                    file = file.replace(root, rep)
 
-        data_node = f'esgf.{self.data_node}'
-        if 'OVERRIDE' in self.data_node:
-            data_node = self.data_node.split(':')[1]
-
-        return self.access['root'] + urljoin(data_node,file)
+        return self.access['root'] + self.remote_url + file
 
     def file_to_local(self, file: str, dir_struct: str) -> str:
         """
@@ -904,6 +913,9 @@ class ESGNetcdfAssembler:
             **properties
         }
 
+        # Overrides any pre-existing netcdf retrieval of the tracking_id
+        all_properties[f'{self.project}:pid'] = self._pid(dataset_id)
+
         sc_version = ev.get_project(self.project).version
         if not check_url(f'https://esgf.github.io/stac-transaction-api/{self.project}/v{sc_version}/schema.json'):
             self.publog.error(f'Schema for {self.project} {sc_version} not reachable')
@@ -953,25 +965,19 @@ class ESGNetcdfAssembler:
 
         rec = self.get_stac_record()
 
-        if self.save_stac:
-            with open(f"local/{rec['id']}.json",'w') as f:
-                f.write(json.dumps(rec))
-            self.publog.info(f"Saved STAC item to local/{rec['id']}.json")
+        tc = EGITransactionClient(
+            self.config['stac_config'],
+            self.config.get('verbose'),
+            self.config.get('silent'),
+            self.dry_run,
+            self.save_stac
+        )
 
-        if not self.dry_run:
-
-            tc = EGITransactionClient({
-                'stac_config':self.config['stac_config'],
-                'verbose': self.config.get('verbose'),
-                'silent':  self.config.get('silent'),
-                'dryrun': None,
-                'save-stac': None
-            })
-            success = tc.publish(rec, publisher_label='esgvoc_publisher')
-            if success:
-                self.publog.info(f"Successful publication - {rec['id']}")
-            else:
-                self.publog.info('Publication unsuccessful')
+        success = tc.publish(rec, publisher_label='esgvoc_publisher', local_cache='local')
+        if success:
+            self.publog.info(f"Successful publication - {rec['id']}")
+        else:
+            self.publog.info('Publication unsuccessful')
 
 if __name__ == '__main__':
 

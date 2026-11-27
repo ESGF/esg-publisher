@@ -248,6 +248,7 @@ class EGITransactionClient:
             return True
 
         try:
+            self.publog.info(f'Posting to {self.stac_api}/collections/{collection}')
             response = requests.post(
                 f"{self.stac_api}/collections/{collection}/items",
                 headers=headers,
@@ -309,6 +310,7 @@ class EGITransactionClient:
 
         except requests.exceptions.HTTPError as err:
             self.publog.error("Failed to update: Error %s", err.response.status_code)
+            return err.response.content
 
 
 def getTransactionClient(stac_config):
